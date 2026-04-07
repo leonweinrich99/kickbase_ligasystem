@@ -1,0 +1,39 @@
+name: Update Kickbase Data
+
+on:
+  schedule:
+    # Jeden Montag um 19:00 Uhr UTC
+    - cron: '0 19 * * 1'
+  workflow_dispatch:
+    # Erlaubt manuelles Auslösen des Workflows
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        working-directory: ./backend
+        run: npm install
+
+      - name: Fetch Kickbase Data
+        working-directory: ./backend
+        run: node scripts/fetch-data.js
+        env:
+          KICKBASE_EMAIL: ${{ secrets.KICKBASE_EMAIL }}
+          KICKBASE_PASS: ${{ secrets.KICKBASE_PASS }}
+
+      - name: Commit and Push Data
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add frontend/public/data.json
+          git commit -m "Automatisches Update: Kickbase Daten" || echo "Keine Änderungen zu commiten"
+          git push

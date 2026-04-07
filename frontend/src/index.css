@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-bg: #0f1115;
+  --color-card-bg: #1a1d24;
+  --color-card-border: #2a2e37;
+  --color-text-muted: #8b92a5;
+  --color-liga1: #4ba6ff;
+  --color-liga2: #ff5c3e;
+  --color-liga3: #22c55e;
+}
+
+body {
+  background-color: var(--color-brand-bg);
+  color: white;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  margin: 0;
+  padding: 0;
+}
