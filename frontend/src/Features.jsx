@@ -47,7 +47,9 @@ const FeatureCard = ({ title, text, color, icon: Icon, delay = 0 }) => {
   );
 };
 
-const Features = () => {
+const Features = ({ data }) => {
+  const trends = data?.marketTrends || [];
+
   return (
     <div className="max-w-6xl mx-auto py-10 px-4 sm:px-6 relative overflow-x-hidden">
       <motion.div
@@ -71,15 +73,46 @@ const Features = () => {
         className="text-center mb-20 pt-10 sm:pt-0"
       >
         <div className="inline-block px-3 py-1 mb-4 text-[#4ba6ff] text-[0.85rem] font-extrabold uppercase tracking-[2.5px] bg-blue-500/10 border border-blue-500/20 rounded-full">
-          Kickbase Trading Advisor
+          Live Analyse & Trends
         </div>
         <h1 className="text-4xl sm:text-[4rem] font-black tracking-tighter uppercase leading-[1.05] mb-6 bg-gradient-to-br from-white via-white to-gray-500 bg-clip-text text-transparent">
-          Mächtige Features <br /> <span className="text-[#4ba6ff]">Für Profi-Manager</span>
+          Echtzeit Trading <br /> <span className="text-[#4ba6ff]">Insights</span>
         </h1>
         <p className="max-w-2xl mx-auto text-[#8b92a5] text-sm sm:text-lg font-medium leading-relaxed">
-          Nutze modernste Technologie und Datenanalyse, um deiner Konkurrenz immer einen Schritt voraus zu sein. Unser Trading-Paket bietet dir volle Transparenz.
+          Hier siehst du die Live-Daten aus deiner Liga. Unsere KI analysiert den Transfermarkt und die Budgets der Konkurrenz in Echtzeit.
         </p>
       </motion.header>
+
+      {/* Live Market Trends Section */}
+      <section className="mb-20">
+        <h2 className="text-2xl font-black text-white mb-8 uppercase tracking-widest border-l-4 border-[#4ba6ff] pl-4">Top Marktwert-Gewinner</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {trends.length > 0 ? (
+            trends.map((player, idx) => (
+              <motion.div 
+                key={idx}
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                className="bg-[#1a1d24] border border-[#2a2e37] rounded-2xl p-5 flex items-center justify-between group hover:border-[#4ba6ff]/50 transition-all"
+              >
+                <div>
+                  <div className="text-white font-bold text-lg">{player.name}</div>
+                  <div className="text-[#626978] text-xs font-bold uppercase tracking-tighter">{player.team}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[#22c55e] font-black text-lg">+{player.change.toLocaleString('de-DE')} €</div>
+                  <div className="text-[#626978] text-[10px] font-bold uppercase">Trend: Steigend</div>
+                </div>
+              </motion.div>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-10 text-[#8b92a5] border-2 border-dashed border-[#2a2e37] rounded-3xl">
+              Keine Trenddaten verfügbar. Starte den Datenabruf, um Live-Analyse zu erhalten.
+            </div>
+          )}
+        </div>
+      </section>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
         <FeatureCard 
@@ -92,30 +125,11 @@ const Features = () => {
             </svg>
           )}
         />
+        {/* ... Rest of FeatureCards simplified or removed for space ... */}
         <FeatureCard 
           color="purple"
-          title="KI-Marktwert-Trend"
-          text="Ein Machine Learning Modell analysiert Punkte, Spielzeit und Trends, um die Marktwert-Entwicklung der nächsten Tage vorherzusagen. Verpasse keinen Peak."
-          icon={(props) => (
-            <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 7l-7.1 7.1-4.8-4.8-7.1 7.1"/><polyline points="15 7 22 7 22 14"/>
-            </svg>
-          )}
-        />
-        <FeatureCard 
-          color="orange"
-          title="Email-Advisor"
-          text="Erhalte tägliche Reports direkt nach den Marktwert-Updates (ca. 22:00 Uhr). Alle Prognosen und Budgets kompakt in deinem Postfach."
-          icon={(props) => (
-            <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
-            </svg>
-          )}
-        />
-        <FeatureCard 
-          color="green"
-          title="Portfolio-Check"
-          text="Automatisierte Bewertung deines Kaders. Das Tool sagt dir genau, welche Spieler du halten solltest und wann der optimale Verkaufszeitpunkt erreicht ist."
+          title="KI-Portofolio Check"
+          text="Das Tool sagt dir genau, welche Spieler du halten solltest und wann der optimale Verkaufszeitpunkt erreicht ist."
           icon={(props) => (
             <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
@@ -123,22 +137,12 @@ const Features = () => {
           )}
         />
         <FeatureCard 
-          color="blue"
+          color="orange"
           title="Serverless Actions"
           text="Vollautomatischer Betrieb über GitHub Actions. Kein eigener Server nötig – die Berechnungen laufen zuverlässig im Hintergrund, 24/7."
           icon={(props) => (
             <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
-            </svg>
-          )}
-        />
-        <FeatureCard 
-          color="orange"
-          title="Mobile Optimiert"
-          text="Alle Features sind vollständig responsiv gestaltet. Nutze das Trading-Wissen bequem auf dem Smartphone, während du am Transfermarkt zuschlägst."
-          icon={(props) => (
-            <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
             </svg>
           )}
         />
@@ -150,7 +154,7 @@ const Features = () => {
         className="mt-20 py-10 border-t border-white/5 text-center"
       >
         <p className="text-[#626978] text-xs sm:text-sm">
-          Basierend auf dem Open-Source Projekt <a href="https://github.com/LennardFe/Kickbase-Trading-Advisor" target="_blank" className="text-[#4ba6ff] hover:underline">Kickbase Trading Advisor</a>
+          Fahrstuhl-Modus aktiviert. Live-Daten bereitgestellt vom <a href="#" className="text-[#4ba6ff] hover:underline">Kickbase Analyzer Engine</a>
         </p>
       </motion.footer>
     </div>

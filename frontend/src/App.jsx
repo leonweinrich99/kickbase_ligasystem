@@ -79,7 +79,7 @@ const Header = ({ matchday, participants }) => (
 
 const UserRow = ({ item, color }) => {
   return (
-    <div className={`flex items-center p-3 mb-2.5 bg-[#1a1d24] border ${item.highlight ? 'border-[#3a3f4a]' : 'border-[#2a2e37]'} rounded-[14px] shadow-sm relative`}>
+    <div className={`flex items-center p-3 mb-2.5 bg-[#1a1d24] border ${item.highlight ? 'border-[#3a3f4a]' : 'border-[#2a2e37]'} rounded-[14px] shadow-sm relative group hover:border-[#3a3f4a] transition-all`}>
       {item.highlight && (
         <div className={`absolute left-0 top-0 bottom-0 w-[3px] rounded-l-md bg-${item.highlight === 'green' ? '[#22c55e]' : item.highlight === 'blue' ? '[#4ba6ff]' : item.highlight === 'orange' ? '[#ff5c3e]' : '[#ef4444]'}`}></div>
       )}
@@ -89,9 +89,11 @@ const UserRow = ({ item, color }) => {
       <div className="w-10 h-10 rounded-full bg-[#20242d] ml-2 flex items-center justify-center">
         <AvatarIcon />
       </div>
-      <div className="ml-3 flex-1">
+      <div className="ml-3 flex-1 flex flex-col">
         <div className="text-[14px] font-bold tracking-wide text-gray-100">{item.name}</div>
-        <div className="text-[10px] font-bold text-[#626978] tracking-widest mt-0.5">MANAGER</div>
+        <div className="text-[10px] font-bold text-[#4ba6ff] tracking-widest mt-0.5 uppercase">
+          Budget: {item.estimatedBudget}
+        </div>
       </div>
       <div className="text-right mr-2">
         <div className="text-[17px] font-bold" style={{ color: color }}>
@@ -146,7 +148,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard data={data} />} />
           <Route path="/rules" element={<Rules />} />
-          <Route path="/features" element={<Features />} />
+          <Route path="/features" element={<Features data={data} />} />
         </Routes>
         
         <div className="mt-20 text-center text-[#555] text-[10px] sm:text-xs">

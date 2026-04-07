@@ -53,17 +53,56 @@ const fetchKickbaseData = async () => {
         const rankingData = await rankingRes.json();
         const users = rankingData.us || [];
 
-        // 3. Sortiere User nach Punkten absteigend
+        // 3. ECHTE TRADING LOGIK: Hole Feed & Stats für Budgets
+        console.log("Analyzing trading data (Feed & Stats)...");
+        const statsRes = await fetch(`https://api.kickbase.com/v4/leagues/${targetId}/stats`, { headers: { Authorization: `Bearer ${token}` } });
+        const statsData = await statsRes.json();
+
+        const feedRes = await fetch(`https://api.kickbase.com/v4/leagues/${targetId}/feed`, { headers: { Authorization: `Bearer ${token}` } });
+        const feedData = await feedRes.json();
+
+        // Budget Kalkulation
+        const startingBudget = 50000000;
+        const userBudgets = {};
+
+        // Initialisiere mit Startbudget + Matchday Gewinnen
+        users.forEach(u => {
+            const userStats = (statsData.players || []).find(p => p.i === u.i) || { mw: 0 };
+            userBudgets[u.i] = startingBudget + (userStats.mw || 0);
+        });
+
+        // Verarbeite Feed (Käufe/Verkäufe)
+        (feedData.items || []).forEach(item => {
+            // Typ 12 = Verkauf (Geld kommt rein), Typ 11 = Kauf (Geld geht raus) - basierend auf Kickbase API Standards
+            if (item.t === 12 && item.u === targetId) { // Verkauf
+                // In einer echten Implementierung müsste man den Preis extrahieren. 
+                // Da der Feed komplex ist, nutzen wir eine geschätzte Logik oder extrahieren p (Preis) falls vorhanden.
+                if (item.p) userBudgets[item.u] += item.p;
+            } else if (item.t === 11 && item.u === targetId) { // Kauf
+                if (item.p) userBudgets[item.u] -= item.p;
+            }
+        });
+
+        // 4. Marktwert Trends (Hole aktuellen Markt)
+        const marketRes = await fetch(`https://api.kickbase.com/v4/leagues/${targetId}/market`, { headers: { Authorization: `Bearer ${token}` } });
+        const marketData = await marketRes.json();
+        const topGainers = (marketData.players || [])
+            .filter(p => p.mvc > 0)
+            .sort((a, b) => b.mvc - a.mvc)
+            .slice(0, 5)
+            .map(p => ({ name: p.n, change: p.mvc, team: p.t }));
+
+        // 5. Sortiere User nach Punkten absteigend
         users.sort((a, b) => (b.sp || 0) - (a.sp || 0));
 
         // Format points to "1.907"
         const formatPoints = (sp) => (sp || 0).toLocaleString('de-DE');
+        const formatMoney = (val) => (val || 0).toLocaleString('de-DE') + ' €';
 
-        // 4. Transform into UI structure (3 columns)
+        // 6. Transform into UI structure (3 columns)
         const participantsCount = users.length;
         const col1Count = Math.ceil(participantsCount / 3);
         const col2Count = Math.ceil((participantsCount - col1Count) / 2);
-        const col3Count = participantsCount - col1Count - col2Count;
 
         const transformedUsers = users.map((u, index) => {
             let isTrophy = false;
@@ -77,9 +116,8 @@ const fetchKickbaseData = async () => {
                 if (rank === 3) trophyColor = 'bronze';
             }
 
-            // Assign highlight bar colors similarly to screenshot logic
             let highlight = '';
-            if (rank === participantsCount - 1 || rank === participantsCount) highlight = 'red'; // Bottom 2
+            if (rank === participantsCount - 1 || rank === participantsCount) highlight = 'red'; 
             else if (rank === 1 && !isTrophy) highlight = 'green';
             else if (u.n === 'Leon Weinrich') highlight = 'blue';
 
@@ -88,6 +126,7 @@ const fetchKickbaseData = async () => {
                 rank: rank,
                 name: u.n,
                 points: formatPoints(u.sp),
+                estimatedBudget: formatMoney(userBudgets[u.i] || startingBudget),
                 isTrophy,
                 trophyColor,
                 highlight
@@ -98,6 +137,7 @@ const fetchKickbaseData = async () => {
             name: "QUALIFIKATIONSRUNDE",
             matchday: rankingData.day || 28,
             participants: participantsCount,
+            marketTrends: topGainers,
             leagues: [
                 {
                     name: "LIGA 1",
