@@ -37,6 +37,8 @@ jobs:
         env:
           KICKBASE_EMAIL: ${{ secrets.KICKBASE_EMAIL }}
           KICKBASE_PASS: ${{ secrets.KICKBASE_PASS }}
+          KICKBASE_EMAIL_2: ${{ secrets.KICKBASE_EMAIL_2 }}
+          KICKBASE_PASS_2: ${{ secrets.KICKBASE_PASS_2 }}
 
       - name: Commit and Push Data
         run: |

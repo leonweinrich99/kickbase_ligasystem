@@ -1,30 +1,29 @@
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-// Wir löschen alle Fallbacks, um sicherzustellen, dass nur ECHTE Daten gezeigt werden.
-const fetchKickbaseData = async () => {
+const fetchSingleLeagueData = async (email, password, leagueNameContains = "quali") => {
     try {
-        console.log("Attempting to login to Kickbase...");
+        console.log(`Attempting to login to Kickbase for ${email}...`);
         const loginRes = await fetch('https://api.kickbase.com/v4/user/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
-                em: process.env.KICKBASE_EMAIL || 'weinrich99@gmail.com', 
+                em: email, 
                 loy: false, 
-                pass: process.env.KICKBASE_PASS || 'fifxe0-Puztuv-wawmen', 
+                pass: password, 
                 rep: {} 
             })
         });
         const loginData = await loginRes.json();
 
         if (loginData.err) {
-            console.error("API Error:", loginData.errMsg);
-            return { error: 'AccessDenied', msg: loginData.errMsg };
+            console.error(`API Error for ${email}:`, loginData.errMsg);
+            return null;
         }
 
         const token = loginData.tkn;
         if (!token) {
-            console.error("No token received.");
-            return { error: 'NoToken' };
+            console.error(`No token received for ${email}.`);
+            return null;
         }
 
         // 1. Hole alle Ligen
@@ -34,7 +33,7 @@ const fetchKickbaseData = async () => {
         let targetId = null;
         const leaguesList = leaguesData?.lins || leaguesData?.leagues || (Array.isArray(leaguesData) ? leaguesData : []);
         for (const l of leaguesList) {
-            if ((l.n || l.name).toLowerCase().includes("quali")) {
+            if ((l.n || l.name).toLowerCase().includes(leagueNameContains.toLowerCase())) {
                 targetId = l.i || l.id;
             }
         }
@@ -44,8 +43,8 @@ const fetchKickbaseData = async () => {
         }
 
         if (!targetId) {
-            console.error("No league found!");
-            return { error: 'NoLeagueFound' };
+            console.error(`No league found for ${email}!`);
+            return null;
         }
 
         // 2. Hole Ranking
@@ -54,7 +53,7 @@ const fetchKickbaseData = async () => {
         const users = rankingData.us || [];
 
         // 3. ECHTE TRADING LOGIK: Hole Feed & Stats für Budgets
-        console.log("Analyzing trading data (Feed & Stats)...");
+        console.log(`Analyzing trading data (Feed & Stats) for league ${targetId}...`);
         const statsRes = await fetch(`https://api.kickbase.com/v4/leagues/${targetId}/stats`, { headers: { Authorization: `Bearer ${token}` } });
         const statsData = await statsRes.json();
 
@@ -73,10 +72,7 @@ const fetchKickbaseData = async () => {
 
         // Verarbeite Feed (Käufe/Verkäufe)
         (feedData.items || []).forEach(item => {
-            // Typ 12 = Verkauf (Geld kommt rein), Typ 11 = Kauf (Geld geht raus) - basierend auf Kickbase API Standards
             if (item.t === 12 && item.u === targetId) { // Verkauf
-                // In einer echten Implementierung müsste man den Preis extrahieren. 
-                // Da der Feed komplex ist, nutzen wir eine geschätzte Logik oder extrahieren p (Preis) falls vorhanden.
                 if (item.p) userBudgets[item.u] += item.p;
             } else if (item.t === 11 && item.u === targetId) { // Kauf
                 if (item.p) userBudgets[item.u] -= item.p;
@@ -92,19 +88,77 @@ const fetchKickbaseData = async () => {
             .slice(0, 5)
             .map(p => ({ name: p.n, change: p.mvc, team: p.t }));
 
+        return {
+            users,
+            userBudgets,
+            topGainers,
+            matchday: rankingData.day || 28
+        };
+
+    } catch (e) {
+        console.error(`Error fetching data for ${email}:`, e.message);
+        return null;
+    }
+};
+
+const fetchKickbaseData = async () => {
+    try {
+        const credentials = [
+            { email: process.env.KICKBASE_EMAIL || 'weinrich99@gmail.com', pass: process.env.KICKBASE_PASS || 'fifxe0-Puztuv-wawmen', target: 'quali' }
+        ];
+
+        // Only add the second account if BOTH env vars are explicitly set
+        if (process.env.KICKBASE_EMAIL_2 && process.env.KICKBASE_PASS_2) {
+            credentials.push({ email: process.env.KICKBASE_EMAIL_2, pass: process.env.KICKBASE_PASS_2, target: 'qualigruppe 1' });
+        }
+
+        const allResults = await Promise.all(
+            credentials.map(c => fetchSingleLeagueData(c.email, c.pass, c.target))
+        );
+
+        let combinedUsersMap = new Map();
+        let combinedBudgets = {};
+        let combinedGainers = [];
+        let matchday = 28;
+
+        for (const res of allResults) {
+            if (!res) continue; // Skip if this account failed to fetch data
+            
+            res.users.forEach(u => {
+                // To avoid duplicate players (if user is in multiple leagues), key by 'i' (Kickbase ID).
+                // If they appear multiple times, take the one with higher points (or just the first one).
+                if (!combinedUsersMap.has(u.i) || u.sp > combinedUsersMap.get(u.i).sp) {
+                    combinedUsersMap.set(u.i, u);
+                }
+            });
+
+            // Merging budgets
+            Object.assign(combinedBudgets, res.userBudgets);
+
+            // Just take trends from the first successful fetch (market is usually global across leagues)
+            if (combinedGainers.length === 0) {
+                combinedGainers = res.topGainers;
+            }
+            matchday = res.matchday;
+        }
+
+        const combinedUsers = Array.from(combinedUsersMap.values());
+        
         // 5. Sortiere User nach Punkten absteigend
-        users.sort((a, b) => (b.sp || 0) - (a.sp || 0));
+        combinedUsers.sort((a, b) => (b.sp || 0) - (a.sp || 0));
 
         // Format points to "1.907"
         const formatPoints = (sp) => (sp || 0).toLocaleString('de-DE');
         const formatMoney = (val) => (val || 0).toLocaleString('de-DE') + ' €';
+        const startingBudget = 50000000;
 
         // 6. Transform into UI structure (3 columns)
-        const participantsCount = users.length;
-        const col1Count = Math.ceil(participantsCount / 3);
-        const col2Count = Math.ceil((participantsCount - col1Count) / 2);
+        const participantsCount = combinedUsers.length;
+        // Handle cases where we have fewer than 3 participants
+        const col1Count = Math.max(1, Math.ceil(participantsCount / 3));
+        const col2Count = Math.max(0, Math.ceil((participantsCount - col1Count) / 2));
 
-        const transformedUsers = users.map((u, index) => {
+        const transformedUsers = combinedUsers.map((u, index) => {
             let isTrophy = false;
             let trophyColor = '';
             const rank = index + 1;
@@ -126,7 +180,7 @@ const fetchKickbaseData = async () => {
                 rank: rank,
                 name: u.n,
                 points: formatPoints(u.sp),
-                estimatedBudget: formatMoney(userBudgets[u.i] || startingBudget),
+                estimatedBudget: formatMoney(combinedBudgets[u.i] || startingBudget),
                 isTrophy,
                 trophyColor,
                 highlight
@@ -135,9 +189,9 @@ const fetchKickbaseData = async () => {
 
         const dashboardData = {
             name: "QUALIFIKATIONSRUNDE",
-            matchday: rankingData.day || 28,
+            matchday: matchday,
             participants: participantsCount,
-            marketTrends: topGainers,
+            marketTrends: combinedGainers,
             leagues: [
                 {
                     name: "LIGA 1",
@@ -160,7 +214,7 @@ const fetchKickbaseData = async () => {
         return dashboardData;
 
     } catch (e) {
-        console.error("Error fetching data:", e.message);
+        console.error("Error formatting combined data:", e.message);
         return { error: e.message };
     }
 }
