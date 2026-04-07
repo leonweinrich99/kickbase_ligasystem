@@ -2,8 +2,16 @@ name: Update Kickbase Data
 
 on:
   schedule:
-    # Jeden Montag um 19:00 Uhr UTC
-    - cron: '0 19 * * 1'
+    # Freitag 23:30 (Local) -> 21:30 UTC
+    - cron: '30 21 * * 5'
+    # Samstag 18:30 (Local) -> 16:30 UTC
+    - cron: '30 16 * * 6'
+    # Samstag 21:30 (Local) -> 19:30 UTC
+    - cron: '30 19 * * 6'
+    # Sonntag 20:30 (Local) -> 18:30 UTC
+    - cron: '30 18 * * 0'
+    # Montag 18:05 (Local) -> 16:05 UTC
+    - cron: '5 16 * * 1'
   workflow_dispatch:
     # Erlaubt manuelles Auslösen des Workflows
 
