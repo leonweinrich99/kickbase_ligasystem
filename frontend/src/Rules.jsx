@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 const CloseIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -23,7 +24,13 @@ const RuleCard = ({ number, title, text, color, children, icon: Icon }) => {
   };
 
   return (
-    <div className="group relative pl-12 sm:pl-16 mb-8">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className="group relative pl-12 sm:pl-16 mb-8"
+    >
       {/* Timeline Line */}
       <div className="absolute left-6 sm:left-8 top-0 bottom-[-32px] w-[2px] bg-[#2a2e37] group-last:bottom-0"></div>
       
@@ -39,35 +46,52 @@ const RuleCard = ({ number, title, text, color, children, icon: Icon }) => {
           {children}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
 const SectionTitle = ({ title }) => (
-  <h2 className="text-[1.8rem] font-black text-[#f8fafc] mb-8 mt-16 first:mt-0 tracking-tight pb-3 border-b border-white/5 uppercase">
+  <motion.h2 
+    initial={{ opacity: 0, x: -20 }}
+    whileInView={{ opacity: 1, x: 0 }}
+    viewport={{ once: true }}
+    transition={{ duration: 0.5 }}
+    className="text-[1.8rem] font-black text-[#f8fafc] mb-8 mt-16 first:mt-0 tracking-tight pb-3 border-b border-white/5 uppercase"
+  >
     {title}
-  </h2>
+  </motion.h2>
 );
 
 const Rules = () => {
   return (
-    <div className="max-w-4xl mx-auto py-10 px-6 sm:px-4 relative">
-      <Link 
-        to="/" 
-        className="absolute top-4 right-6 sm:top-10 sm:right-0 p-2 text-[#8b92a5] hover:text-white bg-[#1a1d24] border border-[#2a2e37] rounded-xl transition-all hover:border-[#3a3f4a] shadow-lg z-50"
-        title="Zurück zum Dashboard"
+    <div className="max-w-4xl mx-auto py-10 px-4 relative overflow-x-hidden">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.2 }}
       >
-        <CloseIcon />
-      </Link>
+        <Link 
+          to="/" 
+          className="absolute top-4 right-4 sm:top-10 sm:right-0 p-2 text-[#8b92a5] hover:text-white bg-[#1a1d24] border border-[#2a2e37] rounded-xl transition-all hover:border-[#3a3f4a] shadow-lg z-50"
+          title="Zurück zum Dashboard"
+        >
+          <CloseIcon />
+        </Link>
+      </motion.div>
 
-      <header className="text-center mb-20 pt-10 sm:pt-0">
+      <motion.header 
+        initial={{ opacity: 0, y: -30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7 }}
+        className="text-center mb-20 pt-10 sm:pt-0"
+      >
         <div className="inline-block px-3 py-1 mb-4 text-[#f97316] text-[0.85rem] font-extrabold uppercase tracking-[2.5px] bg-orange-500/10 border border-orange-500/20 rounded-full">
           Saison 26/27
         </div>
         <h1 className="text-4xl sm:text-[3.5rem] font-black tracking-tighter uppercase leading-[1.1] mb-4 bg-gradient-to-br from-white to-[#9ca3af] bg-clip-text text-transparent">
           KICKBASE LIGASYSTEM<br />Regelkatalog
         </h1>
-      </header>
+      </motion.header>
 
       <div className="space-y-16">
         <section>
