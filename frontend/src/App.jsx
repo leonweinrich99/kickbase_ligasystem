@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
+import Rules from './Rules';
 
 const AvatarIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-[#8b92a5] opacity-50">
@@ -37,6 +39,23 @@ const Header = ({ matchday, participants }) => (
         <h1 className="text-xl sm:text-3xl font-black tracking-tight uppercase">Qualifikationsrunde</h1>
       </div>
     </div>
+    
+    {/* Navigation */}
+    <nav className="flex bg-[#1a1d24] border border-[#2a2e37] p-1 rounded-xl shadow-inner mx-auto sm:mx-0">
+      <NavLink 
+        to="/" 
+        className={({ isActive }) => `px-4 py-2 text-xs font-bold uppercase tracking-widest rounded-lg transition-all ${isActive ? 'bg-[#ff5c3e] text-white shadow-lg' : 'text-[#8b92a5] hover:text-white'}`}
+      >
+        Dashboard
+      </NavLink>
+      <NavLink 
+        to="/rules" 
+        className={({ isActive }) => `px-4 py-2 text-xs font-bold uppercase tracking-widest rounded-lg transition-all ${isActive ? 'bg-[#ff5c3e] text-white shadow-lg' : 'text-[#8b92a5] hover:text-white'}`}
+      >
+        Regeln
+      </NavLink>
+    </nav>
+
     <div className="flex w-full sm:w-auto justify-between sm:justify-end gap-3 sm:gap-4">
       <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden flex-1 sm:flex-initial justify-between">
         <button className="px-3 sm:px-4 py-2 sm:py-3 text-[#8b92a5] hover:text-white transition-colors bg-[#181a20]">&lsaquo;</button>
@@ -46,9 +65,6 @@ const Header = ({ matchday, participants }) => (
       <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl px-4 sm:px-5 py-2 shadow-lg flex flex-col justify-center items-end min-w-[80px] sm:min-w-0">
         <span className="text-[8px] sm:text-[10px] font-bold text-[#8b92a5] tracking-widest leading-tight">TEILNEHMER</span>
         <span className="text-sm sm:text-base font-bold text-gray-200 leading-tight block -mt-1">{participants}</span>
-      </div>
-      <div className="hidden sm:flex bg-[#1a1d24] border border-[#2a2e37] rounded-xl w-14 justify-center items-center text-[#8b92a5]">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
       </div>
     </div>
   </div>
@@ -92,11 +108,21 @@ const LeagueColumn = ({ league }) => (
   </div>
 );
 
+const Dashboard = ({ data }) => (
+  <div className="max-w-[1400px] mx-auto bg-[#0f1115]">
+    <Header matchday={data.matchday} participants={data.participants} />
+    <div className="flex flex-col lg:flex-row gap-4">
+      {data.leagues.map((league) => (
+        <LeagueColumn key={league.name} league={league} />
+      ))}
+    </div>
+  </div>
+);
+
 function App() {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    // In Produktion und lokal nutzen wir die statische Datei im public-Ordner
     fetch('/data.json')
       .then(res => res.json())
       .then(setData)
@@ -108,19 +134,18 @@ function App() {
   if (!data) return <div className="min-h-screen bg-[#0f1115] flex justify-center items-center text-gray-500 font-bold">Lade Kickbase Daten...</div>;
 
   return (
-    <div className="min-h-screen bg-[#0f1115] p-4 sm:p-10 font-sans select-none">
-      <div className="max-w-[1400px] mx-auto bg-[#0f1115]">
-        <Header matchday={data.matchday} participants={data.participants} />
-        <div className="flex flex-col lg:flex-row gap-4">
-          {data.leagues.map((league) => (
-            <LeagueColumn key={league.name} league={league} />
-          ))}
+    <Router>
+      <div className="min-h-screen bg-[#0f1115] p-4 sm:p-10 font-sans select-none">
+        <Routes>
+          <Route path="/" element={<Dashboard data={data} />} />
+          <Route path="/rules" element={<Rules />} />
+        </Routes>
+        
+        <div className="mt-20 text-center text-[#555] text-[10px] sm:text-xs">
+          *The data above is retrieved automatically via GitHub Actions.
         </div>
       </div>
-      <div className="mt-20 text-center text-[#555] text-[10px] sm:text-xs">
-        *The data above is retrieved automatically via GitHub Actions.
-      </div>
-    </div>
+    </Router>
   );
 }
 
