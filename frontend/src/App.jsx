@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
 import Rules from './Rules';
+import Features from './Features';
 import logo from './assets/logo.png';
 
 const AvatarIcon = () => (
@@ -134,6 +135,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard data={data} />} />
           <Route path="/rules" element={<Rules />} />
+          <Route path="/features" element={<Features />} />
         </Routes>
         
         <div className="mt-20 text-center text-[#555] text-[10px] sm:text-xs">
