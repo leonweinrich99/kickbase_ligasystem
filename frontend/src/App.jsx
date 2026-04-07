@@ -40,29 +40,28 @@ const Header = ({ matchday, participants }) => (
       </div>
     </div>
     
-    {/* Navigation */}
-    <nav className="flex bg-[#1a1d24] border border-[#2a2e37] p-1 rounded-xl shadow-inner mx-auto sm:mx-0">
-      <NavLink 
-        to="/" 
-        className={({ isActive }) => `px-4 py-2 text-xs font-bold uppercase tracking-widest rounded-lg transition-all ${isActive ? 'bg-[#ff5c3e] text-white shadow-lg' : 'text-[#8b92a5] hover:text-white'}`}
-      >
-        Dashboard
-      </NavLink>
+    <div className="flex w-full sm:w-auto justify-between sm:justify-end items-center gap-3 sm:gap-4">
+      {/* Spieltag-Wechsler */}
+      <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden flex-1 sm:flex-initial justify-between h-12">
+        <button className="px-3 sm:px-4 h-full text-[#8b92a5] hover:text-white transition-colors bg-[#181a20]">&lsaquo;</button>
+        <span className="px-4 sm:px-8 text-[11px] sm:text-sm text-gray-200 whitespace-nowrap">Spieltag {matchday}</span>
+        <button className="px-3 sm:px-4 h-full text-[#8b92a5] hover:text-white transition-colors bg-[#181a20]">&rsaquo;</button>
+      </div>
+
+      {/* Regeln Button */}
       <NavLink 
         to="/rules" 
-        className={({ isActive }) => `px-4 py-2 text-xs font-bold uppercase tracking-widest rounded-lg transition-all ${isActive ? 'bg-[#ff5c3e] text-white shadow-lg' : 'text-[#8b92a5] hover:text-white'}`}
+        className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl w-12 h-12 flex justify-center items-center text-[#8b92a5] hover:text-white hover:border-[#ff5c3e] transition-all shadow-lg group"
+        title="Regelwerk ansehen"
       >
-        Regeln
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+        </svg>
       </NavLink>
-    </nav>
 
-    <div className="flex w-full sm:w-auto justify-between sm:justify-end gap-3 sm:gap-4">
-      <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden flex-1 sm:flex-initial justify-between">
-        <button className="px-3 sm:px-4 py-2 sm:py-3 text-[#8b92a5] hover:text-white transition-colors bg-[#181a20]">&lsaquo;</button>
-        <span className="px-4 sm:px-8 text-[11px] sm:text-sm text-gray-200 whitespace-nowrap">Spieltag {matchday}</span>
-        <button className="px-3 sm:px-4 py-2 sm:py-3 text-[#8b92a5] hover:text-white transition-colors bg-[#181a20]">&rsaquo;</button>
-      </div>
-      <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl px-4 sm:px-5 py-2 shadow-lg flex items-center gap-3 min-w-0">
+      {/* Teilnehmer Kachel */}
+      <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl px-4 sm:px-5 h-12 shadow-lg flex items-center gap-3 min-w-0">
         <span className="text-[8px] sm:text-[10px] font-bold text-[#8b92a5] tracking-widest leading-none uppercase">Teilnehmer</span>
         <span className="text-sm sm:text-base font-bold text-gray-200 leading-none">{participants}</span>
       </div>
