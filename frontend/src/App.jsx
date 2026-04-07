@@ -48,6 +48,12 @@ const Header = ({ matchday, participants }) => (
         <button className="px-3 sm:px-4 h-full text-[#8b92a5] hover:text-white transition-colors bg-[#181a20]">&rsaquo;</button>
       </div>
 
+      {/* Teilnehmer Kachel */}
+      <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl px-4 sm:px-5 h-12 shadow-lg flex items-center gap-3 min-w-0">
+        <span className="text-[8px] sm:text-[10px] font-bold text-[#8b92a5] tracking-widest leading-none uppercase">Teilnehmer</span>
+        <span className="text-sm sm:text-base font-bold text-gray-200 leading-none">{participants}</span>
+      </div>
+
       {/* Regeln Button */}
       <NavLink 
         to="/rules" 
@@ -59,12 +65,6 @@ const Header = ({ matchday, participants }) => (
           <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
         </svg>
       </NavLink>
-
-      {/* Teilnehmer Kachel */}
-      <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl px-4 sm:px-5 h-12 shadow-lg flex items-center gap-3 min-w-0">
-        <span className="text-[8px] sm:text-[10px] font-bold text-[#8b92a5] tracking-widest leading-none uppercase">Teilnehmer</span>
-        <span className="text-sm sm:text-base font-bold text-gray-200 leading-none">{participants}</span>
-      </div>
     </div>
   </div>
 );
