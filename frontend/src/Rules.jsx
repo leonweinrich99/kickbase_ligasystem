@@ -1,4 +1,11 @@
-import React from 'react';
+import { Link } from 'react-router-dom';
+
+const CloseIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18"></line>
+    <line x1="6" y1="6" x2="18" y2="18"></line>
+  </svg>
+);
 
 const RuleCard = ({ number, title, text, color, children, icon: Icon }) => {
   const borderColors = {
@@ -45,7 +52,15 @@ const SectionTitle = ({ title }) => (
 
 const Rules = () => {
   return (
-    <div className="max-w-4xl mx-auto py-10 px-4">
+    <div className="max-w-4xl mx-auto py-10 px-4 relative">
+      <Link 
+        to="/" 
+        className="absolute top-4 right-4 sm:top-10 sm:right-0 p-2 text-[#8b92a5] hover:text-white bg-[#1a1d24] border border-[#2a2e37] rounded-xl transition-all hover:border-[#3a3f4a] shadow-lg"
+        title="Zurück zum Dashboard"
+      >
+        <CloseIcon />
+      </Link>
+
       <header className="text-center mb-16">
         <div className="text-[10px] sm:text-[12px] font-bold tracking-[0.2em] text-[#ff5c3e] mb-3 uppercase">Offizieller Katalog</div>
         <h1 className="text-4xl sm:text-6xl font-black tracking-tighter uppercase text-white mb-4">
