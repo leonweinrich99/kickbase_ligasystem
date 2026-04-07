@@ -29,10 +29,10 @@ const RuleCard = ({ number, title, text, color, children, icon: Icon }) => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="group relative pl-12 sm:pl-16 mb-8"
+      className="group relative pl-16 sm:pl-24 mb-10"
     >
       {/* Timeline Line */}
-      <div className="absolute left-6 sm:left-8 top-0 bottom-[-32px] w-[2px] bg-[#2a2e37] group-last:bottom-0"></div>
+      <div className="absolute left-8 sm:left-12 top-0 bottom-[-40px] w-[2px] bg-[#2a2e37] group-last:bottom-0"></div>
       
       {/* Number/Icon Circle */}
       <div className={`absolute left-0 top-0 w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#0f1115] border-2 flex items-center justify-center z-10 transition-all duration-300 ${borderColors[color]}`}>
