@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
 import Rules from './Rules';
+import logo from './assets/logo.png';
 
 const AvatarIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-[#8b92a5] opacity-50">
@@ -26,13 +27,8 @@ const TrophyIcon = ({ type }) => {
 const Header = ({ matchday, participants }) => (
   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 border-b border-[#2a2e37] pb-6 gap-6">
     <div className="flex items-center gap-4 sm:gap-6">
-      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#1a1d24] border border-[#2a2e37] rounded-lg flex relative p-1.5 sm:p-2 shadow-inner">
-        <div className="w-full flex flex-col justify-end items-center gap-0.5">
-          <div className="w-3 sm:w-4 h-1.5 sm:h-2 bg-[#ff5c3e] rounded-sm transform origin-bottom-left rotate-y-3 skew-y-6"></div>
-          <div className="w-5 sm:w-6 h-1.5 sm:h-2 bg-[#4ba6ff] rounded-sm transform origin-bottom-left rotate-y-3 skew-y-6"></div>
-          <div className="w-7 sm:w-8 h-1.5 sm:h-2 bg-[#22c55e] rounded-sm transform origin-bottom-left rotate-y-3 skew-y-6"></div>
-          <div className="w-9 sm:w-10 h-1.5 sm:h-2 bg-[#10b981] rounded-sm transform origin-bottom-left rotate-y-3 skew-y-6"></div>
-        </div>
+      <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center p-0.5 sm:p-1 overflow-hidden">
+        <img src={logo} alt="Kickbase Liga Logo" className="w-full h-full object-contain" />
       </div>
       <div>
         <div className="text-[9px] sm:text-[11px] font-bold tracking-wider text-[#ff5c3e] mb-1">SAISON 26/27</div>
