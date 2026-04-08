@@ -1,13 +1,17 @@
 {
   "name": "QUALIKATIONSRUNDE",
   "matchday": 28,
-  "participants": 16,
+  "participants": 29,
   "marketTrends": [],
-  "timestamp": "2026-04-08T12:40:02.342Z",
+  "timestamp": "2026-04-08T12:54:48.152Z",
   "sources": [
     {
       "email": "weinrich99@gmail.com",
       "league": "Qualigruppe 2"
+    },
+    {
+      "email": "franziskajezeck@web.de",
+      "league": "Qualigruppe 1"
     }
   ],
   "errors": [
@@ -17,18 +21,25 @@
         "league": "Qualigruppe 1"
       },
       "message": "Liga \"Qualigruppe 1\" nicht gefunden"
+    },
+    {
+      "source": {
+        "email": "franziskajezeck@web.de",
+        "league": "Qualigruppe 2"
+      },
+      "message": "Liga \"Qualigruppe 2\" nicht gefunden"
     }
   ],
   "attemptedAccounts": [
     {
       "email": "weinrich99@gmail.com",
       "status": "Bereit",
-      "usedSecret": false
+      "usedSecret": true
     },
     {
-      "email": "Nicht konfiguriert",
-      "status": "Übersprungen",
-      "usedSecret": false
+      "email": "franziskajezeck@web.de",
+      "status": "Bereit",
+      "usedSecret": true
     }
   ],
   "leagues": [
@@ -37,61 +48,101 @@
       "color": "#3b82f6",
       "users": [
         {
-          "id": "2651349",
+          "id": "3792325",
           "rank": 1,
-          "name": "JulianD47",
-          "points": "1.703",
-          "estimatedBudget": "249.100.000 €",
+          "name": "Stomping Tantrum",
+          "points": "1.881",
+          "estimatedBudget": "242.500.000 €",
           "isTrophy": true,
           "trophyColor": "gold",
           "highlight": ""
         },
         {
-          "id": "2492332",
+          "id": "2651349",
           "rank": 2,
-          "name": "kushler",
-          "points": "1.548",
-          "estimatedBudget": "248.800.000 €",
+          "name": "JulianD47",
+          "points": "1.703",
+          "estimatedBudget": "249.100.000 €",
           "isTrophy": true,
           "trophyColor": "silver",
           "highlight": ""
         },
         {
-          "id": "2656484",
+          "id": "3397700",
           "rank": 3,
-          "name": "MK13",
-          "points": "1.330",
-          "estimatedBudget": "249.200.000 €",
+          "name": "Curl3z",
+          "points": "1.598",
+          "estimatedBudget": "242.800.000 €",
           "isTrophy": true,
           "trophyColor": "bronze",
           "highlight": ""
         },
         {
-          "id": "3906724",
+          "id": "2492332",
           "rank": 4,
-          "name": "J0tt",
-          "points": "1.306",
-          "estimatedBudget": "243.600.000 €",
+          "name": "kushler",
+          "points": "1.548",
+          "estimatedBudget": "248.800.000 €",
           "isTrophy": false,
           "trophyColor": "",
           "highlight": ""
         },
         {
-          "id": "3283685",
+          "id": "3607082",
           "rank": 5,
-          "name": "Justin",
-          "points": "1.280",
+          "name": "Leon Weinrich",
+          "points": "1.537",
+          "estimatedBudget": "244.300.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": "blue"
+        },
+        {
+          "id": "3606931",
+          "rank": 6,
+          "name": "Esel",
+          "points": "1.471",
+          "estimatedBudget": "248.000.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": ""
+        },
+        {
+          "id": "2926287",
+          "rank": 7,
+          "name": "Vinnie JR",
+          "points": "1.463",
           "estimatedBudget": "249.200.000 €",
           "isTrophy": false,
           "trophyColor": "",
           "highlight": ""
         },
         {
-          "id": "3646277",
-          "rank": 6,
-          "name": "Geißbock",
-          "points": "1.183",
-          "estimatedBudget": "249.400.000 €",
+          "id": "2582689",
+          "rank": 8,
+          "name": "Wat Mamba",
+          "points": "1.454",
+          "estimatedBudget": "247.100.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": ""
+        },
+        {
+          "id": "1630703",
+          "rank": 9,
+          "name": "Ansgar Trinkmann",
+          "points": "1.381",
+          "estimatedBudget": "247.800.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": ""
+        },
+        {
+          "id": "3901400",
+          "rank": 10,
+          "name": "Mo6",
+          "points": "1.354",
+          "estimatedBudget": "249.600.000 €",
           "isTrophy": false,
           "trophyColor": "",
           "highlight": ""
@@ -103,8 +154,88 @@
       "color": "#f97316",
       "users": [
         {
+          "id": "2656484",
+          "rank": 11,
+          "name": "MK13",
+          "points": "1.330",
+          "estimatedBudget": "249.200.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": ""
+        },
+        {
+          "id": "3906724",
+          "rank": 12,
+          "name": "J0tt",
+          "points": "1.306",
+          "estimatedBudget": "243.600.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": ""
+        },
+        {
+          "id": "3283685",
+          "rank": 13,
+          "name": "Justin",
+          "points": "1.280",
+          "estimatedBudget": "249.200.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": ""
+        },
+        {
+          "id": "3607127",
+          "rank": 14,
+          "name": "Blake",
+          "points": "1.269",
+          "estimatedBudget": "249.700.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": ""
+        },
+        {
+          "id": "3639851",
+          "rank": 15,
+          "name": "DeinHomieEnobi",
+          "points": "1.250",
+          "estimatedBudget": "249.900.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": ""
+        },
+        {
+          "id": "3682622",
+          "rank": 16,
+          "name": "Fynn",
+          "points": "1.201",
+          "estimatedBudget": "245.000.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": ""
+        },
+        {
+          "id": "3533606",
+          "rank": 17,
+          "name": "thep",
+          "points": "1.185",
+          "estimatedBudget": "249.600.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": ""
+        },
+        {
+          "id": "3646277",
+          "rank": 18,
+          "name": "Geißbock",
+          "points": "1.183",
+          "estimatedBudget": "249.400.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": ""
+        },
+        {
           "id": "3905385",
-          "rank": 7,
+          "rank": 19,
           "name": "magarac",
           "points": "1.157",
           "estimatedBudget": "248.600.000 €",
@@ -113,41 +244,11 @@
           "highlight": ""
         },
         {
-          "id": "3905417",
-          "rank": 8,
-          "name": "Puliester",
-          "points": "1.030",
-          "estimatedBudget": "249.600.000 €",
-          "isTrophy": false,
-          "trophyColor": "",
-          "highlight": ""
-        },
-        {
-          "id": "2479430",
-          "rank": 9,
-          "name": "CarlCarlsenCarlsen",
-          "points": "1.026",
-          "estimatedBudget": "249.500.000 €",
-          "isTrophy": false,
-          "trophyColor": "",
-          "highlight": ""
-        },
-        {
-          "id": "3906287",
-          "rank": 10,
-          "name": "Marci",
-          "points": "961",
-          "estimatedBudget": "249.100.000 €",
-          "isTrophy": false,
-          "trophyColor": "",
-          "highlight": ""
-        },
-        {
-          "id": "3511512",
-          "rank": 11,
-          "name": "KönigMichi",
-          "points": "933",
-          "estimatedBudget": "249.800.000 €",
+          "id": "2934339",
+          "rank": 20,
+          "name": "leongarcon",
+          "points": "1.146",
+          "estimatedBudget": "248.700.000 €",
           "isTrophy": false,
           "trophyColor": "",
           "highlight": ""
@@ -159,8 +260,68 @@
       "color": "#22c55e",
       "users": [
         {
+          "id": "3694149",
+          "rank": 21,
+          "name": "Flocke",
+          "points": "1.035",
+          "estimatedBudget": "247.700.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": ""
+        },
+        {
+          "id": "3905417",
+          "rank": 22,
+          "name": "Puliester",
+          "points": "1.030",
+          "estimatedBudget": "249.600.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": ""
+        },
+        {
+          "id": "2479430",
+          "rank": 23,
+          "name": "CarlCarlsenCarlsen",
+          "points": "1.026",
+          "estimatedBudget": "249.500.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": ""
+        },
+        {
+          "id": "3779246",
+          "rank": 24,
+          "name": "AchtSieben",
+          "points": "1.010",
+          "estimatedBudget": "249.400.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": ""
+        },
+        {
+          "id": "3906287",
+          "rank": 25,
+          "name": "Marci",
+          "points": "961",
+          "estimatedBudget": "249.100.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": ""
+        },
+        {
+          "id": "3511512",
+          "rank": 26,
+          "name": "KönigMichi",
+          "points": "933",
+          "estimatedBudget": "249.800.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": ""
+        },
+        {
           "id": "1921179",
-          "rank": 12,
+          "rank": 27,
           "name": "Baumi",
           "points": "922",
           "estimatedBudget": "247.800.000 €",
@@ -169,38 +330,18 @@
           "highlight": ""
         },
         {
-          "id": "3607082",
-          "rank": 13,
-          "name": "Leon Weinrich",
-          "points": "0",
-          "estimatedBudget": "0 €",
-          "isTrophy": false,
-          "trophyColor": "",
-          "highlight": "blue"
-        },
-        {
-          "id": "3639851",
-          "rank": 14,
-          "name": "DeinHomieEnobi",
-          "points": "0",
-          "estimatedBudget": "0 €",
-          "isTrophy": false,
-          "trophyColor": "",
-          "highlight": ""
-        },
-        {
-          "id": "3792325",
-          "rank": 15,
-          "name": "Stomping Tantrum",
-          "points": "0",
-          "estimatedBudget": "0 €",
+          "id": "3650803",
+          "rank": 28,
+          "name": "franzi__j",
+          "points": "710",
+          "estimatedBudget": "247.800.000 €",
           "isTrophy": false,
           "trophyColor": "",
           "highlight": "red"
         },
         {
           "id": "3907908",
-          "rank": 16,
+          "rank": 29,
           "name": "leonweinrich99",
           "points": "0",
           "estimatedBudget": "0 €",
