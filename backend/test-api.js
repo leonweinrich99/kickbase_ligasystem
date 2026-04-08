@@ -11,18 +11,20 @@ async function test() {
         const loginData = await loginRes.json();
         const token = loginData.tkn;
 
-        const endpoints = [
-            'https://api.kickbase.com/leagues/10320440/stats',
-            'https://api.kickbase.com/leagues/10320440/users',
+        const urls = [
             'https://api.kickbase.com/v4/leagues/10320440/ranking',
-            'https://api.kickbase.com/v4/leagues/10320440/users'
+            'https://api.kickbase.com/v4/leagues/10320440/feed',
+            'https://api.kickbase.com/v4/leagues/10320440/market'
         ];
-        for (let url of endpoints) {
+        
+        for (const url of urls) {
             const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
             console.log(url, r.status);
             if (r.status === 200) {
-                fs.writeFileSync('stats.json', await r.text());
-                break;
+                const data = await r.json();
+                console.log(`- ${url} OK! Keys:`, Object.keys(data).slice(0, 5));
+            } else {
+                console.log(`- ${url} FAILED! Status:`, r.status);
             }
         }
 

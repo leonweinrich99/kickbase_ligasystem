@@ -1,6 +1,6 @@
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-const fetchSingleLeagueData = async (email, password, leagueNameContains = "quali") => {
+const fetchSingleLeagueData = async (email, password, leagueNameContains = "Qualigruppe 1") => {
     try {
         console.log(`Attempting to login to Kickbase for ${email}...`);
         const loginRes = await fetch('https://api.kickbase.com/v4/user/login', {
@@ -38,55 +38,41 @@ const fetchSingleLeagueData = async (email, password, leagueNameContains = "qual
             }
         }
 
-        if (!targetId && leaguesList.length > 0) {
-            targetId = leaguesList[0].i || leaguesList[0].id; // Fallback to first league
-        }
-
         if (!targetId) {
-            console.error(`No league found for ${email}!`);
+            // Wenn diese Gruppe für diesen Account nicht gefunden wurde, geben wir null zurück
+            // Ohne Fallback auf die erste Liga, da wir gezielt suchen.
+            console.log(`No league found for ${email} with target "${leagueNameContains}".`);
             return null;
         }
+
+        console.log(`Found league "${leagueNameContains}" (ID: ${targetId}) for ${email}.`);
 
         // 2. Hole Ranking
         const rankingRes = await fetch(`https://api.kickbase.com/v4/leagues/${targetId}/ranking`, { headers: { Authorization: `Bearer ${token}` } });
         const rankingData = await rankingRes.json();
         const users = rankingData.us || [];
 
-        // 3. ECHTE TRADING LOGIK: Hole Feed & Stats für Budgets
-        console.log(`Analyzing trading data (Feed & Stats) for league ${targetId}...`);
-        const statsRes = await fetch(`https://api.kickbase.com/v4/leagues/${targetId}/stats`, { headers: { Authorization: `Bearer ${token}` } });
-        const statsData = await statsRes.json();
-
-        const feedRes = await fetch(`https://api.kickbase.com/v4/leagues/${targetId}/feed`, { headers: { Authorization: `Bearer ${token}` } });
-        const feedData = await feedRes.json();
-
-        // Budget Kalkulation
-        const startingBudget = 50000000;
-        const userBudgets = {};
-
-        // Initialisiere mit Startbudget + Matchday Gewinnen
-        users.forEach(u => {
-            const userStats = (statsData.players || []).find(p => p.i === u.i) || { mw: 0 };
-            userBudgets[u.i] = startingBudget + (userStats.mw || 0);
-        });
-
-        // Verarbeite Feed (Käufe/Verkäufe)
-        (feedData.items || []).forEach(item => {
-            if (item.t === 12 && item.u === targetId) { // Verkauf
-                if (item.p) userBudgets[item.u] += item.p;
-            } else if (item.t === 11 && item.u === targetId) { // Kauf
-                if (item.p) userBudgets[item.u] -= item.p;
+        // 3. Marktwert Trends (Hole aktuellen Markt) - Optional
+        let topGainers = [];
+        try {
+            const marketRes = await fetch(`https://api.kickbase.com/v4/leagues/${targetId}/market`, { headers: { Authorization: `Bearer ${token}` } });
+            if (marketRes.ok) {
+                const marketData = await marketRes.json();
+                topGainers = (marketData.players || [])
+                    .filter(p => p.mvc > 0)
+                    .sort((a, b) => b.mvc - a.mvc)
+                    .slice(0, 5)
+                    .map(p => ({ name: p.n, change: p.mvc, team: p.t }));
             }
-        });
+        } catch (e) {
+            console.warn("Could not fetch market trends, skipping...");
+        }
 
-        // 4. Marktwert Trends (Hole aktuellen Markt)
-        const marketRes = await fetch(`https://api.kickbase.com/v4/leagues/${targetId}/market`, { headers: { Authorization: `Bearer ${token}` } });
-        const marketData = await marketRes.json();
-        const topGainers = (marketData.players || [])
-            .filter(p => p.mvc > 0)
-            .sort((a, b) => b.mvc - a.mvc)
-            .slice(0, 5)
-            .map(p => ({ name: p.n, change: p.mvc, team: p.t }));
+        // Budget Kalkulation: TV (Team Value) aus dem Ranking
+        const userBudgets = {};
+        users.forEach(u => {
+            userBudgets[u.i] = u.tv || 0; 
+        });
 
         return {
             users,
@@ -96,25 +82,32 @@ const fetchSingleLeagueData = async (email, password, leagueNameContains = "qual
         };
 
     } catch (e) {
-        console.error(`Error fetching data for ${email}:`, e.message);
+        console.error(`Error fetching data for ${email} (${leagueNameContains}):`, e.message);
         return null;
     }
 };
 
 const fetchKickbaseData = async () => {
     try {
-        const credentials = [
-            { email: process.env.KICKBASE_EMAIL || 'weinrich99@gmail.com', pass: process.env.KICKBASE_PASS || 'fifxe0-Puztuv-wawmen', target: 'quali' }
+        const accounts = [
+            { email: process.env.KICKBASE_EMAIL || 'weinrich99@gmail.com', pass: process.env.KICKBASE_PASS || 'fifxe0-Puztuv-wawmen' }
         ];
 
-        // Only add the second account if BOTH env vars are explicitly set
         if (process.env.KICKBASE_EMAIL_2 && process.env.KICKBASE_PASS_2) {
-            credentials.push({ email: process.env.KICKBASE_EMAIL_2, pass: process.env.KICKBASE_PASS_2, target: 'qualigruppe 1' });
+            accounts.push({ email: process.env.KICKBASE_EMAIL_2, pass: process.env.KICKBASE_PASS_2 });
         }
 
-        const allResults = await Promise.all(
-            credentials.map(c => fetchSingleLeagueData(c.email, c.pass, c.target))
-        );
+        const targets = ['Qualigruppe 1', 'Qualigruppe 2'];
+        
+        // Erstelle eine Liste aller Kombinationen aus Account und Ziel-Gruppe
+        const tasks = [];
+        for (const account of accounts) {
+            for (const target of targets) {
+                tasks.push(fetchSingleLeagueData(account.email, account.pass, target));
+            }
+        }
+
+        const allResults = await Promise.all(tasks);
 
         let combinedUsersMap = new Map();
         let combinedBudgets = {};
@@ -122,39 +115,29 @@ const fetchKickbaseData = async () => {
         let matchday = 28;
 
         for (const res of allResults) {
-            if (!res) continue; // Skip if this account failed to fetch data
+            if (!res) continue;
             
             res.users.forEach(u => {
-                // To avoid duplicate players (if user is in multiple leagues), key by 'i' (Kickbase ID).
-                // If they appear multiple times, take the one with higher points (or just the first one).
+                // Eindeutige User-ID (id 'i') nutzen. Bei Duplikaten nehmen wir die Daten mit den meisten Punkten.
                 if (!combinedUsersMap.has(u.i) || u.sp > combinedUsersMap.get(u.i).sp) {
                     combinedUsersMap.set(u.i, u);
+                    combinedBudgets[u.i] = res.userBudgets[u.i];
                 }
             });
 
-            // Merging budgets
-            Object.assign(combinedBudgets, res.userBudgets);
-
-            // Just take trends from the first successful fetch (market is usually global across leagues)
             if (combinedGainers.length === 0) {
                 combinedGainers = res.topGainers;
             }
-            matchday = res.matchday;
+            if (res.matchday > matchday) matchday = res.matchday;
         }
 
         const combinedUsers = Array.from(combinedUsersMap.values());
-        
-        // 5. Sortiere User nach Punkten absteigend
         combinedUsers.sort((a, b) => (b.sp || 0) - (a.sp || 0));
 
-        // Format points to "1.907"
         const formatPoints = (sp) => (sp || 0).toLocaleString('de-DE');
         const formatMoney = (val) => (val || 0).toLocaleString('de-DE') + ' €';
-        const startingBudget = 50000000;
 
-        // 6. Transform into UI structure (3 columns)
         const participantsCount = combinedUsers.length;
-        // Handle cases where we have fewer than 3 participants
         const col1Count = Math.max(1, Math.ceil(participantsCount / 3));
         const col2Count = Math.max(0, Math.ceil((participantsCount - col1Count) / 2));
 
@@ -180,7 +163,7 @@ const fetchKickbaseData = async () => {
                 rank: rank,
                 name: u.n,
                 points: formatPoints(u.sp),
-                estimatedBudget: formatMoney(combinedBudgets[u.i] || startingBudget),
+                estimatedBudget: formatMoney(combinedBudgets[u.i]),
                 isTrophy,
                 trophyColor,
                 highlight

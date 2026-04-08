@@ -1,23 +1,186 @@
 {
   "name": "QUALIFIKATIONSRUNDE",
   "matchday": 28,
-  "participants": 0,
+  "participants": 16,
   "marketTrends": [],
   "leagues": [
     {
       "name": "LIGA 1",
       "color": "#3b82f6",
-      "users": []
+      "users": [
+        {
+          "id": "2651349",
+          "rank": 1,
+          "name": "JulianD47",
+          "points": "1.703",
+          "estimatedBudget": "249.100.000 €",
+          "isTrophy": true,
+          "trophyColor": "gold",
+          "highlight": ""
+        },
+        {
+          "id": "2492332",
+          "rank": 2,
+          "name": "kushler",
+          "points": "1.548",
+          "estimatedBudget": "248.800.000 €",
+          "isTrophy": true,
+          "trophyColor": "silver",
+          "highlight": ""
+        },
+        {
+          "id": "2656484",
+          "rank": 3,
+          "name": "MK13",
+          "points": "1.330",
+          "estimatedBudget": "249.200.000 €",
+          "isTrophy": true,
+          "trophyColor": "bronze",
+          "highlight": ""
+        },
+        {
+          "id": "3906724",
+          "rank": 4,
+          "name": "J0tt",
+          "points": "1.306",
+          "estimatedBudget": "243.600.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": ""
+        },
+        {
+          "id": "3283685",
+          "rank": 5,
+          "name": "Justin",
+          "points": "1.280",
+          "estimatedBudget": "249.200.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": ""
+        },
+        {
+          "id": "3646277",
+          "rank": 6,
+          "name": "Geißbock",
+          "points": "1.183",
+          "estimatedBudget": "249.400.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": ""
+        }
+      ]
     },
     {
       "name": "LIGA 2",
       "color": "#f97316",
-      "users": []
+      "users": [
+        {
+          "id": "3905385",
+          "rank": 7,
+          "name": "magarac",
+          "points": "1.157",
+          "estimatedBudget": "248.600.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": ""
+        },
+        {
+          "id": "3905417",
+          "rank": 8,
+          "name": "Puliester",
+          "points": "1.030",
+          "estimatedBudget": "249.600.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": ""
+        },
+        {
+          "id": "2479430",
+          "rank": 9,
+          "name": "CarlCarlsenCarlsen",
+          "points": "1.026",
+          "estimatedBudget": "249.500.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": ""
+        },
+        {
+          "id": "3906287",
+          "rank": 10,
+          "name": "Marci",
+          "points": "961",
+          "estimatedBudget": "249.100.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": ""
+        },
+        {
+          "id": "3511512",
+          "rank": 11,
+          "name": "KönigMichi",
+          "points": "933",
+          "estimatedBudget": "249.800.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": ""
+        }
+      ]
     },
     {
       "name": "LIGA 3",
       "color": "#22c55e",
-      "users": []
+      "users": [
+        {
+          "id": "1921179",
+          "rank": 12,
+          "name": "Baumi",
+          "points": "922",
+          "estimatedBudget": "247.800.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": ""
+        },
+        {
+          "id": "3607082",
+          "rank": 13,
+          "name": "Leon Weinrich",
+          "points": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": "blue"
+        },
+        {
+          "id": "3639851",
+          "rank": 14,
+          "name": "DeinHomieEnobi",
+          "points": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": ""
+        },
+        {
+          "id": "3792325",
+          "rank": 15,
+          "name": "Stomping Tantrum",
+          "points": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": "red"
+        },
+        {
+          "id": "3907908",
+          "rank": 16,
+          "name": "leonweinrich99",
+          "points": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "highlight": "red"
+        }
+      ]
     }
   ]
 }
