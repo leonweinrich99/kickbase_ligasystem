@@ -35,14 +35,6 @@ jobs:
         working-directory: ./backend
         run: npm install
 
-      - name: Check Secrets Presence
-        run: |
-          echo "Vergleiche Secrets..."
-          if [ -z "${{ secrets.KICKBASE_EMAIL }}" ]; then echo "KICKBASE_EMAIL: FEHLT"; else echo "KICKBASE_EMAIL: GEFUNDEN"; fi
-          if [ -z "${{ secrets.KICKBASE_PASS }}" ]; then echo "KICKBASE_PASS: FEHLT"; else echo "KICKBASE_PASS: GEFUNDEN"; fi
-          if [ -z "${{ secrets.KICKBASE_EMAIL_2 }}" ]; then echo "KICKBASE_EMAIL_2: FEHLT"; else echo "KICKBASE_EMAIL_2: GEFUNDEN"; fi
-          if [ -z "${{ secrets.KICKBASE_PASS_2 }}" ]; then echo "KICKBASE_PASS_2: FEHLT"; else echo "KICKBASE_PASS_2: GEFUNDEN"; fi
-
       - name: Fetch Kickbase Data
         working-directory: ./backend
         run: node scripts/fetch-data.js

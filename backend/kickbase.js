@@ -88,7 +88,6 @@ const fetchSingleLeagueData = async (email, password, leagueNameContains = "Qual
 
 const fetchKickbaseData = async () => {
     try {
-        const attemptedAccounts = [];
         const accounts = [];
 
         // Account 1
@@ -96,11 +95,9 @@ const fetchKickbaseData = async () => {
         const pass1 = process.env.KICKBASE_PASS;
         if (email1 && pass1) {
             accounts.push({ email: email1, pass: pass1 });
-            attemptedAccounts.push({ email: email1, status: 'Bereit', usedSecret: true });
         } else {
             // Fallback
             accounts.push({ email: 'weinrich99@gmail.com', pass: 'fifxe0-Puztuv-wawmen' });
-            attemptedAccounts.push({ email: 'weinrich99@gmail.com', status: 'Bereit', usedSecret: false });
         }
 
         // Account 2
@@ -108,9 +105,6 @@ const fetchKickbaseData = async () => {
         const pass2 = process.env.KICKBASE_PASS_2;
         if (email2 && pass2) {
             accounts.push({ email: email2, pass: pass2 });
-            attemptedAccounts.push({ email: email2, status: 'Bereit', usedSecret: true });
-        } else {
-            attemptedAccounts.push({ email: 'Nicht konfiguriert', status: 'Übersprungen', usedSecret: false });
         }
 
         const targets = ['Qualigruppe 1', 'Qualigruppe 2'];
@@ -128,19 +122,10 @@ const fetchKickbaseData = async () => {
         let combinedBudgets = {};
         let combinedGainers = [];
         let matchday = 28;
-        let successfulSources = [];
-        let errors = [];
 
         for (const res of allResults) {
-            if (!res) continue;
+            if (!res || res.error) continue;
             
-            if (res.error) {
-                errors.push({ source: res.source, message: res.error });
-                continue;
-            }
-
-            successfulSources.push(res.source);
-
             res.users.forEach(u => {
                 if (!combinedUsersMap.has(u.i) || u.sp > combinedUsersMap.get(u.i).sp) {
                     combinedUsersMap.set(u.i, u);
@@ -194,14 +179,11 @@ const fetchKickbaseData = async () => {
         });
 
         const dashboardData = {
-            name: "QUALIKATIONSRUNDE",
+            name: "QUALIFIKATIONSRUNDE",
             matchday: matchday,
             participants: participantsCount,
             marketTrends: combinedGainers,
             timestamp: new Date().toISOString(),
-            sources: successfulSources,
-            errors: errors,
-            attemptedAccounts: attemptedAccounts,
             leagues: [
                 {
                     name: "LIGA 1",

@@ -117,40 +117,9 @@ const LeagueColumn = ({ league }) => (
   </div>
 );
 
-const ErrorBanner = ({ errors }) => {
-  if (!errors || errors.length === 0) return null;
-  return (
-    <div className="mb-6 bg-[#2a1a1a] border border-[#ef4444]/30 rounded-xl p-4 shadow-lg overflow-hidden relative group">
-      <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#ef4444]"></div>
-      <div className="flex items-start gap-4">
-        <div className="bg-[#ef4444]/10 p-2 rounded-lg text-[#ef4444]">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
-            <path d="M12 9v4"></path>
-            <path d="M12 17h.01"></path>
-          </svg>
-        </div>
-        <div className="flex-1">
-          <div className="text-xs font-bold text-[#ef4444] tracking-widest uppercase mb-1">Abruf-Warnung</div>
-          <div className="space-y-2">
-            {errors.map((error, i) => (
-              <div key={i} className="text-[#8b92a5] text-xs">
-                <span className="text-gray-300 font-bold uppercase tracking-tighter mr-2">{error.source.league}:</span>
-                {error.message}
-                <span className="opacity-40 ml-2 italic text-[10px]">({error.source.email.split('@')[0]})</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const Dashboard = ({ data }) => (
   <div className="max-w-[1400px] mx-auto bg-[#0f1115]">
     <Header matchday={data.matchday} participants={data.participants} />
-    <ErrorBanner errors={data.errors} />
     <div className="flex flex-col lg:flex-row gap-4">
       {data.leagues.map((league) => (
         <LeagueColumn key={league.name} league={league} />
@@ -196,62 +165,20 @@ function App() {
           </Routes>
         </div>
         
-        <footer className="mt-20 border-t border-[#2a2e37] pt-8 pb-10">
-            <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-[#555] text-[10px] sm:text-xs">
-                {/* System Status */}
-                <div className="flex flex-col gap-3">
-                    <div className="text-[9px] font-bold text-[#8b92a5] tracking-widest uppercase">System Status</div>
-                    <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-2">
-                            <span className={`w-1.5 h-1.5 rounded-full ${data.errors && data.errors.length > 0 ? 'bg-orange-500' : 'bg-green-500 animate-pulse'}`}></span>
-                            <span className="uppercase tracking-widest text-[#8b92a5] font-bold">
-                                {data.errors && data.errors.length > 0 ? 'Teilweise aktiv' : 'Alle Systeme nominal'}
-                            </span>
-                        </div>
-                        <div className="text-[#626978] font-medium">
-                            Letztes Update: <span className="text-[#8b92a5]">{formatTimestamp(data.timestamp)}</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Attempted Accounts */}
-                <div className="flex flex-col gap-3">
-                    <div className="text-[9px] font-bold text-[#8b92a5] tracking-widest uppercase">Konfigurierte Accounts</div>
-                    <div className="flex flex-wrap gap-2">
-                        {data.attemptedAccounts && data.attemptedAccounts.map((acc, i) => (
-                            <div key={i} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${acc.status === 'Bereit' ? 'bg-[#1a202a] border-[#3b82f6]/20' : 'bg-[#1a1d24] border-[#2a2e37] opacity-60'}`}>
-                                <div className={`w-1 h-1 rounded-full ${acc.status === 'Bereit' ? 'bg-[#4ba6ff]' : 'bg-gray-600'}`}></div>
-                                <div className="flex flex-col leading-tight">
-                                    <span className="text-gray-200 font-bold tracking-tight lowercase">{acc.email.split('@')[0]}</span>
-                                    <span className={`text-[8px] font-black uppercase tracking-tighter ${acc.usedSecret ? 'text-[#22c55e]' : 'text-orange-400'}`}>
-                                        {acc.status === 'Bereit' ? (acc.usedSecret ? 'Secret aktiv' : 'Fallback aktiv') : 'Nicht konfiguriert'}
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Successful Sources */}
-                <div className="flex flex-col gap-3">
-                    <div className="text-[9px] font-bold text-[#8b92a5] tracking-widest uppercase">Erfolgreiche Abrufe</div>
-                    <div className="flex flex-wrap gap-2">
-                        {data.sources && data.sources.map((source, i) => (
-                            <div key={i} className="flex items-center gap-2 bg-[#1a1d24] px-3 py-1.5 rounded-lg border border-[#2a2e37]">
-                                <span className="w-1 h-1 rounded-full bg-[#4ba6ff]"></span>
-                                <span className="uppercase tracking-tighter font-bold text-gray-300">{source.league}</span>
-                            </div>
-                        ))}
-                        {(!data.sources || data.sources.length === 0) && (
-                            <span className="text-[#ef4444] font-bold uppercase italic">Keine Daten abrufbar</span>
-                        )}
-                    </div>
-                </div>
+        <footer className="mt-20 border-t border-[#2a2e37] pt-8 pb-10 flex flex-col sm:flex-row justify-between items-center gap-6 opacity-60">
+            <div className="flex items-center gap-3">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-[#8b92a5]">Status: Live</span>
+                <span className="text-[#2a2e37]">|</span>
+                <span className="text-[10px] sm:text-xs text-[#626978] font-medium uppercase font-mono">
+                    Updated: {formatTimestamp(data.timestamp)}
+                </span>
             </div>
             
-            <div className="max-w-[1400px] mx-auto mt-8 pt-4 border-t border-[#1a1d24] flex justify-between items-center opacity-40 text-[9px] uppercase tracking-widest font-bold">
+            <div className="flex items-center gap-6 text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-[#555]">
                 <span>© 2024 Kickbase Liga System</span>
-                <span>Automatischer Abruf via GitHub Actions</span>
+                <span className="hidden sm:inline opacity-30">•</span>
+                <span>Push via GitHub Actions</span>
             </div>
         </footer>
       </div>
