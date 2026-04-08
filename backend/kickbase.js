@@ -88,12 +88,29 @@ const fetchSingleLeagueData = async (email, password, leagueNameContains = "Qual
 
 const fetchKickbaseData = async () => {
     try {
-        const accounts = [
-            { email: process.env.KICKBASE_EMAIL || 'weinrich99@gmail.com', pass: process.env.KICKBASE_PASS || 'fifxe0-Puztuv-wawmen' }
-        ];
+        const attemptedAccounts = [];
+        const accounts = [];
 
-        if (process.env.KICKBASE_EMAIL_2 && process.env.KICKBASE_PASS_2) {
-            accounts.push({ email: process.env.KICKBASE_EMAIL_2, pass: process.env.KICKBASE_PASS_2 });
+        // Account 1
+        const email1 = process.env.KICKBASE_EMAIL;
+        const pass1 = process.env.KICKBASE_PASS;
+        if (email1 && pass1) {
+            accounts.push({ email: email1, pass: pass1 });
+            attemptedAccounts.push({ email: email1, status: 'Bereit', usedSecret: true });
+        } else {
+            // Fallback
+            accounts.push({ email: 'weinrich99@gmail.com', pass: 'fifxe0-Puztuv-wawmen' });
+            attemptedAccounts.push({ email: 'weinrich99@gmail.com', status: 'Bereit', usedSecret: false });
+        }
+
+        // Account 2
+        const email2 = process.env.KICKBASE_EMAIL_2;
+        const pass2 = process.env.KICKBASE_PASS_2;
+        if (email2 && pass2) {
+            accounts.push({ email: email2, pass: pass2 });
+            attemptedAccounts.push({ email: email2, status: 'Bereit', usedSecret: true });
+        } else {
+            attemptedAccounts.push({ email: 'Nicht konfiguriert', status: 'Übersprungen', usedSecret: false });
         }
 
         const targets = ['Qualigruppe 1', 'Qualigruppe 2'];
@@ -177,13 +194,14 @@ const fetchKickbaseData = async () => {
         });
 
         const dashboardData = {
-            name: "QUALIFIKATIONSRUNDE",
+            name: "QUALIKATIONSRUNDE",
             matchday: matchday,
             participants: participantsCount,
             marketTrends: combinedGainers,
             timestamp: new Date().toISOString(),
             sources: successfulSources,
             errors: errors,
+            attemptedAccounts: attemptedAccounts,
             leagues: [
                 {
                     name: "LIGA 1",

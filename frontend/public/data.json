@@ -1,9 +1,9 @@
 {
-  "name": "QUALIFIKATIONSRUNDE",
+  "name": "QUALIKATIONSRUNDE",
   "matchday": 28,
   "participants": 16,
   "marketTrends": [],
-  "timestamp": "2026-04-08T12:36:02.158Z",
+  "timestamp": "2026-04-08T12:40:02.342Z",
   "sources": [
     {
       "email": "weinrich99@gmail.com",
@@ -17,6 +17,18 @@
         "league": "Qualigruppe 1"
       },
       "message": "Liga \"Qualigruppe 1\" nicht gefunden"
+    }
+  ],
+  "attemptedAccounts": [
+    {
+      "email": "weinrich99@gmail.com",
+      "status": "Bereit",
+      "usedSecret": false
+    },
+    {
+      "email": "Nicht konfiguriert",
+      "status": "Übersprungen",
+      "usedSecret": false
     }
   ],
   "leagues": [

@@ -196,32 +196,62 @@ function App() {
           </Routes>
         </div>
         
-        <footer className="mt-20 border-t border-[#2a2e37] pt-8 pb-4">
-            <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-[#555] text-[10px] sm:text-xs font-medium">
-                <div className="flex flex-col items-center sm:items-start gap-1">
-                    <div className="flex items-center gap-2">
-                        <span className={`w-1.5 h-1.5 rounded-full ${data.errors && data.errors.length > 0 ? 'bg-orange-500' : 'bg-green-500 animate-pulse'}`}></span>
-                        <span className="uppercase tracking-widest text-[#8b92a5]">Status: {data.errors && data.errors.length > 0 ? 'Teilweise aktiv' : 'Live'}</span>
-                    </div>
-                    <div className="text-[#626978]">
-                        Letztes Update: <span className="text-[#8b92a5]">{formatTimestamp(data.timestamp)}</span>
-                    </div>
-                </div>
-
-                <div className="flex flex-wrap justify-center sm:justify-end gap-x-4 gap-y-2 text-[#626978]">
-                    {data.sources && data.sources.map((source, i) => (
-                        <div key={i} className="flex items-center gap-2 bg-[#1a1d24] px-3 py-1 rounded-full border border-[#2a2e37]">
-                            <span className="w-1 h-1 rounded-full bg-[#4ba6ff]"></span>
-                            <span className="uppercase tracking-tighter">{source.league}</span>
-                            <span className="opacity-40">|</span>
-                            <span className="lowercase opacity-60 italic">{source.email.split('@')[0]}</span>
+        <footer className="mt-20 border-t border-[#2a2e37] pt-8 pb-10">
+            <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-[#555] text-[10px] sm:text-xs">
+                {/* System Status */}
+                <div className="flex flex-col gap-3">
+                    <div className="text-[9px] font-bold text-[#8b92a5] tracking-widest uppercase">System Status</div>
+                    <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2">
+                            <span className={`w-1.5 h-1.5 rounded-full ${data.errors && data.errors.length > 0 ? 'bg-orange-500' : 'bg-green-500 animate-pulse'}`}></span>
+                            <span className="uppercase tracking-widest text-[#8b92a5] font-bold">
+                                {data.errors && data.errors.length > 0 ? 'Teilweise aktiv' : 'Alle Systeme nominal'}
+                            </span>
                         </div>
-                    ))}
+                        <div className="text-[#626978] font-medium">
+                            Letztes Update: <span className="text-[#8b92a5]">{formatTimestamp(data.timestamp)}</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="text-right italic opacity-60">
-                    *Automatischer Abruf via GitHub Actions
+                {/* Attempted Accounts */}
+                <div className="flex flex-col gap-3">
+                    <div className="text-[9px] font-bold text-[#8b92a5] tracking-widest uppercase">Konfigurierte Accounts</div>
+                    <div className="flex flex-wrap gap-2">
+                        {data.attemptedAccounts && data.attemptedAccounts.map((acc, i) => (
+                            <div key={i} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${acc.status === 'Bereit' ? 'bg-[#1a202a] border-[#3b82f6]/20' : 'bg-[#1a1d24] border-[#2a2e37] opacity-60'}`}>
+                                <div className={`w-1 h-1 rounded-full ${acc.status === 'Bereit' ? 'bg-[#4ba6ff]' : 'bg-gray-600'}`}></div>
+                                <div className="flex flex-col leading-tight">
+                                    <span className="text-gray-200 font-bold tracking-tight lowercase">{acc.email.split('@')[0]}</span>
+                                    <span className={`text-[8px] font-black uppercase tracking-tighter ${acc.usedSecret ? 'text-[#22c55e]' : 'text-orange-400'}`}>
+                                        {acc.status === 'Bereit' ? (acc.usedSecret ? 'Secret aktiv' : 'Fallback aktiv') : 'Nicht konfiguriert'}
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
+
+                {/* Successful Sources */}
+                <div className="flex flex-col gap-3">
+                    <div className="text-[9px] font-bold text-[#8b92a5] tracking-widest uppercase">Erfolgreiche Abrufe</div>
+                    <div className="flex flex-wrap gap-2">
+                        {data.sources && data.sources.map((source, i) => (
+                            <div key={i} className="flex items-center gap-2 bg-[#1a1d24] px-3 py-1.5 rounded-lg border border-[#2a2e37]">
+                                <span className="w-1 h-1 rounded-full bg-[#4ba6ff]"></span>
+                                <span className="uppercase tracking-tighter font-bold text-gray-300">{source.league}</span>
+                            </div>
+                        ))}
+                        {(!data.sources || data.sources.length === 0) && (
+                            <span className="text-[#ef4444] font-bold uppercase italic">Keine Daten abrufbar</span>
+                        )}
+                    </div>
+                </div>
+            </div>
+            
+            <div className="max-w-[1400px] mx-auto mt-8 pt-4 border-t border-[#1a1d24] flex justify-between items-center opacity-40 text-[9px] uppercase tracking-widest font-bold">
+                <span>© 2024 Kickbase Liga System</span>
+                <span>Automatischer Abruf via GitHub Actions</span>
             </div>
         </footer>
       </div>
