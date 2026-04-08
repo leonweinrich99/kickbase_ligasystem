@@ -1,47 +1,9 @@
 {
-  "name": "QUALIKATIONSRUNDE",
+  "name": "QUALIFIKATIONSRUNDE",
   "matchday": 28,
   "participants": 29,
   "marketTrends": [],
-  "timestamp": "2026-04-08T12:54:48.152Z",
-  "sources": [
-    {
-      "email": "weinrich99@gmail.com",
-      "league": "Qualigruppe 2"
-    },
-    {
-      "email": "franziskajezeck@web.de",
-      "league": "Qualigruppe 1"
-    }
-  ],
-  "errors": [
-    {
-      "source": {
-        "email": "weinrich99@gmail.com",
-        "league": "Qualigruppe 1"
-      },
-      "message": "Liga \"Qualigruppe 1\" nicht gefunden"
-    },
-    {
-      "source": {
-        "email": "franziskajezeck@web.de",
-        "league": "Qualigruppe 2"
-      },
-      "message": "Liga \"Qualigruppe 2\" nicht gefunden"
-    }
-  ],
-  "attemptedAccounts": [
-    {
-      "email": "weinrich99@gmail.com",
-      "status": "Bereit",
-      "usedSecret": true
-    },
-    {
-      "email": "franziskajezeck@web.de",
-      "status": "Bereit",
-      "usedSecret": true
-    }
-  ],
+  "timestamp": "2026-04-08T13:12:21.300Z",
   "leagues": [
     {
       "name": "LIGA 1",
