@@ -85,7 +85,7 @@ const UserRow = ({ item, color }) => {
       </div>
       <div className="ml-3 flex-1 flex flex-col justify-center">
         <div className="text-[14px] font-bold tracking-wide text-gray-100">{item.name}</div>
-        <div className="text-[10px] font-bold text-[#4ba6ff] tracking-widest mt-0.5 uppercase">
+        <div className="text-[10px] font-bold text-[#8b92a5] tracking-wider mt-0.5 opacity-70">
           Budget: {item.estimatedBudget}
         </div>
       </div>
