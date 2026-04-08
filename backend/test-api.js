@@ -6,7 +6,12 @@ async function test() {
         const loginRes = await fetch('https://api.kickbase.com/v4/user/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ em: 'weinrich99@gmail.com', loy: false, pass: 'fifxe0-Puztuv-wawmen', rep: {} })
+            body: JSON.stringify({ 
+                em: process.env.KICKBASE_EMAIL || 'MISSING_EMAIL', 
+                loy: false, 
+                pass: process.env.KICKBASE_PASS || 'MISSING_PASS', 
+                rep: {} 
+            })
         });
         const loginData = await loginRes.json();
         const token = loginData.tkn;

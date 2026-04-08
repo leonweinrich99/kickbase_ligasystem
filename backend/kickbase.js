@@ -80,9 +80,6 @@ const fetchKickbaseData = async () => {
         const pass1 = process.env.KICKBASE_PASS;
         if (email1 && pass1) {
             accounts.push({ email: email1, pass: pass1 });
-        } else {
-            // Fallback
-            accounts.push({ email: 'weinrich99@gmail.com', pass: 'fifxe0-Puztuv-wawmen' });
         }
 
         // Account 2
