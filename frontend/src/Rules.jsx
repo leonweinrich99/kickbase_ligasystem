@@ -65,19 +65,13 @@ const SectionTitle = ({ title }) => (
 const Rules = () => {
   return (
     <div className="max-w-4xl mx-auto py-10 px-4 relative overflow-x-hidden">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.2 }}
+      <Link 
+        to="/" 
+        className="absolute top-4 right-4 sm:top-10 sm:right-0 p-2 text-[#8b92a5] hover:text-white bg-[#1a1d24] border border-[#2a2e37] rounded-xl transition-all hover:border-[#3a3f4a] shadow-lg z-50"
+        title="Zurück zum Dashboard"
       >
-        <Link 
-          to="/" 
-          className="absolute top-4 right-4 sm:top-10 sm:right-0 p-2 text-[#8b92a5] hover:text-white bg-[#1a1d24] border border-[#2a2e37] rounded-xl transition-all hover:border-[#3a3f4a] shadow-lg z-50"
-          title="Zurück zum Dashboard"
-        >
-          <CloseIcon />
-        </Link>
-      </motion.div>
+        <CloseIcon />
+      </Link>
 
       <motion.header 
         initial={{ opacity: 0, y: -30 }}
