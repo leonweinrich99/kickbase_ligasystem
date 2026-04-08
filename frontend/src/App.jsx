@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
 import Rules from './Rules';
-import Features from './Features';
 import logo from './assets/logo.png';
 
 const AvatarIcon = () => (
@@ -45,17 +44,6 @@ const Header = ({ matchday, participants }) => (
         <button className="px-3 sm:px-4 h-full text-[#8b92a5] hover:text-white transition-colors bg-[#181a20]">&rsaquo;</button>
       </div>
 
-      {/* Features Button */}
-      <NavLink 
-        to="/features" 
-        className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl w-12 h-12 flex justify-center items-center text-[#8b92a5] hover:text-[#4ba6ff] hover:border-[#4ba6ff] transition-all shadow-lg group"
-        title="Trading Features ansehen"
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform">
-          <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
-        </svg>
-      </NavLink>
-
       {/* Teilnehmer Kachel */}
       <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl px-4 sm:px-5 h-12 shadow-lg flex items-center gap-3 min-w-0">
         <span className="text-[8px] sm:text-[10px] font-bold text-[#8b92a5] tracking-widest leading-none uppercase">Teilnehmer</span>
@@ -77,24 +65,6 @@ const Header = ({ matchday, participants }) => (
   </div>
 );
 
-const FormDots = ({ form }) => {
-  if (!form) return null;
-  return (
-    <div className="flex gap-1">
-      {form.map((res, i) => (
-        <div 
-          key={i} 
-          className={`w-1.5 h-1.5 rounded-full ${
-            res === 'w' ? 'bg-[#22c55e]' : 
-            res === 'd' ? 'bg-[#94a3b8]' : 
-            'bg-[#ef4444]'
-          }`}
-        />
-      ))}
-    </div>
-  );
-};
-
 const UserRow = ({ item, color }) => {
   const statusColors = {
     green: '#22c55e',
@@ -114,10 +84,7 @@ const UserRow = ({ item, color }) => {
         <AvatarIcon />
       </div>
       <div className="ml-3 flex-1 flex flex-col justify-center">
-        <div className="flex items-center gap-2">
-            <div className="text-[14px] font-bold tracking-wide text-gray-100">{item.name}</div>
-            <FormDots form={item.form} />
-        </div>
+        <div className="text-[14px] font-bold tracking-wide text-gray-100">{item.name}</div>
         <div className="text-[10px] font-bold text-[#4ba6ff] tracking-widest mt-0.5 uppercase">
           Budget: {item.estimatedBudget}
         </div>
@@ -188,7 +155,6 @@ function App() {
           <Routes>
             <Route path="/" element={<Dashboard data={data} />} />
             <Route path="/rules" element={<Rules />} />
-            <Route path="/features" element={<Features data={data} />} />
           </Routes>
         </div>
         

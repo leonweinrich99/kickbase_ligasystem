@@ -50,21 +50,7 @@ const fetchSingleLeagueData = async (email, password, leagueNameContains = "Qual
         const rankingData = await rankingRes.json();
         const users = rankingData.us || [];
 
-        // 3. Marktwert Trends (Hole aktuellen Markt) - Optional
-        let topGainers = [];
-        try {
-            const marketRes = await fetch(`https://api.kickbase.com/v4/leagues/${targetId}/market`, { headers: { Authorization: `Bearer ${token}` } });
-            if (marketRes.ok) {
-                const marketData = await marketRes.json();
-                topGainers = (marketData.players || [])
-                    .filter(p => p.mvc > 0)
-                    .sort((a, b) => b.mvc - a.mvc)
-                    .slice(0, 5)
-                    .map(p => ({ name: p.n, change: p.mvc, team: p.t }));
-            }
-        } catch (e) {
-            console.warn("Could not fetch market trends, skipping...");
-        }
+
 
         // Budget Kalkulation: TV (Team Value) aus dem Ranking
         const userBudgets = {};
@@ -75,7 +61,6 @@ const fetchSingleLeagueData = async (email, password, leagueNameContains = "Qual
         return {
             users,
             userBudgets,
-            topGainers,
             matchday: rankingData.day || 28,
             source: { email, league: leagueNameContains }
         };
@@ -120,7 +105,6 @@ const fetchKickbaseData = async () => {
 
         let combinedUsersMap = new Map();
         let combinedBudgets = {};
-        let combinedGainers = [];
         let matchday = 28;
 
         for (const res of allResults) {
@@ -133,9 +117,6 @@ const fetchKickbaseData = async () => {
                 }
             });
 
-            if (combinedGainers.length === 0) {
-                combinedGainers = res.topGainers;
-            }
             if (res.matchday > matchday) matchday = res.matchday;
         }
 
@@ -188,8 +169,7 @@ const fetchKickbaseData = async () => {
                 estimatedBudget: formatMoney(combinedBudgets[u.i]),
                 isTrophy,
                 trophyColor,
-                status,
-                form
+                status
             };
         });
 
@@ -197,7 +177,6 @@ const fetchKickbaseData = async () => {
             name: "QUALIFIKATIONSRUNDE",
             matchday: matchday,
             participants: participantsCount,
-            marketTrends: combinedGainers,
             timestamp: new Date().toISOString(),
             leagues: [
                 {
