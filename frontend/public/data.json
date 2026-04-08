@@ -3,7 +3,7 @@
   "matchday": 28,
   "participants": 29,
   "marketTrends": [],
-  "timestamp": "2026-04-08T13:12:21.300Z",
+  "timestamp": "2026-04-08T13:21:15.973Z",
   "leagues": [
     {
       "name": "LIGA 1",
@@ -17,7 +17,14 @@
           "estimatedBudget": "242.500.000 €",
           "isTrophy": true,
           "trophyColor": "gold",
-          "highlight": ""
+          "status": "",
+          "form": [
+            "l",
+            "w",
+            "d",
+            "w",
+            "l"
+          ]
         },
         {
           "id": "2651349",
@@ -27,7 +34,14 @@
           "estimatedBudget": "249.100.000 €",
           "isTrophy": true,
           "trophyColor": "silver",
-          "highlight": ""
+          "status": "",
+          "form": [
+            "d",
+            "l",
+            "d",
+            "l",
+            "d"
+          ]
         },
         {
           "id": "3397700",
@@ -37,7 +51,14 @@
           "estimatedBudget": "242.800.000 €",
           "isTrophy": true,
           "trophyColor": "bronze",
-          "highlight": ""
+          "status": "",
+          "form": [
+            "d",
+            "w",
+            "d",
+            "d",
+            "l"
+          ]
         },
         {
           "id": "2492332",
@@ -47,7 +68,14 @@
           "estimatedBudget": "248.800.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "highlight": ""
+          "status": "",
+          "form": [
+            "l",
+            "d",
+            "w",
+            "d",
+            "d"
+          ]
         },
         {
           "id": "3607082",
@@ -57,7 +85,14 @@
           "estimatedBudget": "244.300.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "highlight": "blue"
+          "status": "",
+          "form": [
+            "d",
+            "w",
+            "d",
+            "w",
+            "l"
+          ]
         },
         {
           "id": "3606931",
@@ -67,7 +102,14 @@
           "estimatedBudget": "248.000.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "highlight": ""
+          "status": "",
+          "form": [
+            "d",
+            "l",
+            "l",
+            "d",
+            "l"
+          ]
         },
         {
           "id": "2926287",
@@ -77,7 +119,14 @@
           "estimatedBudget": "249.200.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "highlight": ""
+          "status": "",
+          "form": [
+            "l",
+            "w",
+            "l",
+            "l",
+            "l"
+          ]
         },
         {
           "id": "2582689",
@@ -87,7 +136,14 @@
           "estimatedBudget": "247.100.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "highlight": ""
+          "status": "yellow",
+          "form": [
+            "w",
+            "l",
+            "l",
+            "w",
+            "w"
+          ]
         },
         {
           "id": "1630703",
@@ -97,7 +153,14 @@
           "estimatedBudget": "247.800.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "highlight": ""
+          "status": "red",
+          "form": [
+            "l",
+            "d",
+            "d",
+            "d",
+            "w"
+          ]
         },
         {
           "id": "3901400",
@@ -107,7 +170,14 @@
           "estimatedBudget": "249.600.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "highlight": ""
+          "status": "red",
+          "form": [
+            "w",
+            "l",
+            "w",
+            "w",
+            "d"
+          ]
         }
       ]
     },
@@ -123,7 +193,14 @@
           "estimatedBudget": "249.200.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "highlight": ""
+          "status": "green",
+          "form": [
+            "w",
+            "w",
+            "l",
+            "w",
+            "w"
+          ]
         },
         {
           "id": "3906724",
@@ -133,7 +210,14 @@
           "estimatedBudget": "243.600.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "highlight": ""
+          "status": "green",
+          "form": [
+            "d",
+            "w",
+            "d",
+            "w",
+            "l"
+          ]
         },
         {
           "id": "3283685",
@@ -143,7 +227,14 @@
           "estimatedBudget": "249.200.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "highlight": ""
+          "status": "yellow",
+          "form": [
+            "d",
+            "d",
+            "d",
+            "l",
+            "w"
+          ]
         },
         {
           "id": "3607127",
@@ -153,7 +244,14 @@
           "estimatedBudget": "249.700.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "highlight": ""
+          "status": "",
+          "form": [
+            "w",
+            "d",
+            "w",
+            "d",
+            "l"
+          ]
         },
         {
           "id": "3639851",
@@ -163,7 +261,14 @@
           "estimatedBudget": "249.900.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "highlight": ""
+          "status": "",
+          "form": [
+            "w",
+            "l",
+            "l",
+            "l",
+            "w"
+          ]
         },
         {
           "id": "3682622",
@@ -173,7 +278,14 @@
           "estimatedBudget": "245.000.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "highlight": ""
+          "status": "",
+          "form": [
+            "l",
+            "d",
+            "l",
+            "d",
+            "w"
+          ]
         },
         {
           "id": "3533606",
@@ -183,7 +295,14 @@
           "estimatedBudget": "249.600.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "highlight": ""
+          "status": "",
+          "form": [
+            "d",
+            "l",
+            "w",
+            "w",
+            "d"
+          ]
         },
         {
           "id": "3646277",
@@ -193,7 +312,14 @@
           "estimatedBudget": "249.400.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "highlight": ""
+          "status": "yellow",
+          "form": [
+            "l",
+            "d",
+            "w",
+            "w",
+            "w"
+          ]
         },
         {
           "id": "3905385",
@@ -203,7 +329,14 @@
           "estimatedBudget": "248.600.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "highlight": ""
+          "status": "red",
+          "form": [
+            "l",
+            "d",
+            "w",
+            "d",
+            "w"
+          ]
         },
         {
           "id": "2934339",
@@ -213,7 +346,14 @@
           "estimatedBudget": "248.700.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "highlight": ""
+          "status": "red",
+          "form": [
+            "d",
+            "d",
+            "w",
+            "l",
+            "d"
+          ]
         }
       ]
     },
@@ -229,7 +369,14 @@
           "estimatedBudget": "247.700.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "highlight": ""
+          "status": "green",
+          "form": [
+            "w",
+            "l",
+            "l",
+            "d",
+            "w"
+          ]
         },
         {
           "id": "3905417",
@@ -239,7 +386,14 @@
           "estimatedBudget": "249.600.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "highlight": ""
+          "status": "green",
+          "form": [
+            "d",
+            "d",
+            "l",
+            "w",
+            "l"
+          ]
         },
         {
           "id": "2479430",
@@ -249,7 +403,14 @@
           "estimatedBudget": "249.500.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "highlight": ""
+          "status": "yellow",
+          "form": [
+            "l",
+            "w",
+            "w",
+            "w",
+            "w"
+          ]
         },
         {
           "id": "3779246",
@@ -259,7 +420,14 @@
           "estimatedBudget": "249.400.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "highlight": ""
+          "status": "",
+          "form": [
+            "d",
+            "l",
+            "d",
+            "d",
+            "l"
+          ]
         },
         {
           "id": "3906287",
@@ -269,7 +437,14 @@
           "estimatedBudget": "249.100.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "highlight": ""
+          "status": "",
+          "form": [
+            "w",
+            "l",
+            "w",
+            "d",
+            "w"
+          ]
         },
         {
           "id": "3511512",
@@ -279,7 +454,14 @@
           "estimatedBudget": "249.800.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "highlight": ""
+          "status": "",
+          "form": [
+            "d",
+            "w",
+            "w",
+            "l",
+            "d"
+          ]
         },
         {
           "id": "1921179",
@@ -289,7 +471,14 @@
           "estimatedBudget": "247.800.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "highlight": ""
+          "status": "",
+          "form": [
+            "w",
+            "l",
+            "w",
+            "w",
+            "l"
+          ]
         },
         {
           "id": "3650803",
@@ -299,7 +488,14 @@
           "estimatedBudget": "247.800.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "highlight": "red"
+          "status": "",
+          "form": [
+            "d",
+            "d",
+            "w",
+            "d",
+            "w"
+          ]
         },
         {
           "id": "3907908",
@@ -309,7 +505,14 @@
           "estimatedBudget": "0 €",
           "isTrophy": false,
           "trophyColor": "",
-          "highlight": "red"
+          "status": "",
+          "form": [
+            "l",
+            "w",
+            "w",
+            "l",
+            "d"
+          ]
         }
       ]
     }
