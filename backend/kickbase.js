@@ -39,8 +39,6 @@ const fetchSingleLeagueData = async (email, password, leagueNameContains = "Qual
         }
 
         if (!targetId) {
-            // Wenn diese Gruppe für diesen Account nicht gefunden wurde, geben wir null zurück
-            // Ohne Fallback auf die erste Liga, da wir gezielt suchen.
             console.log(`No league found for ${email} with target "${leagueNameContains}".`);
             return null;
         }
@@ -78,7 +76,8 @@ const fetchSingleLeagueData = async (email, password, leagueNameContains = "Qual
             users,
             userBudgets,
             topGainers,
-            matchday: rankingData.day || 28
+            matchday: rankingData.day || 28,
+            source: { email, league: leagueNameContains }
         };
 
     } catch (e) {
@@ -99,7 +98,6 @@ const fetchKickbaseData = async () => {
 
         const targets = ['Qualigruppe 1', 'Qualigruppe 2'];
         
-        // Erstelle eine Liste aller Kombinationen aus Account und Ziel-Gruppe
         const tasks = [];
         for (const account of accounts) {
             for (const target of targets) {
@@ -113,12 +111,14 @@ const fetchKickbaseData = async () => {
         let combinedBudgets = {};
         let combinedGainers = [];
         let matchday = 28;
+        let successfulSources = [];
 
         for (const res of allResults) {
             if (!res) continue;
             
+            successfulSources.push(res.source);
+
             res.users.forEach(u => {
-                // Eindeutige User-ID (id 'i') nutzen. Bei Duplikaten nehmen wir die Daten mit den meisten Punkten.
                 if (!combinedUsersMap.has(u.i) || u.sp > combinedUsersMap.get(u.i).sp) {
                     combinedUsersMap.set(u.i, u);
                     combinedBudgets[u.i] = res.userBudgets[u.i];
@@ -175,6 +175,8 @@ const fetchKickbaseData = async () => {
             matchday: matchday,
             participants: participantsCount,
             marketTrends: combinedGainers,
+            timestamp: new Date().toISOString(),
+            sources: successfulSources,
             leagues: [
                 {
                     name: "LIGA 1",

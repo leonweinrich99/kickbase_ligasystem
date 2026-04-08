@@ -140,20 +140,59 @@ function App() {
       });
   }, []);
 
+  const formatTimestamp = (ts) => {
+    if (!ts) return "Unbekannt";
+    const date = new Date(ts);
+    return date.toLocaleString('de-DE', { 
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric', 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    }) + " Uhr";
+  };
+
   if (!data) return <div className="min-h-screen bg-[#0f1115] flex justify-center items-center text-gray-500 font-bold">Lade Kickbase Daten...</div>;
 
   return (
     <Router>
-      <div className="min-h-screen bg-[#0f1115] p-4 sm:p-10 font-sans select-none">
-        <Routes>
-          <Route path="/" element={<Dashboard data={data} />} />
-          <Route path="/rules" element={<Rules />} />
-          <Route path="/features" element={<Features data={data} />} />
-        </Routes>
-        
-        <div className="mt-20 text-center text-[#555] text-[10px] sm:text-xs">
-          *The data above is retrieved automatically via GitHub Actions.
+      <div className="min-h-screen bg-[#0f1115] p-4 sm:p-10 font-sans select-none flex flex-col">
+        <div className="flex-1">
+          <Routes>
+            <Route path="/" element={<Dashboard data={data} />} />
+            <Route path="/rules" element={<Rules />} />
+            <Route path="/features" element={<Features data={data} />} />
+          </Routes>
         </div>
+        
+        <footer className="mt-20 border-t border-[#2a2e37] pt-8 pb-4">
+            <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-[#555] text-[10px] sm:text-xs font-medium">
+                <div className="flex flex-col items-center sm:items-start gap-1">
+                    <div className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                        <span className="uppercase tracking-widest text-[#8b92a5]">Status: Live</span>
+                    </div>
+                    <div className="text-[#626978]">
+                        Letztes Update: <span className="text-[#8b92a5]">{formatTimestamp(data.timestamp)}</span>
+                    </div>
+                </div>
+
+                <div className="flex flex-wrap justify-center sm:justify-end gap-x-4 gap-y-2 text-[#626978]">
+                    {data.sources && data.sources.map((source, i) => (
+                        <div key={i} className="flex items-center gap-2 bg-[#1a1d24] px-3 py-1 rounded-full border border-[#2a2e37]">
+                            <span className="w-1 h-1 rounded-full bg-[#4ba6ff]"></span>
+                            <span className="uppercase tracking-tighter">{source.league}</span>
+                            <span className="opacity-40">|</span>
+                            <span className="lowercase opacity-60 italic">{source.email.split('@')[0]}</span>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="text-right italic opacity-60">
+                    *Automatischer Abruf via GitHub Actions
+                </div>
+            </div>
+        </footer>
       </div>
     </Router>
   );
