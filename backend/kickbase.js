@@ -17,13 +17,13 @@ const fetchSingleLeagueData = async (email, password, leagueNameContains = "Qual
 
         if (loginData.err) {
             console.error(`API Error for ${email}:`, loginData.errMsg);
-            return null;
+            return { error: `Login fehlgeschlagen: ${loginData.errMsg}`, source: { email, league: leagueNameContains } };
         }
 
         const token = loginData.tkn;
         if (!token) {
             console.error(`No token received for ${email}.`);
-            return null;
+            return { error: `Login fehlgeschlagen: Kein Token erhalten`, source: { email, league: leagueNameContains } };
         }
 
         // 1. Hole alle Ligen
@@ -40,7 +40,7 @@ const fetchSingleLeagueData = async (email, password, leagueNameContains = "Qual
 
         if (!targetId) {
             console.log(`No league found for ${email} with target "${leagueNameContains}".`);
-            return null;
+            return { error: `Liga "${leagueNameContains}" nicht gefunden`, source: { email, league: leagueNameContains } };
         }
 
         console.log(`Found league "${leagueNameContains}" (ID: ${targetId}) for ${email}.`);
@@ -82,7 +82,7 @@ const fetchSingleLeagueData = async (email, password, leagueNameContains = "Qual
 
     } catch (e) {
         console.error(`Error fetching data for ${email} (${leagueNameContains}):`, e.message);
-        return null;
+        return { error: `Systemfehler: ${e.message}`, source: { email, league: leagueNameContains } };
     }
 };
 
@@ -112,10 +112,16 @@ const fetchKickbaseData = async () => {
         let combinedGainers = [];
         let matchday = 28;
         let successfulSources = [];
+        let errors = [];
 
         for (const res of allResults) {
             if (!res) continue;
             
+            if (res.error) {
+                errors.push({ source: res.source, message: res.error });
+                continue;
+            }
+
             successfulSources.push(res.source);
 
             res.users.forEach(u => {
@@ -177,6 +183,7 @@ const fetchKickbaseData = async () => {
             marketTrends: combinedGainers,
             timestamp: new Date().toISOString(),
             sources: successfulSources,
+            errors: errors,
             leagues: [
                 {
                     name: "LIGA 1",

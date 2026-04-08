@@ -117,9 +117,40 @@ const LeagueColumn = ({ league }) => (
   </div>
 );
 
+const ErrorBanner = ({ errors }) => {
+  if (!errors || errors.length === 0) return null;
+  return (
+    <div className="mb-6 bg-[#2a1a1a] border border-[#ef4444]/30 rounded-xl p-4 shadow-lg overflow-hidden relative group">
+      <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#ef4444]"></div>
+      <div className="flex items-start gap-4">
+        <div className="bg-[#ef4444]/10 p-2 rounded-lg text-[#ef4444]">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+            <path d="M12 9v4"></path>
+            <path d="M12 17h.01"></path>
+          </svg>
+        </div>
+        <div className="flex-1">
+          <div className="text-xs font-bold text-[#ef4444] tracking-widest uppercase mb-1">Abruf-Warnung</div>
+          <div className="space-y-2">
+            {errors.map((error, i) => (
+              <div key={i} className="text-[#8b92a5] text-xs">
+                <span className="text-gray-300 font-bold uppercase tracking-tighter mr-2">{error.source.league}:</span>
+                {error.message}
+                <span className="opacity-40 ml-2 italic text-[10px]">({error.source.email.split('@')[0]})</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Dashboard = ({ data }) => (
   <div className="max-w-[1400px] mx-auto bg-[#0f1115]">
     <Header matchday={data.matchday} participants={data.participants} />
+    <ErrorBanner errors={data.errors} />
     <div className="flex flex-col lg:flex-row gap-4">
       {data.leagues.map((league) => (
         <LeagueColumn key={league.name} league={league} />
@@ -169,8 +200,8 @@ function App() {
             <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-[#555] text-[10px] sm:text-xs font-medium">
                 <div className="flex flex-col items-center sm:items-start gap-1">
                     <div className="flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                        <span className="uppercase tracking-widest text-[#8b92a5]">Status: Live</span>
+                        <span className={`w-1.5 h-1.5 rounded-full ${data.errors && data.errors.length > 0 ? 'bg-orange-500' : 'bg-green-500 animate-pulse'}`}></span>
+                        <span className="uppercase tracking-widest text-[#8b92a5]">Status: {data.errors && data.errors.length > 0 ? 'Teilweise aktiv' : 'Live'}</span>
                     </div>
                     <div className="text-[#626978]">
                         Letztes Update: <span className="text-[#8b92a5]">{formatTimestamp(data.timestamp)}</span>

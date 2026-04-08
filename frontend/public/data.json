@@ -3,11 +3,20 @@
   "matchday": 28,
   "participants": 16,
   "marketTrends": [],
-  "timestamp": "2026-04-08T12:31:21.007Z",
+  "timestamp": "2026-04-08T12:36:02.158Z",
   "sources": [
     {
       "email": "weinrich99@gmail.com",
       "league": "Qualigruppe 2"
+    }
+  ],
+  "errors": [
+    {
+      "source": {
+        "email": "weinrich99@gmail.com",
+        "league": "Qualigruppe 1"
+      },
+      "message": "Liga \"Qualigruppe 1\" nicht gefunden"
     }
   ],
   "leagues": [
