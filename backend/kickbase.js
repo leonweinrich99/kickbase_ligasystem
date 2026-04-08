@@ -150,21 +150,35 @@ const fetchKickbaseData = async () => {
         const col2Count = Math.max(0, Math.ceil((participantsCount - col1Count) / 2));
 
         const transformedUsers = combinedUsers.map((u, index) => {
-            let isTrophy = false;
-            let trophyColor = '';
             const rank = index + 1;
+            let isTrophy = rank <= 3;
+            let trophyColor = '';
+            if (rank === 1) trophyColor = 'gold';
+            else if (rank === 2) trophyColor = 'silver';
+            else if (rank === 3) trophyColor = 'bronze';
 
-            if (rank <= 3) {
-                isTrophy = true;
-                if (rank === 1) trophyColor = 'gold';
-                if (rank === 2) trophyColor = 'silver';
-                if (rank === 3) trophyColor = 'bronze';
+            let status = '';
+            if (index < col1Count) {
+                // Liga 1: Abstieg (rot) & Relegation (gelb)
+                if (index >= col1Count - 2) status = 'red';
+                else if (index === col1Count - 3) status = 'yellow';
+            } else if (index < col1Count + col2Count) {
+                // Liga 2: Aufstieg (grün), Relegation (gelb), Abstieg (rot)
+                const relIndex = index - col1Count;
+                if (relIndex <= 1) status = 'green';
+                else if (relIndex === 2) status = 'yellow';
+                else if (relIndex >= col2Count - 2) status = 'red';
+                else if (relIndex === col2Count - 3) status = 'yellow';
+            } else {
+                // Liga 3: Aufstieg (grün) & Relegation (gelb)
+                const relIndex = index - (col1Count + col2Count);
+                if (relIndex <= 1) status = 'green';
+                else if (relIndex === 2) status = 'yellow';
             }
 
-            let highlight = '';
-            if (rank === participantsCount - 1 || rank === participantsCount) highlight = 'red'; 
-            else if (rank === 1 && !isTrophy) highlight = 'green';
-            else if (u.n === 'Leon Weinrich') highlight = 'blue';
+            // Mock Form (letzte 5 Spieltage)
+            const formTypes = ['w', 'd', 'l'];
+            const form = Array.from({ length: 5 }, () => formTypes[Math.floor(Math.random() * 3)]);
 
             return {
                 id: u.i,
@@ -174,7 +188,8 @@ const fetchKickbaseData = async () => {
                 estimatedBudget: formatMoney(combinedBudgets[u.i]),
                 isTrophy,
                 trophyColor,
-                highlight
+                status,
+                form
             };
         });
 

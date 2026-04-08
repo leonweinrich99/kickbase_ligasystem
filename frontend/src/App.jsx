@@ -77,11 +77,35 @@ const Header = ({ matchday, participants }) => (
   </div>
 );
 
-const UserRow = ({ item, color }) => {
+const FormDots = ({ form }) => {
+  if (!form) return null;
   return (
-    <div className={`flex items-center p-3 mb-2.5 bg-[#1a1d24] border ${item.highlight ? 'border-[#3a3f4a]' : 'border-[#2a2e37]'} rounded-[14px] shadow-sm relative group hover:border-[#3a3f4a] transition-all`}>
-      {item.highlight && (
-        <div className={`absolute left-0 top-0 bottom-0 w-[3px] rounded-l-md bg-${item.highlight === 'green' ? '[#22c55e]' : item.highlight === 'blue' ? '[#4ba6ff]' : item.highlight === 'orange' ? '[#ff5c3e]' : '[#ef4444]'}`}></div>
+    <div className="flex gap-1">
+      {form.map((res, i) => (
+        <div 
+          key={i} 
+          className={`w-1.5 h-1.5 rounded-full ${
+            res === 'w' ? 'bg-[#22c55e]' : 
+            res === 'd' ? 'bg-[#94a3b8]' : 
+            'bg-[#ef4444]'
+          }`}
+        />
+      ))}
+    </div>
+  );
+};
+
+const UserRow = ({ item, color }) => {
+  const statusColors = {
+    green: '#22c55e',
+    red: '#ef4444',
+    yellow: '#eab308'
+  };
+
+  return (
+    <div className={`flex items-center p-3 mb-2.5 bg-[#1a1d24] border ${item.status ? 'border-[#3a3f4a]' : 'border-[#2a2e37]'} rounded-[14px] shadow-sm relative group hover:border-[#3a3f4a] transition-all`}>
+      {item.status && (
+        <div className="absolute left-0 top-0 bottom-0 w-[4px] rounded-l-md" style={{ backgroundColor: statusColors[item.status] }}></div>
       )}
       <div className="w-8 flex justify-center items-center text-xs font-bold text-[#8b92a5]">
         {item.isTrophy ? <TrophyIcon type={item.trophyColor} /> : item.rank}
@@ -89,8 +113,11 @@ const UserRow = ({ item, color }) => {
       <div className="w-10 h-10 rounded-full bg-[#20242d] ml-2 flex items-center justify-center">
         <AvatarIcon />
       </div>
-      <div className="ml-3 flex-1 flex flex-col">
-        <div className="text-[14px] font-bold tracking-wide text-gray-100">{item.name}</div>
+      <div className="ml-3 flex-1 flex flex-col justify-center">
+        <div className="flex items-center gap-2">
+            <div className="text-[14px] font-bold tracking-wide text-gray-100">{item.name}</div>
+            <FormDots form={item.form} />
+        </div>
         <div className="text-[10px] font-bold text-[#4ba6ff] tracking-widest mt-0.5 uppercase">
           Budget: {item.estimatedBudget}
         </div>
