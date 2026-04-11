@@ -117,15 +117,15 @@ const fetchKickbaseData = async () => {
             if (res.matchday > matchday) matchday = res.matchday;
         }
 
-        const combinedUsers = Array.from(combinedUsersMap.values());
+        const combinedUsers = Array.from(combinedUsersMap.values()).filter(u => (u.sp || 0) > 0);
         combinedUsers.sort((a, b) => (b.sp || 0) - (a.sp || 0));
 
         const formatPoints = (sp) => (sp || 0).toLocaleString('de-DE');
         const formatMoney = (val) => (val || 0).toLocaleString('de-DE') + ' €';
 
         const participantsCount = combinedUsers.length;
-        const col1Count = Math.max(1, Math.ceil(participantsCount / 3));
-        const col2Count = Math.max(0, Math.ceil((participantsCount - col1Count) / 2));
+        const col1Count = 9;
+        const col2Count = 9;
 
         const transformedUsers = combinedUsers.map((u, index) => {
             const rank = index + 1;
