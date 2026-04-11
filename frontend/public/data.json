@@ -1,8 +1,8 @@
 {
   "name": "QUALIFIKATIONSRUNDE",
   "matchday": 29,
-  "participants": 30,
-  "timestamp": "2026-04-11T10:04:47.225Z",
+  "participants": 28,
+  "timestamp": "2026-04-11T10:10:05.454Z",
   "leagues": [
     {
       "name": "LIGA 1",
@@ -76,7 +76,7 @@
           "estimatedBudget": "245.000.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "status": ""
+          "status": "yellow"
         },
         {
           "id": "2926287",
@@ -86,7 +86,7 @@
           "estimatedBudget": "249.400.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "status": "yellow"
+          "status": "red"
         },
         {
           "id": "2582689",
@@ -97,7 +97,13 @@
           "isTrophy": false,
           "trophyColor": "",
           "status": "red"
-        },
+        }
+      ]
+    },
+    {
+      "name": "LIGA 2",
+      "color": "#f97316",
+      "users": [
         {
           "id": "1630703",
           "rank": 10,
@@ -106,14 +112,8 @@
           "estimatedBudget": "244.600.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "status": "red"
-        }
-      ]
-    },
-    {
-      "name": "LIGA 2",
-      "color": "#f97316",
-      "users": [
+          "status": "green"
+        },
         {
           "id": "3646277",
           "rank": 11,
@@ -132,7 +132,7 @@
           "estimatedBudget": "249.900.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "status": "green"
+          "status": "yellow"
         },
         {
           "id": "2479430",
@@ -142,7 +142,7 @@
           "estimatedBudget": "246.000.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "status": "yellow"
+          "status": ""
         },
         {
           "id": "3905385",
@@ -172,7 +172,7 @@
           "estimatedBudget": "246.700.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "status": ""
+          "status": "yellow"
         },
         {
           "id": "3607127",
@@ -182,7 +182,7 @@
           "estimatedBudget": "249.800.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "status": ""
+          "status": "red"
         },
         {
           "id": "3639851",
@@ -190,26 +190,6 @@
           "name": "DeinHomieEnobi",
           "points": "1.250",
           "estimatedBudget": "249.800.000 €",
-          "isTrophy": false,
-          "trophyColor": "",
-          "status": "yellow"
-        },
-        {
-          "id": "2934339",
-          "rank": 19,
-          "name": "leongarcon",
-          "points": "1.213",
-          "estimatedBudget": "245.700.000 €",
-          "isTrophy": false,
-          "trophyColor": "",
-          "status": "red"
-        },
-        {
-          "id": "3682622",
-          "rank": 20,
-          "name": "Fynn",
-          "points": "1.201",
-          "estimatedBudget": "253.200.000 €",
           "isTrophy": false,
           "trophyColor": "",
           "status": "red"
@@ -221,6 +201,26 @@
       "color": "#22c55e",
       "users": [
         {
+          "id": "2934339",
+          "rank": 19,
+          "name": "leongarcon",
+          "points": "1.213",
+          "estimatedBudget": "245.700.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "green"
+        },
+        {
+          "id": "3682622",
+          "rank": 20,
+          "name": "Fynn",
+          "points": "1.201",
+          "estimatedBudget": "253.200.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "green"
+        },
+        {
           "id": "3533606",
           "rank": 21,
           "name": "thep",
@@ -228,7 +228,7 @@
           "estimatedBudget": "248.700.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "status": "green"
+          "status": "yellow"
         },
         {
           "id": "1921179",
@@ -238,7 +238,7 @@
           "estimatedBudget": "246.000.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "status": "green"
+          "status": ""
         },
         {
           "id": "3694149",
@@ -248,7 +248,7 @@
           "estimatedBudget": "247.000.000 €",
           "isTrophy": false,
           "trophyColor": "",
-          "status": "yellow"
+          "status": ""
         },
         {
           "id": "3905417",
@@ -296,26 +296,6 @@
           "name": "franzi__j",
           "points": "710",
           "estimatedBudget": "248.000.000 €",
-          "isTrophy": false,
-          "trophyColor": "",
-          "status": ""
-        },
-        {
-          "id": "3907908",
-          "rank": 29,
-          "name": "leonweinrich99",
-          "points": "0",
-          "estimatedBudget": "0 €",
-          "isTrophy": false,
-          "trophyColor": "",
-          "status": ""
-        },
-        {
-          "id": "3901203",
-          "rank": 30,
-          "name": "DanielAvocado",
-          "points": "0",
-          "estimatedBudget": "0 €",
           "isTrophy": false,
           "trophyColor": "",
           "status": ""
