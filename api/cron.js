@@ -4,7 +4,7 @@ export default async function handler(req, res) {
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
-
+  //comment
   try {
     console.log("Triggering GitHub Action...");
     const githubRes = await fetch(
