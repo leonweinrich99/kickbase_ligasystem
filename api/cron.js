@@ -1,7 +1,9 @@
 export default async function handler(req, res) {
-  // Sicherheitscheck: Vergleicht das Secret von Vercel mit dem Authorization Header
+  // Sicherheitscheck: Vergleicht das Secret von Vercel (Header) oder den Query-Parameter mit dem CRON_SECRET
   const authHeader = req.headers['authorization'];
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const querySecret = req.query.secret;
+
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}` && querySecret !== process.env.CRON_SECRET) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   //comment

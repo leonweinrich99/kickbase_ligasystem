@@ -124,6 +124,33 @@ const Dashboard = ({ data }) => (
 
 function App() {
   const [data, setData] = useState(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [updateStatus, setUpdateStatus] = useState(null);
+
+  const handleManualUpdate = async () => {
+    const password = window.prompt("Bitte Admin-Passwort eingeben:");
+    if (!password) return;
+
+    setIsUpdating(true);
+    setUpdateStatus("Update wird gestartet...");
+
+    try {
+      const res = await fetch(`/api/cron?secret=${encodeURIComponent(password)}`);
+      if (res.ok) {
+        setUpdateStatus("✅ Update erfolgreich angestoßen! Der Workflow läuft.");
+        setTimeout(() => setUpdateStatus(null), 5000);
+      } else {
+        const errData = await res.json();
+        setUpdateStatus(`❌ Fehler: ${errData.error || "Unbefugt"}`);
+        setTimeout(() => setUpdateStatus(null), 5000);
+      }
+    } catch (err) {
+      setUpdateStatus("❌ Netzwerkfehler beim Update-Aufruf.");
+      setTimeout(() => setUpdateStatus(null), 5000);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   useEffect(() => {
     fetch('/data.json')
@@ -169,9 +196,23 @@ function App() {
             </div>
             
             <div className="flex items-center gap-6 text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-[#555]">
-                <span>© 2024 Kickbase Liga System</span>
-                <span className="hidden sm:inline opacity-30">•</span>
-                <span>Push via GitHub Actions</span>
+                {updateStatus ? (
+                  <span className="text-[#ff5c3e] transition-all animate-pulse">{updateStatus}</span>
+                ) : (
+                  <>
+                    <button 
+                      onClick={handleManualUpdate}
+                      disabled={isUpdating}
+                      className="hover:text-[#ff5c3e] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isUpdating ? 'Läuft...' : 'Update'}
+                    </button>
+                    <span className="hidden sm:inline opacity-30">•</span>
+                    <span>© 2024 Kickbase Liga System</span>
+                    <span className="hidden sm:inline opacity-30">•</span>
+                    <span>Push via GitHub Actions</span>
+                  </>
+                )}
             </div>
         </footer>
       </div>
