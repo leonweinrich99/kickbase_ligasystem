@@ -87,7 +87,13 @@ const Header = ({
   );
 };
 
-const UserRow = ({ item, color, isSaisonView }) => {
+const parsePoints = (str) => {
+  if (typeof str === 'number') return str;
+  if (!str) return 0;
+  return parseInt(str.replace(/\./g, '')) || 0;
+};
+
+const UserRow = ({ item, color, isSaisonView, displayRank }) => {
   const statusColors = {
     green: '#22c55e',
     red: '#ef4444',
@@ -97,12 +103,12 @@ const UserRow = ({ item, color, isSaisonView }) => {
   const pointsToShow = isSaisonView ? item.points : (item.pointsMatchday || '0');
 
   return (
-    <div className={`flex items-center p-3 mb-2.5 bg-[#1a1d24] border ${item.status ? 'border-[#3a3f4a]' : 'border-[#2a2e37]'} rounded-[14px] shadow-sm relative group hover:border-[#3a3f4a] transition-all`}>
-      {item.status && (
+    <div className={`flex items-center p-3 mb-2.5 bg-[#1a1d24] border ${isSaisonView && item.status ? 'border-[#3a3f4a]' : 'border-[#2a2e37]'} rounded-[14px] shadow-sm relative group hover:border-[#3a3f4a] transition-all`}>
+      {isSaisonView && item.status && (
         <div className="absolute left-0 top-0 bottom-0 w-[4px] rounded-l-md" style={{ backgroundColor: statusColors[item.status] }}></div>
       )}
       <div className="w-8 flex justify-center items-center text-xs font-bold text-[#8b92a5]">
-        {item.isTrophy ? <TrophyIcon type={item.trophyColor} /> : item.rank}
+        {item.isTrophy && isSaisonView ? <TrophyIcon type={item.trophyColor} /> : displayRank}
       </div>
       <div className="w-10 h-10 rounded-full bg-[#20242d] ml-2 flex items-center justify-center">
         <AvatarIcon />
@@ -123,34 +129,60 @@ const UserRow = ({ item, color, isSaisonView }) => {
   );
 };
 
-const LeagueColumn = ({ league, isSaisonView }) => (
-  <div className="flex-1 w-full lg:w-1/3 min-w-0 px-0 sm:px-2.5">
-    <div className="flex items-center mb-4 mt-8 lg:mt-0">
-      <div className="w-1 h-5 mr-3 rounded-full" style={{ backgroundColor: league.color }}></div>
-      <h2 className="text-base sm:text-lg font-black tracking-wider uppercase text-gray-200">{league.name}</h2>
-    </div>
-    <div className="flex flex-col">
-      {league.users.map((u) => <UserRow key={u.id} item={u} color={league.color} isSaisonView={isSaisonView} />)}
-    </div>
-  </div>
-);
+const LeagueColumn = ({ league, isSaisonView, rankOffset }) => {
+  const sortedUsers = [...league.users].sort((a, b) => {
+    const valA = isSaisonView ? parsePoints(a.points) : parsePoints(a.pointsMatchday);
+    const valB = isSaisonView ? parsePoints(b.points) : parsePoints(b.pointsMatchday);
+    return valB - valA;
+  });
 
-const Dashboard = ({ data, currentView, onNext, onPrev }) => (
-  <div className="max-w-[1400px] mx-auto bg-[#0f1115]">
-    <Header 
-      matchday={data.matchday} 
-      participants={data.participants} 
-      currentView={currentView}
-      onNext={onNext}
-      onPrev={onPrev}
-    />
-    <div className="flex flex-col lg:flex-row gap-4">
-      {data.leagues.map((league) => (
-        <LeagueColumn key={league.name} league={league} isSaisonView={currentView === 'saison'} />
-      ))}
+  return (
+    <div className="flex-1 w-full lg:w-1/3 min-w-0 px-0 sm:px-2.5">
+      <div className="flex items-center mb-4 mt-8 lg:mt-0">
+        <div className="w-1 h-5 mr-3 rounded-full" style={{ backgroundColor: league.color }}></div>
+        <h2 className="text-base sm:text-lg font-black tracking-wider uppercase text-gray-200">{league.name}</h2>
+      </div>
+      <div className="flex flex-col">
+        {sortedUsers.map((u, index) => (
+          <UserRow 
+            key={u.id} 
+            item={u} 
+            color={league.color} 
+            isSaisonView={isSaisonView} 
+            displayRank={rankOffset + index + 1}
+          />
+        ))}
+      </div>
     </div>
-  </div>
-);
+  );
+};
+
+const Dashboard = ({ data, currentView, onNext, onPrev }) => {
+  // Ränge über die Ligen hinweg kummulieren (9 Spieler pro Liga als Basis)
+  const getRankOffset = (leagueIndex) => leagueIndex * 9;
+
+  return (
+    <div className="max-w-[1400px] mx-auto bg-[#0f1115]">
+      <Header 
+        matchday={data.matchday} 
+        participants={data.participants} 
+        currentView={currentView}
+        onNext={onNext}
+        onPrev={onPrev}
+      />
+      <div className="flex flex-col lg:flex-row gap-4">
+        {data.leagues.map((league, idx) => (
+          <LeagueColumn 
+            key={league.name} 
+            league={league} 
+            isSaisonView={currentView === 'saison'} 
+            rankOffset={getRankOffset(idx)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
 
 function App() {
   const [data, setData] = useState(null);
