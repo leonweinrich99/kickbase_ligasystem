@@ -2,52 +2,332 @@
   "name": "QUALIFIKATIONSRUNDE",
   "matchday": 29,
   "participants": 28,
-  "timestamp": "2026-04-12T20:23:07.625Z",
+  "timestamp": "2026-04-13T11:38:48.550Z",
   "leagues": [
     {
       "name": "LIGA 1",
       "color": "#3b82f6",
       "users": [
-        { "id": "3792325", "rank": 1, "name": "Stomping Tantrum", "points": "4.085", "pointsMatchday": "2.204", "estimatedBudget": "244.500.000 €", "isTrophy": true, "trophyColor": "gold", "status": "" },
-        { "id": "2926287", "rank": 2, "name": "Vinnie JR", "points": "3.682", "pointsMatchday": "2.219", "estimatedBudget": "249.400.000 €", "isTrophy": true, "trophyColor": "silver", "status": "" },
-        { "id": "3397700", "rank": 3, "name": "Curl3z", "points": "3.678", "pointsMatchday": "2.080", "estimatedBudget": "241.000.000 €", "isTrophy": true, "trophyColor": "bronze", "status": "" },
-        { "id": "2651349", "rank": 4, "name": "JulianD47", "points": "3.472", "pointsMatchday": "1.769", "estimatedBudget": "249.600.000 €", "isTrophy": false, "trophyColor": "", "status": "" },
-        { "id": "3607082", "rank": 5, "name": "Leon Weinrich", "points": "3.378", "pointsMatchday": "1.841", "estimatedBudget": "244.800.000 €", "isTrophy": false, "trophyColor": "", "status": "" },
-        { "id": "2582689", "rank": 6, "name": "Wat Mamba", "points": "3.352", "pointsMatchday": "1.898", "estimatedBudget": "243.200.000 €", "isTrophy": false, "trophyColor": "", "status": "" },
-        { "id": "3606931", "rank": 7, "name": "Esel", "points": "3.332", "pointsMatchday": "1.861", "estimatedBudget": "245.000.000 €", "isTrophy": false, "trophyColor": "", "status": "yellow" },
-        { "id": "3901400", "rank": 8, "name": "Mo6", "points": "3.330", "pointsMatchday": "1.976", "estimatedBudget": "238.200.000 €", "isTrophy": false, "trophyColor": "", "status": "red" },
-        { "id": "1630703", "rank": 9, "name": "Ansgar Trinkmann", "points": "3.245", "pointsMatchday": "1.864", "estimatedBudget": "244.600.000 €", "isTrophy": false, "trophyColor": "", "status": "red" }
+        {
+          "id": "3792325",
+          "rank": 1,
+          "name": "Stomping Tantrum",
+          "points": "4.085",
+          "pointsMatchday": "0",
+          "estimatedBudget": "244.500.000 €",
+          "isTrophy": true,
+          "trophyColor": "gold",
+          "status": ""
+        },
+        {
+          "id": "2926287",
+          "rank": 2,
+          "name": "Vinnie JR",
+          "points": "3.682",
+          "pointsMatchday": "0",
+          "estimatedBudget": "249.400.000 €",
+          "isTrophy": true,
+          "trophyColor": "silver",
+          "status": ""
+        },
+        {
+          "id": "3397700",
+          "rank": 3,
+          "name": "Curl3z",
+          "points": "3.678",
+          "pointsMatchday": "0",
+          "estimatedBudget": "241.000.000 €",
+          "isTrophy": true,
+          "trophyColor": "bronze",
+          "status": ""
+        },
+        {
+          "id": "2651349",
+          "rank": 4,
+          "name": "JulianD47",
+          "points": "3.477",
+          "pointsMatchday": "5",
+          "estimatedBudget": "249.600.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3607082",
+          "rank": 5,
+          "name": "Leon Weinrich",
+          "points": "3.378",
+          "pointsMatchday": "0",
+          "estimatedBudget": "244.800.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "2582689",
+          "rank": 6,
+          "name": "Wat Mamba",
+          "points": "3.352",
+          "pointsMatchday": "0",
+          "estimatedBudget": "243.200.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3606931",
+          "rank": 7,
+          "name": "Esel",
+          "points": "3.332",
+          "pointsMatchday": "0",
+          "estimatedBudget": "245.000.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "yellow"
+        },
+        {
+          "id": "3901400",
+          "rank": 8,
+          "name": "Mo6",
+          "points": "3.330",
+          "pointsMatchday": "0",
+          "estimatedBudget": "238.200.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "red"
+        },
+        {
+          "id": "1630703",
+          "rank": 9,
+          "name": "Ansgar Trinkmann",
+          "points": "3.245",
+          "pointsMatchday": "0",
+          "estimatedBudget": "244.600.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "red"
+        }
       ]
     },
     {
       "name": "LIGA 2",
       "color": "#f97316",
       "users": [
-        { "id": "3533606", "rank": 10, "name": "thep", "points": "3.245", "pointsMatchday": "2.060", "estimatedBudget": "248.700.000 €", "isTrophy": false, "trophyColor": "", "status": "green" },
-        { "id": "3283685", "rank": 11, "name": "Justin", "points": "3.174", "pointsMatchday": "1.894", "estimatedBudget": "246.700.000 €", "isTrophy": false, "trophyColor": "", "status": "green" },
-        { "id": "2656484", "rank": 12, "name": "MK13", "points": "3.123", "pointsMatchday": "1.793", "estimatedBudget": "249.900.000 €", "isTrophy": false, "trophyColor": "", "status": "yellow" },
-        { "id": "2934339", "rank": 13, "name": "leongarcon", "points": "3.100", "pointsMatchday": "1.954", "estimatedBudget": "245.700.000 €", "isTrophy": false, "trophyColor": "", "status": "" },
-        { "id": "1921179", "rank": 14, "name": "Baumi", "points": "3.067", "pointsMatchday": "2.145", "estimatedBudget": "246.000.000 €", "isTrophy": false, "trophyColor": "", "status": "" },
-        { "id": "3639851", "rank": 15, "name": "DeinHomieEnobi", "points": "3.053", "pointsMatchday": "1.803", "estimatedBudget": "249.800.000 €", "isTrophy": false, "trophyColor": "", "status": "" },
-        { "id": "3607127", "rank": 16, "name": "Blake", "points": "3.035", "pointsMatchday": "1.766", "estimatedBudget": "249.800.000 €", "isTrophy": false, "trophyColor": "", "status": "yellow" },
-        { "id": "3906724", "rank": 17, "name": "J0tt", "points": "3.033", "pointsMatchday": "1.727", "estimatedBudget": "249.800.000 €", "isTrophy": false, "trophyColor": "", "status": "red" },
-        { "id": "2479430", "rank": 18, "name": "CarlCarlsenCarlsen", "points": "2.852", "pointsMatchday": "1.826", "estimatedBudget": "246.000.000 €", "isTrophy": false, "trophyColor": "", "status": "red" }
+        {
+          "id": "3533606",
+          "rank": 10,
+          "name": "thep",
+          "points": "3.245",
+          "pointsMatchday": "0",
+          "estimatedBudget": "248.700.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "green"
+        },
+        {
+          "id": "3283685",
+          "rank": 11,
+          "name": "Justin",
+          "points": "3.168",
+          "pointsMatchday": "-6",
+          "estimatedBudget": "246.700.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "green"
+        },
+        {
+          "id": "2656484",
+          "rank": 12,
+          "name": "MK13",
+          "points": "3.117",
+          "pointsMatchday": "-6",
+          "estimatedBudget": "249.900.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "yellow"
+        },
+        {
+          "id": "2934339",
+          "rank": 13,
+          "name": "leongarcon",
+          "points": "3.100",
+          "pointsMatchday": "0",
+          "estimatedBudget": "245.700.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "1921179",
+          "rank": 14,
+          "name": "Baumi",
+          "points": "3.066",
+          "pointsMatchday": "-1",
+          "estimatedBudget": "246.000.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3639851",
+          "rank": 15,
+          "name": "DeinHomieEnobi",
+          "points": "3.053",
+          "pointsMatchday": "0",
+          "estimatedBudget": "249.800.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3607127",
+          "rank": 16,
+          "name": "Blake",
+          "points": "3.035",
+          "pointsMatchday": "0",
+          "estimatedBudget": "249.800.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "yellow"
+        },
+        {
+          "id": "3906724",
+          "rank": 17,
+          "name": "J0tt",
+          "points": "3.033",
+          "pointsMatchday": "0",
+          "estimatedBudget": "249.800.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "red"
+        },
+        {
+          "id": "2479430",
+          "rank": 18,
+          "name": "CarlCarlsenCarlsen",
+          "points": "2.852",
+          "pointsMatchday": "0",
+          "estimatedBudget": "246.000.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "red"
+        }
       ]
     },
     {
       "name": "LIGA 3",
       "color": "#22c55e",
       "users": [
-        { "id": "2492332", "rank": 19, "name": "kushler", "points": "2.802", "pointsMatchday": "1.254", "estimatedBudget": "246.100.000 €", "isTrophy": false, "trophyColor": "", "status": "green" },
-        { "id": "3905385", "rank": 20, "name": "magarac", "points": "2.765", "pointsMatchday": "1.608", "estimatedBudget": "248.300.000 €", "isTrophy": false, "trophyColor": "", "status": "green" },
-        { "id": "3779246", "rank": 21, "name": "AchtSieben", "points": "2.662", "pointsMatchday": "1.652", "estimatedBudget": "248.600.000 €", "isTrophy": false, "trophyColor": "", "status": "yellow" },
-        { "id": "3905417", "rank": 22, "name": "Puliester", "points": "2.576", "pointsMatchday": "1.546", "estimatedBudget": "249.700.000 €", "isTrophy": false, "trophyColor": "", "status": "" },
-        { "id": "3646277", "rank": 23, "name": "Geißbock", "points": "2.513", "pointsMatchday": "1.330", "estimatedBudget": "252.300.000 €", "isTrophy": false, "trophyColor": "", "status": "" },
-        { "id": "3650803", "rank": 24, "name": "franzi__j", "points": "2.379", "pointsMatchday": "1.669", "estimatedBudget": "248.000.000 €", "isTrophy": false, "trophyColor": "", "status": "" },
-        { "id": "3694149", "rank": 25, "name": "Flocke", "points": "2.266", "pointsMatchday": "1.231", "estimatedBudget": "247.000.000 €", "isTrophy": false, "trophyColor": "", "status": "" },
-        { "id": "3511512", "rank": 26, "name": "KönigMichi", "points": "2.245", "pointsMatchday": "1.312", "estimatedBudget": "248.200.000 €", "isTrophy": false, "trophyColor": "", "status": "" },
-        { "id": "3906287", "rank": 27, "name": "Marci", "points": "2.034", "pointsMatchday": "1.073", "estimatedBudget": "250.100.000 €", "isTrophy": false, "trophyColor": "", "status": "" },
-        { "id": "3682622", "rank": 28, "name": "Fynn", "points": "1.201", "pointsMatchday": "0", "estimatedBudget": "253.200.000 €", "isTrophy": false, "trophyColor": "", "status": "" }
+        {
+          "id": "2492332",
+          "rank": 19,
+          "name": "kushler",
+          "points": "2.793",
+          "pointsMatchday": "-9",
+          "estimatedBudget": "246.100.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "green"
+        },
+        {
+          "id": "3905385",
+          "rank": 20,
+          "name": "magarac",
+          "points": "2.765",
+          "pointsMatchday": "0",
+          "estimatedBudget": "248.300.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "green"
+        },
+        {
+          "id": "3779246",
+          "rank": 21,
+          "name": "AchtSieben",
+          "points": "2.662",
+          "pointsMatchday": "0",
+          "estimatedBudget": "248.600.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "yellow"
+        },
+        {
+          "id": "3905417",
+          "rank": 22,
+          "name": "Puliester",
+          "points": "2.576",
+          "pointsMatchday": "0",
+          "estimatedBudget": "249.700.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3646277",
+          "rank": 23,
+          "name": "Geißbock",
+          "points": "2.513",
+          "pointsMatchday": "0",
+          "estimatedBudget": "252.300.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3650803",
+          "rank": 24,
+          "name": "franzi__j",
+          "points": "2.379",
+          "pointsMatchday": "0",
+          "estimatedBudget": "248.000.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3694149",
+          "rank": 25,
+          "name": "Flocke",
+          "points": "2.266",
+          "pointsMatchday": "0",
+          "estimatedBudget": "247.000.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3511512",
+          "rank": 26,
+          "name": "KönigMichi",
+          "points": "2.245",
+          "pointsMatchday": "0",
+          "estimatedBudget": "248.200.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3906287",
+          "rank": 27,
+          "name": "Marci",
+          "points": "2.038",
+          "pointsMatchday": "4",
+          "estimatedBudget": "250.100.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3682622",
+          "rank": 28,
+          "name": "Fynn",
+          "points": "1.201",
+          "pointsMatchday": "0",
+          "estimatedBudget": "253.200.000 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        }
       ]
     }
   ]
