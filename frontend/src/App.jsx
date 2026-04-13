@@ -234,14 +234,16 @@ function App() {
         return fetch('/data.json').then(res => res.json().then(latestData => ({ index, latestData })));
       })
       .then(({ index, latestData }) => {
-        console.log("Loaded Latest Data:", latestData.matchday);
+        const mDay = Number(latestData.matchday);
+        console.log("Loaded Latest Data:", mDay);
         setData(latestData);
-        setLatestMatchday(latestData.matchday);
+        setLatestMatchday(mDay);
 
         // 3. Views berechnen: [28, 29, 'saison']
+        const historyDays = (index.matchdays || []).map(Number);
         const views = [
-            ...(index.matchdays || []).filter(m => m !== latestData.matchday).sort((a,b) => a - b),
-            latestData.matchday,
+            ...historyDays.filter(m => m !== mDay).sort((a,b) => a - b),
+            mDay,
             'saison'
         ];
         // Einzigartig machen
