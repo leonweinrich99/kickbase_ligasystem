@@ -1,3 +1,29 @@
+import React, { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
+import Rules from './Rules';
+import logo from './assets/logo.png';
+
+const AvatarIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-[#8b92a5] opacity-50">
+    <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2" />
+    <path d="M4 20C4 16.6863 6.68629 14 10 14H14C17.3137 14 20 16.6863 20 20" stroke="currentColor" strokeWidth="2" />
+  </svg>
+);
+
+const TrophyIcon = ({ type }) => {
+  const colors = { gold: '#eab308', silver: '#94a3b8', bronze: '#ca8a04' };
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={colors[type]} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+      <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+      <path d="M4 22h16"></path>
+      <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+      <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+      <path d="M18 2H6v7c0 3.31 2.69 6 6 6s6-2.69 6-6V2z"></path>
+    </svg>
+  );
+};
+
 const Header = ({ matchday, participants, availableMatchdays, selectedMatchday, onSelectMatchday, viewMode, setViewMode }) => (
   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 border-b border-[#2a2e37] pb-6 gap-6">
     <div className="flex items-center gap-4 sm:gap-6">
