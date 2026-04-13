@@ -71,7 +71,7 @@ const fetchSingleLeagueData = async (email, password, leagueNameContains = "Qual
     }
 };
 
-const fetchKickbaseData = async () => {
+const fetchKickbaseData = async (previousData = null) => {
     try {
         const accounts = [];
 
@@ -117,6 +117,18 @@ const fetchKickbaseData = async () => {
             if (res.matchday > matchday) matchday = res.matchday;
         }
 
+        // Vorbereitung der Punkte-Differenz (Spieltags-Wertung)
+        const previousPointsMap = new Map();
+        if (previousData && previousData.leagues) {
+            previousData.leagues.forEach(l => {
+                l.users.forEach(u => {
+                    // Wir müssen die formatierte Punktzahl zurück in eine Zahl wandeln
+                    const rawPoints = parseInt(u.points.replace(/\./g, '')) || 0;
+                    previousPointsMap.set(u.id, rawPoints);
+                });
+            });
+        }
+
         const combinedUsers = Array.from(combinedUsersMap.values()).filter(u => (u.sp || 0) > 0);
         combinedUsers.sort((a, b) => (b.sp || 0) - (a.sp || 0));
 
@@ -136,33 +148,33 @@ const fetchKickbaseData = async () => {
             else if (rank === 3) trophyColor = 'bronze';
 
             let status = '';
+            // Status-Logik bleibt gleich
             if (index < col1Count) {
-                // Liga 1: Abstieg (rot) & Relegation (gelb)
                 if (index >= col1Count - 2) status = 'red';
                 else if (index === col1Count - 3) status = 'yellow';
             } else if (index < col1Count + col2Count) {
-                // Liga 2: Aufstieg (grün), Relegation (gelb), Abstieg (rot)
                 const relIndex = index - col1Count;
                 if (relIndex <= 1) status = 'green';
                 else if (relIndex === 2) status = 'yellow';
                 else if (relIndex >= col2Count - 2) status = 'red';
                 else if (relIndex === col2Count - 3) status = 'yellow';
             } else {
-                // Liga 3: Aufstieg (grün) & Relegation (gelb)
                 const relIndex = index - (col1Count + col2Count);
                 if (relIndex <= 1) status = 'green';
                 else if (relIndex === 2) status = 'yellow';
             }
 
-            // Mock Form (letzte 5 Spieltage)
-            const formTypes = ['w', 'd', 'l'];
-            const form = Array.from({ length: 5 }, () => formTypes[Math.floor(Math.random() * 3)]);
+            // Spieltag-Punkte berechnen
+            const currentPoints = u.sp || 0;
+            const prevPoints = previousPointsMap.get(u.i) || 0;
+            const matchdayPoints = currentPoints - prevPoints;
 
             return {
                 id: u.i,
                 rank: rank,
                 name: u.n,
-                points: formatPoints(u.sp),
+                points: formatPoints(currentPoints),
+                pointsMatchday: formatPoints(matchdayPoints),
                 estimatedBudget: formatMoney(combinedBudgets[u.i]),
                 isTrophy,
                 trophyColor,

@@ -9,6 +9,10 @@ export default async function handler(req, res) {
   //comment
   try {
     console.log("Triggering GitHub Action...");
+    
+    // Am Montag (getUTCDay === 1) soll ein Snapshot erstellt werden
+    const isMonday = new Date().getUTCDay() === 1;
+    
     const githubRes = await fetch(
       'https://api.github.com/repos/leonweinrich99/kickbase_ligasystem/actions/workflows/update-data.yml/dispatches',
       {
@@ -20,7 +24,10 @@ export default async function handler(req, res) {
           'User-Agent': 'Vercel-Cron-Job'
         },
         body: JSON.stringify({
-          ref: 'main'
+          ref: 'main',
+          inputs: {
+            snapshot: isMonday ? "true" : "false"
+          }
         })
       }
     );

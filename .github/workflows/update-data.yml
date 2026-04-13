@@ -3,8 +3,12 @@ name: Update Kickbase Data
 on:
   push:
     branches: [ main ]
-  workflow_dispatch: {}
-    # Erlaubt manuelles Auslösen des Workflows
+  workflow_dispatch:
+    inputs:
+      snapshot:
+        description: 'Snapshot erstellen'
+        required: false
+        default: 'false'
 
 jobs:
   update-data:
@@ -32,11 +36,12 @@ jobs:
           KICKBASE_PASS: ${{ secrets.KICKBASE_PASS }}
           KICKBASE_EMAIL_2: ${{ secrets.KICKBASE_EMAIL_2 }}
           KICKBASE_PASS_2: ${{ secrets.KICKBASE_PASS_2 }}
+          SNAPSHOT: ${{ github.event.inputs.snapshot || 'false' }}
 
       - name: Commit and Push Data
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add frontend/public/data.json
-          git commit -m "Automatisches Update: Kickbase Daten [skip ci]" || echo "Keine Änderungen zu commiten"
+          git add frontend/public/data.json frontend/public/history/
+          git commit -m "Automatisches Update: Kickbase Daten & Historie [skip ci]" || echo "Keine Änderungen zu commiten"
           git push

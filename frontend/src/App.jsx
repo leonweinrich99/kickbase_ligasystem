@@ -1,30 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
-import Rules from './Rules';
-import logo from './assets/logo.png';
-
-const AvatarIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-[#8b92a5] opacity-50">
-    <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2" />
-    <path d="M4 20C4 16.6863 6.68629 14 10 14H14C17.3137 14 20 16.6863 20 20" stroke="currentColor" strokeWidth="2" />
-  </svg>
-);
-
-const TrophyIcon = ({ type }) => {
-  const colors = { gold: '#eab308', silver: '#94a3b8', bronze: '#ca8a04' };
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={colors[type]} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-      <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-      <path d="M4 22h16"></path>
-      <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
-      <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
-      <path d="M18 2H6v7c0 3.31 2.69 6 6 6s6-2.69 6-6V2z"></path>
-    </svg>
-  );
-};
-
-const Header = ({ matchday, participants }) => (
+const Header = ({ matchday, participants, availableMatchdays, selectedMatchday, onSelectMatchday, viewMode, setViewMode }) => (
   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 border-b border-[#2a2e37] pb-6 gap-6">
     <div className="flex items-center gap-4 sm:gap-6">
       <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center p-0.5 sm:p-1 overflow-hidden">
@@ -36,18 +10,49 @@ const Header = ({ matchday, participants }) => (
       </div>
     </div>
     
-    <div className="flex w-full sm:w-auto justify-between sm:justify-end items-center gap-3 sm:gap-4">
-      {/* Spieltag-Wechsler */}
-      <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden flex-1 sm:flex-initial justify-between h-12">
-        <button className="px-3 sm:px-4 h-full text-[#8b92a5] hover:text-white transition-colors bg-[#181a20]">&lsaquo;</button>
-        <span className="px-4 sm:px-8 text-[11px] sm:text-sm text-gray-200 whitespace-nowrap">Spieltag {matchday}</span>
-        <button className="px-3 sm:px-4 h-full text-[#8b92a5] hover:text-white transition-colors bg-[#181a20]">&rsaquo;</button>
+    <div className="flex w-full sm:w-auto flex-wrap justify-between sm:justify-end items-center gap-3 sm:gap-4">
+      {/* Ansicht-Toggle */}
+      <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden h-12">
+        <button 
+          onClick={() => setViewMode('saison')}
+          className={`px-4 h-full text-[10px] uppercase tracking-widest transition-all ${viewMode === 'saison' ? 'bg-[#ff5c3e] text-white' : 'text-[#8b92a5] hover:text-white'}`}
+        >
+          Saison
+        </button>
+        <button 
+          onClick={() => setViewMode('spieltag')}
+          className={`px-4 h-full text-[10px] uppercase tracking-widest transition-all ${viewMode === 'spieltag' ? 'bg-[#ff5c3e] text-white' : 'text-[#8b92a5] hover:text-white'}`}
+        >
+          Spieltag
+        </button>
       </div>
 
-      {/* Teilnehmer Kachel */}
-      <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl px-4 sm:px-5 h-12 shadow-lg flex items-center gap-3 min-w-0">
-        <span className="text-[8px] sm:text-[10px] font-bold text-[#8b92a5] tracking-widest leading-none uppercase">Teilnehmer</span>
-        <span className="text-sm sm:text-base font-bold text-gray-200 leading-none">{participants}</span>
+      {/* Spieltag-Wechsler (Dropdown) */}
+      <div className="relative group min-w-[140px]">
+        <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden h-12 px-4 cursor-pointer hover:border-[#ff5c3e] transition-all justify-between">
+          <span className="text-[11px] sm:text-sm text-gray-200">Spieltag {selectedMatchday || matchday}</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="text-[#8b92a5] ml-2">
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </div>
+        
+        <div className="absolute top-full right-0 mt-2 bg-[#1a1d24] border border-[#2a2e37] rounded-xl shadow-2xl overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all min-w-full">
+          <button 
+            onClick={() => onSelectMatchday(null)}
+            className={`w-full px-4 py-3 text-left text-xs hover:bg-[#181a20] transition-colors border-b border-[#2a2e37] ${!selectedMatchday ? 'text-[#ff5c3e]' : 'text-gray-300'}`}
+          >
+            Aktuell ({matchday})
+          </button>
+          {availableMatchdays.map(m => (
+            <button 
+              key={m}
+              onClick={() => onSelectMatchday(m)}
+              className={`w-full px-4 py-3 text-left text-xs hover:bg-[#181a20] transition-colors ${selectedMatchday === m ? 'text-[#ff5c3e]' : 'text-gray-300'}`}
+            >
+              Spieltag {m}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Regeln Button */}
@@ -65,12 +70,14 @@ const Header = ({ matchday, participants }) => (
   </div>
 );
 
-const UserRow = ({ item, color }) => {
+const UserRow = ({ item, color, viewMode }) => {
   const statusColors = {
     green: '#22c55e',
     red: '#ef4444',
     yellow: '#eab308'
   };
+
+  const pointsToShow = viewMode === 'spieltag' ? (item.pointsMatchday || '0') : item.points;
 
   return (
     <div className={`flex items-center p-3 mb-2.5 bg-[#1a1d24] border ${item.status ? 'border-[#3a3f4a]' : 'border-[#2a2e37]'} rounded-[14px] shadow-sm relative group hover:border-[#3a3f4a] transition-all`}>
@@ -91,7 +98,7 @@ const UserRow = ({ item, color }) => {
       </div>
       <div className="text-right mr-2">
         <div className="text-[17px] font-bold" style={{ color: color }}>
-          {item.points}
+          {pointsToShow}
         </div>
         <div className="text-[10px] font-bold text-[#626978] tracking-widest mt-0.5 uppercase">Punkte</div>
       </div>
@@ -99,24 +106,32 @@ const UserRow = ({ item, color }) => {
   );
 };
 
-const LeagueColumn = ({ league }) => (
+const LeagueColumn = ({ league, viewMode }) => (
   <div className="flex-1 w-full lg:w-1/3 min-w-0 px-0 sm:px-2.5">
     <div className="flex items-center mb-4 mt-8 lg:mt-0">
       <div className="w-1 h-5 mr-3 rounded-full" style={{ backgroundColor: league.color }}></div>
       <h2 className="text-base sm:text-lg font-black tracking-wider uppercase text-gray-200">{league.name}</h2>
     </div>
     <div className="flex flex-col">
-      {league.users.map((u) => <UserRow key={u.id} item={u} color={league.color} />)}
+      {league.users.map((u) => <UserRow key={u.id} item={u} color={league.color} viewMode={viewMode} />)}
     </div>
   </div>
 );
 
-const Dashboard = ({ data }) => (
+const Dashboard = ({ data, availableMatchdays, selectedMatchday, onSelectMatchday, viewMode, setViewMode }) => (
   <div className="max-w-[1400px] mx-auto bg-[#0f1115]">
-    <Header matchday={data.matchday} participants={data.participants} />
+    <Header 
+      matchday={data.matchday} 
+      participants={data.participants} 
+      availableMatchdays={availableMatchdays}
+      selectedMatchday={selectedMatchday}
+      onSelectMatchday={onSelectMatchday}
+      viewMode={viewMode}
+      setViewMode={setViewMode}
+    />
     <div className="flex flex-col lg:flex-row gap-4">
       {data.leagues.map((league) => (
-        <LeagueColumn key={league.name} league={league} />
+        <LeagueColumn key={league.name} league={league} viewMode={viewMode} />
       ))}
     </div>
   </div>
@@ -124,6 +139,10 @@ const Dashboard = ({ data }) => (
 
 function App() {
   const [data, setData] = useState(null);
+  const [historyIndex, setHistoryIndex] = useState({ matchdays: [] });
+  const [selectedMatchday, setSelectedMatchday] = useState(null);
+  const [viewMode, setViewMode] = useState('saison'); // 'saison' | 'spieltag'
+  
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateStatus, setUpdateStatus] = useState(null);
 
@@ -153,6 +172,13 @@ function App() {
   };
 
   useEffect(() => {
+    // 1. Lade Index der Spieltage
+    fetch('/history/index.json')
+      .then(res => res.json())
+      .then(setHistoryIndex)
+      .catch(() => console.log("Keine Historie vorhanden."));
+
+    // 2. Lade Initial-Daten (data.json)
     fetch('/data.json')
       .then(res => res.json())
       .then(setData)
@@ -160,6 +186,18 @@ function App() {
         console.error("Fehler beim Laden der Daten:", err);
       });
   }, []);
+
+  // Effekt zum Laden historischer Daten
+  useEffect(() => {
+    if (selectedMatchday === null) {
+      fetch('/data.json').then(res => res.json()).then(setData);
+    } else {
+      fetch(`/history/spieltag-${selectedMatchday}.json`)
+        .then(res => res.json())
+        .then(setData)
+        .catch(err => console.error("Fehler beim Laden des Spieltags:", err));
+    }
+  }, [selectedMatchday]);
 
   const formatTimestamp = (ts) => {
     if (!ts) return "Unbekannt";
@@ -173,14 +211,23 @@ function App() {
     }) + " Uhr";
   };
 
-  if (!data) return <div className="min-h-screen bg-[#0f1115] flex justify-center items-center text-gray-500 font-bold">Lade Kickbase Daten...</div>;
+  if (!data) return <div className="min-h-screen bg-[#0f1115] flex justify-center items-center text-gray-500 font-bold tracking-widest uppercase text-xs animate-pulse">Lade Kickbase System...</div>;
 
   return (
     <Router>
       <div className="min-h-screen bg-[#0f1115] p-4 sm:p-10 font-sans select-none flex flex-col">
         <div className="flex-1">
           <Routes>
-            <Route path="/" element={<Dashboard data={data} />} />
+            <Route path="/" element={
+              <Dashboard 
+                data={data} 
+                availableMatchdays={historyIndex.matchdays}
+                selectedMatchday={selectedMatchday}
+                onSelectMatchday={setSelectedMatchday}
+                viewMode={viewMode}
+                setViewMode={setViewMode}
+              />
+            } />
             <Route path="/rules" element={<Rules />} />
           </Routes>
         </div>
