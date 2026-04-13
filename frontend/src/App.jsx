@@ -130,12 +130,6 @@ const UserRow = ({ item, color, isSaisonView, displayRank }) => {
 };
 
 const LeagueColumn = ({ league, isSaisonView, rankOffset }) => {
-  const sortedUsers = [...league.users].sort((a, b) => {
-    const valA = isSaisonView ? parsePoints(a.points) : parsePoints(a.pointsMatchday);
-    const valB = isSaisonView ? parsePoints(b.points) : parsePoints(b.pointsMatchday);
-    return valB - valA;
-  });
-
   return (
     <div className="flex-1 w-full lg:w-1/3 min-w-0 px-0 sm:px-2.5">
       <div className="flex items-center mb-4 mt-8 lg:mt-0">
@@ -143,7 +137,7 @@ const LeagueColumn = ({ league, isSaisonView, rankOffset }) => {
         <h2 className="text-base sm:text-lg font-black tracking-wider uppercase text-gray-200">{league.name}</h2>
       </div>
       <div className="flex flex-col">
-        {sortedUsers.map((u, index) => (
+        {league.users.map((u, index) => (
           <UserRow 
             key={u.id} 
             item={u} 
@@ -158,8 +152,27 @@ const LeagueColumn = ({ league, isSaisonView, rankOffset }) => {
 };
 
 const Dashboard = ({ data, currentView, onNext, onPrev }) => {
-  // Ränge über die Ligen hinweg kummulieren (9 Spieler pro Liga als Basis)
-  const getRankOffset = (leagueIndex) => leagueIndex * 9;
+  const isSaisonView = currentView === 'saison';
+  
+  // 1. Alle User global sammeln
+  const allUsers = data.leagues.reduce((acc, l) => [...acc, ...l.users], []);
+  
+  // 2. Global sortieren
+  const sortedAll = [...allUsers].sort((a, b) => {
+    const valA = isSaisonView ? parsePoints(a.points) : parsePoints(a.pointsMatchday);
+    const valB = isSaisonView ? parsePoints(b.points) : parsePoints(b.pointsMatchday);
+    return valB - valA;
+  });
+
+  // 3. In Blöcke aufteilen (9 pro Liga)
+  const processedLeagues = data.leagues.map((originalLeague, idx) => {
+    const start = idx * 9;
+    const end = idx === 2 ? sortedAll.length : (idx + 1) * 9;
+    return {
+      ...originalLeague,
+      users: sortedAll.slice(start, end)
+    };
+  });
 
   return (
     <div className="max-w-[1400px] mx-auto bg-[#0f1115]">
@@ -171,12 +184,12 @@ const Dashboard = ({ data, currentView, onNext, onPrev }) => {
         onPrev={onPrev}
       />
       <div className="flex flex-col lg:flex-row gap-4">
-        {data.leagues.map((league, idx) => (
+        {processedLeagues.map((league, idx) => (
           <LeagueColumn 
             key={league.name} 
             league={league} 
-            isSaisonView={currentView === 'saison'} 
-            rankOffset={getRankOffset(idx)}
+            isSaisonView={isSaisonView} 
+            rankOffset={idx * 9}
           />
         ))}
       </div>
