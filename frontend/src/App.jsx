@@ -268,24 +268,29 @@ function App() {
       fetch(`/data.json?t=${Date.now()}`)
         .then(res => res.json())
         .then(d => {
-            console.log("Data loaded for Saison");
+            console.log("Data loaded for Saison (live)");
             setData(d);
         });
     } else if (typeof view === 'number') {
-      const isLatest = view === latestMatchday;
-      const path = isLatest ? `/data.json?t=${Date.now()}` : `/history/spieltag-${view}.json?t=${Date.now()}`;
-      console.log(`Fetching matchday data from ${path}`);
+      const path = `/history/spieltag-${view}.json?t=${Date.now()}`;
+      console.log(`Fetching historical matchday data from ${path}`);
       
       fetch(path)
         .then(res => {
-            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            if (!res.ok) throw new Error(`History file not found: ${view}`);
             return res.json();
         })
         .then(d => {
-            console.log(`Data loaded for Matchday ${view}`);
+            console.log(`Data loaded for Matchday ${view} (snapshot)`);
             setData(d);
         })
-        .catch(err => console.error("History fetch error:", err));
+        .catch(err => {
+            console.error("Matchday fetch error:", err);
+            // Fallback: Wenn Snapshot fehlt, versuchen wir doch die live daten
+            fetch(`/data.json?t=${Date.now()}`)
+              .then(res => res.json())
+              .then(d => setData(d));
+        });
     }
   }, [currentViewIndex, availableViews, latestMatchday]);
 
