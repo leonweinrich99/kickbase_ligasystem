@@ -198,20 +198,22 @@ function App() {
         setHistoryIndex(index);
         
         // 2. Lade Initial-Daten (data.json)
-        return fetch('/data.json').then(res => res.json());
+        return fetch('/data.json').then(res => res.json().then(latestData => ({ index, latestData })));
       })
-      .then(latestData => {
+      .then(({ index, latestData }) => {
         setData(latestData);
         setLatestMatchday(latestData.matchday);
 
         // 3. Views berechnen: [28, 29, 'saison']
+        // Wir nutzen hier direkt 'index.matchdays', da der State 'historyIndex' erst im nächsten Render zur Verfügung steht
         const views = [
-            ...historyIndex.matchdays.sort((a,b) => a - b),
+            ...(index.matchdays || []).sort((a,b) => a - b),
             latestData.matchday,
             'saison'
         ];
         // Einzigartig machen
         const uniqueViews = [...new Set(views)];
+        console.log("Calculated Views:", uniqueViews);
         setAvailableViews(uniqueViews);
         
         // Start bei Saison (letztes Item)
