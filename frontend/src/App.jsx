@@ -265,7 +265,7 @@ function App() {
     console.log("Switching to View:", view);
 
     if (view === 'saison') {
-      fetch('/data.json')
+      fetch(`/data.json?t=${Date.now()}`)
         .then(res => res.json())
         .then(d => {
             console.log("Data loaded for Saison");
@@ -273,7 +273,7 @@ function App() {
         });
     } else if (typeof view === 'number') {
       const isLatest = view === latestMatchday;
-      const path = isLatest ? '/data.json' : `/history/spieltag-${view}.json`;
+      const path = isLatest ? `/data.json?t=${Date.now()}` : `/history/spieltag-${view}.json?t=${Date.now()}`;
       console.log(`Fetching matchday data from ${path}`);
       
       fetch(path)
