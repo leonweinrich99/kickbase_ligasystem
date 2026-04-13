@@ -228,24 +228,25 @@ function App() {
       .catch(() => ({ matchdays: [] }))
       .then(index => {
         setHistoryIndex(index);
+        console.log("Loaded History Index:", index);
         
         // 2. Lade Initial-Daten (data.json)
         return fetch('/data.json').then(res => res.json().then(latestData => ({ index, latestData })));
       })
       .then(({ index, latestData }) => {
+        console.log("Loaded Latest Data:", latestData.matchday);
         setData(latestData);
         setLatestMatchday(latestData.matchday);
 
         // 3. Views berechnen: [28, 29, 'saison']
-        // Wir nutzen hier direkt 'index.matchdays', da der State 'historyIndex' erst im nächsten Render zur Verfügung steht
         const views = [
-            ...(index.matchdays || []).sort((a,b) => a - b),
+            ...(index.matchdays || []).filter(m => m !== latestData.matchday).sort((a,b) => a - b),
             latestData.matchday,
             'saison'
         ];
         // Einzigartig machen
         const uniqueViews = [...new Set(views)];
-        console.log("Calculated Views:", uniqueViews);
+        console.log("Available Views:", uniqueViews);
         setAvailableViews(uniqueViews);
         
         // Start bei Saison (letztes Item)
@@ -256,12 +257,33 @@ function App() {
 
   // Effekt zum Laden historischer Daten bei Ansichts-Wechel
   useEffect(() => {
+    if (availableViews.length === 0) return;
+    
     const view = availableViews[currentViewIndex];
+    console.log("Switching to View:", view);
+
     if (view === 'saison') {
-      fetch('/data.json').then(res => res.json()).then(setData);
+      fetch('/data.json')
+        .then(res => res.json())
+        .then(d => {
+            console.log("Data loaded for Saison");
+            setData(d);
+        });
     } else if (typeof view === 'number') {
-      const path = view === latestMatchday ? '/data.json' : `/history/spieltag-${view}.json`;
-      fetch(path).then(res => res.json()).then(setData);
+      const isLatest = view === latestMatchday;
+      const path = isLatest ? '/data.json' : `/history/spieltag-${view}.json`;
+      console.log(`Fetching matchday data from ${path}`);
+      
+      fetch(path)
+        .then(res => {
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            return res.json();
+        })
+        .then(d => {
+            console.log(`Data loaded for Matchday ${view}`);
+            setData(d);
+        })
+        .catch(err => console.error("History fetch error:", err));
     }
   }, [currentViewIndex, availableViews, latestMatchday]);
 
