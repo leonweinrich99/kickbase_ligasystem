@@ -6,30 +6,33 @@ import {
 } from 'recharts';
 import { 
   ArrowLeft, TrendingUp, TrendingDown, Target, 
-  Award, Wallet, Activity, Star
+  Award, Wallet, Activity, Star, Users, Search, X
 } from 'lucide-react';
 
 const UserDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [userData, setUserData] = useState(null);
+  const [allUsers, setAllUsers] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [thresholds, setThresholds] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
-        // 1. Aktuelle Daten laden
         const latestRes = await fetch(`/data.json?t=${Date.now()}`);
         const latestData = await latestRes.json();
         
-        let foundUser = null;
-        latestData.leagues.forEach(l => {
-          const u = l.users.find(user => user.id === id);
-          if (u) foundUser = { ...u, leagueColor: l.color };
-        });
+        const allUsersFlat = latestData.leagues.flatMap(l => l.users.map(u => ({...u, leagueColor: l.color}))).sort((a,b) => a.rank - b.rank);
+        setAllUsers(allUsersFlat);
 
+        const foundUser = allUsersFlat.find(user => user.id === id);
         if (!foundUser) {
           setLoading(false);
           return;
@@ -37,14 +40,13 @@ const UserDetail = () => {
 
         setUserData(foundUser);
 
-        // 1.1 Schwellenwerte berechnen
-        const allUsers = latestData.leagues.flatMap(l => l.users).sort((a,b) => a.rank - b.rank);
-        const t9 = allUsers.find(u => u.rank === 9);
-        const t10 = allUsers.find(u => u.rank === 10);
-        const t18 = allUsers.find(u => u.rank === 18);
-        const t19 = allUsers.find(u => u.rank === 19);
-        const t27 = allUsers.find(u => u.rank === 27);
-        const t28 = allUsers.find(u => u.rank === 28);
+        const allUsersSorted = [...allUsersFlat].sort((a,b) => a.rank - b.rank);
+        const t9 = allUsersSorted.find(u => u.rank === 9);
+        const t10 = allUsersSorted.find(u => u.rank === 10);
+        const t18 = allUsersSorted.find(u => u.rank === 18);
+        const t19 = allUsersSorted.find(u => u.rank === 19);
+        const t27 = allUsersSorted.find(u => u.rank === 27);
+        const t28 = allUsersSorted.find(u => u.rank === 28);
 
         setThresholds({
           rank9: t9 ? parseInt(t9.points.replace(/\./g, '')) : null,
@@ -55,7 +57,6 @@ const UserDetail = () => {
           rank28: t28 ? parseInt(t28.points.replace(/\./g, '')) : null
         });
 
-        // 2. Historie laden
         const indexRes = await fetch('/history/index.json');
         const indexData = await indexRes.json();
         const matchdayList = (indexData.matchdays || []).sort((a, b) => a - b);
@@ -88,7 +89,6 @@ const UserDetail = () => {
 
         const historyResults = (await Promise.all(historyPromises)).filter(Boolean);
         
-        // Aktuellen Spieltag hinzufügen, falls er nicht schon drin ist
         const currentPoints = parseInt(foundUser.points.replace(/\./g, '')) || 0;
         const currentMatchdayPoints = parseInt(foundUser.pointsMatchday.replace(/\./g, '')) || 0;
         
@@ -121,7 +121,7 @@ const UserDetail = () => {
     
     const avgPoints = history.reduce((acc, h) => acc + h.pointsMatchday, 0) / history.length;
     const bestMD = Math.max(...history.map(h => h.pointsMatchday));
-    const rankChange = prev ? prev.rank - last.rank : 0; // Positiv = Aufstieg
+    const rankChange = prev ? prev.rank - last.rank : 0; 
 
     return {
       avgPoints: Math.round(avgPoints),
@@ -155,43 +155,128 @@ const UserDetail = () => {
   }
 
   return (
-    <div className="max-w-[1200px] mx-auto pb-20 px-4 sm:px-0">
-      {/* Header & Back Button */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-6">
-        <button 
-          onClick={() => navigate('/')}
-          className="group flex items-center gap-3 bg-[#1a1d24] border border-[#2a2e37] px-4 py-2 rounded-xl text-[#8b92a5] hover:text-white transition-all"
-        >
-          <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-          <span className="text-xs font-bold uppercase tracking-wider">Dashboard</span>
-        </button>
-
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-[#1a1d24] border border-[#2a2e37] flex items-center justify-center relative shadow-xl overflow-hidden">
-             <div className="absolute inset-0 bg-[#ff5c3e] opacity-5"></div>
-             <Star className="text-[#ff5c3e] opacity-20 absolute -right-2 -bottom-2 w-12 h-12 rotate-12" />
-             <div className="text-2xl font-black text-[#ff5c3e] z-10">{userData.name.charAt(0)}</div>
-          </div>
-          <div>
-            <h1 className="text-3xl font-black tracking-tight uppercase mb-1">{userData.name}</h1>
-            <div className="flex items-center gap-3">
-               <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#1a1d24] border border-[#2a2e37]">
-                  <Target size={12} className="text-[#8b92a5]" />
-                  <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Rank #{userData.rank}</span>
+    <div className="max-w-[1200px] mx-auto pb-20 px-4 sm:px-0 relative">
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+          <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-2xl w-full max-w-md flex flex-col max-h-[80vh] shadow-2xl">
+             <div className="p-4 border-b border-[#2a2e37] flex justify-between items-center">
+               <h3 className="text-lg font-bold text-gray-200">Gegner auswählen</h3>
+               <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white transition-colors">
+                 <X size={20} />
+               </button>
+             </div>
+             <div className="p-4 border-b border-[#2a2e37]">
+               <div className="bg-[#0f1115] rounded-xl flex items-center px-3 py-2 border border-[#2a2e37]">
+                 <Search size={16} className="text-gray-500 mr-2" />
+                 <input 
+                   type="text" 
+                   placeholder="Spieler suchen..." 
+                   className="bg-transparent border-none outline-none text-sm text-gray-200 w-full"
+                   value={searchQuery}
+                   onChange={(e) => setSearchQuery(e.target.value)}
+                   autoFocus
+                 />
                </div>
-               {stats?.rankChange !== 0 && (
-                 <div className={`flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest ${stats.rankChange > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    {stats.rankChange > 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                    {Math.abs(stats.rankChange)} {stats.rankChange > 0 ? 'Plätze rauf' : 'Plätze runter'}
-                 </div>
+             </div>
+             <div className="overflow-y-auto p-2">
+               {allUsers
+                 .filter(u => u.id !== id && u.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                 .map(u => (
+                 <button
+                   key={u.id}
+                   onClick={() => {
+                     navigate(`/compare/${id}/${u.id}`);
+                     setIsModalOpen(false);
+                     setSearchQuery('');
+                   }}
+                   className="w-full text-left p-3 hover:bg-[#20242d] rounded-xl flex items-center gap-3 transition-colors"
+                 >
+                   <div className="w-8 h-8 rounded-full bg-[#2a2e37] flex items-center justify-center font-bold text-xs text-gray-300">
+                     {u.name.charAt(0)}
+                   </div>
+                   <div className="flex-1">
+                     <div className="font-bold text-sm text-gray-200">{u.name}</div>
+                     <div className="text-[10px] text-gray-500 uppercase tracking-widest">Rank #{u.rank}</div>
+                   </div>
+                 </button>
+               ))}
+               {allUsers.filter(u => u.id !== id && u.name.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                 <div className="p-4 text-center text-gray-500 text-sm">Keine Spieler gefunden</div>
                )}
+             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 sm:mb-10 gap-6">
+        
+        {/* Top bar on mobile (Back + Compare buttons) */}
+        <div className="flex items-center justify-between w-full sm:w-auto">
+            <button 
+              onClick={() => navigate('/')}
+              className="group flex items-center gap-3 bg-[#1a1d24] border border-[#2a2e37] px-4 py-2 rounded-xl text-[#8b92a5] hover:text-white transition-all shrink-0"
+            >
+              <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+              <span className="text-xs font-bold uppercase tracking-wider">Dashboard</span>
+            </button>
+
+            {/* Compare Buttons on mobile */}
+            <div className="flex sm:hidden items-center gap-2">
+                <button 
+                  onClick={() => setIsModalOpen(true)}
+                  className="group flex items-center gap-2 bg-[#1a1d24] border border-[#2a2e37] px-4 py-2 rounded-xl text-[#8b92a5] hover:text-white hover:border-[#ff5c3e] transition-all"
+                >
+                  <Users size={16} className="group-hover:text-[#ff5c3e] transition-colors" />
+                  <span className="text-xs font-bold uppercase tracking-wider">VS</span>
+                </button>
             </div>
+        </div>
+
+        <div className="flex items-center gap-4 w-full sm:w-auto">
+          {/* Compare Buttons on desktop */}
+          <div className="hidden sm:flex items-center gap-2">
+              <button 
+                onClick={() => setIsModalOpen(true)}
+                className="group flex items-center gap-2 bg-[#1a1d24] border border-[#2a2e37] px-4 py-2 rounded-xl text-[#8b92a5] hover:text-white hover:border-[#ff5c3e] transition-all"
+              >
+                <Users size={16} className="group-hover:text-[#ff5c3e] transition-colors" />
+                <span className="text-xs font-bold uppercase tracking-wider">Vergleichen</span>
+              </button>
+          </div>
+
+          <div className="flex items-center gap-3 sm:gap-4">
+              <div className="flex items-center">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#1a1d24] border border-[#2a2e37] flex items-center justify-center relative shadow-xl overflow-hidden shrink-0 z-10">
+                     <div className="absolute inset-0 bg-[#ff5c3e] opacity-5"></div>
+                     <Star className="text-[#ff5c3e] opacity-20 absolute -right-2 -bottom-2 w-12 h-12 rotate-12" />
+                     <div className="text-2xl font-black text-[#ff5c3e] z-10">{userData.name.charAt(0)}</div>
+                  </div>
+              </div>
+              <div className="flex flex-col flex-1 min-w-0">
+                <h1 className="text-lg sm:text-3xl font-black tracking-tight uppercase flex flex-col sm:flex-row sm:items-center gap-0 sm:gap-2 leading-tight">
+                  <span className="truncate">{userData.name}</span>
+                </h1>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1.5 sm:mt-1">
+                   <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#1a1d24] border border-[#2a2e37]">
+                      <Target size={12} className="text-[#8b92a5]" />
+                      <span className="text-[9px] sm:text-[10px] font-bold text-gray-300 uppercase tracking-widest">Rank #{userData.rank}</span>
+                   </div>
+                   {stats?.rankChange !== 0 && (
+                     <div className={`flex items-center gap-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest ${stats.rankChange > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        {stats.rankChange > 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                        {Math.abs(stats.rankChange)} {stats.rankChange > 0 ? 'auf' : 'ab'}
+                     </div>
+                   )}
+                </div>
+              </div>
           </div>
         </div>
       </div>
 
       {/* Threshold Section */}
-      <div className="grid grid-cols-1 gap-4 mb-8">
+      <div className="grid grid-cols-1 gap-4 mb-6 sm:mb-8">
         <ThresholdCard 
           rank={userData.rank}
           points={parseInt(userData.points.replace(/\./g, ''))}
@@ -200,7 +285,7 @@ const UserDetail = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
         <StatCard 
           icon={<Award className="text-[#ff5c3e]" />} 
           label="Gesamtpunkte" 
@@ -211,7 +296,7 @@ const UserDetail = () => {
           icon={<Activity className="text-blue-400" />} 
           label="Schnitt / Spieltag" 
           value={stats?.avgPoints.toLocaleString('de-DE')} 
-          subValue="Punkte pro Spieltag" 
+          subValue="Pkt. pro Spieltag" 
         />
         <StatCard 
           icon={<Target className="text-yellow-500" />} 
@@ -228,16 +313,16 @@ const UserDetail = () => {
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Rank History */}
-        <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-2xl p-6 shadow-lg">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Platzierungsverlauf</h3>
-            <div className="px-2 py-1 bg-[#20242d] rounded text-[10px] text-gray-400 font-bold uppercase">Liga Zonen</div>
+        <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-2xl p-4 sm:p-6 shadow-lg">
+          <div className="flex justify-between items-center mb-4 sm:mb-6">
+            <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Platzierungsverlauf</h3>
+            <div className="px-2 py-1 bg-[#20242d] rounded text-[9px] sm:text-[10px] text-gray-400 font-bold uppercase">Liga Zonen</div>
           </div>
-          <div className="h-[250px] w-full">
+          <div className="h-[200px] sm:h-[250px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={history}>
+              <LineChart data={history} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#2a2e37" vertical={false} />
                 <XAxis 
                   dataKey="matchday" 
@@ -266,13 +351,15 @@ const UserDetail = () => {
                   contentStyle={{ backgroundColor: '#1a1d24', border: '1px solid #2a2e37', borderRadius: '12px' }}
                   itemStyle={{ color: '#eab308', fontWeight: 'bold' }}
                 />
+                
                 <Line 
-                  type="stepAfter" 
+                  type="monotone" 
                   dataKey="rank" 
+                  name={userData.name}
                   stroke="#eab308" 
                   strokeWidth={3} 
-                  dot={{ r: 4, fill: '#eab308', strokeWidth: 2, stroke: '#1a1d24' }}
-                  activeDot={{ r: 6, strokeWidth: 0 }}
+                  dot={<CustomizedDot />}
+                  activeDot={{ r: 8, strokeWidth: 0 }}
                   animationDuration={1500}
                 />
               </LineChart>
@@ -281,14 +368,14 @@ const UserDetail = () => {
         </div>
 
         {/* Matchday Performance */}
-        <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-2xl p-6 shadow-lg">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Spieltags-Leistung</h3>
-            <div className="px-2 py-1 bg-[#20242d] rounded text-[10px] text-gray-400 font-bold uppercase">Pro Spieltag</div>
+        <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-2xl p-4 sm:p-6 shadow-lg">
+          <div className="flex justify-between items-center mb-4 sm:mb-6">
+            <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Spieltags-Leistung</h3>
+            <div className="px-2 py-1 bg-[#20242d] rounded text-[9px] sm:text-[10px] text-gray-400 font-bold uppercase">Pro Spieltag</div>
           </div>
-          <div className="h-[250px] w-full">
+          <div className="h-[200px] sm:h-[250px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={history}>
+              <BarChart data={history} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#2a2e37" vertical={false} />
                 <XAxis 
                   dataKey="matchday" 
@@ -305,9 +392,11 @@ const UserDetail = () => {
                   itemStyle={{ color: '#fff', fontWeight: 'bold' }}
                   labelStyle={{ color: '#8b92a5', marginBottom: '4px' }}
                 />
+                
                 <Bar 
                   dataKey="pointsMatchday" 
-                  fill="#3b82f6" 
+                  name={userData.name}
+                  fill="#ff5c3e" 
                   radius={[4, 4, 0, 0]}
                   animationDuration={1500}
                 />
@@ -381,17 +470,36 @@ const ThresholdCard = ({ rank, points, thresholds }) => {
   );
 };
 
-const StatCard = ({ icon, label, value, subValue }) => (
-  <div className="bg-[#1a1d24] border border-[#2a2e37] p-5 rounded-2xl shadow-sm hover:border-[#3a3f4a] transition-all group">
-    <div className="flex items-center gap-3 mb-3">
-      <div className="bg-[#20242d] p-2 rounded-lg group-hover:scale-110 transition-transform">
-        {React.cloneElement(icon, { size: 18 })}
+const StatCard = ({ icon, label, value, subValue }) => {
+  return (
+    <div className="bg-[#1a1d24] border border-[#2a2e37] p-3 sm:p-5 rounded-2xl shadow-sm hover:border-[#3a3f4a] transition-all group relative overflow-hidden flex flex-col justify-between">
+      <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+        <div className="bg-[#20242d] p-1.5 sm:p-2 rounded-lg group-hover:scale-110 transition-transform shrink-0">
+          {React.cloneElement(icon, { size: 16, className: "sm:w-[18px] sm:h-[18px]" })}
+        </div>
+        <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-[#8b92a5] leading-tight">{label}</span>
       </div>
-      <span className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5]">{label}</span>
+      
+      <div className="flex flex-col mb-1 gap-1">
+          <div className="text-[17px] sm:text-xl font-black leading-none">{value}</div>
+      </div>
+      <div className="text-[8px] sm:text-[9px] font-bold text-[#626978] uppercase tracking-wider mt-1">{subValue}</div>
     </div>
-    <div className="text-xl font-black mb-1">{value}</div>
-    <div className="text-[9px] font-bold text-[#626978] uppercase tracking-wider">{subValue}</div>
-  </div>
-);
+  );
+};
+
+const CustomizedDot = (props) => {
+  const { cx, cy, stroke, value } = props;
+  if (!cx || !cy) return null;
+
+  return (
+    <g>
+      <circle cx={cx} cy={cy} r={7} fill={stroke} stroke="#1a1d24" strokeWidth={2} />
+      <text x={cx} y={cy} textAnchor="middle" dy=".35em" fill="#1a1d24" fontSize={8} fontWeight="black">
+        {value}
+      </text>
+    </g>
+  );
+};
 
 export default UserDetail;

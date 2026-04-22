@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-do
 import Rules from './Rules';
 import logo from './assets/logo.png';
 import UserDetail from './UserDetail';
+import CompareView from './CompareView';
 import { Link } from 'react-router-dom';
 
 const AvatarIcon = () => (
@@ -388,6 +389,7 @@ function App() {
             } />
             <Route path="/rules" element={<Rules />} />
             <Route path="/user/:id" element={<UserDetail />} />
+            <Route path="/compare/:id1/:id2" element={<CompareView />} />
           </Routes>
         </div>
         
