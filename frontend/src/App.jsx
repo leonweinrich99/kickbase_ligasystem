@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
 import Rules from './Rules';
 import logo from './assets/logo.png';
+import UserDetail from './UserDetail';
+import { Link } from 'react-router-dom';
 
 const AvatarIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-[#8b92a5] opacity-50">
@@ -103,7 +105,8 @@ const parsePoints = (str) => {
   return parseInt(str.replace(/\./g, '')) || 0;
 };
 
-const UserRow = ({ item, color, isSaisonView, displayRank }) => {
+const UserRow = ({ item, color, isSaisonView, displayRank, prevRank }) => {
+  const rankChange = prevRank ? prevRank - displayRank : 0;
   const statusColors = {
     green: '#22c55e',
     red: '#ef4444',
@@ -113,33 +116,42 @@ const UserRow = ({ item, color, isSaisonView, displayRank }) => {
   const pointsToShow = isSaisonView ? item.points : (item.pointsMatchday || '0');
 
   return (
-    <div className={`flex items-center p-3 mb-2.5 bg-[#1a1d24] border ${isSaisonView && item.status ? 'border-[#3a3f4a]' : 'border-[#2a2e37]'} rounded-[14px] shadow-sm relative group hover:border-[#3a3f4a] transition-all`}>
-      {isSaisonView && item.status && (
-        <div className="absolute left-0 top-0 bottom-0 w-[4px] rounded-l-md" style={{ backgroundColor: statusColors[item.status] }}></div>
-      )}
-      <div className="w-8 flex justify-center items-center text-xs font-bold text-[#8b92a5]">
-        {item.isTrophy && isSaisonView ? <TrophyIcon type={item.trophyColor} /> : displayRank}
-      </div>
-      <div className="w-10 h-10 rounded-full bg-[#20242d] ml-2 flex items-center justify-center">
-        <AvatarIcon />
-      </div>
-      <div className="ml-3 flex-1 flex flex-col justify-center">
-        <div className="text-[14px] font-bold tracking-wide text-gray-100">{item.name}</div>
-        <div className="text-[10px] font-bold text-[#8b92a5] tracking-wider mt-0.5 opacity-70">
-          Budget: {item.estimatedBudget}
+    <Link to={`/user/${item.id}`} className="block transition-transform active:scale-95">
+      <div className={`flex items-center p-3 mb-2.5 bg-[#1a1d24] border ${isSaisonView && item.status ? 'border-[#3a3f4a]' : 'border-[#2a2e37]'} rounded-[14px] shadow-sm relative group hover:border-[#ff5c3e]/50 hover:bg-[#1e222a] transition-all cursor-pointer`}>
+        {isSaisonView && item.status && (
+          <div className="absolute left-0 top-0 bottom-0 w-[4px] rounded-l-md" style={{ backgroundColor: statusColors[item.status] }}></div>
+        )}
+        <div className="w-8 flex justify-center items-center text-xs font-bold text-[#8b92a5]">
+          {item.isTrophy && isSaisonView ? <TrophyIcon type={item.trophyColor} /> : displayRank}
+        </div>
+        <div className="w-10 h-10 rounded-full bg-[#20242d] ml-2 flex items-center justify-center">
+          <AvatarIcon />
+        </div>
+        <div className="ml-3 flex-1 flex flex-col justify-center">
+          <div className="flex items-center gap-2">
+            <div className="text-[14px] font-bold tracking-wide text-gray-100">{item.name}</div>
+            {rankChange !== 0 && isSaisonView && (
+              <div className={`flex items-center text-[10px] font-black ${rankChange > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                {rankChange > 0 ? '▲' : '▼'} {Math.abs(rankChange)}
+              </div>
+            )}
+          </div>
+          <div className="text-[10px] font-bold text-[#8b92a5] tracking-wider mt-0.5 opacity-70">
+            Budget: {item.estimatedBudget}
+          </div>
+        </div>
+        <div className="text-right mr-2">
+          <div className="text-[17px] font-bold" style={{ color: color }}>
+            {pointsToShow}
+          </div>
+          <div className="text-[10px] font-bold text-[#626978] tracking-widest mt-0.5 uppercase">Punkte</div>
         </div>
       </div>
-      <div className="text-right mr-2">
-        <div className="text-[17px] font-bold" style={{ color: color }}>
-          {pointsToShow}
-        </div>
-        <div className="text-[10px] font-bold text-[#626978] tracking-widest mt-0.5 uppercase">Punkte</div>
-      </div>
-    </div>
+    </Link>
   );
 };
 
-const LeagueColumn = ({ league, isSaisonView, rankOffset }) => {
+const LeagueColumn = ({ league, isSaisonView, rankOffset, prevRanks }) => {
   return (
     <div className="flex-1 w-full lg:w-1/3 min-w-0 px-0 sm:px-2.5">
       <div className="flex items-center mb-4 mt-8 lg:mt-0">
@@ -154,6 +166,7 @@ const LeagueColumn = ({ league, isSaisonView, rankOffset }) => {
             color={league.color} 
             isSaisonView={isSaisonView} 
             displayRank={rankOffset + index + 1}
+            prevRank={prevRanks?.[u.id]}
           />
         ))}
       </div>
@@ -161,7 +174,7 @@ const LeagueColumn = ({ league, isSaisonView, rankOffset }) => {
   );
 };
 
-const Dashboard = ({ data, currentView, onNext, onPrev }) => {
+const Dashboard = ({ data, currentView, onNext, onPrev, prevRanks }) => {
   const isSaisonView = currentView === 'saison';
   
   // 1. Alle User global sammeln
@@ -200,6 +213,7 @@ const Dashboard = ({ data, currentView, onNext, onPrev }) => {
             league={league} 
             isSaisonView={isSaisonView} 
             rankOffset={idx * 9}
+            prevRanks={prevRanks}
           />
         ))}
       </div>
@@ -211,6 +225,7 @@ function App() {
   const [data, setData] = useState(null);
   const [latestMatchday, setLatestMatchday] = useState(null);
   const [historyIndex, setHistoryIndex] = useState({ matchdays: [] });
+  const [prevRanks, setPrevRanks] = useState({});
   
   // View-Manager
   const [currentViewIndex, setCurrentViewIndex] = useState(0); 
@@ -276,6 +291,26 @@ function App() {
         
         // Start bei Saison (letztes Item)
         setCurrentViewIndex(uniqueViews.length - 1);
+
+        // 4. Lade vorherigen Spieltag für Trend-Analyse
+        const mDays = [...uniqueViews.filter(v => typeof v === 'number')].sort((a,b) => b - a);
+        const prevMDay = mDays.length > 1 ? mDays[1] : (mDays.length === 1 && mDays[0] !== mDay ? mDays[0] : null);
+        
+        if (prevMDay) {
+          fetch(`/history/spieltag-${prevMDay}.json`)
+            .then(res => res.json())
+            .then(prevData => {
+              const rankMap = {};
+              prevData.leagues.forEach(l => {
+                l.users.forEach(u => {
+                  rankMap[u.id] = u.rank;
+                });
+              });
+              setPrevRanks(rankMap);
+              console.log("Prev ranks loaded for trend:", prevMDay);
+            })
+            .catch(err => console.error("Error loading prev ranks:", err));
+        }
       })
       .catch(err => console.error("Initial load error:", err));
   }, []);
@@ -348,9 +383,11 @@ function App() {
                 currentView={availableViews[currentViewIndex]}
                 onNext={() => navigate(1)}
                 onPrev={() => navigate(-1)}
+                prevRanks={prevRanks}
               />
             } />
             <Route path="/rules" element={<Rules />} />
+            <Route path="/user/:id" element={<UserDetail />} />
           </Routes>
         </div>
         
