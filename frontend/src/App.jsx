@@ -46,7 +46,7 @@ const Header = ({
   const displayLabel = currentView === 'saison' ? 'Gesamt' : `Spieltag ${currentView}`;
 
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 border-b border-[#2a2e37] pb-6 gap-6">
+    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-8 border-b border-[#2a2e37] pb-6 gap-6">
       <div className="flex items-center gap-4 sm:gap-6">
         <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center p-0.5 sm:p-1 overflow-hidden">
           <img src={logo} alt="Kickbase Liga Logo" className="w-full h-full object-contain" />
@@ -155,7 +155,7 @@ const UserRow = ({ item, color, isSaisonView, displayRank, prevRank }) => {
 const LeagueColumn = ({ league, isSaisonView, rankOffset, prevRanks }) => {
   return (
     <div className="flex-1 w-full lg:w-1/3 min-w-0 px-0 sm:px-2.5">
-      <div className="flex items-center mb-4 mt-8 lg:mt-0">
+      <div className="flex items-center mb-4 mt-4 lg:mt-0">
         <div className="w-1 h-5 mr-3 rounded-full" style={{ backgroundColor: league.color }}></div>
         <h2 className="text-base sm:text-lg font-black tracking-wider uppercase text-gray-200">{league.name}</h2>
       </div>

@@ -23,6 +23,7 @@ const CompareView = () => {
   const [user2, setUser2] = useState(null);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showAverage, setShowAverage] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -166,7 +167,7 @@ const CompareView = () => {
   }
 
   return (
-    <div className="max-w-[1200px] mx-auto pb-20 px-4 sm:px-0 relative">
+    <div className="max-w-[1400px] mx-auto pb-20 px-0 relative">
       
       {/* Back Button */}
       <div className="mb-8">
@@ -298,6 +299,14 @@ const CompareView = () => {
         <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-2xl p-4 sm:p-6 shadow-lg">
           <div className="flex justify-between items-center mb-4 sm:mb-6">
             <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Spieltags-Leistung</h3>
+            <div className="flex items-center">
+                <button 
+                  onClick={() => setShowAverage(!showAverage)}
+                  className={`px-3 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase transition-all border shadow-lg ${showAverage ? 'bg-[#ff5c3e]/20 border-[#ff5c3e] text-[#ff5c3e]' : 'bg-[#20242d] border-[#2a2e37] text-[#8b92a5]'}`}
+                >
+                  Ø Ligaschnitt
+                </button>
+            </div>
           </div>
           <div className="h-[200px] sm:h-[250px] w-full mt-4">
             <ResponsiveContainer width="100%" height="100%">
@@ -314,15 +323,17 @@ const CompareView = () => {
                 <YAxis stroke="#4b5563" fontSize={10} tickLine={false} axisLine={false} />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
                 
-                <Bar 
-                  dataKey="averagePoints" 
-                  name="Ligaschnitt" 
-                  fill="#4b5563" 
-                  radius={[4, 4, 0, 0]}
-                  animationDuration={1500} 
-                >
-                    <LabelList dataKey="averagePoints" position="top" fill="#8b92a5" fontSize={7} fontWeight="bold" formatter={(val) => `Ø ${val}`} />
-                </Bar>
+                {showAverage && (
+                  <Bar 
+                    dataKey="averagePoints" 
+                    name="Ligaschnitt" 
+                    fill="#4b5563" 
+                    radius={[4, 4, 0, 0]}
+                    animationDuration={1500} 
+                  >
+                      <LabelList dataKey="averagePoints" position="top" fill="#8b92a5" fontSize={7} fontWeight="bold" formatter={(val) => `Ø ${val}`} />
+                  </Bar>
+                )}
                 
                 <Bar dataKey="p1PointsMatchday" name={user1.name} fill="#ff5c3e" radius={[4, 4, 0, 0]} animationDuration={1500}>
                     <LabelList dataKey="p1PointsMatchday" position="top" fill="#ff5c3e" fontSize={8} fontWeight="bold" />

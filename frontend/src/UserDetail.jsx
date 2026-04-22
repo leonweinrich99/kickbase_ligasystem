@@ -21,6 +21,7 @@ const UserDetail = () => {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [thresholds, setThresholds] = useState(null);
+  const [showAverage, setShowAverage] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -148,7 +149,7 @@ const UserDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0f1115] flex flex-col justify-center items-center gap-4">
+      <div className="text-white font-sans pb-8">
         <div className="w-12 h-12 border-4 border-[#ff5c3e] border-t-transparent rounded-full animate-spin"></div>
         <div className="text-gray-500 font-bold tracking-widest uppercase text-xs">Lade Statistiken...</div>
       </div>
@@ -170,7 +171,7 @@ const UserDetail = () => {
   }
 
   return (
-    <div className="max-w-[1200px] mx-auto pb-20 px-4 sm:px-0 relative">
+    <div className="max-w-[1400px] mx-auto pb-20 px-0 relative">
       {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
@@ -382,7 +383,14 @@ const UserDetail = () => {
         <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-2xl p-4 sm:p-6 shadow-lg">
           <div className="flex justify-between items-center mb-4 sm:mb-6">
             <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Spieltags-Leistung</h3>
-            <div className="px-2 py-1 bg-[#20242d] rounded text-[9px] sm:text-[10px] text-gray-400 font-bold uppercase">Pro Spieltag</div>
+            <div className="flex items-center">
+                <button 
+                  onClick={() => setShowAverage(!showAverage)}
+                  className={`px-3 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase transition-all border shadow-lg ${showAverage ? 'bg-[#ff5c3e]/20 border-[#ff5c3e] text-[#ff5c3e]' : 'bg-[#20242d] border-[#2a2e37] text-[#8b92a5]'}`}
+                >
+                  Ø Ligaschnitt
+                </button>
+            </div>
           </div>
           <div className="h-[200px] sm:h-[250px] w-full mt-4">
             <ResponsiveContainer width="100%" height="100%">
@@ -400,15 +408,17 @@ const UserDetail = () => {
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
                 
                 {/* Durchschnitts-Balken */}
-                <Bar 
-                  dataKey="averagePoints" 
-                  name="Ligaschnitt" 
-                  fill="#4b5563" 
-                  radius={[4, 4, 0, 0]}
-                  animationDuration={1500} 
-                >
-                    <LabelList dataKey="averagePoints" position="top" fill="#8b92a5" fontSize={8} fontWeight="bold" formatter={(val) => `Ø ${val}`} />
-                </Bar>
+                {showAverage && (
+                  <Bar 
+                    dataKey="averagePoints" 
+                    name="Ligaschnitt" 
+                    fill="#4b5563" 
+                    radius={[4, 4, 0, 0]}
+                    animationDuration={1500} 
+                  >
+                      <LabelList dataKey="averagePoints" position="top" fill="#8b92a5" fontSize={8} fontWeight="bold" formatter={(val) => `Ø ${val}`} />
+                  </Bar>
+                )}
 
                 {/* Spieler-Balken */}
                 <Bar 
