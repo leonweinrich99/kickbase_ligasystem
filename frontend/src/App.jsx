@@ -6,25 +6,11 @@ import UserDetail from './UserDetail';
 import CompareView from './CompareView';
 import { Link } from 'react-router-dom';
 
-const AvatarIcon = ({ picture, name }) => {
-  if (picture) {
-    return (
-      <img 
-        src={`https://kickbase.com/api/${picture}`} 
-        alt={name} 
-        className="w-full h-full object-cover rounded-full"
-        onError={(e) => {
-          e.target.onerror = null; 
-          e.target.src = "https://kickbase.com/api/user/default.png"; // Fallback if image fails
-        }}
-      />
-    );
-  }
+const AvatarIcon = ({ name }) => {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-[#8b92a5] opacity-50">
-      <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2" />
-      <path d="M4 20C4 16.6863 6.68629 14 10 14H14C17.3137 14 20 16.6863 20 20" stroke="currentColor" strokeWidth="2" />
-    </svg>
+    <div className="w-full h-full flex items-center justify-center bg-[#20242d] text-[#ff5c3e] font-black text-xs uppercase">
+      {name?.charAt(0) || '?'}
+    </div>
   );
 };
 
@@ -141,7 +127,7 @@ const UserRow = ({ item, color, isSaisonView, displayRank, prevRank }) => {
           {item.isTrophy && isSaisonView ? <TrophyIcon type={item.trophyColor} /> : displayRank}
         </div>
         <div className="w-10 h-10 rounded-full bg-[#20242d] ml-2 flex items-center justify-center overflow-hidden border border-[#2a2e37]">
-          <AvatarIcon picture={item.picture} name={item.name} />
+          <AvatarIcon name={item.name} />
         </div>
         <div className="ml-3 flex-1 flex flex-col justify-center">
           <div className="flex items-center gap-2">

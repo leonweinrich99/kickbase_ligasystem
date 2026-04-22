@@ -173,7 +173,6 @@ const fetchKickbaseData = async (previousData = null) => {
                 id: u.i,
                 rank: rank,
                 name: u.n,
-                picture: u.uim,
                 points: formatPoints(currentPoints),
                 pointsMatchday: formatPoints(matchdayPoints),
                 estimatedBudget: formatMoney(combinedBudgets[u.i]),
