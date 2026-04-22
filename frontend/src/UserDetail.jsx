@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, 
-  Tooltip, ResponsiveContainer, ReferenceArea 
+  ResponsiveContainer, ReferenceArea, Legend, LabelList 
 } from 'recharts';
 import { 
   ArrowLeft, TrendingUp, TrendingDown, Target, 
@@ -68,19 +68,25 @@ const UserDetail = () => {
             const data = await res.json();
             
             let userAtMatchday = null;
+            let allPoints = [];
             data.leagues.forEach(l => {
+              l.users.forEach(u => {
+                  allPoints.push(parseInt(u.pointsMatchday.replace(/\./g, '')) || 0);
+              });
               const u = l.users.find(user => user.id === id);
               if (u) userAtMatchday = u;
             });
 
             if (!userAtMatchday) return null;
+            const averagePoints = allPoints.length ? Math.round(allPoints.reduce((a, b) => a + b, 0) / allPoints.length) : 0;
 
             return {
               matchday: m,
               points: parseInt(userAtMatchday.points.replace(/\./g, '')) || 0,
               pointsMatchday: parseInt(userAtMatchday.pointsMatchday.replace(/\./g, '')) || 0,
               rank: userAtMatchday.rank,
-              budget: parseInt(userAtMatchday.estimatedBudget.replace(/[^0-9]/g, '')) || 0
+              budget: parseInt(userAtMatchday.estimatedBudget.replace(/[^0-9]/g, '')) || 0,
+              averagePoints
             };
           } catch (e) {
             return null;
@@ -93,12 +99,16 @@ const UserDetail = () => {
         const currentMatchdayPoints = parseInt(foundUser.pointsMatchday.replace(/\./g, '')) || 0;
         
         if (!historyResults.find(h => h.matchday === latestData.matchday)) {
+            const latestPoints = allUsersFlat.map(u => parseInt(u.pointsMatchday.replace(/\./g, '')) || 0);
+            const latestAvg = latestPoints.length ? Math.round(latestPoints.reduce((a,b) => a+b, 0) / latestPoints.length) : 0;
+
             historyResults.push({
                 matchday: latestData.matchday,
                 points: currentPoints,
                 pointsMatchday: currentMatchdayPoints,
                 rank: foundUser.rank,
-                budget: parseInt(foundUser.estimatedBudget.replace(/[^0-9]/g, '')) || 0
+                budget: parseInt(foundUser.estimatedBudget.replace(/[^0-9]/g, '')) || 0,
+                averagePoints: latestAvg
             });
         }
 
@@ -123,11 +133,16 @@ const UserDetail = () => {
     const bestMD = Math.max(...history.map(h => h.pointsMatchday));
     const rankChange = prev ? prev.rank - last.rank : 0; 
 
+    // Punkte pro Marktwert (in Millionen)
+    const avgBudget = history.reduce((acc, h) => acc + h.budget, 0) / history.length;
+    const pointsPerMio = avgBudget > 0 ? (avgPoints / (avgBudget / 1000000)).toFixed(2).replace('.', ',') : '0,00';
+
     return {
       avgPoints: Math.round(avgPoints),
       bestMD,
       rankChange,
-      totalPoints: last.points
+      totalPoints: last.points,
+      pointsPerMio
     };
   }, [history]);
 
@@ -306,9 +321,9 @@ const UserDetail = () => {
         />
         <StatCard 
           icon={<Wallet className="text-green-500" />} 
-          label="Teamwert" 
-          value={userData.estimatedBudget} 
-          subValue="Marktwert-Schätzung" 
+          label="Pkt. / Mio." 
+          value={stats?.pointsPerMio} 
+          subValue="Ø Marktwert Effizienz" 
         />
       </div>
 
@@ -347,10 +362,6 @@ const UserDetail = () => {
                 <ReferenceArea y1={9} y2={18} fill="#ff5c3e" fillOpacity={0.12} stroke="none" />
                 <ReferenceArea y1={18} y2={30} fill="#22c55e" fillOpacity={0.12} stroke="none" />
 
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#1a1d24', border: '1px solid #2a2e37', borderRadius: '12px' }}
-                  itemStyle={{ color: '#eab308', fontWeight: 'bold' }}
-                />
                 
                 <Line 
                   type="monotone" 
@@ -373,9 +384,9 @@ const UserDetail = () => {
             <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Spieltags-Leistung</h3>
             <div className="px-2 py-1 bg-[#20242d] rounded text-[9px] sm:text-[10px] text-gray-400 font-bold uppercase">Pro Spieltag</div>
           </div>
-          <div className="h-[200px] sm:h-[250px] w-full">
+          <div className="h-[200px] sm:h-[250px] w-full mt-4">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={history} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
+              <BarChart data={history} margin={{ top: 20, right: 5, left: -25, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#2a2e37" vertical={false} />
                 <XAxis 
                   dataKey="matchday" 
@@ -386,20 +397,29 @@ const UserDetail = () => {
                   tickFormatter={val => `ST ${val}`}
                 />
                 <YAxis stroke="#4b5563" fontSize={10} tickLine={false} axisLine={false} />
-                <Tooltip 
-                  cursor={{ fill: '#2a2e37', opacity: 0.4 }}
-                  contentStyle={{ backgroundColor: '#1a1d24', border: '1px solid #2a2e37', borderRadius: '12px' }}
-                  itemStyle={{ color: '#fff', fontWeight: 'bold' }}
-                  labelStyle={{ color: '#8b92a5', marginBottom: '4px' }}
-                />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
                 
+                {/* Durchschnitts-Balken */}
+                <Bar 
+                  dataKey="averagePoints" 
+                  name="Ligaschnitt" 
+                  fill="#4b5563" 
+                  radius={[4, 4, 0, 0]}
+                  animationDuration={1500} 
+                >
+                    <LabelList dataKey="averagePoints" position="top" fill="#8b92a5" fontSize={8} fontWeight="bold" formatter={(val) => `Ø ${val}`} />
+                </Bar>
+
+                {/* Spieler-Balken */}
                 <Bar 
                   dataKey="pointsMatchday" 
                   name={userData.name}
                   fill="#ff5c3e" 
                   radius={[4, 4, 0, 0]}
                   animationDuration={1500}
-                />
+                >
+                    <LabelList dataKey="pointsMatchday" position="top" fill="#ff5c3e" fontSize={8} fontWeight="bold" />
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>

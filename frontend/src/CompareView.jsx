@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, 
-  Tooltip, ResponsiveContainer, ReferenceArea, Legend 
+  ResponsiveContainer, ReferenceArea, Legend, LabelList 
 } from 'recharts';
 import { 
   ArrowLeft, TrendingUp, TrendingDown, Target, 
@@ -56,7 +56,11 @@ const CompareView = () => {
             
             let u1AtMatchday = null;
             let u2AtMatchday = null;
+            let allPoints = [];
             data.leagues.forEach(l => {
+              l.users.forEach(u => {
+                  allPoints.push(parseInt(u.pointsMatchday.replace(/\./g, '')) || 0);
+              });
               const u1 = l.users.find(user => user.id === id1);
               if (u1) u1AtMatchday = u1;
               const u2 = l.users.find(user => user.id === id2);
@@ -64,6 +68,8 @@ const CompareView = () => {
             });
 
             if (!u1AtMatchday || !u2AtMatchday) return null;
+            
+            const averagePoints = allPoints.length ? Math.round(allPoints.reduce((a, b) => a + b, 0) / allPoints.length) : 0;
 
             return {
               matchday: m,
@@ -75,6 +81,7 @@ const CompareView = () => {
               p2PointsMatchday: parseInt(u2AtMatchday.pointsMatchday.replace(/\./g, '')) || 0,
               p2Rank: u2AtMatchday.rank,
               p2Budget: parseInt(u2AtMatchday.estimatedBudget.replace(/[^0-9]/g, '')) || 0,
+              averagePoints
             };
           } catch (e) {
             return null;
@@ -84,6 +91,9 @@ const CompareView = () => {
         const historyResults = (await Promise.all(historyPromises)).filter(Boolean);
         
         if (!historyResults.find(h => h.matchday === latestData.matchday)) {
+            const latestPoints = allUsersFlat.map(u => parseInt(u.pointsMatchday.replace(/\./g, '')) || 0);
+            const latestAvg = latestPoints.length ? Math.round(latestPoints.reduce((a,b) => a+b, 0) / latestPoints.length) : 0;
+
             historyResults.push({
                 matchday: latestData.matchday,
                 p1Points: parsePoints(foundUser1.points),
@@ -94,6 +104,7 @@ const CompareView = () => {
                 p2PointsMatchday: parsePoints(foundUser2.pointsMatchday),
                 p2Rank: foundUser2.rank,
                 p2Budget: parsePoints(foundUser2.estimatedBudget),
+                averagePoints: latestAvg
             });
         }
 
@@ -113,15 +124,21 @@ const CompareView = () => {
     
     const p1Avg = history.reduce((acc, h) => acc + h.p1PointsMatchday, 0) / history.length;
     const p1Best = Math.max(...history.map(h => h.p1PointsMatchday));
+    const p1AvgBudget = history.reduce((acc, h) => acc + h.p1Budget, 0) / history.length;
+    const p1PointsPerMio = p1AvgBudget > 0 ? (p1Avg / (p1AvgBudget / 1000000)).toFixed(2).replace('.', ',') : '0,00';
     
     const p2Avg = history.reduce((acc, h) => acc + h.p2PointsMatchday, 0) / history.length;
     const p2Best = Math.max(...history.map(h => h.p2PointsMatchday));
+    const p2AvgBudget = history.reduce((acc, h) => acc + h.p2Budget, 0) / history.length;
+    const p2PointsPerMio = p2AvgBudget > 0 ? (p2Avg / (p2AvgBudget / 1000000)).toFixed(2).replace('.', ',') : '0,00';
 
     return {
       p1Avg: Math.round(p1Avg),
       p1Best,
+      p1PointsPerMio,
       p2Avg: Math.round(p2Avg),
-      p2Best
+      p2Best,
+      p2PointsPerMio
     };
   }, [history]);
 
@@ -248,9 +265,9 @@ const CompareView = () => {
          />
          <DuelStatRow 
             icon={<Wallet />} 
-            label="Teamwert" 
-            val1={user1.estimatedBudget} 
-            val2={user2.estimatedBudget} 
+            label="Pkt. / Mio. (Effizienz)" 
+            val1={stats?.p1PointsPerMio} 
+            val2={stats?.p2PointsPerMio} 
          />
       </div>
 
@@ -269,7 +286,6 @@ const CompareView = () => {
                 <ReferenceArea y1={1} y2={9} fill="#4ba6ff" fillOpacity={0.12} stroke="none" />
                 <ReferenceArea y1={9} y2={18} fill="#ff5c3e" fillOpacity={0.12} stroke="none" />
                 <ReferenceArea y1={18} y2={30} fill="#22c55e" fillOpacity={0.12} stroke="none" />
-                <Tooltip contentStyle={{ backgroundColor: '#1a1d24', border: '1px solid #2a2e37', borderRadius: '12px' }} />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
                 
                 <Line type="monotone" dataKey="p1Rank" name={user1.name} stroke="#ff5c3e" strokeWidth={3} dot={<CustomizedDot />} activeDot={{ r: 8, strokeWidth: 0 }} animationDuration={1500} />
@@ -283,17 +299,37 @@ const CompareView = () => {
           <div className="flex justify-between items-center mb-4 sm:mb-6">
             <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Spieltags-Leistung</h3>
           </div>
-          <div className="h-[200px] sm:h-[250px] w-full">
+          <div className="h-[200px] sm:h-[250px] w-full mt-4">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={history} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
+              <BarChart data={history} margin={{ top: 20, right: 5, left: -25, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#2a2e37" vertical={false} />
-                <XAxis dataKey="matchday" stroke="#4b5563" fontSize={10} tickLine={false} axisLine={false} tickFormatter={val => `ST ${val}`} />
+                <XAxis 
+                  dataKey="matchday" 
+                  stroke="#4b5563" 
+                  fontSize={10} 
+                  tickLine={false} 
+                  axisLine={false} 
+                  tickFormatter={val => `ST ${val}`} 
+                />
                 <YAxis stroke="#4b5563" fontSize={10} tickLine={false} axisLine={false} />
-                <Tooltip cursor={{ fill: '#2a2e37', opacity: 0.4 }} contentStyle={{ backgroundColor: '#1a1d24', border: '1px solid #2a2e37', borderRadius: '12px' }} />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
                 
-                <Bar dataKey="p1PointsMatchday" name={user1.name} fill="#ff5c3e" radius={[4, 4, 0, 0]} animationDuration={1500} />
-                <Bar dataKey="p2PointsMatchday" name={user2.name} fill="#3b82f6" radius={[4, 4, 0, 0]} animationDuration={1500} />
+                <Bar 
+                  dataKey="averagePoints" 
+                  name="Ligaschnitt" 
+                  fill="#4b5563" 
+                  radius={[4, 4, 0, 0]}
+                  animationDuration={1500} 
+                >
+                    <LabelList dataKey="averagePoints" position="top" fill="#8b92a5" fontSize={7} fontWeight="bold" formatter={(val) => `Ø ${val}`} />
+                </Bar>
+                
+                <Bar dataKey="p1PointsMatchday" name={user1.name} fill="#ff5c3e" radius={[4, 4, 0, 0]} animationDuration={1500}>
+                    <LabelList dataKey="p1PointsMatchday" position="top" fill="#ff5c3e" fontSize={8} fontWeight="bold" />
+                </Bar>
+                <Bar dataKey="p2PointsMatchday" name={user2.name} fill="#3b82f6" radius={[4, 4, 0, 0]} animationDuration={1500}>
+                    <LabelList dataKey="p2PointsMatchday" position="top" fill="#3b82f6" fontSize={8} fontWeight="bold" />
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
