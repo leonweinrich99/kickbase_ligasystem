@@ -36,6 +36,18 @@ const CompareView = () => {
         
         const latestData = await latestRes.json();
         const indexData = await indexRes.json();
+        const allUsersFlat = latestData.leagues.flatMap(l => l.users.map(u => ({...u, leagueColor: l.color})));
+        const foundUser1 = allUsersFlat.find(u => u.id === id1);
+        const foundUser2 = allUsersFlat.find(u => u.id === id2);
+
+        if (!foundUser1 || !foundUser2) {
+          setLoading(false);
+          return;
+        }
+
+        setUser1(foundUser1);
+        setUser2(foundUser2);
+
         const matchdayList = (indexData.matchdays || []).sort((a, b) => a - b);
 
         const historyPromises = matchdayList.map(async (m) => {
@@ -49,7 +61,7 @@ const CompareView = () => {
             let allPoints = [];
             data.leagues.forEach(l => {
               l.users.forEach(u => {
-                  allPoints.push(parseInt(u.pointsMatchday.replace(/\./g, '')) || 0);
+                  allPoints.push(parsePoints(u.pointsMatchday));
               });
               const u1 = l.users.find(user => user.id === id1);
               if (u1) u1AtMatchday = u1;
@@ -63,14 +75,14 @@ const CompareView = () => {
 
             return {
               matchday: m,
-              p1Points: parseInt(u1AtMatchday.points.replace(/\./g, '')) || 0,
-              p1PointsMatchday: parseInt(u1AtMatchday.pointsMatchday.replace(/\./g, '')) || 0,
+              p1Points: parsePoints(u1AtMatchday.points),
+              p1PointsMatchday: parsePoints(u1AtMatchday.pointsMatchday),
               p1Rank: u1AtMatchday.rank,
-              p1Budget: parseInt(u1AtMatchday.estimatedBudget.replace(/[^0-9]/g, '')) || 0,
-              p2Points: parseInt(u2AtMatchday.points.replace(/\./g, '')) || 0,
-              p2PointsMatchday: parseInt(u2AtMatchday.pointsMatchday.replace(/\./g, '')) || 0,
+              p1Budget: parsePoints(u1AtMatchday.estimatedBudget),
+              p2Points: parsePoints(u2AtMatchday.points),
+              p2PointsMatchday: parsePoints(u2AtMatchday.pointsMatchday),
               p2Rank: u2AtMatchday.rank,
-              p2Budget: parseInt(u2AtMatchday.estimatedBudget.replace(/[^0-9]/g, '')) || 0,
+              p2Budget: parsePoints(u2AtMatchday.estimatedBudget),
               averagePoints
             };
           } catch (e) {
@@ -81,7 +93,7 @@ const CompareView = () => {
         const historyResults = (await Promise.all(historyPromises)).filter(Boolean);
         
         if (!historyResults.find(h => h.matchday === latestData.matchday)) {
-            const latestPoints = allUsersFlat.map(u => parseInt(u.pointsMatchday.replace(/\./g, '')) || 0);
+            const latestPoints = allUsersFlat.map(u => parsePoints(u.pointsMatchday));
             const latestAvg = latestPoints.length ? Math.round(latestPoints.reduce((a,b) => a+b, 0) / latestPoints.length) : 0;
 
             historyResults.push({
