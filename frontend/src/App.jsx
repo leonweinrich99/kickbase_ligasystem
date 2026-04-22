@@ -24,6 +24,15 @@ const TrophyIcon = ({ type }) => {
   );
 };
 
+const UsersIcon = ({ className }) => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+    <circle cx="9" cy="7" r="4"></circle>
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+  </svg>
+);
+
 const Header = ({ 
   matchday, 
   participants, 
@@ -67,6 +76,7 @@ const Header = ({
 
         {/* Teilnehmer Kachel */}
         <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl px-3 sm:px-5 h-12 shadow-lg flex items-center gap-2 sm:gap-3 min-w-0">
+          <UsersIcon className="text-[#8b92a5] sm:hidden" />
           <span className="text-[8px] sm:text-[10px] font-bold text-[#8b92a5] tracking-widest leading-none uppercase hidden sm:inline">Teilnehmer</span>
           <span className="text-sm sm:text-base font-bold text-gray-200 leading-none">{participants}</span>
         </div>
