@@ -27,8 +27,14 @@ const UserDetail = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const latestRes = await fetch(`/data.json?t=${Date.now()}`);
+        // Parallelize initial fetches
+        const [latestRes, indexRes] = await Promise.all([
+          fetch(`/data.json?t=${Date.now()}`),
+          fetch('/history/index.json')
+        ]);
+        
         const latestData = await latestRes.json();
+        const indexData = await indexRes.json();
         
         const allUsersFlat = latestData.leagues.flatMap(l => l.users.map(u => ({...u, leagueColor: l.color}))).sort((a,b) => a.rank - b.rank);
         setAllUsers(allUsersFlat);
@@ -58,8 +64,6 @@ const UserDetail = () => {
           rank28: t28 ? parseInt(t28.points.replace(/\./g, '')) : null
         });
 
-        const indexRes = await fetch('/history/index.json');
-        const indexData = await indexRes.json();
         const matchdayList = (indexData.matchdays || []).sort((a, b) => a - b);
 
         const historyPromises = matchdayList.map(async (m) => {
@@ -266,8 +270,18 @@ const UserDetail = () => {
               <div className="flex items-center">
                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#1a1d24] border border-[#2a2e37] flex items-center justify-center relative shadow-xl overflow-hidden shrink-0 z-10">
                       <div className="absolute inset-0 bg-[#ff5c3e] opacity-5"></div>
-                      <Star className="text-[#ff5c3e] opacity-20 absolute -right-2 -bottom-2 w-12 h-12 rotate-12" />
-                      <div className="text-2xl font-black text-[#ff5c3e] z-10">{userData.name.charAt(0)}</div>
+                      {userData.picture ? (
+                        <img 
+                          src={`https://kickbase.com/api/${userData.picture}`} 
+                          alt={userData.name} 
+                          className="w-full h-full object-cover z-10"
+                        />
+                      ) : (
+                        <>
+                          <Star className="text-[#ff5c3e] opacity-20 absolute -right-2 -bottom-2 w-12 h-12 rotate-12" />
+                          <div className="text-2xl font-black text-[#ff5c3e] z-10">{userData.name.charAt(0)}</div>
+                        </>
+                      )}
                    </div>
               </div>
               <div className="flex flex-col flex-1 min-w-0">

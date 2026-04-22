@@ -29,23 +29,12 @@ const CompareView = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const latestRes = await fetch(`/data.json?t=${Date.now()}`);
+        const [latestRes, indexRes] = await Promise.all([
+          fetch(`/data.json?t=${Date.now()}`),
+          fetch('/history/index.json')
+        ]);
+        
         const latestData = await latestRes.json();
-        
-        const allUsersFlat = latestData.leagues.flatMap(l => l.users.map(u => ({...u, leagueColor: l.color})));
-        
-        const foundUser1 = allUsersFlat.find(user => user.id === id1);
-        const foundUser2 = allUsersFlat.find(user => user.id === id2);
-
-        if (!foundUser1 || !foundUser2) {
-          setLoading(false);
-          return;
-        }
-
-        setUser1(foundUser1);
-        setUser2(foundUser2);
-
-        const indexRes = await fetch('/history/index.json');
         const indexData = await indexRes.json();
         const matchdayList = (indexData.matchdays || []).sort((a, b) => a - b);
 
@@ -189,8 +178,14 @@ const CompareView = () => {
          
          <div className="flex items-center gap-6 z-10 w-2/5">
              <div className="w-20 h-20 rounded-2xl bg-[#0f1115] border-2 border-[#ff5c3e] flex items-center justify-center relative shadow-xl overflow-hidden shrink-0">
-                <Star className="text-[#ff5c3e] opacity-20 absolute -right-3 -bottom-3 w-16 h-16 rotate-12" />
-                <div className="text-3xl font-black text-[#ff5c3e] z-10">{user1.name.charAt(0)}</div>
+                {user1.picture ? (
+                   <img src={`https://kickbase.com/api/${user1.picture}`} alt={user1.name} className="w-full h-full object-cover z-10" />
+                ) : (
+                  <>
+                    <Star className="text-[#ff5c3e] opacity-20 absolute -right-3 -bottom-3 w-16 h-16 rotate-12" />
+                    <div className="text-3xl font-black text-[#ff5c3e] z-10">{user1.name.charAt(0)}</div>
+                  </>
+                )}
              </div>
              <div>
                 <h1 className="text-2xl font-black tracking-tight uppercase text-white">{user1.name}</h1>
@@ -206,8 +201,14 @@ const CompareView = () => {
                 <div className="text-sm font-bold text-[#3b82f6] uppercase tracking-widest mt-1">Rank #{user2.rank}</div>
              </div>
              <div className="w-20 h-20 rounded-2xl bg-[#0f1115] border-2 border-[#3b82f6] flex items-center justify-center relative shadow-xl overflow-hidden shrink-0">
-                <Star className="text-[#3b82f6] opacity-20 absolute -left-3 -bottom-3 w-16 h-16 -rotate-12" />
-                <div className="text-3xl font-black text-[#3b82f6] z-10">{user2.name.charAt(0)}</div>
+                {user2.picture ? (
+                   <img src={`https://kickbase.com/api/${user2.picture}`} alt={user2.name} className="w-full h-full object-cover z-10" />
+                ) : (
+                  <>
+                    <Star className="text-[#3b82f6] opacity-20 absolute -left-3 -bottom-3 w-16 h-16 -rotate-12" />
+                    <div className="text-3xl font-black text-[#3b82f6] z-10">{user2.name.charAt(0)}</div>
+                  </>
+                )}
              </div>
          </div>
       </div>
@@ -222,7 +223,11 @@ const CompareView = () => {
          <div className="flex justify-between items-center w-full z-10 mt-3">
              <div className="flex flex-col items-center w-[40%] gap-2">
                  <div className="w-14 h-14 rounded-xl bg-[#0f1115] border-2 border-[#ff5c3e] flex items-center justify-center relative shadow-xl overflow-hidden shrink-0">
-                    <div className="text-xl font-black text-[#ff5c3e] z-10">{user1.name.charAt(0)}</div>
+                    {user1.picture ? (
+                       <img src={`https://kickbase.com/api/${user1.picture}`} alt={user1.name} className="w-full h-full object-cover z-10" />
+                    ) : (
+                       <div className="text-xl font-black text-[#ff5c3e] z-10">{user1.name.charAt(0)}</div>
+                    )}
                  </div>
                  <div>
                     <h1 className="text-[13px] font-black tracking-tight uppercase text-white leading-tight break-all">{user1.name}</h1>
@@ -234,7 +239,11 @@ const CompareView = () => {
              
              <div className="flex flex-col items-center w-[40%] gap-2">
                  <div className="w-14 h-14 rounded-xl bg-[#0f1115] border-2 border-[#3b82f6] flex items-center justify-center relative shadow-xl overflow-hidden shrink-0">
-                    <div className="text-xl font-black text-[#3b82f6] z-10">{user2.name.charAt(0)}</div>
+                    {user2.picture ? (
+                       <img src={`https://kickbase.com/api/${user2.picture}`} alt={user2.name} className="w-full h-full object-cover z-10" />
+                    ) : (
+                       <div className="text-xl font-black text-[#3b82f6] z-10">{user2.name.charAt(0)}</div>
+                    )}
                  </div>
                  <div>
                     <h1 className="text-[13px] font-black tracking-tight uppercase text-white leading-tight break-all">{user2.name}</h1>

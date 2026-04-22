@@ -6,12 +6,27 @@ import UserDetail from './UserDetail';
 import CompareView from './CompareView';
 import { Link } from 'react-router-dom';
 
-const AvatarIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-[#8b92a5] opacity-50">
-    <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2" />
-    <path d="M4 20C4 16.6863 6.68629 14 10 14H14C17.3137 14 20 16.6863 20 20" stroke="currentColor" strokeWidth="2" />
-  </svg>
-);
+const AvatarIcon = ({ picture, name }) => {
+  if (picture) {
+    return (
+      <img 
+        src={`https://kickbase.com/api/${picture}`} 
+        alt={name} 
+        className="w-full h-full object-cover rounded-full"
+        onError={(e) => {
+          e.target.onerror = null; 
+          e.target.src = "https://kickbase.com/api/user/default.png"; // Fallback if image fails
+        }}
+      />
+    );
+  }
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-[#8b92a5] opacity-50">
+      <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2" />
+      <path d="M4 20C4 16.6863 6.68629 14 10 14H14C17.3137 14 20 16.6863 20 20" stroke="currentColor" strokeWidth="2" />
+    </svg>
+  );
+};
 
 const TrophyIcon = ({ type }) => {
   const colors = { gold: '#eab308', silver: '#94a3b8', bronze: '#ca8a04' };
@@ -125,8 +140,8 @@ const UserRow = ({ item, color, isSaisonView, displayRank, prevRank }) => {
         <div className="w-8 flex justify-center items-center text-xs font-bold text-[#8b92a5]">
           {item.isTrophy && isSaisonView ? <TrophyIcon type={item.trophyColor} /> : displayRank}
         </div>
-        <div className="w-10 h-10 rounded-full bg-[#20242d] ml-2 flex items-center justify-center">
-          <AvatarIcon />
+        <div className="w-10 h-10 rounded-full bg-[#20242d] ml-2 flex items-center justify-center overflow-hidden border border-[#2a2e37]">
+          <AvatarIcon picture={item.picture} name={item.name} />
         </div>
         <div className="ml-3 flex-1 flex flex-col justify-center">
           <div className="flex items-center gap-2">
@@ -261,39 +276,27 @@ function App() {
   };
 
   useEffect(() => {
-    // 1. Lade Index der Spieltage
-    fetch('/history/index.json')
-      .then(res => res.json())
-      .catch(() => ({ matchdays: [] }))
-      .then(index => {
+    // Optimiertes paralleles Laden
+    Promise.all([
+      fetch('/history/index.json').then(res => res.json()).catch(() => ({ matchdays: [] })),
+      fetch('/data.json').then(res => res.json())
+    ])
+    .then(([index, latestData]) => {
         setHistoryIndex(index);
-        console.log("Loaded History Index:", index);
-        
-        // 2. Lade Initial-Daten (data.json)
-        return fetch('/data.json').then(res => res.json().then(latestData => ({ index, latestData })));
-      })
-      .then(({ index, latestData }) => {
         const mDay = Number(latestData.matchday);
-        console.log("Loaded Latest Data:", mDay);
         setData(latestData);
         setLatestMatchday(mDay);
 
-        // 3. Views berechnen: [28, 29, 'saison']
         const historyDays = (index.matchdays || []).map(Number);
         const views = [
             ...historyDays.filter(m => m !== mDay).sort((a,b) => a - b),
             mDay,
             'saison'
         ];
-        // Einzigartig machen
         const uniqueViews = [...new Set(views)];
-        console.log("Available Views:", uniqueViews);
         setAvailableViews(uniqueViews);
-        
-        // Start bei Saison (letztes Item)
         setCurrentViewIndex(uniqueViews.length - 1);
 
-        // 4. Lade vorherigen Spieltag für Trend-Analyse
         const mDays = [...uniqueViews.filter(v => typeof v === 'number')].sort((a,b) => b - a);
         const prevMDay = mDays.length > 1 ? mDays[1] : (mDays.length === 1 && mDays[0] !== mDay ? mDays[0] : null);
         
@@ -308,12 +311,11 @@ function App() {
                 });
               });
               setPrevRanks(rankMap);
-              console.log("Prev ranks loaded for trend:", prevMDay);
             })
             .catch(err => console.error("Error loading prev ranks:", err));
         }
-      })
-      .catch(err => console.error("Initial load error:", err));
+    })
+    .catch(err => console.error("Initial load error:", err));
   }, []);
 
   // Effekt zum Laden historischer Daten bei Ansichts-Wechel
