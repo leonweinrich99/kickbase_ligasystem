@@ -264,11 +264,11 @@ const UserDetail = () => {
 
           <div className="flex items-center gap-3 sm:gap-4">
               <div className="flex items-center">
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#1a1d24] border border-[#2a2e37] flex items-center justify-center relative shadow-xl overflow-hidden shrink-0 z-10">
-                     <div className="absolute inset-0 bg-[#ff5c3e] opacity-5"></div>
-                     <Star className="text-[#ff5c3e] opacity-20 absolute -right-2 -bottom-2 w-12 h-12 rotate-12" />
-                     <div className="text-2xl font-black text-[#ff5c3e] z-10">{userData.name.charAt(0)}</div>
-                  </div>
+                   <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#1a1d24] border border-[#2a2e37] flex items-center justify-center relative shadow-xl overflow-hidden shrink-0 z-10">
+                      <div className="absolute inset-0 bg-[#ff5c3e] opacity-5"></div>
+                      <Star className="text-[#ff5c3e] opacity-20 absolute -right-2 -bottom-2 w-12 h-12 rotate-12" />
+                      <div className="text-2xl font-black text-[#ff5c3e] z-10">{userData.name.charAt(0)}</div>
+                   </div>
               </div>
               <div className="flex flex-col flex-1 min-w-0">
                 <h1 className="text-lg sm:text-3xl font-black tracking-tight uppercase flex flex-col sm:flex-row sm:items-center gap-0 sm:gap-2 leading-tight">
