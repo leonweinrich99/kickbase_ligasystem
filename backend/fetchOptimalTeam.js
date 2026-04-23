@@ -11,15 +11,14 @@ const delay = ms => new Promise(res => setTimeout(res, ms));
 async function fetchOptimalTeam() {
     const email = process.env.KICKBASE_EMAIL;
     const password = process.env.KICKBASE_PASS;
-    // Wir nehmen an, dass es eine Ziel-Liga gibt
     const targetLeagueName = process.env.KICKBASE_LEAGUE || "Qualigruppe 1"; 
 
     if (!email || !password) {
-        console.error("KICKBASE_EMAIL oder KICKBASE_PASS fehlt in .env (oder als Umgebungsvariable).");
+        console.error("KICKBASE_EMAIL oder KICKBASE_PASS fehlt in .env.");
         return;
     }
 
-    console.log(`Starte Optimale-Elf-Berechnung für Account: ${email}`);
+    console.log(`[LOG] Starte Prozess für: ${email}`);
 
     try {
         // 1. Login
@@ -29,257 +28,148 @@ async function fetchOptimalTeam() {
             body: JSON.stringify({ em: email, loy: false, pass: password, rep: {} })
         });
         const loginData = await loginRes.json();
-        
-        if (loginData.err) {
-            throw new Error(`Login fehlgeschlagen: ${loginData.errMsg}`);
-        }
-        
+        if (loginData.err) throw new Error(`Login failed: ${loginData.errMsg}`);
         const token = loginData.tkn;
         
-        // 2. Ligen abrufen und League-ID finden
+        // 2. League ID finden
         const leaguesRes = await fetch('https://api.kickbase.com/v4/leagues', {
             headers: { Authorization: `Bearer ${token}` }
         });
         const leaguesData = await leaguesRes.json();
-        const leaguesList = leaguesData.lins || leaguesData.leagues || [];
+        const leagues = leaguesData.lins || leaguesData.leagues || [];
+        let league = leagues.find(l => (l.n || l.name || "").toLowerCase().includes(targetLeagueName.toLowerCase())) || leagues[0];
         
-        if (leaguesList.length === 0) {
-            throw new Error("Dieser Account ist in keiner Kickbase-Liga.");
-        }
+        if (!league) throw new Error("Keine Liga gefunden.");
+        const leagueId = league.i || league.id;
+        console.log(`[LOG] Nutze Liga: ${league.n || league.name} (ID: ${leagueId})`);
 
-        let leagueId = null;
-        let foundLeagueName = "";
-
-        // Erst nach dem Wunschnamen suchen
-        for (const l of leaguesList) {
-            const name = l.n || l.name;
-            if (name.toLowerCase().includes(targetLeagueName.toLowerCase())) {
-                leagueId = l.i || l.id;
-                foundLeagueName = name;
-                break;
-            }
-        }
-        
-        // Fallback: Wenn nicht gefunden, nimm einfach die erste Liga
-        if (!leagueId) {
-            const firstLeague = leaguesList[0];
-            leagueId = firstLeague.i || firstLeague.id;
-            foundLeagueName = firstLeague.n || firstLeague.name;
-            console.log(`Liga '${targetLeagueName}' nicht gefunden. Nutze stattdessen erste verfügbare Liga: '${foundLeagueName}'`);
-        } else {
-            console.log(`Nutze Liga: '${foundLeagueName}' (ID: ${leagueId})`);
-        }
-        
-        // 3. Ranking abrufen, um den aktuellen Spieltag zu erfahren
+        // 3. Aktueller Spieltag
         const rankingRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/ranking`, {
             headers: { Authorization: `Bearer ${token}` }
         });
         const rankingData = await rankingRes.json();
-        const currentMatchday = rankingData.day; // Der Spieltag, der gerade abgeschlossen wurde oder läuft
-        console.log(`Aktueller Spieltag erkannt: ${currentMatchday}`);
+        const currentMatchday = rankingData.day;
+        console.log(`[LOG] Spieltag: ${currentMatchday}`);
 
-        // 4. Bundesliga-Teams abrufen (v4/base/predictions/teams/1)
-        console.log("Rufe Bundesliga-Teams ab...");
+        // 4. Teams abrufen
         const teamsRes = await fetch('https://api.kickbase.com/v4/base/predictions/teams/1', {
             headers: { Authorization: `Bearer ${token}` }
         });
-        
-        if (!teamsRes.ok) {
-            const errText = await teamsRes.text();
-            throw new Error(`Fehler beim Abrufen der Teams (Status ${teamsRes.status}): ${errText}`);
-        }
-
         const teamsData = await teamsRes.json();
-        console.log("Teams API Antwort Keys:", Object.keys(teamsData));
-        
-        // Versuche verschiedene Keys für die Teams-Liste (Kickbase nutzt 'tms')
-        const teams = teamsData.tms || teamsData.teams || teamsData.t || (Array.isArray(teamsData) ? teamsData : []);
-        
-        console.log(`Lade Spieler für ${teams.length} Teams...`);
+        const teams = teamsData.tms || [];
+        console.log(`[LOG] ${teams.length} Teams gefunden.`);
+
         let allPlayers = [];
 
-        // 5. Spieler aller Teams abrufen
-        for (let tIdx = 0; tIdx < teams.length; tIdx++) {
-            const team = teams[tIdx];
-            const teamId = team.tid || team.i || team.id || team.teamId;
-            const teamName = team.tn || team.n || team.name || "Unbekannt";
+        // 5. Spieler pro Team sammeln
+        for (const team of teams) {
+            const teamId = team.tid || team.i;
+            const teamName = team.tn || team.n;
             
-            if (!teamId) {
-                console.log(`Überspringe Team ohne ID: ${JSON.stringify(team)}`);
-                continue;
+            // Versuche den "Squad" Endpoint (v4/teams/{id}/players)
+            // Falls dieser fehlschlägt, versuchen wir den teamprofile-Endpoint
+            const teamUrl = `https://api.kickbase.com/v4/leagues/${leagueId}/teams/${teamId}/players`;
+            const tpRes = await fetch(teamUrl, { headers: { Authorization: `Bearer ${token}` } });
+            
+            if (tpRes.ok) {
+                const tpData = await tpRes.json();
+                const players = tpData.players || tpData.pl || tpData.p || (Array.isArray(tpData) ? tpData : []);
+                
+                for (const p of players) {
+                    allPlayers.push({
+                        id: p.i || p.id,
+                        teamId: teamId,
+                        name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(),
+                        position: p.p || p.pos || 0,
+                        marketValue: p.mv || p.marketValue || 0,
+                        imagePath: p.pi || p.profileBig || p.profile
+                    });
+                }
+                console.log(`[LOG] Team ${teamName}: ${players.length} Spieler geladen.`);
             }
-            
-            console.log(`Abfrage Team ${tIdx+1}/18: ${teamName} (ID: ${teamId})...`);
-            
-            // Wir nutzen den Liga-bezogenen Team-Endpoint
-            const teamPlayersRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/teams/${teamId}/players`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            
-            if (!teamPlayersRes.ok) {
-                console.error(`  -> FEHLER: Konnte Spieler für ${teamName} nicht laden (Status ${teamPlayersRes.status})`);
-                continue;
-            }
-
-            const playersData = await teamPlayersRes.json();
-            
-            // Versuche verschiedene Keys für die Spielerliste
-            let playersRaw = playersData.players || playersData.pl || playersData.p || playersData.sl || playersData.squad || playersData;
-            let playersList = [];
-
-            if (Array.isArray(playersRaw)) {
-                playersList = playersRaw;
-            } else if (playersRaw && typeof playersRaw === 'object') {
-                playersList = Object.values(playersRaw);
-            }
-
-            console.log(`  -> ${playersList.length} Spieler gefunden.`);
-            
-            for (const p of playersList) {
-                if (!p || typeof p !== 'object') continue;
-                const pId = p.i || p.id;
-                if (!pId) continue;
-
-                allPlayers.push({
-                    id: pId,
-                    teamId: teamId,
-                    firstName: p.fn || '',
-                    lastName: p.n || p.ln || '',
-                    name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(),
-                    position: p.p || p.pos || 0, // 1=TW, 2=AW, 3=MF, 4=ST
-                    marketValue: p.mv || p.marketValue || 0,
-                    imagePath: p.pi || p.profileBig || p.profile
-                });
-            }
-            await delay(300); // 300ms Pause pro Team
+            await delay(200);
         }
-        
-        console.log(`Insgesamt ${allPlayers.length} Spieler geladen. Rufe nun detaillierte Stats für Spieltag ${currentMatchday} ab (dies kann ca. 2-3 Minuten dauern)...`);
-        
-        // 6. Für jeden Spieler detaillierte Stats abrufen, um die Punkte für den `currentMatchday` zu bekommen
+
+        if (allPlayers.length === 0) {
+            throw new Error("Keine Spieler gefunden. Bitte Endpunkte prüfen.");
+        }
+
+        // 6. Detaillierte Punkte für jeden Spieler (v4/leagues/{leagueId}/players/{playerId}/stats)
+        console.log(`[LOG] Rufe Punkte für ${allPlayers.length} Spieler ab...`);
         for (let i = 0; i < allPlayers.length; i++) {
-            const player = allPlayers[i];
-            
+            const p = allPlayers[i];
             try {
-                const statsRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/players/${player.id}/stats`, {
+                const sRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/players/${p.id}/stats`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-                
-                if (statsRes.status === 200) {
-                    const statsData = await statsRes.json();
-                    const matchDays = statsData.matchDays || statsData.mds || [];
-                    
-                    // Suche nach den Punkten des aktuellen Spieltags
-                    const mdStat = matchDays.find(md => (md.day || md.d) === currentMatchday);
-                    player.points = mdStat ? (mdStat.points || mdStat.p || 0) : 0;
+                if (sRes.ok) {
+                    const sData = await sRes.json();
+                    const mds = sData.matchDays || sData.mds || [];
+                    const stat = mds.find(m => (m.day || m.d) === currentMatchday);
+                    p.points = stat ? (stat.points || stat.p || 0) : 0;
                 } else {
-                    player.points = 0;
+                    p.points = 0;
                 }
-            } catch (err) {
-                console.error(`Fehler bei Spieler ${player.id}: ${err.message}`);
-                player.points = 0;
-            }
+            } catch (e) { p.points = 0; }
             
-            if (i % 50 === 0 && i > 0) {
-                console.log(`Fortschritt: ${i} / ${allPlayers.length} Spieler verarbeitet...`);
-            }
-            await delay(250); // 250ms Pause pro Spieler (Rate-Limiting)
+            if (i % 50 === 0 && i > 0) console.log(`[LOG] Fortschritt: ${i}/${allPlayers.length}`);
+            await delay(150);
         }
-        
-        console.log("Stats geladen. Starte Berechnung der optimalen Elf...");
 
-        // ==========================================
-        // 7. ILP Solver: Die Optimale Elf berechnen
-        // ==========================================
-        
-        // Modell initialisieren
+        // 7. ILP Solver
+        console.log("[LOG] Starte Solver...");
         const model = {
             optimize: "points",
             opType: "max",
             constraints: {
                 budget: { max: 250000000 },
                 total_players: { equal: 11 },
-                pos_1: { equal: 1 },         // Genau 1 TW
-                pos_2: { min: 3, max: 5 },   // 3-5 AW
-                pos_3: { min: 3, max: 5 },   // 3-5 MF
-                pos_4: { min: 1, max: 3 }    // 1-3 ST
+                pos_1: { equal: 1 },
+                pos_2: { min: 3, max: 5 },
+                pos_3: { min: 3, max: 5 },
+                pos_4: { min: 1, max: 3 }
             },
             variables: {},
             ints: {}
         };
-        
-        // Jedes Team darf max 2 Spieler stellen
-        const teamIds = [...new Set(allPlayers.map(p => p.teamId))];
-        for (const tid of teamIds) {
-            model.constraints[`team_${tid}`] = { max: 2 };
-        }
-        
-        // Variablen befüllen (jeder Spieler ist eine Variable [0 oder 1])
-        for (const p of allPlayers) {
-            const varName = `player_${p.id}`;
-            model.variables[varName] = {
+
+        // Team-Constraint (max 3 pro Verein)
+        const tIds = [...new Set(allPlayers.map(p => p.teamId))];
+        tIds.forEach(id => model.constraints[`t_${id}`] = { max: 3 });
+
+        allPlayers.forEach(p => {
+            const v = `p_${p.id}`;
+            model.variables[v] = {
                 points: p.points,
                 budget: p.marketValue,
                 total_players: 1,
-                [`team_${p.teamId}`]: 1,
+                [`t_${p.teamId}`]: 1,
                 [`pos_${p.position}`]: 1
             };
-            model.ints[varName] = 1;
-        }
-        
-        // Lösen!
-        const result = solver.Solve(model);
-        
-        if (!result.feasible) {
-            throw new Error("Der Solver konnte keine gültige Aufstellung finden (Constraints nicht erfüllbar).");
-        }
-        
-        console.log(`Lösung gefunden! Max Punkte: ${result.result}`);
-        
-        // Gewählte Spieler extrahieren
-        const selectedPlayerIds = [];
-        for (const key in result) {
-            if (key.startsWith('player_') && result[key] === 1) {
-                selectedPlayerIds.push(key.replace('player_', ''));
-            }
-        }
-        
-        const bestTeam = allPlayers.filter(p => selectedPlayerIds.includes(p.id.toString()));
-        
-        // Nach Positionen sortieren (TW -> AW -> MF -> ST)
-        bestTeam.sort((a, b) => a.position - b.position);
-        
-        // Zusammenfassung berechnen
-        const totalPoints = bestTeam.reduce((sum, p) => sum + p.points, 0);
-        const totalBudget = bestTeam.reduce((sum, p) => sum + p.marketValue, 0);
-        
-        const outputData = {
+            model.ints[v] = 1;
+        });
+
+        const res = solver.Solve(model);
+        if (!res.feasible) throw new Error("Keine Lösung gefunden.");
+
+        const lineup = allPlayers.filter(p => res[`p_${p.id}`] === 1);
+        lineup.sort((a, b) => a.position - b.position);
+
+        const output = {
             matchday: currentMatchday,
-            totalPoints: totalPoints,
-            totalBudget: totalBudget,
+            totalPoints: lineup.reduce((s, p) => s + p.points, 0),
+            totalBudget: lineup.reduce((s, p) => s + p.marketValue, 0),
             timestamp: new Date().toISOString(),
-            lineup: bestTeam
+            lineup: lineup
         };
-        
-        // Speichern im Frontend-Ordner
-        const outDir = path.join(__dirname, '..', 'frontend', 'public', 'history');
-        if (!fs.existsSync(outDir)) {
-            fs.mkdirSync(outDir, { recursive: true });
-        }
-        
-        const filePath = path.join(outDir, `optimal-md-${currentMatchday}.json`);
-        fs.writeFileSync(filePath, JSON.stringify(outputData, null, 2));
-        
-        console.log(`Erfolg! Optimale Elf für Spieltag ${currentMatchday} gespeichert in ${filePath}`);
-        
-    } catch (e) {
-        console.error("Fehler im FetchOptimalTeam-Prozess:", e);
+
+        const outPath = path.join(__dirname, `../frontend/public/history/optimal-md-${currentMatchday}.json`);
+        fs.writeFileSync(outPath, JSON.stringify(output, null, 2));
+        console.log(`[SUCCESS] Optimale Elf für Spieltag ${currentMatchday} gespeichert!`);
+
+    } catch (error) {
+        console.error(`[ERROR] ${error.message}`);
     }
 }
 
-// Wenn direkt ausgeführt
-if (require.main === module) {
-    fetchOptimalTeam();
-}
-
-module.exports = { fetchOptimalTeam };
+fetchOptimalTeam();
