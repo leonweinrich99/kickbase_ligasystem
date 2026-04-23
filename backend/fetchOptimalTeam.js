@@ -70,24 +70,30 @@ async function fetchOptimalTeam() {
             
             console.log(`[LOG] Abfrage Team ${tIdx+1}/18: ${teamName} (ID: ${teamId})...`);
             
-            // Versuche verschiedene Endpunkte für den Kader
+            // Versuche verschiedene Endpunkte für den Kader (basierend auf kickbase-api-python)
             const urls = [
+                `https://api.kickbase.com/competition/teams/${teamId}/players`,
                 `https://api.kickbase.com/v4/leagues/${leagueId}/teams/${teamId}/players`,
                 `https://api.kickbase.com/v4/leagues/${leagueId}/teams/${teamId}/teamprofile`,
-                `https://api.kickbase.com/v4/competitions/1/teams/${teamId}/players`,
-                `https://api.kickbase.com/v4/base/teams/${teamId}/players`
+                `https://api.kickbase.com/v4/competitions/1/teams/${teamId}/players`
             ];
             
             let playersFound = [];
             for (const url of urls) {
                 try {
-                    const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+                    const r = await fetch(url, { 
+                        headers: { 
+                            Authorization: `Bearer ${token}`,
+                            Cookie: `kkstrauth=${token}`
+                        } 
+                    });
                     if (r.ok) {
                         const d = await r.json();
-                        const list = d.players || d.pl || d.p || (Array.isArray(d) ? d : []);
+                        // Kickbase nutzt oft 'p' (Python Lib) oder 'pl' / 'players'
+                        const list = d.p || d.players || d.pl || (Array.isArray(d) ? d : []);
                         if (list && (Array.isArray(list) ? list.length > 0 : Object.keys(list).length > 0)) {
                             playersFound = Array.isArray(list) ? list : Object.values(list);
-                            console.log(`  -> ${playersFound.length} Spieler über ${url.split('v4/')[1]} gefunden.`);
+                            console.log(`  -> ${playersFound.length} Spieler über ${url.replace('https://api.kickbase.com/', '')} gefunden.`);
                             break;
                         }
                     }
