@@ -51,47 +51,36 @@ async function fetchOptimalTeam() {
         const currentMatchday = rankingData.day;
         console.log(`[LOG] Spieltag: ${currentMatchday}`);
 
-        // 4. Teams abrufen
-        const teamsRes = await fetch('https://api.kickbase.com/v4/base/predictions/teams/1', {
+        // 4. Alle Spieler auf einmal abrufen (v4/leagues/{leagueId}/lineup/selection)
+        console.log("[LOG] Rufe alle verfügbaren Spieler ab...");
+        const selectionRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/lineup/selection`, {
             headers: { Authorization: `Bearer ${token}` }
         });
-        const teamsData = await teamsRes.json();
-        const teams = teamsData.tms || [];
-        console.log(`[LOG] ${teams.length} Teams gefunden.`);
 
         let allPlayers = [];
-
-        // 5. Spieler pro Team sammeln
-        for (const team of teams) {
-            const teamId = team.tid || team.i;
-            const teamName = team.tn || team.n;
+        if (selectionRes.ok) {
+            const selectionData = await selectionRes.json();
+            const players = selectionData.players || selectionData.pl || [];
             
-            // Versuche den "Squad" Endpoint (v4/teams/{id}/players)
-            // Falls dieser fehlschlägt, versuchen wir den teamprofile-Endpoint
-            const teamUrl = `https://api.kickbase.com/v4/leagues/${leagueId}/teams/${teamId}/players`;
-            const tpRes = await fetch(teamUrl, { headers: { Authorization: `Bearer ${token}` } });
-            
-            if (tpRes.ok) {
-                const tpData = await tpRes.json();
-                const players = tpData.players || tpData.pl || tpData.p || (Array.isArray(tpData) ? tpData : []);
-                
-                for (const p of players) {
-                    allPlayers.push({
-                        id: p.i || p.id,
-                        teamId: teamId,
-                        name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(),
-                        position: p.p || p.pos || 0,
-                        marketValue: p.mv || p.marketValue || 0,
-                        imagePath: p.pi || p.profileBig || p.profile
-                    });
-                }
-                console.log(`[LOG] Team ${teamName}: ${players.length} Spieler geladen.`);
+            for (const p of players) {
+                allPlayers.push({
+                    id: p.i || p.id,
+                    teamId: p.tid || p.t || 0,
+                    name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(),
+                    position: p.p || p.pos || 0,
+                    marketValue: p.mv || p.marketValue || 0,
+                    imagePath: p.pi || p.profileBig || p.profile
+                });
             }
-            await delay(200);
+            console.log(`[LOG] ${allPlayers.length} Spieler erfolgreich über Selection-Endpoint geladen.`);
+        } else {
+            console.log("[WARN] Selection-Endpoint nicht verfügbar. Nutze Fallback über Teams...");
+            // ... Fallback Logik hier falls nötig, aber wir probieren erst mal das.
+            throw new Error("Selection-Endpoint fehlgeschlagen.");
         }
 
         if (allPlayers.length === 0) {
-            throw new Error("Keine Spieler gefunden. Bitte Endpunkte prüfen.");
+            throw new Error("Keine Spieler gefunden.");
         }
 
         // 6. Detaillierte Punkte für jeden Spieler (v4/leagues/{leagueId}/players/{playerId}/stats)
