@@ -82,6 +82,12 @@ async function fetchOptimalTeam() {
         const teamsRes = await fetch('https://api.kickbase.com/v4/competitions/1/teams', {
             headers: { Authorization: `Bearer ${token}` }
         });
+        
+        if (!teamsRes.ok) {
+            const errText = await teamsRes.text();
+            throw new Error(`Fehler beim Abrufen der Teams (Status ${teamsRes.status}): ${errText}`);
+        }
+
         const teamsData = await teamsRes.json();
         const teams = teamsData.teams || teamsData.t || [];
         
@@ -94,6 +100,12 @@ async function fetchOptimalTeam() {
             const teamPlayersRes = await fetch(`https://api.kickbase.com/v4/competitions/1/teams/${teamId}/players`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
+            
+            if (!teamPlayersRes.ok) {
+                console.error(`Konnte Spieler für Team ${teamId} nicht laden (Status ${teamPlayersRes.status})`);
+                continue;
+            }
+
             const teamPlayersData = await teamPlayersRes.json();
             const playersList = teamPlayersData.p || teamPlayersData.players || [];
             
