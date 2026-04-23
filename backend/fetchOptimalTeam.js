@@ -124,12 +124,25 @@ async function fetchOptimalTeam() {
             const profileData = await teamProfileRes.json();
             console.log(`  -> Profil geladen. Keys: ${Object.keys(profileData).join(', ')}`);
 
-            // Versuche verschiedene Keys für die Spielerliste (Kickbase nutzt oft 'pl')
-            const playersList = profileData.pl || profileData.players || profileData.p || profileData.sl || profileData.squad || [];
+            // Versuche verschiedene Keys für die Spielerliste
+            let playersRaw = profileData.pl || profileData.players || profileData.p || profileData.sl || profileData.squad;
+            let playersList = [];
+
+            if (Array.isArray(playersRaw)) {
+                playersList = playersRaw;
+            } else if (playersRaw && typeof playersRaw === 'object') {
+                // Falls es ein Objekt ist, nimm alle Werte (Values)
+                playersList = Object.values(playersRaw);
+                console.log(`  -> 'pl' ist ein Objekt. Konvertiere ${playersList.length} Values zu Array.`);
+            }
+
             console.log(`  -> ${playersList.length} Spieler gefunden.`);
             
             for (const p of playersList) {
+                if (!p || typeof p !== 'object') continue;
                 const pId = p.i || p.id;
+                if (!pId) continue;
+
                 allPlayers.push({
                     id: pId,
                     teamId: teamId,
