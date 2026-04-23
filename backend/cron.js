@@ -23,5 +23,5 @@ function startCron() {
     });
     console.log("Cron job started: Scheduled to run every Monday at 19:00.");
 }
-
+//sd
 module.exports = { startCron };
