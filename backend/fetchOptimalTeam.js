@@ -51,47 +51,60 @@ async function fetchOptimalTeam() {
         const currentMatchday = rankingData.day;
         console.log(`[LOG] Spieltag: ${currentMatchday}`);
 
-        // 4. Alle Spieler auf einmal abrufen (v4/leagues/{leagueId}/lineup/selection)
-        console.log("[LOG] Rufe alle verfügbaren Spieler ab...");
-        let selectionRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/lineup/selection`, {
+        // 4. Teams laden (v4/base/predictions/teams/1)
+        console.log("[LOG] Rufe Bundesliga-Teams ab...");
+        const teamsRes = await fetch('https://api.kickbase.com/v4/base/predictions/teams/1', {
             headers: { Authorization: `Bearer ${token}` }
         });
+        const teamsData = await teamsRes.json();
+        const teams = teamsData.tms || [];
+        console.log(`[LOG] ${teams.length} Teams gefunden.`);
 
         let allPlayers = [];
-        if (selectionRes.ok) {
-            let selectionData = await selectionRes.json();
-            console.log(`[LOG] Selection-Keys: ${Object.keys(selectionData).join(', ')}`);
+
+        // 5. Spieler pro Team sammeln
+        for (let tIdx = 0; tIdx < teams.length; tIdx++) {
+            const team = teams[tIdx];
+            const teamId = team.tid || team.i;
+            const teamName = team.tn || team.n;
             
-            // Falls Selection leer ist, versuchen wir den Markt-Endpoint
-            let rawPlayers = selectionData.players || selectionData.pl || [];
+            console.log(`[LOG] Abfrage Team ${tIdx+1}/18: ${teamName} (ID: ${teamId})...`);
             
-            if (rawPlayers.length === 0) {
-                console.log("[LOG] Selection leer. Probiere Markt-Endpoint...");
-                const marketRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/market`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                if (marketRes.ok) {
-                    const marketData = await marketRes.json();
-                    console.log(`[LOG] Markt-Keys: ${Object.keys(marketData).join(', ')}`);
-                    rawPlayers = marketData.players || marketData.pl || [];
-                }
+            // Versuche verschiedene Endpunkte für den Kader
+            const urls = [
+                `https://api.kickbase.com/v4/leagues/${leagueId}/teams/${teamId}/players`,
+                `https://api.kickbase.com/v4/leagues/${leagueId}/teams/${teamId}/teamprofile`,
+                `https://api.kickbase.com/v4/competitions/1/teams/${teamId}/players`,
+                `https://api.kickbase.com/v4/base/teams/${teamId}/players`
+            ];
+            
+            let playersFound = [];
+            for (const url of urls) {
+                try {
+                    const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+                    if (r.ok) {
+                        const d = await r.json();
+                        const list = d.players || d.pl || d.p || (Array.isArray(d) ? d : []);
+                        if (list && (Array.isArray(list) ? list.length > 0 : Object.keys(list).length > 0)) {
+                            playersFound = Array.isArray(list) ? list : Object.values(list);
+                            console.log(`  -> ${playersFound.length} Spieler über ${url.split('v4/')[1]} gefunden.`);
+                            break;
+                        }
+                    }
+                } catch (e) {}
             }
             
-            for (const p of rawPlayers) {
+            for (const p of playersFound) {
                 allPlayers.push({
                     id: p.i || p.id,
-                    teamId: p.tid || p.t || 0,
+                    teamId: teamId,
                     name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(),
                     position: p.p || p.pos || 0,
                     marketValue: p.mv || p.marketValue || 0,
                     imagePath: p.pi || p.profileBig || p.profile
                 });
             }
-            console.log(`[LOG] ${allPlayers.length} Spieler erfolgreich geladen.`);
-        } else {
-            console.log("[WARN] Selection-Endpoint nicht verfügbar. Nutze Fallback über Teams...");
-            // ... Fallback Logik hier falls nötig, aber wir probieren erst mal das.
-            throw new Error("Selection-Endpoint fehlgeschlagen.");
+            await delay(250);
         }
 
         if (allPlayers.length === 0) {
