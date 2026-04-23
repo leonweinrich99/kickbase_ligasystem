@@ -92,8 +92,8 @@ async function fetchOptimalTeam() {
         const teamsData = await teamsRes.json();
         console.log("Teams API Antwort Keys:", Object.keys(teamsData));
         
-        // Versuche verschiedene Keys für die Teams-Liste
-        const teams = teamsData.teams || teamsData.t || (Array.isArray(teamsData) ? teamsData : []);
+        // Versuche verschiedene Keys für die Teams-Liste (Kickbase nutzt 'tms')
+        const teams = teamsData.tms || teamsData.teams || teamsData.t || (Array.isArray(teamsData) ? teamsData : []);
         
         console.log(`Lade Spieler für ${teams.length} Teams...`);
         let allPlayers = [];
