@@ -13,6 +13,7 @@
   "dependencies": {
     "cors": "^2.8.6",
     "express": "^5.2.1",
+    "javascript-lp-solver": "^1.0.3",
     "node-cron": "^4.2.1",
     "node-fetch": "^3.3.2",
     "playwright": "^1.59.1"

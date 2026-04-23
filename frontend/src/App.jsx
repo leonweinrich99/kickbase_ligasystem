@@ -5,6 +5,7 @@ import logo from './assets/logo.png';
 import UserDetail from './UserDetail';
 import CompareView from './CompareView';
 import { Link } from 'react-router-dom';
+import OptimalTeam from './OptimalTeam';
 
 const AvatarIcon = ({ name }) => {
   return (
@@ -236,6 +237,9 @@ function App() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateStatus, setUpdateStatus] = useState(null);
 
+  // Optimal Team Modal
+  const [isOptimalTeamOpen, setIsOptimalTeamOpen] = useState(false);
+
   const handleManualUpdate = async () => {
     const password = window.prompt("Bitte Admin-Passwort eingeben:");
     if (!password) return;
@@ -381,8 +385,8 @@ function App() {
           </Routes>
         </div>
         
-        <footer className="mt-20 border-t border-[#2a2e37] pt-8 pb-10 flex flex-col sm:flex-row justify-between items-center gap-6 opacity-60">
-            <div className="flex items-center gap-3">
+        <footer className="mt-20 border-t border-[#2a2e37] pt-8 pb-10 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex items-center gap-3 opacity-60">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
                 <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-[#8b92a5]">Status: Live</span>
                 <span className="text-[#2a2e37]">|</span>
@@ -391,7 +395,15 @@ function App() {
                 </span>
             </div>
             
-            <div className="flex items-center gap-6 text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-[#555]">
+            <button 
+              onClick={() => setIsOptimalTeamOpen(true)}
+              className="flex items-center gap-2 bg-[#1a1d24] text-[#ff5c3e] border border-[#ff5c3e]/30 px-5 py-2.5 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest hover:bg-[#ff5c3e] hover:text-white transition-all shadow-[0_0_15px_rgba(255,92,62,0.1)] hover:shadow-[0_0_25px_rgba(255,92,62,0.3)] active:scale-95 group order-first md:order-none"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:fill-white group-hover:scale-110 transition-transform"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              Die optimale Elf
+            </button>
+            
+            <div className="flex items-center gap-6 text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-[#555] opacity-60">
                 {updateStatus ? (
                   <span className="text-[#ff5c3e] transition-all animate-pulse">{updateStatus}</span>
                 ) : (
@@ -411,6 +423,13 @@ function App() {
                 )}
             </div>
         </footer>
+        
+        <OptimalTeam 
+          isOpen={isOptimalTeamOpen} 
+          onClose={() => setIsOptimalTeamOpen(false)} 
+          availableMatchdays={availableViews} 
+          currentGlobalMatchday={latestMatchday}
+        />
       </div>
     </Router>
   );
