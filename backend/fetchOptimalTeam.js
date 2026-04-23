@@ -102,7 +102,14 @@ async function fetchOptimalTeam() {
         for (let tIdx = 0; tIdx < teams.length; tIdx++) {
             const team = teams[tIdx];
             const teamId = team.i || team.id || team.teamId;
-            if (!teamId) continue;
+            const teamName = team.n || team.name || "Unbekannt";
+            
+            if (!teamId) {
+                console.log(`Überspringe Team ohne ID: ${JSON.stringify(team)}`);
+                continue;
+            }
+            
+            console.log(`Abfrage Team ${tIdx+1}/18: ${teamName} (ID: ${teamId})...`);
             
             // Wir nutzen den Team-Profile Endpoint, um den Kader abzurufen
             const teamProfileRes = await fetch(`https://api.kickbase.com/v4/competitions/1/teams/${teamId}/teamprofile`, {
@@ -110,19 +117,16 @@ async function fetchOptimalTeam() {
             });
             
             if (!teamProfileRes.ok) {
-                console.error(`Konnte Profil für Team ${teamId} nicht laden (Status ${teamProfileRes.status})`);
+                console.error(`  -> FEHLER: Konnte Profil für ${teamName} nicht laden (Status ${teamProfileRes.status})`);
                 continue;
             }
 
             const profileData = await teamProfileRes.json();
-            
-            // Nur beim ersten Team die Keys loggen zur Diagnose
-            if (tIdx === 0) {
-                console.log("TeamProfile API Antwort Keys:", Object.keys(profileData));
-            }
+            console.log(`  -> Profil geladen. Keys: ${Object.keys(profileData).join(', ')}`);
 
             // Versuche verschiedene Keys für die Spielerliste
             const playersList = profileData.players || profileData.p || profileData.sl || profileData.squad || [];
+            console.log(`  -> ${playersList.length} Spieler gefunden.`);
             
             for (const p of playersList) {
                 const pId = p.id || p.i;
