@@ -111,29 +111,26 @@ async function fetchOptimalTeam() {
             
             console.log(`Abfrage Team ${tIdx+1}/18: ${teamName} (ID: ${teamId})...`);
             
-            // Wir nutzen den Team-Profile Endpoint, um den Kader abzurufen
-            const teamProfileRes = await fetch(`https://api.kickbase.com/v4/competitions/1/teams/${teamId}/teamprofile`, {
+            // Wir nutzen den Liga-bezogenen Team-Endpoint
+            const teamPlayersRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/teams/${teamId}/players`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             
-            if (!teamProfileRes.ok) {
-                console.error(`  -> FEHLER: Konnte Profil für ${teamName} nicht laden (Status ${teamProfileRes.status})`);
+            if (!teamPlayersRes.ok) {
+                console.error(`  -> FEHLER: Konnte Spieler für ${teamName} nicht laden (Status ${teamPlayersRes.status})`);
                 continue;
             }
 
-            const profileData = await teamProfileRes.json();
-            console.log(`  -> Profil geladen. Keys: ${Object.keys(profileData).join(', ')}`);
-
+            const playersData = await teamPlayersRes.json();
+            
             // Versuche verschiedene Keys für die Spielerliste
-            let playersRaw = profileData.pl || profileData.players || profileData.p || profileData.sl || profileData.squad;
+            let playersRaw = playersData.players || playersData.pl || playersData.p || playersData.sl || playersData.squad || playersData;
             let playersList = [];
 
             if (Array.isArray(playersRaw)) {
                 playersList = playersRaw;
             } else if (playersRaw && typeof playersRaw === 'object') {
-                // Falls es ein Objekt ist, nimm alle Werte (Values)
                 playersList = Object.values(playersRaw);
-                console.log(`  -> 'pl' ist ein Objekt. Konvertiere ${playersList.length} Values zu Array.`);
             }
 
             console.log(`  -> ${playersList.length} Spieler gefunden.`);
