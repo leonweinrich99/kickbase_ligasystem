@@ -124,12 +124,12 @@ async function fetchOptimalTeam() {
             const profileData = await teamProfileRes.json();
             console.log(`  -> Profil geladen. Keys: ${Object.keys(profileData).join(', ')}`);
 
-            // Versuche verschiedene Keys für die Spielerliste
-            const playersList = profileData.players || profileData.p || profileData.sl || profileData.squad || [];
+            // Versuche verschiedene Keys für die Spielerliste (Kickbase nutzt oft 'pl')
+            const playersList = profileData.pl || profileData.players || profileData.p || profileData.sl || profileData.squad || [];
             console.log(`  -> ${playersList.length} Spieler gefunden.`);
             
             for (const p of playersList) {
-                const pId = p.id || p.i;
+                const pId = p.i || p.id;
                 allPlayers.push({
                     id: pId,
                     teamId: teamId,
