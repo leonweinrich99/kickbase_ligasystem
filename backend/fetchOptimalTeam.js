@@ -78,14 +78,30 @@ async function fetchOptimalTeam() {
         const currentMatchday = rankingData.day; // Der Spieltag, der gerade abgeschlossen wurde oder läuft
         console.log(`Aktueller Spieltag erkannt: ${currentMatchday}`);
 
-        // 4. Alle Bundesliga-Teams abrufen
-        const teamsRes = await fetch('https://api.kickbase.com/v4/competitions/1/teams', {
+        // 4. Verfügbare Wettbewerbe prüfen, um die Bundesliga-Teams zu finden
+        console.log("Suche Wettbewerbe...");
+        const compRes = await fetch('https://api.kickbase.com/v4/competitions', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        let competitionId = 1; // Default
+        if (compRes.ok) {
+            const compData = await compRes.json();
+            const comps = compData.competitions || compData.c || [];
+            console.log(`Verfügbare Wettbewerbe: ${comps.map(c => `${c.n} (ID: ${c.i})`).join(', ')}`);
+            // Suche Bundesliga (meist ID 1)
+            const bl = comps.find(c => (c.n || '').toLowerCase().includes('bundesliga'));
+            if (bl) competitionId = bl.i || bl.id;
+        }
+
+        console.log(`Lade Teams für Wettbewerb ID: ${competitionId}...`);
+        const teamsRes = await fetch(`https://api.kickbase.com/v4/competitions/${competitionId}/teams`, {
             headers: { Authorization: `Bearer ${token}` }
         });
         
         if (!teamsRes.ok) {
             const errText = await teamsRes.text();
-            throw new Error(`Fehler beim Abrufen der Teams (Status ${teamsRes.status}): ${errText}`);
+            throw new Error(`Fehler beim Abrufen der Teams (Status ${teamsRes.status}, Competition ${competitionId}): ${errText}`);
         }
 
         const teamsData = await teamsRes.json();
