@@ -38,6 +38,13 @@ jobs:
           KICKBASE_PASS_2: ${{ secrets.KICKBASE_PASS_2 }}
           SNAPSHOT: ${{ github.event.inputs.snapshot || 'false' }}
 
+      - name: Fetch Optimal Team
+        working-directory: ./backend
+        run: node fetchOptimalTeam.js
+        env:
+          KICKBASE_EMAIL: ${{ secrets.KICKBASE_EMAIL }}
+          KICKBASE_PASS: ${{ secrets.KICKBASE_PASS }}
+
       - name: Commit and Push Data
         run: |
           git config --global user.name "github-actions[bot]"
