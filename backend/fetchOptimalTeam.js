@@ -101,8 +101,8 @@ async function fetchOptimalTeam() {
         // 5. Spieler aller Teams abrufen
         for (let tIdx = 0; tIdx < teams.length; tIdx++) {
             const team = teams[tIdx];
-            const teamId = team.i || team.id || team.teamId;
-            const teamName = team.n || team.name || "Unbekannt";
+            const teamId = team.tid || team.i || team.id || team.teamId;
+            const teamName = team.tn || team.n || team.name || "Unbekannt";
             
             if (!teamId) {
                 console.log(`Überspringe Team ohne ID: ${JSON.stringify(team)}`);
