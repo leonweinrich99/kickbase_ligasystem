@@ -12,7 +12,7 @@ async function fetchOptimalTeam() {
     const email = process.env.KICKBASE_EMAIL;
     const password = process.env.KICKBASE_PASS;
     // Wir nehmen an, dass es eine Ziel-Liga gibt
-    const targetLeagueName = "Qualigruppe 1"; 
+    const targetLeagueName = process.env.KICKBASE_LEAGUE || "Qualigruppe 1"; 
 
     if (!email || !password) {
         console.error("KICKBASE_EMAIL oder KICKBASE_PASS fehlt in .env (oder als Umgebungsvariable).");
@@ -43,15 +43,31 @@ async function fetchOptimalTeam() {
         const leaguesData = await leaguesRes.json();
         const leaguesList = leaguesData.lins || leaguesData.leagues || [];
         
+        if (leaguesList.length === 0) {
+            throw new Error("Dieser Account ist in keiner Kickbase-Liga.");
+        }
+
         let leagueId = null;
+        let foundLeagueName = "";
+
+        // Erst nach dem Wunschnamen suchen
         for (const l of leaguesList) {
-            if ((l.n || l.name).toLowerCase().includes(targetLeagueName.toLowerCase())) {
+            const name = l.n || l.name;
+            if (name.toLowerCase().includes(targetLeagueName.toLowerCase())) {
                 leagueId = l.i || l.id;
+                foundLeagueName = name;
+                break;
             }
         }
         
+        // Fallback: Wenn nicht gefunden, nimm einfach die erste Liga
         if (!leagueId) {
-            throw new Error(`Liga mit Namen '${targetLeagueName}' nicht gefunden.`);
+            const firstLeague = leaguesList[0];
+            leagueId = firstLeague.i || firstLeague.id;
+            foundLeagueName = firstLeague.n || firstLeague.name;
+            console.log(`Liga '${targetLeagueName}' nicht gefunden. Nutze stattdessen erste verfügbare Liga: '${foundLeagueName}'`);
+        } else {
+            console.log(`Nutze Liga: '${foundLeagueName}' (ID: ${leagueId})`);
         }
         
         // 3. Ranking abrufen, um den aktuellen Spieltag zu erfahren
