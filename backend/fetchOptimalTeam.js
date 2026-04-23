@@ -78,30 +78,15 @@ async function fetchOptimalTeam() {
         const currentMatchday = rankingData.day; // Der Spieltag, der gerade abgeschlossen wurde oder läuft
         console.log(`Aktueller Spieltag erkannt: ${currentMatchday}`);
 
-        // 4. Verfügbare Wettbewerbe prüfen, um die Bundesliga-Teams zu finden
-        console.log("Suche Wettbewerbe...");
-        const compRes = await fetch('https://api.kickbase.com/v4/competitions', {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        let competitionId = 1; // Default
-        if (compRes.ok) {
-            const compData = await compRes.json();
-            const comps = compData.competitions || compData.c || [];
-            console.log(`Verfügbare Wettbewerbe: ${comps.map(c => `${c.n} (ID: ${c.i})`).join(', ')}`);
-            // Suche Bundesliga (meist ID 1)
-            const bl = comps.find(c => (c.n || '').toLowerCase().includes('bundesliga'));
-            if (bl) competitionId = bl.i || bl.id;
-        }
-
-        console.log(`Lade Teams für Wettbewerb ID: ${competitionId}...`);
-        const teamsRes = await fetch(`https://api.kickbase.com/v4/competitions/${competitionId}/teams`, {
+        // 4. Bundesliga-Teams abrufen (v4/base/predictions/teams/1)
+        console.log("Rufe Bundesliga-Teams ab...");
+        const teamsRes = await fetch('https://api.kickbase.com/v4/base/predictions/teams/1', {
             headers: { Authorization: `Bearer ${token}` }
         });
         
         if (!teamsRes.ok) {
             const errText = await teamsRes.text();
-            throw new Error(`Fehler beim Abrufen der Teams (Status ${teamsRes.status}, Competition ${competitionId}): ${errText}`);
+            throw new Error(`Fehler beim Abrufen der Teams (Status ${teamsRes.status}): ${errText}`);
         }
 
         const teamsData = await teamsRes.json();
@@ -113,17 +98,18 @@ async function fetchOptimalTeam() {
         // 5. Spieler aller Teams abrufen
         for (const team of teams) {
             const teamId = team.i || team.id;
-            const teamPlayersRes = await fetch(`https://api.kickbase.com/v4/competitions/1/teams/${teamId}/players`, {
+            // Wir nutzen den Team-Profile Endpoint, um den Kader abzurufen
+            const teamProfileRes = await fetch(`https://api.kickbase.com/v4/competitions/1/teams/${teamId}/teamprofile`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             
-            if (!teamPlayersRes.ok) {
-                console.error(`Konnte Spieler für Team ${teamId} nicht laden (Status ${teamPlayersRes.status})`);
+            if (!teamProfileRes.ok) {
+                console.error(`Konnte Profil für Team ${teamId} nicht laden (Status ${teamProfileRes.status})`);
                 continue;
             }
 
-            const teamPlayersData = await teamPlayersRes.json();
-            const playersList = teamPlayersData.p || teamPlayersData.players || [];
+            const profileData = await teamProfileRes.json();
+            const playersList = profileData.players || profileData.p || [];
             
             for (const p of playersList) {
                 const pId = p.id || p.i;
