@@ -90,14 +90,19 @@ async function fetchOptimalTeam() {
         }
 
         const teamsData = await teamsRes.json();
-        const teams = teamsData.teams || teamsData.t || [];
+        console.log("Teams API Antwort Keys:", Object.keys(teamsData));
+        
+        // Versuche verschiedene Keys für die Teams-Liste
+        const teams = teamsData.teams || teamsData.t || (Array.isArray(teamsData) ? teamsData : []);
         
         console.log(`Lade Spieler für ${teams.length} Teams...`);
         let allPlayers = [];
 
         // 5. Spieler aller Teams abrufen
         for (const team of teams) {
-            const teamId = team.i || team.id;
+            const teamId = team.i || team.id || team.teamId;
+            if (!teamId) continue;
+            
             // Wir nutzen den Team-Profile Endpoint, um den Kader abzurufen
             const teamProfileRes = await fetch(`https://api.kickbase.com/v4/competitions/1/teams/${teamId}/teamprofile`, {
                 headers: { Authorization: `Bearer ${token}` }
