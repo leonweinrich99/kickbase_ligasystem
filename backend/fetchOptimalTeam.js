@@ -99,7 +99,8 @@ async function fetchOptimalTeam() {
         let allPlayers = [];
 
         // 5. Spieler aller Teams abrufen
-        for (const team of teams) {
+        for (let tIdx = 0; tIdx < teams.length; tIdx++) {
+            const team = teams[tIdx];
             const teamId = team.i || team.id || team.teamId;
             if (!teamId) continue;
             
@@ -114,7 +115,14 @@ async function fetchOptimalTeam() {
             }
 
             const profileData = await teamProfileRes.json();
-            const playersList = profileData.players || profileData.p || [];
+            
+            // Nur beim ersten Team die Keys loggen zur Diagnose
+            if (tIdx === 0) {
+                console.log("TeamProfile API Antwort Keys:", Object.keys(profileData));
+            }
+
+            // Versuche verschiedene Keys für die Spielerliste
+            const playersList = profileData.players || profileData.p || profileData.sl || profileData.squad || [];
             
             for (const p of playersList) {
                 const pId = p.id || p.i;
