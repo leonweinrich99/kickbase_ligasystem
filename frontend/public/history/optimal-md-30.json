@@ -1,17 +1,17 @@
 {
   "matchday": 30,
-  "totalPoints": 0,
-  "totalBudget": 91169346,
-  "timestamp": "2026-04-24T09:10:33.574Z",
+  "totalPoints": 1258,
+  "totalBudget": 161809806,
+  "timestamp": "2026-04-24T09:52:45.317Z",
   "lineup": [
     {
-      "id": "72",
-      "teamId": "7",
-      "name": "Mark Flekken",
+      "id": "577",
+      "teamId": "18",
+      "name": "Daniel Batz",
       "position": 1,
-      "marketValue": 7322314,
-      "avgPoints": 0,
-      "points": 0
+      "marketValue": 10976705,
+      "avgPoints": 109,
+      "points": 166
     },
     {
       "id": "550",
@@ -19,8 +19,8 @@
       "name": "Stefan Bell",
       "position": 2,
       "marketValue": 866940,
-      "avgPoints": 0,
-      "points": 0
+      "avgPoints": 73,
+      "points": 73
     },
     {
       "id": "1704",
@@ -28,8 +28,35 @@
       "name": "Waldemar Anton",
       "position": 2,
       "marketValue": 33543950,
-      "avgPoints": 0,
-      "points": 0
+      "avgPoints": 127,
+      "points": 119
+    },
+    {
+      "id": "4333",
+      "teamId": "15",
+      "name": "Lukas Ullrich",
+      "position": 2,
+      "marketValue": 500000,
+      "avgPoints": 31,
+      "points": 55
+    },
+    {
+      "id": "7717",
+      "teamId": "14",
+      "name": "Alexander Prass",
+      "position": 2,
+      "marketValue": 4432248,
+      "avgPoints": 55,
+      "points": 51
+    },
+    {
+      "id": "9642",
+      "teamId": "13",
+      "name": "Chrislain Matsima",
+      "position": 2,
+      "marketValue": 1517667,
+      "avgPoints": 94,
+      "points": 94
     },
     {
       "id": "1671",
@@ -37,17 +64,26 @@
       "name": "Grischa Prömel",
       "position": 3,
       "marketValue": 18262057,
-      "avgPoints": 0,
-      "points": 0
+      "avgPoints": 81,
+      "points": 112
     },
     {
-      "id": "6176",
-      "teamId": "43",
-      "name": "Nicolas Seiwald",
+      "id": "3515",
+      "teamId": "50",
+      "name": "Adrian Beck",
       "position": 3,
-      "marketValue": 23865806,
-      "avgPoints": 0,
-      "points": 0
+      "marketValue": 500000,
+      "avgPoints": 25,
+      "points": 84
+    },
+    {
+      "id": "8329",
+      "teamId": "2",
+      "name": "Michael Olise",
+      "position": 3,
+      "marketValue": 61693701,
+      "avgPoints": 226,
+      "points": 177
     },
     {
       "id": "7491",
@@ -55,8 +91,17 @@
       "name": "Jean-Mattéo Bahoya",
       "position": 4,
       "marketValue": 7308279,
-      "avgPoints": 0,
-      "points": 0
+      "avgPoints": 69,
+      "points": 160
+    },
+    {
+      "id": "12325",
+      "teamId": "4",
+      "name": "Arnaud Kalimuendo",
+      "position": 4,
+      "marketValue": 22208259,
+      "avgPoints": 86,
+      "points": 167
     }
   ]
 }
