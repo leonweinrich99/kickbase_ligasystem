@@ -10,7 +10,7 @@ const delay = ms => new Promise(res => setTimeout(res, ms));
 async function fetchOptimalTeam() {
     const email = process.env.KICKBASE_EMAIL;
     const password = process.env.KICKBASE_PASS;
-    const targetLeagueName = process.env.KICKBASE_LEAGUE || "Qualigruppe 1"; 
+    const targetLeagueName = process.env.KICKBASE_LEAGUE || "test"; 
 
     if (!email || !password) {
         console.error("KICKBASE_EMAIL oder KICKBASE_PASS fehlt.");
@@ -49,34 +49,61 @@ async function fetchOptimalTeam() {
 
         let allPlayersMap = new Map();
 
-        // 4. Global Fetch (Optional, if works)
-        const globalUrls = [
-            `https://api.kickbase.com/v4/leagues/${leagueId}/market/all`,
-            `https://api.kickbase.com/v4/leagues/${leagueId}/lineup/selection`
-        ];
-
-        for (const url of globalUrls) {
-            try {
-                const r = await fetch(url, { headers: { Authorization: `Bearer ${token}`, Cookie: `kkstrauth=${token}` } });
-                if (r.ok) {
-                    const d = await r.json();
-                    const list = d.players || d.pl || d.p || d.selection || [];
-                    const playersArray = Array.isArray(list) ? list : Object.values(list);
-                    for (const p of playersArray) {
-                        const pId = p.i || p.id;
-                        if (pId && !allPlayersMap.has(pId)) {
-                            allPlayersMap.set(pId, {
-                                id: pId,
-                                teamId: p.tid || p.t || 0,
-                                name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(),
-                                position: p.p || p.pos || 0,
-                                marketValue: p.mv || p.marketValue || 0,
-                                imagePath: p.pi || p.profileBig || p.profile
-                            });
-                        }
+        // 4. Markt-Abruf versuchen (in Arena-Ligen oft die Quelle für Spieler)
+        console.log("[LOG] Versuche Spieler über Markt-Endpoint zu laden...");
+        try {
+            const mRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/market`, { 
+                headers: { Authorization: `Bearer ${token}`, Cookie: `kkstrauth=${token}` } 
+            });
+            if (mRes.ok) {
+                const mData = await mRes.json();
+                console.log(`[LOG] Markt-Keys: ${Object.keys(mData).join(', ')}`);
+                const mList = mData.players || mData.pl || mData.it || [];
+                for (const p of mList) {
+                    const pId = p.i || p.id;
+                    if (pId && !allPlayersMap.has(pId)) {
+                        allPlayersMap.set(pId, {
+                            id: pId,
+                            teamId: p.tid || p.t || 0,
+                            name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(),
+                            position: p.p || p.pos || 0,
+                            marketValue: p.mv || p.marketValue || 0,
+                            imagePath: p.pi || p.profileBig || p.profile
+                        });
                     }
                 }
-            } catch (e) {}
+                console.log(`[LOG] ${allPlayersMap.size} Spieler über Markt geladen.`);
+            }
+        } catch (e) {}
+
+        // Falls noch immer leer, probiere alternative globale Endpunkte
+        if (allPlayersMap.size === 0) {
+            const extraUrls = [
+                `https://api.kickbase.com/v4/leagues/${leagueId}/lineup/selection`,
+                `https://api.kickbase.com/v4/leagues/${leagueId}/market/all`
+            ];
+            for (const url of extraUrls) {
+                try {
+                    const r = await fetch(url, { headers: { Authorization: `Bearer ${token}`, Cookie: `kkstrauth=${token}` } });
+                    if (r.ok) {
+                        const d = await r.json();
+                        const list = d.players || d.pl || d.it || d.selection || [];
+                        for (const p of list) {
+                            const pId = p.i || p.id;
+                            if (pId && !allPlayersMap.has(pId)) {
+                                allPlayersMap.set(pId, {
+                                    id: pId,
+                                    teamId: p.tid || p.t || 0,
+                                    name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(),
+                                    position: p.p || p.pos || 0,
+                                    marketValue: p.mv || p.marketValue || 0,
+                                    imagePath: p.pi || p.profileBig || p.profile
+                                });
+                            }
+                        }
+                    }
+                } catch (e) {}
+            }
         }
 
         // 5. Team-Einzelabfragen mit verifizierten IDs
