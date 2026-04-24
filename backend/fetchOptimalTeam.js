@@ -49,7 +49,7 @@ async function fetchOptimalTeam() {
 
         let allPlayersMap = new Map();
 
-        // 4. Markt-Abruf versuchen (in Arena-Ligen oft die Quelle für Spieler)
+        // 4. Markt-Abruf (Quelle für Spieler)
         console.log("[LOG] Versuche Spieler über Markt-Endpoint zu laden...");
         try {
             const mRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/market`, { 
@@ -57,7 +57,6 @@ async function fetchOptimalTeam() {
             });
             if (mRes.ok) {
                 const mData = await mRes.json();
-                console.log(`[LOG] Markt-Keys: ${Object.keys(mData).join(', ')}`);
                 const mList = mData.players || mData.pl || mData.it || [];
                 for (const p of mList) {
                     const pId = p.i || p.id;
@@ -72,39 +71,8 @@ async function fetchOptimalTeam() {
                         });
                     }
                 }
-                console.log(`[LOG] ${allPlayersMap.size} Spieler über Markt geladen.`);
             }
         } catch (e) {}
-
-        // Falls noch immer leer, probiere alternative globale Endpunkte
-        if (allPlayersMap.size === 0) {
-            const extraUrls = [
-                `https://api.kickbase.com/v4/leagues/${leagueId}/lineup/selection`,
-                `https://api.kickbase.com/v4/leagues/${leagueId}/market/all`
-            ];
-            for (const url of extraUrls) {
-                try {
-                    const r = await fetch(url, { headers: { Authorization: `Bearer ${token}`, Cookie: `kkstrauth=${token}` } });
-                    if (r.ok) {
-                        const d = await r.json();
-                        const list = d.players || d.pl || d.it || d.selection || [];
-                        for (const p of list) {
-                            const pId = p.i || p.id;
-                            if (pId && !allPlayersMap.has(pId)) {
-                                allPlayersMap.set(pId, {
-                                    id: pId,
-                                    teamId: p.tid || p.t || 0,
-                                    name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(),
-                                    position: p.p || p.pos || 0,
-                                    marketValue: p.mv || p.marketValue || 0,
-                                    imagePath: p.pi || p.profileBig || p.profile
-                                });
-                            }
-                        }
-                    }
-                } catch (e) {}
-            }
-        }
 
         // 5. Team-Einzelabfragen mit verifizierten IDs
         console.log("[LOG] Sammle Spieler über verifizierte Team-IDs...");
@@ -114,8 +82,7 @@ async function fetchOptimalTeam() {
             const teamUrls = [
                 `https://api.kickbase.com/v4/leagues/${leagueId}/teams/${teamId}/teamprofile`,
                 `https://api.kickbase.com/v4/teams/${teamId}/players`,
-                `https://api.kickbase.com/v4/competition/teams/${teamId}/players`,
-                `https://api.kickbase.com/v4/leagues/${leagueId}/teams/${teamId}/players`
+                `https://api.kickbase.com/v4/competition/teams/${teamId}/players`
             ];
             
             for (const url of teamUrls) {
@@ -127,17 +94,10 @@ async function fetchOptimalTeam() {
                             'Cookie': `kkstrauth=${token}` 
                         } 
                     });
-                    
-                    const status = r.status;
                     if (r.ok) {
                         const d = await r.json();
                         const list = d.it || d.players || d.pl || d.p || (Array.isArray(d) ? d : []);
                         const playersArray = Array.isArray(list) ? list : Object.values(list);
-                        
-                        if (teamId === 2) {
-                             console.log(`  -> URL: ${url.split('/').slice(-1)[0]} | Keys: ${Object.keys(d).join(',')} | 'it' Typ: ${typeof d.it} | Spieler: ${playersArray.length}`);
-                        }
-                        
                         if (playersArray.length > 0) {
                             for (const p of playersArray) {
                                 const pId = p.i || p.id;
@@ -152,15 +112,12 @@ async function fetchOptimalTeam() {
                                     });
                                 }
                             }
-                            console.log(`  -> Team ID ${teamId} geladen (${playersArray.length} Spieler).`);
                             break; 
                         }
-                    } else {
-                        // console.log(`  -> URL: ${url.split('/').slice(-2).join('/')} | Status: ${status}`);
                     }
                 } catch (e) {}
             }
-            await delay(200);
+            await delay(150);
         }
 
         const allPlayers = Array.from(allPlayersMap.values());
@@ -177,39 +134,27 @@ async function fetchOptimalTeam() {
                 });
                 if (sRes.ok) {
                     const sData = await sRes.json();
-                    
-                    // Wir nutzen den Schnitt (avp) oder berechnen ihn aus totalPoints (tp)
                     p.avgPoints = sData.averagePoints || sData.avp || 0;
                     if (p.avgPoints === 0 && (sData.totalPoints || sData.tp)) {
                         const played = sData.matchDaysPlayed || sData.mdp || 1;
                         p.avgPoints = (sData.totalPoints || sData.tp) / played;
                     }
-
                     const mds = sData.matchDays || sData.mds || [];
                     const stat = mds.find(m => (m.day || m.d) === currentMatchday);
                     p.currentPoints = stat ? (stat.points || stat.p || 0) : 0;
-                    
-                    // Wir optimieren auf den Schnitt, falls der Spieltag noch nicht war
                     p.points = p.currentPoints > 0 ? p.currentPoints : p.avgPoints;
-                } else {
-                    p.points = 0;
-                }
+                } else p.points = 0;
             } catch (e) { p.points = 0; }
-            
-            // Sicherheitshalber NaN/Null Checks
             p.points = isNaN(p.points) ? 0 : p.points;
             p.marketValue = isNaN(p.marketValue) ? 0 : p.marketValue;
-
             if (i % 100 === 0 && i > 0) console.log(`[LOG] Fortschritt: ${i}/${allPlayers.length}`);
             await delay(100);
         }
 
-        // --- NEU: Alle Spieler für lokale Arbeit speichern ---
+        // --- Dump für lokale Arbeit ---
         const dumpPath = path.join(__dirname, 'scratch/all_players_dump.json');
         if (!fs.existsSync(path.join(__dirname, 'scratch'))) fs.mkdirSync(path.join(__dirname, 'scratch'));
         fs.writeFileSync(dumpPath, JSON.stringify(allPlayers, null, 2));
-        console.log(`[LOG] Alle ${allPlayers.length} Spieler in ${dumpPath} gespeichert.`);
-        // -----------------------------------------------------
 
         // 7. Solver
         console.log("[LOG] Starte Solver (ILP)...");
@@ -217,7 +162,7 @@ async function fetchOptimalTeam() {
             optimize: "points",
             opType: "max",
             constraints: {
-                budget: { max: 500000000 }, // Erhöhtes Budget für Test/Arena
+                budget: { max: 500000000 },
                 total_players: { equal: 11 },
                 pos_1: { equal: 1 },
                 pos_2: { min: 3, max: 5 },
@@ -229,12 +174,10 @@ async function fetchOptimalTeam() {
         };
 
         const tIds = [...new Set(allPlayers.map(p => p.teamId))];
-        tIds.forEach(id => {
-            if (id > 0) model.constraints[`t_${id}`] = { max: 3 };
-        });
+        tIds.forEach(id => { if (id > 0) model.constraints[`t_${id}`] = { max: 3 }; });
 
         allPlayers.forEach(p => {
-            if (p.points > 0) { // Nur Spieler mit Punkten in Betracht ziehen
+            if (p.points > 0) {
                 const v = `p_${p.id}`;
                 model.variables[v] = {
                     points: p.points,
@@ -249,13 +192,11 @@ async function fetchOptimalTeam() {
 
         const res = solver.Solve(model);
         if (!res.feasible) {
-             console.log("[WARN] Keine exakte Lösung mit 11 Spielern gefunden. Lockere Constraints...");
              model.constraints.total_players = { max: 11 };
              const fallbackRes = solver.Solve(model);
-             if (!fallbackRes.feasible) throw new Error("Solver konnte keine Aufstellung finden.");
+             if (!fallbackRes.feasible) throw new Error("Keine Aufstellung gefunden.");
              return handleResult(fallbackRes, allPlayers, currentMatchday);
         }
-
         handleResult(res, allPlayers, currentMatchday);
 
     } catch (error) {
@@ -266,10 +207,8 @@ async function fetchOptimalTeam() {
 function handleResult(res, allPlayers, currentMatchday) {
     const lineup = allPlayers.filter(p => res[`p_${p.id}`] > 0.5);
     lineup.sort((a, b) => a.position - b.position);
-
     const totalPoints = lineup.reduce((s, p) => s + p.points, 0);
     const totalBudget = lineup.reduce((s, p) => s + p.marketValue, 0);
-
     const output = {
         matchday: currentMatchday,
         totalPoints: Math.round(totalPoints),
@@ -277,19 +216,9 @@ function handleResult(res, allPlayers, currentMatchday) {
         timestamp: new Date().toISOString(),
         lineup: lineup
     };
-
     const outPath = path.join(__dirname, `../frontend/public/history/optimal-md-${currentMatchday}.json`);
     fs.writeFileSync(outPath, JSON.stringify(output, null, 2));
-    
-    console.log(`[SUCCESS] Optimale Elf berechnet!`);
-    console.log(`  -> Spieler: ${lineup.length}`);
-    console.log(`  -> Gesamtpunkte: ${Math.round(totalPoints)}`);
-    console.log(`  -> Budget genutzt: ${(totalBudget / 1000000).toFixed(1)} Mio.`);
-}
-
-    } catch (error) {
-        console.error(`[ERROR] ${error.message}`);
-    }
+    console.log(`[SUCCESS] Optimale Elf berechnet! (Spieler: ${lineup.length}, Punkte: ${Math.round(totalPoints)})`);
 }
 
 fetchOptimalTeam();
