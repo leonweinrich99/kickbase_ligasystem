@@ -22,6 +22,7 @@ const UserDetail = () => {
   const [loading, setLoading] = useState(true);
   const [thresholds, setThresholds] = useState(null);
   const [showAverage, setShowAverage] = useState(false);
+  const [showOptimal, setShowOptimal] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -85,13 +86,21 @@ const UserDetail = () => {
             if (!userAtMatchday) return null;
             const averagePoints = allPoints.length ? Math.round(allPoints.reduce((a, b) => a + b, 0) / allPoints.length) : 0;
 
+            const optRes = await fetch(`/history/optimal-md-${m}-final.json`);
+            let optimalPoints = 0;
+            if (optRes.ok) {
+              const optData = await optRes.json();
+              optimalPoints = optData.totalPoints || 0;
+            }
+
             return {
               matchday: m,
               points: parseInt(userAtMatchday.points.replace(/\./g, '')) || 0,
               pointsMatchday: parseInt(userAtMatchday.pointsMatchday.replace(/\./g, '')) || 0,
               rank: userAtMatchday.rank,
               budget: parseInt(userAtMatchday.estimatedBudget.replace(/[^0-9]/g, '')) || 0,
-              averagePoints
+              averagePoints,
+              optimalPoints
             };
           } catch (e) {
             return null;
@@ -107,13 +116,21 @@ const UserDetail = () => {
             const latestPoints = allUsersFlat.map(u => parseInt(u.pointsMatchday.replace(/\./g, '')) || 0);
             const latestAvg = latestPoints.length ? Math.round(latestPoints.reduce((a,b) => a+b, 0) / latestPoints.length) : 0;
 
+            const optRes = await fetch(`/history/optimal-md-${latestData.matchday}-final.json`);
+            let optimalPoints = 0;
+            if (optRes.ok) {
+              const optData = await optRes.json();
+              optimalPoints = optData.totalPoints || 0;
+            }
+
             historyResults.push({
                 matchday: latestData.matchday,
                 points: currentPoints,
                 pointsMatchday: currentMatchdayPoints,
                 rank: foundUser.rank,
                 budget: parseInt(foundUser.estimatedBudget.replace(/[^0-9]/g, '')) || 0,
-                averagePoints: latestAvg
+                averagePoints: latestAvg,
+                optimalPoints
             });
         }
 
@@ -387,12 +404,18 @@ const UserDetail = () => {
         <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-2xl p-4 sm:p-6 shadow-lg">
           <div className="flex justify-between items-center mb-4 sm:mb-6">
             <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Spieltags-Leistung</h3>
-            <div className="flex items-center">
+            <div className="flex items-center gap-2">
                 <button 
                   onClick={() => setShowAverage(!showAverage)}
-                  className={`px-3 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase transition-all border shadow-lg ${showAverage ? 'bg-[#ff5c3e]/20 border-[#ff5c3e] text-[#ff5c3e]' : 'bg-[#20242d] border-[#2a2e37] text-[#8b92a5]'}`}
+                  className={`px-2.5 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase transition-all border shadow-lg ${showAverage ? 'bg-[#ff5c3e]/20 border-[#ff5c3e] text-[#ff5c3e]' : 'bg-[#20242d] border-[#2a2e37] text-[#8b92a5]'}`}
                 >
-                  Ø Ligaschnitt
+                  Ø Schnitt
+                </button>
+                <button 
+                  onClick={() => setShowOptimal(!showOptimal)}
+                  className={`px-2.5 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase transition-all border shadow-lg ${showOptimal ? 'bg-green-500/20 border-green-500 text-green-500' : 'bg-[#20242d] border-[#2a2e37] text-[#8b92a5]'}`}
+                >
+                  Beste Elf
                 </button>
             </div>
           </div>
@@ -434,6 +457,19 @@ const UserDetail = () => {
                 >
                     <LabelList dataKey="pointsMatchday" position="top" fill="#ff5c3e" fontSize={8} fontWeight="bold" />
                 </Bar>
+
+                {/* Optimale Elf Balken */}
+                {showOptimal && (
+                  <Bar 
+                    dataKey="optimalPoints" 
+                    name="Beste Elf" 
+                    fill="#22c55e" 
+                    radius={[4, 4, 0, 0]}
+                    animationDuration={1500} 
+                  >
+                      <LabelList dataKey="optimalPoints" position="top" fill="#22c55e" fontSize={8} fontWeight="bold" formatter={(val) => `★ ${val}`} />
+                  </Bar>
+                )}
               </BarChart>
             </ResponsiveContainer>
           </div>

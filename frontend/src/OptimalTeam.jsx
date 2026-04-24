@@ -5,12 +5,18 @@ const formatMoney = (val) => (val || 0).toLocaleString('de-DE') + ' €';
 const PositionRow = ({ players, positionName }) => {
   if (!players || players.length === 0) return null;
   return (
-    <div className="flex flex-col items-center mb-6 last:mb-0 w-full z-10">
-      <div className="flex justify-center flex-wrap gap-4 w-full px-2">
-        {players.map(p => (
-          <div key={p.id} className="relative flex flex-col items-center group w-[75px] sm:w-[90px]">
-            {/* Spieler-Bild */}
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#1e222a] border-2 border-[#3a3f4a] overflow-hidden flex items-center justify-center shadow-lg relative group-hover:border-[#ff5c3e] transition-colors">
+    <div className="flex flex-col items-center mb-4 last:mb-0 w-full z-10">
+      <div className="flex justify-center items-center flex-nowrap gap-1 sm:gap-4 w-full px-2 overflow-visible">
+        {players.map(p => {
+          // Dynamische Größe basierend auf Anzahl der Spieler in der Reihe
+          const itemCount = players.length;
+          const baseSize = itemCount > 4 ? "w-12 h-12 sm:w-14 sm:h-14" : "w-14 h-14 sm:w-16 sm:h-16";
+          const containerSize = itemCount > 4 ? "w-[65px] sm:w-[80px]" : "w-[75px] sm:w-[90px]";
+          
+          return (
+            <div key={p.id} className={`relative flex flex-col items-center group ${containerSize}`}>
+              {/* Spieler-Bild */}
+              <div className={`${baseSize} rounded-full bg-[#1e222a] border-2 border-[#3a3f4a] overflow-hidden flex items-center justify-center shadow-lg relative group-hover:border-[#ff5c3e] transition-colors`}>
               {p.imagePath ? (
                 <img 
                   src={`https://cdn.kickbase.com/files/players/${p.imagePath}/1`} 
@@ -21,8 +27,8 @@ const PositionRow = ({ players, positionName }) => {
               ) : (
                 <div className="text-gray-500 font-bold text-xs uppercase">{p.name.substring(0, 2)}</div>
               )}
-              {/* Punkte-Badge - Zentriert am unteren Rand */}
-              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-green-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full border-2 border-[#1e222a] shadow-lg flex items-center justify-center min-w-[28px] z-20">
+              {/* Punkte-Badge - Exakt im Zentrum (mittig mittig) */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-green-500 text-white text-[11px] font-black px-2 py-1 rounded-lg border-2 border-[#1e222a] shadow-xl flex items-center justify-center min-w-[32px] z-20">
                 {p.points}
               </div>
             </div>
@@ -36,8 +42,9 @@ const PositionRow = ({ players, positionName }) => {
                 {(p.marketValue / 1000000).toFixed(1)} Mio
               </div>
             </div>
-          </div>
-        ))}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
