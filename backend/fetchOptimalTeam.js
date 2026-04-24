@@ -70,12 +70,12 @@ async function fetchOptimalTeam() {
             
             console.log(`[LOG] Abfrage Team ${tIdx+1}/18: ${teamName} (ID: ${teamId})...`);
             
-            // Versuche verschiedene Endpunkte für den Kader (basierend auf kickbase-api-python)
+            // Priorisiere teamprofile wie vom User gewünscht
             const urls = [
-                `https://api.kickbase.com/competition/teams/${teamId}/players`,
-                `https://api.kickbase.com/v4/leagues/${leagueId}/teams/${teamId}/players`,
                 `https://api.kickbase.com/v4/leagues/${leagueId}/teams/${teamId}/teamprofile`,
-                `https://api.kickbase.com/v4/competitions/1/teams/${teamId}/players`
+                `https://api.kickbase.com/v4/teams/${teamId}/players`,
+                `https://api.kickbase.com/v4/competitions/1/teams/${teamId}/players`,
+                `https://api.kickbase.com/competition/teams/${teamId}/players`
             ];
             
             let playersFound = [];
@@ -83,26 +83,38 @@ async function fetchOptimalTeam() {
                 try {
                     const r = await fetch(url, { 
                         headers: { 
-                            Authorization: `Bearer ${token}`,
-                            Cookie: `kkstrauth=${token}`
+                            Authorization: `Bearer ${token}`
                         } 
                     });
+                    
                     if (r.ok) {
                         const d = await r.json();
-                        // Kickbase nutzt oft 'p' (Python Lib) oder 'pl' / 'players'
-                        const list = d.p || d.players || d.pl || (Array.isArray(d) ? d : []);
+                        // Kickbase v4 teamprofile hat oft 'players' oder 'p'
+                        const list = d.players || d.p || d.pl || (Array.isArray(d) ? d : []);
+                        
                         if (list && (Array.isArray(list) ? list.length > 0 : Object.keys(list).length > 0)) {
                             playersFound = Array.isArray(list) ? list : Object.values(list);
-                            console.log(`  -> ${playersFound.length} Spieler über ${url.replace('https://api.kickbase.com/', '')} gefunden.`);
+                            console.log(`  -> ${playersFound.length} Spieler über ${url.split('/').slice(-2).join('/')} gefunden.`);
                             break;
+                        } else {
+                            // Falls keine Spieler gefunden, logge die Keys zur Fehlersuche
+                            // console.log(`  -> Keine Spieler in Response von ${url}. Keys:`, Object.keys(d));
                         }
+                    } else {
+                        // console.log(`  -> Request fehlgeschlagen für ${url}: ${r.status}`);
                     }
-                } catch (e) {}
+                } catch (e) {
+                    // console.error(`  -> Error bei ${url}: ${e.message}`);
+                }
             }
             
             for (const p of playersFound) {
+                // Manchmal sind die Felder in v4 anders benannt
+                const pId = p.i || p.id;
+                if (!pId) continue;
+
                 allPlayers.push({
-                    id: p.i || p.id,
+                    id: pId,
                     teamId: teamId,
                     name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(),
                     position: p.p || p.pos || 0,
@@ -110,7 +122,7 @@ async function fetchOptimalTeam() {
                     imagePath: p.pi || p.profileBig || p.profile
                 });
             }
-            await delay(250);
+            await delay(200);
         }
 
         if (allPlayers.length === 0) {
