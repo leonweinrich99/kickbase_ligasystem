@@ -1,8 +1,8 @@
 {
   "matchday": 30,
   "totalPoints": 0,
-  "totalBudget": 28557931,
-  "timestamp": "2026-04-24T07:53:32.929Z",
+  "totalBudget": 59590320,
+  "timestamp": "2026-04-24T08:19:49.550Z",
   "lineup": [
     {
       "id": "4590",
@@ -13,11 +13,27 @@
       "points": 0
     },
     {
+      "id": "54",
+      "teamId": 3,
+      "name": "Can",
+      "position": 2,
+      "marketValue": 500000,
+      "points": 0
+    },
+    {
       "id": "461",
       "teamId": 4,
       "name": "Chandler",
       "position": 2,
       "marketValue": 500000,
+      "points": 0
+    },
+    {
+      "id": "660",
+      "teamId": 2,
+      "name": "Goretzka",
+      "position": 3,
+      "marketValue": 23210075,
       "points": 0
     },
     {
@@ -42,6 +58,14 @@
       "name": "Stefan Bell",
       "position": 1313,
       "marketValue": 866940,
+      "points": 0
+    },
+    {
+      "id": "72",
+      "teamId": "7",
+      "name": "Mark Flekken",
+      "position": 1932,
+      "marketValue": 7322314,
       "points": 0
     }
   ]
