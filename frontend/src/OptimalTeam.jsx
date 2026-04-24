@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ChevronLeft, ChevronRight, Trophy, Wallet } from 'lucide-react';
 
 const formatMoney = (val) => (val || 0).toLocaleString('de-DE') + ' €';
 
@@ -154,31 +155,56 @@ const OptimalTeam = ({ isOpen, onClose, availableMatchdays, currentGlobalMatchda
         </div>
 
         {/* Matchday Toggle & Summary */}
-        <div className="p-4 bg-[#14161b] border-b border-[#2a2e37] flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="px-6 py-4 bg-[#14161b] border-b border-[#2a2e37] flex flex-col md:flex-row justify-between items-center gap-6">
           
-          <div className="flex items-center bg-[#1a1d24] border border-[#2a2e37] rounded-lg shadow-inner w-full sm:w-auto h-10">
-            <button onClick={handlePrev} className="px-4 text-[#8b92a5] hover:text-[#ff5c3e] transition-colors active:scale-95 h-full">
-              &lsaquo;
+          {/* Spieltag-Wechsler (Dashboard-Design) */}
+          <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden w-full md:w-auto h-12">
+            <button 
+              onClick={handlePrev}
+              className="px-5 h-full text-[#8b92a5] hover:text-[#ff5c3e] transition-colors bg-[#181a20] active:scale-90"
+            >
+              <ChevronLeft size={20} />
             </button>
-            <span className="px-4 text-xs font-bold text-gray-200 uppercase tracking-widest min-w-[120px] text-center">
-              Spieltag {matchday}
-            </span>
-            <button onClick={handleNext} className="px-4 text-[#8b92a5] hover:text-[#ff5c3e] transition-colors active:scale-95 h-full">
-              &rsaquo;
+            <div className="px-6 flex flex-col items-center min-w-[120px]">
+              <span className="text-[11px] font-bold text-gray-200 whitespace-nowrap uppercase tracking-widest text-center">
+                Spieltag {matchday}
+              </span>
+            </div>
+            <button 
+              onClick={handleNext}
+              className="px-5 h-full text-[#8b92a5] hover:text-[#ff5c3e] transition-colors bg-[#181a20] active:scale-90"
+            >
+              <ChevronRight size={20} />
             </button>
           </div>
 
           {!loading && !error && data && (
-            <div className="flex gap-4 w-full sm:w-auto text-center sm:text-right">
-              <div className="flex-1 sm:flex-none">
-                <div className="text-[10px] uppercase tracking-widest text-[#8b92a5] font-bold">Punkte</div>
-                <div className="text-lg font-black text-green-500 leading-none">{data.totalPoints?.toLocaleString('de-DE')}</div>
+            <div className="flex items-center gap-8">
+              {/* Punkte */}
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center text-green-500 border border-green-500/20 shadow-sm">
+                  <Trophy size={20} />
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-[#8b92a5] font-black">Gesamtpunkte</div>
+                  <div className="text-xl font-black text-green-500 leading-none tracking-tight">{data.totalPoints?.toLocaleString('de-DE')}</div>
+                </div>
               </div>
-              <div className="w-[1px] bg-[#2a2e37]"></div>
-              <div className="flex-1 sm:flex-none">
-                <div className="text-[10px] uppercase tracking-widest text-[#8b92a5] font-bold">Budget</div>
-                <div className="text-sm font-bold text-white mt-1 leading-none">{formatMoney(data.totalBudget)}</div>
-                <div className="text-[9px] text-gray-500">/ 250 Mio.</div>
+
+              <div className="w-[1px] h-8 bg-[#2a2e37]"></div>
+
+              {/* Budget */}
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 border border-blue-500/20 shadow-sm">
+                  <Wallet size={20} />
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-[#8b92a5] font-black">Budget</div>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-sm font-black text-white leading-none">{(data.totalBudget / 1000000).toFixed(1)} Mio.</span>
+                    <span className="text-[10px] text-gray-500 font-bold">/ 250</span>
+                  </div>
+                </div>
               </div>
             </div>
           )}

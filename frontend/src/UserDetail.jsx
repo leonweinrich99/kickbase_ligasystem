@@ -6,8 +6,22 @@ import {
 } from 'recharts';
 import { 
   ArrowLeft, TrendingUp, TrendingDown, Target, 
-  Award, Wallet, Activity, Star, Users, Search, X
+  Award, Wallet, Activity, Star, Users, Search, X, Zap
 } from 'lucide-react';
+
+const calculatePerformanceScore = (points, avg, opt, max) => {
+  if (points <= 0) return 1.0;
+  
+  // Referenz ist 80% der "Besten Elf"
+  const reference = (opt && opt > 0) ? opt : (max || 1);
+  const target = reference * 0.8;
+  
+  // Rein lineare Skalierung ohne Einbezug des Ligaschnitts
+  const score = (points / target) * 10;
+  
+  // Rückgabe zwischen 1,0 und 10,0
+  return Math.min(10.0, Math.max(1.0, parseFloat(score.toFixed(1))));
+};
 
 const UserDetail = () => {
   const { id } = useParams();
@@ -85,6 +99,7 @@ const UserDetail = () => {
 
             if (!userAtMatchday) return null;
             const averagePoints = allPoints.length ? Math.round(allPoints.reduce((a, b) => a + b, 0) / allPoints.length) : 0;
+            const maxPoints = allPoints.length ? Math.max(...allPoints) : 0;
 
             const optRes = await fetch(`/history/optimal-md-${m}-final.json`);
             let optimalPoints = 0;
@@ -100,6 +115,7 @@ const UserDetail = () => {
               rank: userAtMatchday.rank,
               budget: parseInt(userAtMatchday.estimatedBudget.replace(/[^0-9]/g, '')) || 0,
               averagePoints,
+              maxPoints,
               optimalPoints
             };
           } catch (e) {
@@ -115,6 +131,7 @@ const UserDetail = () => {
         if (!historyResults.find(h => h.matchday === latestData.matchday)) {
             const latestPoints = allUsersFlat.map(u => parseInt(u.pointsMatchday.replace(/\./g, '')) || 0);
             const latestAvg = latestPoints.length ? Math.round(latestPoints.reduce((a,b) => a+b, 0) / latestPoints.length) : 0;
+            const latestMax = latestPoints.length ? Math.max(...latestPoints) : 0;
 
             const optRes = await fetch(`/history/optimal-md-${latestData.matchday}-final.json`);
             let optimalPoints = 0;
@@ -130,6 +147,7 @@ const UserDetail = () => {
                 rank: foundUser.rank,
                 budget: parseInt(foundUser.estimatedBudget.replace(/[^0-9]/g, '')) || 0,
                 averagePoints: latestAvg,
+                maxPoints: latestMax,
                 optimalPoints
             });
         }
@@ -145,28 +163,35 @@ const UserDetail = () => {
     fetchData();
   }, [id]);
 
+  const historyWithScores = useMemo(() => {
+    return history.map(h => ({
+      ...h,
+      performanceScore: parseFloat(calculatePerformanceScore(h.pointsMatchday, h.averagePoints, h.optimalPoints, h.maxPoints).toFixed(1))
+    }));
+  }, [history]);
+
   const stats = useMemo(() => {
-    if (history.length === 0) return null;
+    if (historyWithScores.length === 0) return null;
     
-    const last = history[history.length - 1];
-    const prev = history.length > 1 ? history[history.length - 2] : null;
+    const last = historyWithScores[historyWithScores.length - 1];
+    const prev = historyWithScores.length > 1 ? historyWithScores[historyWithScores.length - 2] : null;
     
-    const avgPoints = history.reduce((acc, h) => acc + h.pointsMatchday, 0) / history.length;
-    const bestMD = Math.max(...history.map(h => h.pointsMatchday));
+    const avgPoints = historyWithScores.reduce((acc, h) => acc + h.pointsMatchday, 0) / historyWithScores.length;
+    const bestMD = Math.max(...historyWithScores.map(h => h.pointsMatchday));
     const rankChange = prev ? prev.rank - last.rank : 0; 
 
-    // Punkte pro Marktwert (in Millionen)
-    const avgBudget = history.reduce((acc, h) => acc + h.budget, 0) / history.length;
-    const pointsPerMio = avgBudget > 0 ? (avgPoints / (avgBudget / 1000000)).toFixed(2).replace('.', ',') : '0,00';
+    // Performance Rating (1-10)
+    const scores = historyWithScores.map(h => h.performanceScore);
+    const performanceScore = scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1).replace('.', ',') : '0,0';
 
     return {
       avgPoints: Math.round(avgPoints),
       bestMD,
       rankChange,
       totalPoints: last.points,
-      pointsPerMio
+      performanceScore
     };
-  }, [history]);
+  }, [historyWithScores]);
 
   if (loading) {
     return (
@@ -342,10 +367,11 @@ const UserDetail = () => {
           subValue="Saisonrekord" 
         />
         <StatCard 
-          icon={<Wallet className="text-green-500" />} 
-          label="Pkt. / Mio." 
-          value={stats?.pointsPerMio} 
-          subValue="Ø Marktwert Effizienz" 
+          icon={<Zap className="text-purple-400" />} 
+          label="Performance Index" 
+          value={stats?.performanceScore} 
+          subValue="Saison-Rating (1-10)" 
+          isRating={true}
         />
       </div>
 
@@ -359,7 +385,7 @@ const UserDetail = () => {
           </div>
           <div className="h-[200px] sm:h-[250px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={history} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
+              <LineChart data={historyWithScores} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#2a2e37" vertical={false} />
                 <XAxis 
                   dataKey="matchday" 
@@ -421,7 +447,7 @@ const UserDetail = () => {
           </div>
           <div className="h-[200px] sm:h-[250px] w-full mt-4">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={history} margin={{ top: 20, right: 5, left: -25, bottom: 5 }}>
+              <BarChart data={historyWithScores} margin={{ top: 20, right: 5, left: -25, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#2a2e37" vertical={false} />
                 <XAxis 
                   dataKey="matchday" 
@@ -473,6 +499,57 @@ const UserDetail = () => {
               </BarChart>
             </ResponsiveContainer>
           </div>
+        </div>
+      </div>
+      
+      {/* Performance Rating History */}
+      <div className="mt-4 sm:mt-6 bg-[#1a1d24] border border-[#2a2e37] rounded-2xl p-4 sm:p-6 shadow-lg">
+        <div className="flex justify-between items-center mb-4 sm:mb-6">
+          <div className="flex flex-col gap-1">
+            <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Performance Index</h3>
+            <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Performance Index (1-10) pro Spieltag</p>
+          </div>
+          <div className="px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-full text-[9px] text-green-400 font-bold uppercase tracking-widest">Ø {stats?.performanceScore}</div>
+        </div>
+        <div className="h-[200px] sm:h-[250px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={historyWithScores} margin={{ top: 20, right: 5, left: -25, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#2a2e37" vertical={false} />
+              <XAxis 
+                dataKey="matchday" 
+                stroke="#4b5563" 
+                fontSize={10} 
+                tickLine={false} 
+                axisLine={false}
+                tickFormatter={val => `ST ${val}`}
+              />
+              <YAxis 
+                stroke="#4b5563" 
+                fontSize={10} 
+                tickLine={false} 
+                axisLine={false} 
+                domain={[1, 10]}
+                ticks={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
+              />
+              
+              {/* Reference Area for "Good" performance */}
+              <ReferenceArea y1={5} y2={10} fill="#22c55e" fillOpacity={0.03} stroke="none" />
+              
+              <Line 
+                type="monotone" 
+                dataKey="performanceScore" 
+                name="Performance Index"
+                stroke="#22c55e" 
+                strokeWidth={3} 
+                dot={<CustomizedDot />}
+                activeDot={{ r: 8, strokeWidth: 0 }}
+                animationDuration={1500}
+              />
+              
+              {/* Ligaschnitt Reference Line */}
+              <ReferenceArea y1={4.95} y2={5.05} fill="#8b92a5" fillOpacity={0.5} label={{ value: 'Ø SCHNITT', position: 'right', fill: '#8b92a5', fontSize: 8, fontWeight: 'bold' }} />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       </div>
     </div>
@@ -540,7 +617,17 @@ const ThresholdCard = ({ rank, points, thresholds }) => {
   );
 };
 
-const StatCard = ({ icon, label, value, subValue }) => {
+const StatCard = ({ icon, label, value, subValue, isRating }) => {
+  const getRatingColor = (val) => {
+    if (!val) return 'text-gray-400';
+    const num = parseFloat(val.toString().replace(',', '.'));
+    if (num >= 8) return 'text-green-400';
+    if (num >= 6) return 'text-green-500/80';
+    if (num >= 4) return 'text-yellow-500';
+    if (num >= 2) return 'text-orange-500';
+    return 'text-red-500';
+  };
+
   return (
     <div className="bg-[#1a1d24] border border-[#2a2e37] p-3 sm:p-5 rounded-2xl shadow-sm hover:border-[#3a3f4a] transition-all group relative overflow-hidden flex flex-col justify-between">
       <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
@@ -551,7 +638,10 @@ const StatCard = ({ icon, label, value, subValue }) => {
       </div>
       
       <div className="flex flex-col mb-1 gap-1">
-          <div className="text-[17px] sm:text-xl font-black leading-none">{value}</div>
+          <div className={`text-[17px] sm:text-xl font-black leading-none ${isRating ? getRatingColor(value) : ''}`}>
+            {value}
+            {isRating && <span className="text-[10px] text-gray-500 ml-1">/ 10</span>}
+          </div>
       </div>
       <div className="text-[8px] sm:text-[9px] font-bold text-[#626978] uppercase tracking-wider mt-1">{subValue}</div>
     </div>
