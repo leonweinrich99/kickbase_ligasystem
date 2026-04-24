@@ -6,8 +6,16 @@ import {
 } from 'recharts';
 import { 
   ArrowLeft, TrendingUp, TrendingDown, Target, 
-  Award, Wallet, Activity, Star
+  Award, Wallet, Activity, Star, Zap
 } from 'lucide-react';
+
+const calculatePerformanceScore = (points, avg, opt, max) => {
+  if (points <= 0) return 1.0;
+  const reference = (opt && opt > 0) ? opt : (max || 1);
+  const target = reference * 0.8;
+  const score = (points / target) * 10;
+  return Math.min(10.0, Math.max(1.0, parseFloat(score.toFixed(1))));
+};
 
 const parsePoints = (val) => {
     if (typeof val === 'number') return val;
@@ -72,6 +80,14 @@ const CompareView = () => {
             if (!u1AtMatchday || !u2AtMatchday) return null;
             
             const averagePoints = allPoints.length ? Math.round(allPoints.reduce((a, b) => a + b, 0) / allPoints.length) : 0;
+            const maxPoints = allPoints.length ? Math.max(...allPoints) : 0;
+
+            const optRes = await fetch(`/history/optimal-md-${m}-final.json`);
+            let optimalPoints = 0;
+            if (optRes.ok) {
+              const optData = await optRes.json();
+              optimalPoints = optData.totalPoints || 0;
+            }
 
             return {
               matchday: m,
@@ -83,7 +99,9 @@ const CompareView = () => {
               p2PointsMatchday: parsePoints(u2AtMatchday.pointsMatchday),
               p2Rank: u2AtMatchday.rank,
               p2Budget: parsePoints(u2AtMatchday.estimatedBudget),
-              averagePoints
+              averagePoints,
+              maxPoints,
+              optimalPoints
             };
           } catch (e) {
             return null;
@@ -95,6 +113,14 @@ const CompareView = () => {
         if (!historyResults.find(h => h.matchday === latestData.matchday)) {
             const latestPoints = allUsersFlat.map(u => parsePoints(u.pointsMatchday));
             const latestAvg = latestPoints.length ? Math.round(latestPoints.reduce((a,b) => a+b, 0) / latestPoints.length) : 0;
+            const latestMax = latestPoints.length ? Math.max(...latestPoints) : 0;
+
+            const optRes = await fetch(`/history/optimal-md-${latestData.matchday}-final.json`);
+            let latestOptimal = 0;
+            if (optRes.ok) {
+              const optData = await optRes.json();
+              latestOptimal = optData.totalPoints || 0;
+            }
 
             historyResults.push({
                 matchday: latestData.matchday,
@@ -106,7 +132,9 @@ const CompareView = () => {
                 p2PointsMatchday: parsePoints(foundUser2.pointsMatchday),
                 p2Rank: foundUser2.rank,
                 p2Budget: parsePoints(foundUser2.estimatedBudget),
-                averagePoints: latestAvg
+                averagePoints: latestAvg,
+                maxPoints: latestMax,
+                optimalPoints: latestOptimal
             });
         }
 
@@ -121,28 +149,40 @@ const CompareView = () => {
     fetchData();
   }, [id1, id2]);
 
+  const historyWithScores = useMemo(() => {
+    return history.map(h => ({
+      ...h,
+      p1Score: calculatePerformanceScore(h.p1PointsMatchday, h.averagePoints, h.optimalPoints, h.maxPoints),
+      p2Score: calculatePerformanceScore(h.p2PointsMatchday, h.averagePoints, h.optimalPoints, h.maxPoints)
+    }));
+  }, [history]);
+
   const stats = useMemo(() => {
-    if (history.length === 0) return null;
+    if (historyWithScores.length === 0) return null;
     
-    const p1Avg = history.reduce((acc, h) => acc + h.p1PointsMatchday, 0) / history.length;
-    const p1Best = Math.max(...history.map(h => h.p1PointsMatchday));
-    const p1AvgBudget = history.reduce((acc, h) => acc + h.p1Budget, 0) / history.length;
+    const p1Avg = historyWithScores.reduce((acc, h) => acc + h.p1PointsMatchday, 0) / historyWithScores.length;
+    const p1Best = Math.max(...historyWithScores.map(h => h.p1PointsMatchday));
+    const p1AvgBudget = historyWithScores.reduce((acc, h) => acc + h.p1Budget, 0) / historyWithScores.length;
     const p1PointsPerMio = p1AvgBudget > 0 ? (p1Avg / (p1AvgBudget / 1000000)).toFixed(2).replace('.', ',') : '0,00';
+    const p1Score = (historyWithScores.reduce((acc, h) => acc + h.p1Score, 0) / historyWithScores.length).toFixed(1).replace('.', ',');
     
-    const p2Avg = history.reduce((acc, h) => acc + h.p2PointsMatchday, 0) / history.length;
-    const p2Best = Math.max(...history.map(h => h.p2PointsMatchday));
-    const p2AvgBudget = history.reduce((acc, h) => acc + h.p2Budget, 0) / history.length;
+    const p2Avg = historyWithScores.reduce((acc, h) => acc + h.p2PointsMatchday, 0) / historyWithScores.length;
+    const p2Best = Math.max(...historyWithScores.map(h => h.p2PointsMatchday));
+    const p2AvgBudget = historyWithScores.reduce((acc, h) => acc + h.p2Budget, 0) / historyWithScores.length;
     const p2PointsPerMio = p2AvgBudget > 0 ? (p2Avg / (p2AvgBudget / 1000000)).toFixed(2).replace('.', ',') : '0,00';
+    const p2Score = (historyWithScores.reduce((acc, h) => acc + h.p2Score, 0) / historyWithScores.length).toFixed(1).replace('.', ',');
 
     return {
       p1Avg: Math.round(p1Avg),
       p1Best,
       p1PointsPerMio,
+      p1Score,
       p2Avg: Math.round(p2Avg),
       p2Best,
-      p2PointsPerMio
+      p2PointsPerMio,
+      p2Score
     };
-  }, [history]);
+  }, [historyWithScores]);
 
   if (loading) {
     return (
@@ -254,6 +294,13 @@ const CompareView = () => {
             val2={user2.points} 
          />
          <DuelStatRow 
+            icon={<Zap />} 
+            label="Performance Index" 
+            val1={stats?.p1Score} 
+            val2={stats?.p2Score}
+            isScore={true}
+         />
+         <DuelStatRow 
             icon={<Activity />} 
             label="Schnitt pro Spieltag" 
             val1={stats?.p1Avg.toLocaleString('de-DE')} 
@@ -281,7 +328,7 @@ const CompareView = () => {
           </div>
           <div className="h-[200px] sm:h-[250px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={history} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
+              <LineChart data={historyWithScores} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#2a2e37" vertical={false} />
                 <XAxis dataKey="matchday" stroke="#4b5563" fontSize={10} tickLine={false} axisLine={false} tickFormatter={val => `ST ${val}`} />
                 <YAxis reversed stroke="#4b5563" fontSize={10} tickLine={false} axisLine={false} domain={[1, 30]} ticks={[1, 5, 10, 15, 20, 25, 30]} />
@@ -292,6 +339,26 @@ const CompareView = () => {
                 
                 <Line type="monotone" dataKey="p1Rank" name={user1.name} stroke="#ff5c3e" strokeWidth={3} dot={<CustomizedDot />} activeDot={{ r: 8, strokeWidth: 0 }} animationDuration={1500} />
                 <Line type="monotone" dataKey="p2Rank" name={user2.name} stroke="#3b82f6" strokeWidth={3} dot={<CustomizedDot />} activeDot={{ r: 8, strokeWidth: 0 }} animationDuration={1500} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-2xl p-4 sm:p-6 shadow-lg">
+          <div className="flex justify-between items-center mb-4 sm:mb-6">
+            <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Performance Index</h3>
+          </div>
+          <div className="h-[200px] sm:h-[250px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={historyWithScores} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#2a2e37" vertical={false} />
+                <XAxis dataKey="matchday" stroke="#4b5563" fontSize={10} tickLine={false} axisLine={false} tickFormatter={val => `ST ${val}`} />
+                <YAxis stroke="#4b5563" fontSize={10} tickLine={false} axisLine={false} domain={[1, 10]} ticks={[1, 3, 5, 7, 10]} />
+                <ReferenceArea y1={8} y2={10} fill="#22c55e" fillOpacity={0.1} stroke="none" />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
+                
+                <Line type="monotone" dataKey="p1Score" name={user1.name} stroke="#ff5c3e" strokeWidth={3} dot={<CustomizedDot />} activeDot={{ r: 8, strokeWidth: 0 }} animationDuration={1500} />
+                <Line type="monotone" dataKey="p2Score" name={user2.name} stroke="#3b82f6" strokeWidth={3} dot={<CustomizedDot />} activeDot={{ r: 8, strokeWidth: 0 }} animationDuration={1500} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -311,7 +378,7 @@ const CompareView = () => {
           </div>
           <div className="h-[200px] sm:h-[250px] w-full mt-4">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={history} margin={{ top: 20, right: 5, left: -25, bottom: 5 }}>
+              <BarChart data={historyWithScores} margin={{ top: 20, right: 5, left: -25, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#2a2e37" vertical={false} />
                 <XAxis 
                   dataKey="matchday" 
@@ -351,9 +418,11 @@ const CompareView = () => {
   );
 };
 
-const DuelStatRow = ({ icon, label, val1, val2 }) => {
-    const num1 = parsePoints(val1);
-    const num2 = parsePoints(val2);
+const DuelStatRow = ({ icon, label, val1, val2, isScore }) => {
+    const parseScore = (v) => parseFloat(v?.toString().replace(',', '.') || 0);
+    
+    const num1 = isScore ? parseScore(val1) : parsePoints(val1);
+    const num2 = isScore ? parseScore(val2) : parsePoints(val2);
     
     const p1Wins = num1 > num2;
     const p2Wins = num2 > num1;
@@ -369,7 +438,7 @@ const DuelStatRow = ({ icon, label, val1, val2 }) => {
             <div className="w-full flex justify-between items-center relative z-10">
                 {/* User 1 Value */}
                 <div className={`w-[30%] text-left flex flex-col justify-center ${p1Wins ? 'text-green-500' : p2Wins ? 'text-gray-400' : 'text-gray-200'}`}>
-                    <span className="text-sm sm:text-2xl font-black truncate">{val1}</span>
+                    <span className="text-sm sm:text-2xl font-black truncate">{val1}{isScore && <span className="text-[10px] ml-1 opacity-50">/ 10</span>}</span>
                     {p1Wins && <span className="text-[9px] font-bold uppercase tracking-widest mt-0.5 opacity-80 hidden sm:block">Führend</span>}
                 </div>
 
@@ -385,7 +454,7 @@ const DuelStatRow = ({ icon, label, val1, val2 }) => {
 
                 {/* User 2 Value */}
                 <div className={`w-[30%] text-right flex flex-col justify-center ${p2Wins ? 'text-green-500' : p1Wins ? 'text-gray-400' : 'text-gray-200'}`}>
-                    <span className="text-sm sm:text-2xl font-black truncate">{val2}</span>
+                    <span className="text-sm sm:text-2xl font-black truncate">{val2}{isScore && <span className="text-[10px] ml-1 opacity-50">/ 10</span>}</span>
                     {p2Wins && <span className="text-[9px] font-bold uppercase tracking-widest mt-0.5 opacity-80 hidden sm:block">Führend</span>}
                 </div>
             </div>
