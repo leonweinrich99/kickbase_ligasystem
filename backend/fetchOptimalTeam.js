@@ -133,11 +133,9 @@ async function fetchOptimalTeam() {
                         const d = await r.json();
                         const keys = Object.keys(d);
                         
-                        // Kickbase v4 teamprofile hat oft 'players' oder 'p'
-                        const list = d.players || d.p || d.pl || (Array.isArray(d) ? d : []);
+                        // In v4 ist 'it' oft der Key für die Spielerliste
+                        const list = d.players || d.pl || d.it || d.p || (Array.isArray(d) ? d : []);
                         const playersArray = Array.isArray(list) ? list : Object.values(list);
-                        
-                        console.log(`  -> URL: ${url.split('/').slice(-2).join('/')} | Status: ${status} | Keys: ${keys.join(', ')} | Spieler: ${playersArray.length}`);
                         
                         if (playersArray.length > 0) {
                             for (const p of playersArray) {
@@ -153,6 +151,7 @@ async function fetchOptimalTeam() {
                                     });
                                 }
                             }
+                            console.log(`  -> Team ID ${teamId}: ${playersArray.length} Spieler über ${keys.includes('it') ? 'it' : 'pl'} geladen.`);
                             break; 
                         }
                     } else {
