@@ -128,6 +128,8 @@ async function fetchOptimalTeam() {
         }
 
         const allPlayers = Array.from(allPlayersMap.values());
+        const rawPlayers = []; // Für den unveränderten Dump
+        
         console.log(`[LOG] Gesamtliste: ${allPlayers.length} Spieler.`);
         if (allPlayers.length === 0) throw new Error("Keine Spieler gefunden.");
 
@@ -136,21 +138,20 @@ async function fetchOptimalTeam() {
         for (let i = 0; i < allPlayers.length; i++) {
             const p = allPlayers[i];
             try {
-                // User-Request: Nutze v4/leagues/{leagueId}/players/{playerId} für mehr Infos
                 const pRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/players/${p.id}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 if (pRes.ok) {
                     const pData = await pRes.json();
+                    rawPlayers.push(pData); // Original-Daten speichern
                     
-                    // Update Basis-Infos (falls der Markt-Abruf ungenau war)
+                    // Bereinigte Daten für den Solver aktualisieren
                     p.name = pData.n || pData.name || p.name;
                     p.position = pData.pos || pData.position || p.position;
                     p.teamId = pData.tid || pData.teamId || p.teamId;
                     p.marketValue = pData.mv || pData.marketValue || p.marketValue;
 
                     const mds = pData.matchDays || pData.mds || [];
-                    
                     let stat = mds.find(m => (m.day || m.d) === currentMatchday);
                     let pts = stat ? (stat.points || stat.p || 0) : 0;
 
@@ -171,9 +172,10 @@ async function fetchOptimalTeam() {
             await delay(40);
         }
 
-        // --- Dump für lokale Arbeit ---
+        // --- Dump der ORIGINAL-DATEN für lokale Arbeit ---
         const dumpPath = path.join(__dirname, '../frontend/public/history/all_players.json');
-        fs.writeFileSync(dumpPath, JSON.stringify(allPlayers, null, 2));
+        fs.writeFileSync(dumpPath, JSON.stringify(rawPlayers, null, 2));
+        console.log(`[LOG] ${rawPlayers.length} Original-Spielerdaten in ${dumpPath} gespeichert.`);
 
         // 7. Solver
         console.log("[LOG] Vorbereitung Solver...");
