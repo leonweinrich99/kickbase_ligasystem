@@ -131,11 +131,12 @@ async function fetchOptimalTeam() {
                     const status = r.status;
                     if (r.ok) {
                         const d = await r.json();
-                        const keys = Object.keys(d);
-                        
-                        // In v4 ist 'it' oft der Key für die Spielerliste
-                        const list = d.players || d.pl || d.it || d.p || (Array.isArray(d) ? d : []);
+                        const list = d.it || d.players || d.pl || d.p || (Array.isArray(d) ? d : []);
                         const playersArray = Array.isArray(list) ? list : Object.values(list);
+                        
+                        if (teamId === 2) {
+                             console.log(`  -> URL: ${url.split('/').slice(-1)[0]} | Keys: ${Object.keys(d).join(',')} | 'it' Typ: ${typeof d.it} | Spieler: ${playersArray.length}`);
+                        }
                         
                         if (playersArray.length > 0) {
                             for (const p of playersArray) {
@@ -151,7 +152,7 @@ async function fetchOptimalTeam() {
                                     });
                                 }
                             }
-                            console.log(`  -> Team ID ${teamId}: ${playersArray.length} Spieler über ${keys.includes('it') ? 'it' : 'pl'} geladen.`);
+                            console.log(`  -> Team ID ${teamId} geladen (${playersArray.length} Spieler).`);
                             break; 
                         }
                     } else {
