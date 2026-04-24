@@ -152,9 +152,14 @@ async function fetchOptimalTeam() {
         }
 
         // --- Dump für lokale Arbeit ---
-        const dumpPath = path.join(__dirname, 'scratch/all_players_dump.json');
-        if (!fs.existsSync(path.join(__dirname, 'scratch'))) fs.mkdirSync(path.join(__dirname, 'scratch'));
+        const dumpPath = path.join(__dirname, '../frontend/public/history/all_players.json');
         fs.writeFileSync(dumpPath, JSON.stringify(allPlayers, null, 2));
+        console.log(`[LOG] Alle ${allPlayers.length} Spieler in ${dumpPath} gespeichert.`);
+
+        // Debug: Zeige Struktur des ersten Spielers
+        if (allPlayers.length > 0) {
+            console.log("[DEBUG] Struktur erster Spieler:", JSON.stringify(allPlayers[0], null, 2));
+        }
 
         // 7. Solver
         console.log("[LOG] Vorbereitung Solver...");
