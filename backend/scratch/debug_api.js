@@ -13,47 +13,52 @@ async function debug() {
         body: JSON.stringify({ em: email, loy: false, pass: password, rep: {} })
     });
     const loginData = await loginRes.json();
-    console.log("Login Status:", loginRes.status);
-    console.log("Login Keys:", Object.keys(loginData));
-    
     const token = loginData.tkn;
     if (!token) {
         console.log("ERROR: No token found");
         return;
     }
 
-    // Test a simple endpoint: competitions
+    // 1. Competitions check
+    console.log("Fetching competitions...");
     const compRes = await fetch('https://api.kickbase.com/v4/competitions', {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { 
+            Authorization: `Bearer ${token}`,
+            Cookie: `kkstrauth=${token}`
+        }
     });
     const compData = await compRes.json();
-    console.log("Competitions:", JSON.stringify(compData).substring(0, 200));
+    console.log("Competitions Raw:", JSON.stringify(compData));
 
-    // Test team players (Bayern ID: 2)
-    const teamId = 2;
-    const urls = [
-        `https://api.kickbase.com/competition/teams/${teamId}/players`,
-        `https://api.kickbase.com/v4/competitions/1/teams/${teamId}/players`,
-        `https://api.kickbase.com/v4/base/teams/${teamId}/players`
-    ];
+    // 2. Teams check
+    console.log("Fetching teams...");
+    const teamsRes = await fetch('https://api.kickbase.com/v4/base/predictions/teams/1', {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+    const teamsData = await teamsRes.json();
+    console.log("Teams Keys:", Object.keys(teamsData));
+    const teams = teamsData.tms || [];
+    console.log("Teams Count:", teams.length);
 
-    for (const url of urls) {
-        console.log(`Testing URL: ${url}`);
-        const r = await fetch(url, {
-            headers: { 
-                Authorization: `Bearer ${token}`,
-                Cookie: `kkstrauth=${token}`
-            }
-        });
-        console.log(`  Status: ${r.status}`);
-        const text = await r.text();
-        console.log(`  Response (start): ${text.substring(0, 200)}`);
-        try {
-            const d = JSON.parse(text);
-            const list = d.p || d.players || d.pl || [];
-            console.log(`  Found ${Array.isArray(list) ? list.length : 'N/A'} players.`);
-        } catch (e) {
-            console.log(`  Error parsing JSON: ${e.message}`);
+    if (teams.length > 0) {
+        const teamId = teams[0].tid || teams[0].i;
+        console.log(`Testing Team ${teams[0].tn} (ID: ${teamId})...`);
+        const urls = [
+            `https://api.kickbase.com/competition/teams/${teamId}/players`,
+            `https://api.kickbase.com/v4/leagues/10320440/teams/${teamId}/players`,
+            `https://api.kickbase.com/v4/leagues/10320440/teams/${teamId}/teamprofile`
+        ];
+        for (const url of urls) {
+            console.log(`URL: ${url}`);
+            const r = await fetch(url, {
+                headers: { 
+                    Authorization: `Bearer ${token}`,
+                    Cookie: `kkstrauth=${token}`
+                }
+            });
+            console.log(`  Status: ${r.status}`);
+            const body = await r.text();
+            console.log(`  Body (100 chars): ${body.substring(0, 100)}`);
         }
     }
 }

@@ -91,40 +91,54 @@ async function fetchOptimalTeam() {
             });
             const teamsData = await teamsRes.json();
             const teams = teamsData.tms || [];
+            console.log(`[LOG] ${teams.length} Teams für Fallback gefunden.`);
             
             for (const team of teams) {
                 const teamId = team.tid || team.i;
+                const teamName = team.tn || team.n;
+                
                 const teamUrls = [
                     `https://api.kickbase.com/competition/teams/${teamId}/players`,
                     `https://api.kickbase.com/v4/leagues/${leagueId}/teams/${teamId}/players`,
                     `https://api.kickbase.com/v4/leagues/${leagueId}/teams/${teamId}/teamprofile`
                 ];
                 
+                let teamPlayers = [];
                 for (const url of teamUrls) {
                     try {
-                        const r = await fetch(url, { headers: { Authorization: `Bearer ${token}`, Cookie: `kkstrauth=${token}` } });
+                        const r = await fetch(url, { 
+                            headers: { 
+                                Authorization: `Bearer ${token}`, 
+                                Cookie: `kkstrauth=${token}` 
+                            } 
+                        });
                         if (r.ok) {
                             const d = await r.json();
                             const list = d.p || d.players || d.pl || (Array.isArray(d) ? d : []);
                             const playersArray = Array.isArray(list) ? list : Object.values(list);
                             if (playersArray.length > 0) {
-                                for (const p of playersArray) {
-                                    const pId = p.i || p.id;
-                                    if (pId && !allPlayersMap.has(pId)) {
-                                        allPlayersMap.set(pId, {
-                                            id: pId,
-                                            teamId: teamId,
-                                            name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(),
-                                            position: p.p || p.pos || 0,
-                                            marketValue: p.mv || p.marketValue || 0,
-                                            imagePath: p.pi || p.profileBig || p.profile
-                                        });
-                                    }
-                                }
-                                break; 
+                                teamPlayers = playersArray;
+                                // console.log(`  -> ${teamName}: ${teamPlayers.length} Spieler via ${url.split('v4/')[1] || url}`);
+                                break;
                             }
+                        } else {
+                            // console.log(`  -> ${url} fehlgeschlagen: ${r.status}`);
                         }
                     } catch (e) {}
+                }
+                
+                for (const p of teamPlayers) {
+                    const pId = p.i || p.id;
+                    if (pId && !allPlayersMap.has(pId)) {
+                        allPlayersMap.set(pId, {
+                            id: pId,
+                            teamId: teamId,
+                            name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(),
+                            position: p.p || p.pos || 0,
+                            marketValue: p.mv || p.marketValue || 0,
+                            imagePath: p.pi || p.profileBig || p.profile
+                        });
+                    }
                 }
                 await delay(150);
             }
