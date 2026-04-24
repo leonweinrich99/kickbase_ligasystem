@@ -21,8 +21,8 @@ const PositionRow = ({ players, positionName }) => {
               ) : (
                 <div className="text-gray-500 font-bold text-xs uppercase">{p.name.substring(0, 2)}</div>
               )}
-              {/* Punkte-Badge */}
-              <div className="absolute -bottom-1 -right-1 bg-green-500 text-white text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 rounded-md border border-[#1e222a] shadow-sm">
+              {/* Punkte-Badge - Zentriert am unteren Rand */}
+              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-green-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full border-2 border-[#1e222a] shadow-lg flex items-center justify-center min-w-[28px] z-20">
                 {p.points}
               </div>
             </div>
