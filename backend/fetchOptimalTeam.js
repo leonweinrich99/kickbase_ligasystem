@@ -61,11 +61,15 @@ async function fetchOptimalTeam() {
                 for (const p of mList) {
                     const pId = p.i || p.id;
                     if (pId && !allPlayersMap.has(pId)) {
+                        // Positionen fixen
+                        let pos = p.pos || p.p || 0;
+                        if (pos > 10) pos = p.pos || (p.p % 10) || 0;
+
                         allPlayersMap.set(pId, {
                             id: pId,
                             teamId: p.tid || p.t || 0,
                             name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(),
-                            position: p.p || p.pos || 0,
+                            position: pos,
                             marketValue: p.mv || p.marketValue || 0,
                             imagePath: p.pi || p.profileBig || p.profile
                         });
@@ -102,11 +106,14 @@ async function fetchOptimalTeam() {
                             for (const p of playersArray) {
                                 const pId = p.i || p.id;
                                 if (pId && !allPlayersMap.has(pId)) {
+                                    let pos = p.pos || p.p || 0;
+                                    if (pos > 10) pos = p.pos || (p.p % 10) || 0;
+
                                     allPlayersMap.set(pId, {
                                         id: pId,
                                         teamId: teamId,
                                         name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(),
-                                        position: p.p || p.pos || 0,
+                                        position: pos,
                                         marketValue: p.mv || p.marketValue || 0,
                                         imagePath: p.pi || p.profileBig || p.profile
                                     });
@@ -117,53 +124,60 @@ async function fetchOptimalTeam() {
                     }
                 } catch (e) {}
             }
-            await delay(150);
+            await delay(100);
         }
 
         const allPlayers = Array.from(allPlayersMap.values());
         console.log(`[LOG] Gesamtliste: ${allPlayers.length} Spieler.`);
         if (allPlayers.length === 0) throw new Error("Keine Spieler gefunden.");
 
-        // 6. Punkte abrufen (Schnitt + Spieltag)
-        console.log(`[LOG] Rufe Punkte für ${allPlayers.length} Spieler ab...`);
+        // 6. Detaillierte Spieler-Daten abrufen (Profil + Punkte)
+        console.log(`[LOG] Rufe Details für ${allPlayers.length} Spieler ab...`);
         for (let i = 0; i < allPlayers.length; i++) {
             const p = allPlayers[i];
             try {
-                const sRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/players/${p.id}/stats`, {
+                // User-Request: Nutze v4/leagues/{leagueId}/players/{playerId} für mehr Infos
+                const pRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/players/${p.id}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-                if (sRes.ok) {
-                    const sData = await sRes.json();
-                    p.avgPoints = sData.averagePoints || sData.avp || 0;
-                    if (p.avgPoints === 0 && (sData.totalPoints || sData.tp)) {
-                        const played = sData.matchDaysPlayed || sData.mdp || 1;
-                        p.avgPoints = (sData.totalPoints || sData.tp) / played;
+                if (pRes.ok) {
+                    const pData = await pRes.json();
+                    
+                    // Update Basis-Infos (falls der Markt-Abruf ungenau war)
+                    p.name = pData.n || pData.name || p.name;
+                    p.position = pData.pos || pData.position || p.position;
+                    p.teamId = pData.tid || pData.teamId || p.teamId;
+                    p.marketValue = pData.mv || pData.marketValue || p.marketValue;
+
+                    const mds = pData.matchDays || pData.mds || [];
+                    
+                    let stat = mds.find(m => (m.day || m.d) === currentMatchday);
+                    let pts = stat ? (stat.points || stat.p || 0) : 0;
+
+                    if (pts === 0) {
+                        const lastWithPoints = [...mds].sort((a, b) => (b.day || b.d) - (a.day || a.d)).find(m => (m.points || m.p) > 0);
+                        if (lastWithPoints) pts = lastWithPoints.points || lastWithPoints.p;
                     }
-                    const mds = sData.matchDays || sData.mds || [];
-                    const stat = mds.find(m => (m.day || m.d) === currentMatchday);
-                    p.currentPoints = stat ? (stat.points || stat.p || 0) : 0;
-                    p.points = p.currentPoints > 0 ? p.currentPoints : p.avgPoints;
-                } else p.points = 0;
-            } catch (e) { p.points = 0; }
+
+                    p.avgPoints = pData.averagePoints || pData.avp || 0;
+                    p.points = pts > 0 ? pts : p.avgPoints;
+                }
+            } catch (e) {}
+            
             p.points = isNaN(p.points) ? 0 : p.points;
             p.marketValue = isNaN(p.marketValue) ? 0 : p.marketValue;
-            if (i % 100 === 0 && i > 0) console.log(`[LOG] Fortschritt: ${i}/${allPlayers.length}`);
-            await delay(100);
+
+            if (i % 50 === 0 && i > 0) console.log(`[LOG] Fortschritt: ${i}/${allPlayers.length}`);
+            await delay(40);
         }
 
         // --- Dump für lokale Arbeit ---
         const dumpPath = path.join(__dirname, '../frontend/public/history/all_players.json');
         fs.writeFileSync(dumpPath, JSON.stringify(allPlayers, null, 2));
-        console.log(`[LOG] Alle ${allPlayers.length} Spieler in ${dumpPath} gespeichert.`);
-
-        // Debug: Zeige Struktur des ersten Spielers
-        if (allPlayers.length > 0) {
-            console.log("[DEBUG] Struktur erster Spieler:", JSON.stringify(allPlayers[0], null, 2));
-        }
 
         // 7. Solver
         console.log("[LOG] Vorbereitung Solver...");
-        const pool = allPlayers.filter(p => p.points >= 0); // Erlaube auch 0 Punkte
+        const pool = allPlayers.filter(p => p.position >= 1 && p.position <= 4);
         const posCount = { 1: 0, 2: 0, 3: 0, 4: 0 };
         pool.forEach(p => posCount[p.position]++);
         
@@ -200,7 +214,6 @@ async function fetchOptimalTeam() {
             model.ints[v] = 1;
         });
 
-        console.log("[LOG] Starte Solver (ILP)...");
         const res = solver.Solve(model);
         if (!res.feasible) {
              model.constraints.total_players = { max: 11 };
