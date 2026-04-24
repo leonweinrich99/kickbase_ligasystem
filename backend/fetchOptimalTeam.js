@@ -49,11 +49,10 @@ async function fetchOptimalTeam() {
 
         let allPlayersMap = new Map();
 
-        // 4. Global Fetch (High Efficiency)
+        // 4. Global Fetch (Optional, if works)
         const globalUrls = [
             `https://api.kickbase.com/v4/leagues/${leagueId}/market/all`,
-            `https://api.kickbase.com/v4/leagues/${leagueId}/lineup/selection`,
-            `https://api.kickbase.com/v4/leagues/${leagueId}/lineup/teams`
+            `https://api.kickbase.com/v4/leagues/${leagueId}/lineup/selection`
         ];
 
         for (const url of globalUrls) {
@@ -63,21 +62,18 @@ async function fetchOptimalTeam() {
                     const d = await r.json();
                     const list = d.players || d.pl || d.p || d.selection || [];
                     const playersArray = Array.isArray(list) ? list : Object.values(list);
-                    if (playersArray.length > 0) {
-                        for (const p of playersArray) {
-                            const pId = p.i || p.id;
-                            if (pId && !allPlayersMap.has(pId)) {
-                                allPlayersMap.set(pId, {
-                                    id: pId,
-                                    teamId: p.tid || p.t || 0,
-                                    name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(),
-                                    position: p.p || p.pos || 0,
-                                    marketValue: p.mv || p.marketValue || 0,
-                                    imagePath: p.pi || p.profileBig || p.profile
-                                });
-                            }
+                    for (const p of playersArray) {
+                        const pId = p.i || p.id;
+                        if (pId && !allPlayersMap.has(pId)) {
+                            allPlayersMap.set(pId, {
+                                id: pId,
+                                teamId: p.tid || p.t || 0,
+                                name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(),
+                                position: p.p || p.pos || 0,
+                                marketValue: p.mv || p.marketValue || 0,
+                                imagePath: p.pi || p.profileBig || p.profile
+                            });
                         }
-                        console.log(`[LOG] ${allPlayersMap.size} Spieler über ${url.split('v4/')[1]} geladen.`);
                     }
                 }
             } catch (e) {}
@@ -87,10 +83,8 @@ async function fetchOptimalTeam() {
         console.log("[LOG] Sammle Spieler über verifizierte Team-IDs...");
         const teamIds = [2,3,4,5,7,9,11,13,14,15,18,19,20,22,24,28,40,43];
         
-        for (let i = 0; i < teamIds.length; i++) {
-            const teamId = teamIds[i];
+        for (const teamId of teamIds) {
             const url = `https://api.kickbase.com/competition/teams/${teamId}/players`;
-            
             try {
                 const r = await fetch(url, { 
                     headers: { 
@@ -99,12 +93,10 @@ async function fetchOptimalTeam() {
                         'Cookie': `kkstrauth=${token}` 
                     } 
                 });
-                
                 if (r.ok) {
                     const d = await r.json();
                     const list = d.p || d.players || d.pl || [];
                     const playersArray = Array.isArray(list) ? list : Object.values(list);
-                    
                     if (playersArray.length > 0) {
                         for (const p of playersArray) {
                             const pId = p.i || p.id;
@@ -121,35 +113,15 @@ async function fetchOptimalTeam() {
                         }
                         console.log(`  -> Team ID ${teamId}: ${playersArray.length} Spieler geladen.`);
                     }
-                } else {
-                    console.log(`  -> Team ID ${teamId} fehlgeschlagen (Status: ${r.status})`);
                 }
             } catch (e) {
                 console.log(`  -> Team ID ${teamId} Fehler: ${e.message}`);
             }
-            await delay(200);
-        }
-        console.log(`[LOG] Gesamtliste: ${allPlayersMap.size} Spieler.`);
-                
-                for (const p of teamPlayers) {
-                    const pId = p.i || p.id;
-                    if (pId && !allPlayersMap.has(pId)) {
-                        allPlayersMap.set(pId, {
-                            id: pId,
-                            teamId: teamId,
-                            name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(),
-                            position: p.p || p.pos || 0,
-                            marketValue: p.mv || p.marketValue || 0,
-                            imagePath: p.pi || p.profileBig || p.profile
-                        });
-                    }
-                }
-                await delay(150);
-            }
-            console.log(`[LOG] Gesamtliste nach Team-Abfrage: ${allPlayersMap.size} Spieler.`);
+            await delay(150);
         }
 
         const allPlayers = Array.from(allPlayersMap.values());
+        console.log(`[LOG] Gesamtliste: ${allPlayers.length} Spieler.`);
         if (allPlayers.length === 0) throw new Error("Keine Spieler gefunden.");
 
         // 6. Points
@@ -167,7 +139,7 @@ async function fetchOptimalTeam() {
                     p.points = stat ? (stat.points || stat.p || 0) : 0;
                 } else p.points = 0;
             } catch (e) { p.points = 0; }
-            if (i % 50 === 0 && i > 0) console.log(`[LOG] Fortschritt: ${i}/${allPlayers.length}`);
+            if (i % 100 === 0 && i > 0) console.log(`[LOG] Fortschritt: ${i}/${allPlayers.length}`);
             await delay(100);
         }
 
