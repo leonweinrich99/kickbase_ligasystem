@@ -157,7 +157,14 @@ async function fetchOptimalTeam() {
         fs.writeFileSync(dumpPath, JSON.stringify(allPlayers, null, 2));
 
         // 7. Solver
-        console.log("[LOG] Starte Solver (ILP)...");
+        console.log("[LOG] Vorbereitung Solver...");
+        const pool = allPlayers.filter(p => p.points >= 0); // Erlaube auch 0 Punkte
+        const posCount = { 1: 0, 2: 0, 3: 0, 4: 0 };
+        pool.forEach(p => posCount[p.position]++);
+        
+        console.log(`[LOG] Solver-Pool: ${pool.length} Spieler`);
+        console.log(`[LOG] Verteilung: Tor: ${posCount[1]}, Abw: ${posCount[2]}, Mit: ${posCount[3]}, Ang: ${posCount[4]}`);
+
         const model = {
             optimize: "points",
             opType: "max",
@@ -173,23 +180,22 @@ async function fetchOptimalTeam() {
             ints: {}
         };
 
-        const tIds = [...new Set(allPlayers.map(p => p.teamId))];
+        const tIds = [...new Set(pool.map(p => p.teamId))];
         tIds.forEach(id => { if (id > 0) model.constraints[`t_${id}`] = { max: 3 }; });
 
-        allPlayers.forEach(p => {
-            if (p.points > 0) {
-                const v = `p_${p.id}`;
-                model.variables[v] = {
-                    points: p.points,
-                    budget: p.marketValue,
-                    total_players: 1,
-                    [`t_${p.teamId}`]: 1,
-                    [`pos_${p.position}`]: 1
-                };
-                model.ints[v] = 1;
-            }
+        pool.forEach(p => {
+            const v = `p_${p.id}`;
+            model.variables[v] = {
+                points: p.points || 0,
+                budget: p.marketValue || 0,
+                total_players: 1,
+                [`t_${p.teamId}`]: 1,
+                [`pos_${p.position}`]: 1
+            };
+            model.ints[v] = 1;
         });
 
+        console.log("[LOG] Starte Solver (ILP)...");
         const res = solver.Solve(model);
         if (!res.feasible) {
              model.constraints.total_players = { max: 11 };
