@@ -93,10 +93,18 @@ async function fetchOptimalTeam() {
                         'Cookie': `kkstrauth=${token}` 
                     } 
                 });
+                
+                const text = await r.text();
                 if (r.ok) {
-                    const d = await r.json();
+                    let d;
+                    try { d = JSON.parse(text); } catch(e) { 
+                        console.log(`  -> ID ${teamId}: JSON Parse Fehler. Body: ${text.substring(0, 100)}`);
+                        continue;
+                    }
+                    
                     const list = d.p || d.players || d.pl || [];
                     const playersArray = Array.isArray(list) ? list : Object.values(list);
+                    
                     if (playersArray.length > 0) {
                         for (const p of playersArray) {
                             const pId = p.i || p.id;
@@ -112,12 +120,16 @@ async function fetchOptimalTeam() {
                             }
                         }
                         console.log(`  -> Team ID ${teamId}: ${playersArray.length} Spieler geladen.`);
+                    } else {
+                        console.log(`  -> Team ID ${teamId}: 0 Spieler gefunden. Body: ${text.substring(0, 100)}`);
                     }
+                } else {
+                    console.log(`  -> Team ID ${teamId} fehlgeschlagen (Status: ${r.status}). Body: ${text.substring(0, 100)}`);
                 }
             } catch (e) {
                 console.log(`  -> Team ID ${teamId} Fehler: ${e.message}`);
             }
-            await delay(150);
+            await delay(200);
         }
 
         const allPlayers = Array.from(allPlayersMap.values());
