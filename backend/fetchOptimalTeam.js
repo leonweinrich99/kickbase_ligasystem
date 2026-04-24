@@ -101,12 +101,16 @@ async function fetchOptimalTeam() {
                         } 
                     });
                     
+                    const status = r.status;
                     if (r.ok) {
-                        const text = await r.text();
-                        const d = JSON.parse(text);
+                        const d = await r.json();
+                        const keys = Object.keys(d);
+                        
                         // Kickbase v4 teamprofile hat oft 'players' oder 'p'
                         const list = d.players || d.p || d.pl || (Array.isArray(d) ? d : []);
                         const playersArray = Array.isArray(list) ? list : Object.values(list);
+                        
+                        console.log(`  -> URL: ${url.split('/').slice(-2).join('/')} | Status: ${status} | Keys: ${keys.join(', ')} | Spieler: ${playersArray.length}`);
                         
                         if (playersArray.length > 0) {
                             for (const p of playersArray) {
@@ -122,9 +126,10 @@ async function fetchOptimalTeam() {
                                     });
                                 }
                             }
-                            console.log(`  -> Team ID ${teamId} (${url.split('/').slice(-1)[0]}): ${playersArray.length} Spieler.`);
                             break; 
                         }
+                    } else {
+                        // console.log(`  -> URL: ${url.split('/').slice(-2).join('/')} | Status: ${status}`);
                     }
                 } catch (e) {}
             }
