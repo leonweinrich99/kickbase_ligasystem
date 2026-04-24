@@ -162,20 +162,24 @@ async function fetchOptimalTeam() {
 
                     p.avgPoints = pData.averagePoints || pData.avp || 0;
                     p.points = pts > 0 ? pts : p.avgPoints;
+
+                    // NEU: Performance-Daten für den Spieltag abrufen
+                    try {
+                        const perfRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/players/${p.id}/performance?day=${currentMatchday}`, {
+                            headers: { Authorization: `Bearer ${token}` }
+                        });
+                        if (perfRes.ok) {
+                            pData.performance = await perfRes.json();
+                            // Falls wir über das Profil keine Punkte hatten, schauen wir in die Performance
+                            if (p.points === 0 && pData.performance && (pData.performance.p || pData.performance.points)) {
+                                p.points = pData.performance.p || pData.performance.points;
+                            }
+                        }
+                    } catch (e) {}
+
+                    rawPlayers.push(pData); // Original-Daten inkl. Performance speichern
                 }
             } catch (e) {}
-            
-            p.points = isNaN(p.points) ? 0 : p.points;
-            p.marketValue = isNaN(p.marketValue) ? 0 : p.marketValue;
-
-            if (i % 50 === 0 && i > 0) console.log(`[LOG] Fortschritt: ${i}/${allPlayers.length}`);
-            await delay(40);
-        }
-
-        // --- Dump der ORIGINAL-DATEN für lokale Arbeit ---
-        const dumpPath = path.join(__dirname, '../frontend/public/history/all_players.json');
-        fs.writeFileSync(dumpPath, JSON.stringify(rawPlayers, null, 2));
-        console.log(`[LOG] ${rawPlayers.length} Original-Spielerdaten in ${dumpPath} gespeichert.`);
 
         // 7. Solver
         console.log("[LOG] Vorbereitung Solver...");
