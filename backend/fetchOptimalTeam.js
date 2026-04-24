@@ -61,10 +61,8 @@ async function fetchOptimalTeam() {
                 for (const p of mList) {
                     const pId = p.i || p.id;
                     if (pId && !allPlayersMap.has(pId)) {
-                        // Positionen fixen
                         let pos = p.pos || p.p || 0;
                         if (pos > 10) pos = p.pos || (p.p % 10) || 0;
-
                         allPlayersMap.set(pId, {
                             id: pId,
                             teamId: p.tid || p.t || 0,
@@ -81,14 +79,12 @@ async function fetchOptimalTeam() {
         // 5. Team-Einzelabfragen mit verifizierten IDs
         console.log("[LOG] Sammle Spieler über verifizierte Team-IDs...");
         const teamIds = [2,3,4,5,7,9,11,13,14,15,18,19,20,22,24,28,40,43];
-        
         for (const teamId of teamIds) {
             const teamUrls = [
                 `https://api.kickbase.com/v4/leagues/${leagueId}/teams/${teamId}/teamprofile`,
                 `https://api.kickbase.com/v4/teams/${teamId}/players`,
                 `https://api.kickbase.com/v4/competition/teams/${teamId}/players`
             ];
-            
             for (const url of teamUrls) {
                 try {
                     const r = await fetch(url, { 
@@ -108,7 +104,6 @@ async function fetchOptimalTeam() {
                                 if (pId && !allPlayersMap.has(pId)) {
                                     let pos = p.pos || p.p || 0;
                                     if (pos > 10) pos = p.pos || (p.p % 10) || 0;
-
                                     allPlayersMap.set(pId, {
                                         id: pId,
                                         teamId: teamId,
@@ -128,12 +123,11 @@ async function fetchOptimalTeam() {
         }
 
         const allPlayers = Array.from(allPlayersMap.values());
-        const rawPlayers = []; // Für den unveränderten Dump
-        
+        const rawPlayers = [];
         console.log(`[LOG] Gesamtliste: ${allPlayers.length} Spieler.`);
         if (allPlayers.length === 0) throw new Error("Keine Spieler gefunden.");
 
-        // 6. Detaillierte Spieler-Daten abrufen (Profil + Punkte)
+        // 6. Detail-Abruf (Profil + Performance)
         console.log(`[LOG] Rufe Details für ${allPlayers.length} Spieler ab...`);
         for (let i = 0; i < allPlayers.length; i++) {
             const p = allPlayers[i];
@@ -143,9 +137,18 @@ async function fetchOptimalTeam() {
                 });
                 if (pRes.ok) {
                     const pData = await pRes.json();
-                    rawPlayers.push(pData); // Original-Daten speichern
                     
-                    // Bereinigte Daten für den Solver aktualisieren
+                    // Performance-Zusatz
+                    try {
+                        const perfRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/players/${p.id}/performance?day=${currentMatchday}`, {
+                            headers: { Authorization: `Bearer ${token}` }
+                        });
+                        if (perfRes.ok) pData.performance = await perfRes.json();
+                    } catch (pe) {}
+
+                    rawPlayers.push(pData);
+
+                    // Solver-Daten updaten
                     p.name = pData.n || pData.name || p.name;
                     p.position = pData.pos || pData.position || p.position;
                     p.teamId = pData.tid || pData.teamId || p.teamId;
@@ -162,34 +165,21 @@ async function fetchOptimalTeam() {
 
                     p.avgPoints = pData.averagePoints || pData.avp || 0;
                     p.points = pts > 0 ? pts : p.avgPoints;
-
-                    // NEU: Performance-Daten für den Spieltag abrufen
-                    try {
-                        const perfRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/players/${p.id}/performance?day=${currentMatchday}`, {
-                            headers: { Authorization: `Bearer ${token}` }
-                        });
-                        if (perfRes.ok) {
-                            pData.performance = await perfRes.json();
-                            // Falls wir über das Profil keine Punkte hatten, schauen wir in die Performance
-                            if (p.points === 0 && pData.performance && (pData.performance.p || pData.performance.points)) {
-                                p.points = pData.performance.p || pData.performance.points;
-                            }
-                        }
-                    } catch (e) {}
-
-                    rawPlayers.push(pData); // Original-Daten inkl. Performance speichern
                 }
             } catch (e) {}
+            
+            p.points = isNaN(p.points) ? 0 : p.points;
+            p.marketValue = isNaN(p.marketValue) ? 0 : p.marketValue;
+            if (i % 50 === 0 && i > 0) console.log(`[LOG] Fortschritt: ${i}/${allPlayers.length}`);
+            await delay(40);
+        }
+
+        const dumpPath = path.join(__dirname, '../frontend/public/history/all_players.json');
+        fs.writeFileSync(dumpPath, JSON.stringify(rawPlayers, null, 2));
 
         // 7. Solver
         console.log("[LOG] Vorbereitung Solver...");
         const pool = allPlayers.filter(p => p.position >= 1 && p.position <= 4);
-        const posCount = { 1: 0, 2: 0, 3: 0, 4: 0 };
-        pool.forEach(p => posCount[p.position]++);
-        
-        console.log(`[LOG] Solver-Pool: ${pool.length} Spieler`);
-        console.log(`[LOG] Verteilung: Tor: ${posCount[1]}, Abw: ${posCount[2]}, Mit: ${posCount[3]}, Ang: ${posCount[4]}`);
-
         const model = {
             optimize: "points",
             opType: "max",
