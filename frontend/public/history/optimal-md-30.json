@@ -1,71 +1,61 @@
 {
   "matchday": 30,
   "totalPoints": 0,
-  "totalBudget": 59590320,
-  "timestamp": "2026-04-24T08:24:55.375Z",
+  "totalBudget": 72758403,
+  "timestamp": "2026-04-24T08:42:36.359Z",
   "lineup": [
     {
-      "id": "4590",
+      "id": "72",
       "teamId": "7",
-      "name": "Jonas Omlin",
+      "name": "Mark Flekken",
       "position": 1,
-      "marketValue": 500000,
-      "points": 0
-    },
-    {
-      "id": "54",
-      "teamId": 3,
-      "name": "Can",
-      "position": 2,
-      "marketValue": 500000,
-      "points": 0
-    },
-    {
-      "id": "461",
-      "teamId": 4,
-      "name": "Chandler",
-      "position": 2,
-      "marketValue": 500000,
-      "points": 0
-    },
-    {
-      "id": "660",
-      "teamId": 2,
-      "name": "Goretzka",
-      "position": 3,
-      "marketValue": 23210075,
-      "points": 0
-    },
-    {
-      "id": "1192",
-      "teamId": 3,
-      "name": "Brandt",
-      "position": 3,
-      "marketValue": 19752212,
-      "points": 0
-    },
-    {
-      "id": "4280",
-      "teamId": 2,
-      "name": "Jackson",
-      "position": 4,
-      "marketValue": 6938779,
+      "marketValue": 7322314,
+      "avgPoints": 0,
       "points": 0
     },
     {
       "id": "550",
       "teamId": "18",
       "name": "Stefan Bell",
-      "position": 1313,
+      "position": 2,
       "marketValue": 866940,
+      "avgPoints": 0,
       "points": 0
     },
     {
-      "id": "72",
+      "id": "1704",
+      "teamId": "3",
+      "name": "Waldemar Anton",
+      "position": 2,
+      "marketValue": 33543950,
+      "avgPoints": 0,
+      "points": 0
+    },
+    {
+      "id": "1671",
+      "teamId": "14",
+      "name": "Grischa Prömel",
+      "position": 3,
+      "marketValue": 18262057,
+      "avgPoints": 0,
+      "points": 0
+    },
+    {
+      "id": "7269",
       "teamId": "7",
-      "name": "Mark Flekken",
-      "position": 1932,
-      "marketValue": 7322314,
+      "name": "Nathan Tella",
+      "position": 3,
+      "marketValue": 5454863,
+      "avgPoints": 0,
+      "points": 0
+    },
+    {
+      "id": "7491",
+      "teamId": "4",
+      "name": "Jean-Mattéo Bahoya",
+      "position": 4,
+      "marketValue": 7308279,
+      "avgPoints": 0,
       "points": 0
     }
   ]
