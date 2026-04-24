@@ -84,50 +84,49 @@ async function fetchOptimalTeam() {
         const teamIds = [2,3,4,5,7,9,11,13,14,15,18,19,20,22,24,28,40,43];
         
         for (const teamId of teamIds) {
-            const url = `https://api.kickbase.com/competition/teams/${teamId}/players`;
-            try {
-                const r = await fetch(url, { 
-                    headers: { 
-                        'Accept': 'application/json',
-                        'Authorization': `Bearer ${token}`, 
-                        'Cookie': `kkstrauth=${token}` 
-                    } 
-                });
-                
-                const text = await r.text();
-                if (r.ok) {
-                    let d;
-                    try { d = JSON.parse(text); } catch(e) { 
-                        console.log(`  -> ID ${teamId}: JSON Parse Fehler. Body: ${text.substring(0, 100)}`);
-                        continue;
-                    }
+            const teamUrls = [
+                `https://api.kickbase.com/v4/leagues/${leagueId}/teams/${teamId}/teamprofile`,
+                `https://api.kickbase.com/v4/teams/${teamId}/players`,
+                `https://api.kickbase.com/v4/competition/teams/${teamId}/players`,
+                `https://api.kickbase.com/v4/leagues/${leagueId}/teams/${teamId}/players`
+            ];
+            
+            for (const url of teamUrls) {
+                try {
+                    const r = await fetch(url, { 
+                        headers: { 
+                            'Accept': 'application/json',
+                            'Authorization': `Bearer ${token}`, 
+                            'Cookie': `kkstrauth=${token}` 
+                        } 
+                    });
                     
-                    const list = d.p || d.players || d.pl || [];
-                    const playersArray = Array.isArray(list) ? list : Object.values(list);
-                    
-                    if (playersArray.length > 0) {
-                        for (const p of playersArray) {
-                            const pId = p.i || p.id;
-                            if (pId && !allPlayersMap.has(pId)) {
-                                allPlayersMap.set(pId, {
-                                    id: pId,
-                                    teamId: teamId,
-                                    name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(),
-                                    position: p.p || p.pos || 0,
-                                    marketValue: p.mv || p.marketValue || 0,
-                                    imagePath: p.pi || p.profileBig || p.profile
-                                });
+                    if (r.ok) {
+                        const text = await r.text();
+                        const d = JSON.parse(text);
+                        // Kickbase v4 teamprofile hat oft 'players' oder 'p'
+                        const list = d.players || d.p || d.pl || (Array.isArray(d) ? d : []);
+                        const playersArray = Array.isArray(list) ? list : Object.values(list);
+                        
+                        if (playersArray.length > 0) {
+                            for (const p of playersArray) {
+                                const pId = p.i || p.id;
+                                if (pId && !allPlayersMap.has(pId)) {
+                                    allPlayersMap.set(pId, {
+                                        id: pId,
+                                        teamId: teamId,
+                                        name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(),
+                                        position: p.p || p.pos || 0,
+                                        marketValue: p.mv || p.marketValue || 0,
+                                        imagePath: p.pi || p.profileBig || p.profile
+                                    });
+                                }
                             }
+                            console.log(`  -> Team ID ${teamId} (${url.split('/').slice(-1)[0]}): ${playersArray.length} Spieler.`);
+                            break; 
                         }
-                        console.log(`  -> Team ID ${teamId}: ${playersArray.length} Spieler geladen.`);
-                    } else {
-                        console.log(`  -> Team ID ${teamId}: 0 Spieler gefunden. Body: ${text.substring(0, 100)}`);
                     }
-                } else {
-                    console.log(`  -> Team ID ${teamId} fehlgeschlagen (Status: ${r.status}). Body: ${text.substring(0, 100)}`);
-                }
-            } catch (e) {
-                console.log(`  -> Team ID ${teamId} Fehler: ${e.message}`);
+                } catch (e) {}
             }
             await delay(200);
         }
