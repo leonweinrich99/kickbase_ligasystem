@@ -1,0 +1,129 @@
+{
+  "matchday": 28,
+  "totalPoints": 2584,
+  "totalBudget": 226687989,
+  "timestamp": "2026-04-24T09:51:49.367Z",
+  "lineup": [
+    {
+      "id": "1580",
+      "name": "Marvin Schwäbe",
+      "lastName": "Schwäbe",
+      "teamId": "28",
+      "teamName": "Köln",
+      "position": 1,
+      "marketValue": 12536345,
+      "points": 158,
+      "imagePath": "1580"
+    },
+    {
+      "id": "6173",
+      "name": "Alejandro Grimaldo",
+      "lastName": "Grimaldo",
+      "teamId": "7",
+      "teamName": "Leverkusen",
+      "position": 2,
+      "marketValue": 44015865,
+      "points": 414,
+      "imagePath": "6173"
+    },
+    {
+      "id": "9682",
+      "name": "Arthur Chaves",
+      "lastName": "Chaves",
+      "teamId": "13",
+      "teamName": "Augsburg",
+      "position": 2,
+      "marketValue": 5277324,
+      "points": 163,
+      "imagePath": "9682"
+    },
+    {
+      "id": "3453",
+      "name": "Derrick Köhn",
+      "lastName": "Köhn",
+      "teamId": "40",
+      "teamName": "Union Berlin",
+      "position": 2,
+      "marketValue": 4355391,
+      "points": 149,
+      "imagePath": "3453"
+    },
+    {
+      "id": "1685",
+      "name": "Joshua Kimmich",
+      "lastName": "Kimmich",
+      "teamId": "2",
+      "teamName": "Bayern",
+      "position": 3,
+      "marketValue": 57958416,
+      "points": 193,
+      "imagePath": "1685"
+    },
+    {
+      "id": "3120",
+      "name": "Tom Bischof",
+      "lastName": "Bischof",
+      "teamId": "2",
+      "teamName": "Bayern",
+      "position": 3,
+      "marketValue": 9295673,
+      "points": 362,
+      "imagePath": "3120"
+    },
+    {
+      "id": "2766",
+      "name": "Exequiel Palacios",
+      "lastName": "Palacios",
+      "teamId": "7",
+      "teamName": "Leverkusen",
+      "position": 3,
+      "marketValue": 15884993,
+      "points": 247,
+      "imagePath": "2766"
+    },
+    {
+      "id": "3475",
+      "name": "Jakub Kaminski",
+      "lastName": "Kaminski",
+      "teamId": "28",
+      "teamName": "Köln",
+      "position": 3,
+      "marketValue": 23222591,
+      "points": 186,
+      "imagePath": "3475"
+    },
+    {
+      "id": "12325",
+      "name": "Arnaud Kalimuendo",
+      "lastName": "Kalimuendo",
+      "teamId": "4",
+      "teamName": "Frankfurt",
+      "position": 4,
+      "marketValue": 22208259,
+      "points": 194,
+      "imagePath": "12325"
+    },
+    {
+      "id": "6061",
+      "name": "Ibrahim Maza",
+      "lastName": "Maza",
+      "teamId": "7",
+      "teamName": "Leverkusen",
+      "position": 4,
+      "marketValue": 24390928,
+      "points": 275,
+      "imagePath": "6061"
+    },
+    {
+      "id": "2030",
+      "name": "Phillip Tietz",
+      "lastName": "Tietz",
+      "teamId": "18",
+      "teamName": "Mainz",
+      "position": 4,
+      "marketValue": 7542204,
+      "points": 243,
+      "imagePath": "2030"
+    }
+  ]
+}

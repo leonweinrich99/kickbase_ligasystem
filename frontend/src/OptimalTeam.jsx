@@ -59,7 +59,7 @@ const OptimalTeam = ({ isOpen, onClose, availableMatchdays, currentGlobalMatchda
     setError(null);
     
     // Vermeide Caching
-    fetch(`/history/optimal-md-${matchday}.json?t=${Date.now()}`)
+    fetch(`/history/optimal-md-${matchday}-final.json?t=${Date.now()}`)
       .then(res => {
         if (!res.ok) {
           throw new Error('Keine optimalen Daten für diesen Spieltag gefunden.');

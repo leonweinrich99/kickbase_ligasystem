@@ -19,6 +19,7 @@ async function fetchOptimalTeam() {
 
     try {
         // 1. Login
+        console.log("[LOG] Logge ein...");
         const loginRes = await fetch('https://api.kickbase.com/v4/user/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -44,101 +45,85 @@ async function fetchOptimalTeam() {
             headers: { Authorization: `Bearer ${token}` }
         });
         const rankingData = await rankingRes.json();
-        const currentMatchday = rankingData.day;
+        const currentMatchday = rankingData.day || 0;
         console.log(`[LOG] Spieltag: ${currentMatchday}`);
 
         let allPlayersMap = new Map();
 
-        // 4. Markt-Abruf (Quelle für Spieler)
-        console.log("[LOG] Versuche Spieler über Markt-Endpoint zu laden...");
+        // 4. Markt-Abruf
+        console.log("[LOG] Lade Spieler vom Markt...");
         try {
             const mRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/market`, { 
-                headers: { Authorization: `Bearer ${token}`, Cookie: `kkstrauth=${token}` } 
+                headers: { Authorization: `Bearer ${token}` } 
             });
             if (mRes.ok) {
                 const mData = await mRes.json();
                 const mList = mData.players || mData.pl || mData.it || [];
-                for (const p of mList) {
+                mList.forEach(p => {
                     const pId = p.i || p.id;
                     if (pId && !allPlayersMap.has(pId)) {
                         let pos = p.pos || p.p || 0;
-                        if (pos > 10) pos = p.pos || (p.p % 10) || 0;
+                        if (pos > 10) pos = (p.p % 10) || 0;
                         allPlayersMap.set(pId, {
                             id: pId,
                             teamId: p.tid || p.t || 0,
                             name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(),
                             position: pos,
-                            marketValue: p.mv || p.marketValue || 0,
-                            imagePath: p.pi || p.profileBig || p.profile
+                            marketValue: p.mv || p.marketValue || 0
                         });
                     }
-                }
+                });
             }
-        } catch (e) {}
+        } catch (e) { console.log(`[DEBUG] Markt-Fehler: ${e.message}`); }
 
-        // 5. Team-Einzelabfragen mit verifizierten IDs
-        console.log("[LOG] Sammle Spieler über verifizierte Team-IDs...");
+        // 5. Team-Abrufe
+        console.log("[LOG] Sammle Spieler über Teams...");
         const teamIds = [2,3,4,5,7,9,11,13,14,15,18,19,20,22,24,28,40,43];
         for (const teamId of teamIds) {
-            const teamUrls = [
-                `https://api.kickbase.com/v4/leagues/${leagueId}/teams/${teamId}/teamprofile`,
-                `https://api.kickbase.com/v4/teams/${teamId}/players`,
-                `https://api.kickbase.com/v4/competition/teams/${teamId}/players`
-            ];
-            for (const url of teamUrls) {
-                try {
-                    const r = await fetch(url, { 
-                        headers: { 
-                            'Accept': 'application/json',
-                            'Authorization': `Bearer ${token}`, 
-                            'Cookie': `kkstrauth=${token}` 
-                        } 
-                    });
-                    if (r.ok) {
-                        const d = await r.json();
-                        const list = d.it || d.players || d.pl || d.p || (Array.isArray(d) ? d : []);
-                        const playersArray = Array.isArray(list) ? list : Object.values(list);
-                        if (playersArray.length > 0) {
-                            for (const p of playersArray) {
-                                const pId = p.i || p.id;
-                                if (pId && !allPlayersMap.has(pId)) {
-                                    let pos = p.pos || p.p || 0;
-                                    if (pos > 10) pos = p.pos || (p.p % 10) || 0;
-                                    allPlayersMap.set(pId, {
-                                        id: pId,
-                                        teamId: teamId,
-                                        name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(),
-                                        position: pos,
-                                        marketValue: p.mv || p.marketValue || 0,
-                                        imagePath: p.pi || p.profileBig || p.profile
-                                    });
-                                }
-                            }
-                            break; 
+            try {
+                const r = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/teams/${teamId}/players`, { 
+                    headers: { Authorization: `Bearer ${token}` } 
+                });
+                if (r.ok) {
+                    const d = await r.json();
+                    const list = d.it || d.players || d.pl || d.p || [];
+                    list.forEach(p => {
+                        const pId = p.i || p.id;
+                        if (pId && !allPlayersMap.has(pId)) {
+                            let pos = p.pos || p.p || 0;
+                            if (pos > 10) pos = (p.p % 10) || 0;
+                            allPlayersMap.set(pId, {
+                                id: pId,
+                                teamId: teamId,
+                                name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(),
+                                position: pos,
+                                marketValue: p.mv || p.marketValue || 0
+                            });
                         }
-                    }
-                } catch (e) {}
-            }
-            await delay(100);
+                    });
+                }
+            } catch (e) {}
+            await delay(50);
         }
 
-        const allPlayers = Array.from(allPlayersMap.values());
-        const rawPlayers = [];
-        console.log(`[LOG] Gesamtliste: ${allPlayers.length} Spieler.`);
-        if (allPlayers.length === 0) throw new Error("Keine Spieler gefunden.");
+        const allPlayersList = Array.from(allPlayersMap.values());
+        console.log(`[LOG] Gesamtliste: ${allPlayersList.length} Spieler.`);
+        if (allPlayersList.length === 0) throw new Error("Keine Spieler gefunden.");
 
-        // 6. Detail-Abruf (Profil + Performance)
-        console.log(`[LOG] Rufe Details für ${allPlayers.length} Spieler ab...`);
-        for (let i = 0; i < allPlayers.length; i++) {
-            const p = allPlayers[i];
+        // 6. Detail-Abruf & Punkt-Logik
+        console.log(`[LOG] Rufe Details für ${allPlayersList.length} Spieler ab...`);
+        const rawPlayers = [];
+        for (let i = 0; i < allPlayersList.length; i++) {
+            const p = allPlayersList[i];
             try {
                 const pRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/players/${p.id}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 if (pRes.ok) {
                     const pData = await pRes.json();
-                    
-                    // Performance-Zusatz
+                    rawPlayers.push(pData);
+
+                    // Performance-Zusatz (optional)
                     try {
                         const perfRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/players/${p.id}/performance?day=${currentMatchday}`, {
                             headers: { Authorization: `Bearer ${token}` }
@@ -146,40 +131,52 @@ async function fetchOptimalTeam() {
                         if (perfRes.ok) pData.performance = await perfRes.json();
                     } catch (pe) {}
 
-                    rawPlayers.push(pData);
-
-                    // Solver-Daten updaten
+                    // Update Basis-Daten
                     p.name = pData.n || pData.name || p.name;
                     p.position = pData.pos || pData.position || p.position;
-                    p.teamId = pData.tid || pData.teamId || p.teamId;
                     p.marketValue = pData.mv || pData.marketValue || p.marketValue;
+                    p.teamId = pData.tid || pData.teamId || p.teamId;
 
+                    // Punkt-Ermittlung
                     const mds = pData.matchDays || pData.mds || [];
-                    let stat = mds.find(m => (m.day || m.d) === currentMatchday);
-                    let pts = stat ? (stat.points || stat.p || 0) : 0;
+                    let dayStat = mds.find(m => (m.day || m.d) === currentMatchday);
+                    let pts = dayStat ? (dayStat.points || dayStat.p || 0) : 0;
+
+                    if (pts === 0 && pData.performance && pData.performance.p) {
+                        pts = pData.performance.p;
+                    }
 
                     if (pts === 0) {
                         const lastWithPoints = [...mds].sort((a, b) => (b.day || b.d) - (a.day || a.d)).find(m => (m.points || m.p) > 0);
                         if (lastWithPoints) pts = lastWithPoints.points || lastWithPoints.p;
                     }
 
-                    p.avgPoints = pData.averagePoints || pData.avp || 0;
+                    if (pts === 0 && pData.ph && pData.ph.length > 0) {
+                        const lastPh = [...pData.ph].reverse().find(h => h.p > 0);
+                        if (lastPh) pts = lastPh.p;
+                    }
+
+                    p.avgPoints = pData.ap || pData.averagePoints || pData.avp || 0;
                     p.points = pts > 0 ? pts : p.avgPoints;
+                    p.points = isNaN(p.points) ? 0 : p.points;
                 }
             } catch (e) {}
-            
-            p.points = isNaN(p.points) ? 0 : p.points;
-            p.marketValue = isNaN(p.marketValue) ? 0 : p.marketValue;
-            if (i % 50 === 0 && i > 0) console.log(`[LOG] Fortschritt: ${i}/${allPlayers.length}`);
-            await delay(40);
+
+            if (i % 100 === 0 && i > 0) console.log(`[LOG] Fortschritt: ${i}/${allPlayersList.length}`);
+            await delay(30);
         }
 
+        // Speichere Rohdaten
         const dumpPath = path.join(__dirname, '../frontend/public/history/all_players.json');
         fs.writeFileSync(dumpPath, JSON.stringify(rawPlayers, null, 2));
 
         // 7. Solver
-        console.log("[LOG] Vorbereitung Solver...");
-        const pool = allPlayers.filter(p => p.position >= 1 && p.position <= 4);
+        console.log("[LOG] Starte ILP Solver...");
+        const pool = allPlayersList.filter(p => p.position >= 1 && p.position <= 4);
+        const posCounts = { 1:0, 2:0, 3:0, 4:0 };
+        pool.forEach(p => posCounts[p.position]++);
+        console.log(`[LOG] Pool: ${pool.length} Spieler (Gk:${posCounts[1]}, Def:${posCounts[2]}, Mid:${posCounts[3]}, Att:${posCounts[4]})`);
+
         const model = {
             optimize: "points",
             opType: "max",
@@ -196,7 +193,7 @@ async function fetchOptimalTeam() {
         };
 
         const tIds = [...new Set(pool.map(p => p.teamId))];
-        tIds.forEach(id => { if (id > 0) model.constraints[`t_${id}`] = { max: 3 }; });
+        tIds.forEach(tid => { if (tid > 0) model.constraints[`t_${tid}`] = { max: 3 }; });
 
         pool.forEach(p => {
             const v = `p_${p.id}`;
@@ -204,31 +201,39 @@ async function fetchOptimalTeam() {
                 points: p.points || 0,
                 budget: p.marketValue || 0,
                 total_players: 1,
+                [`pos_${p.position}`]: 1,
                 [`t_${p.teamId}`]: 1,
-                [`pos_${p.position}`]: 1
+                [v]: 1 // Binary constraint per player
             };
+            model.constraints[v] = { max: 1 };
             model.ints[v] = 1;
         });
 
-        const res = solver.Solve(model);
+        let res = solver.Solve(model);
         if (!res.feasible) {
-             model.constraints.total_players = { max: 11 };
-             const fallbackRes = solver.Solve(model);
-             if (!fallbackRes.feasible) throw new Error("Keine Aufstellung gefunden.");
-             return handleResult(fallbackRes, allPlayers, currentMatchday);
+            console.log("[LOG] Keine exakte 11er Aufstellung möglich, versuche Fallback (max 11)...");
+            model.constraints.total_players = { max: 11 };
+            res = solver.Solve(model);
         }
-        handleResult(res, allPlayers, currentMatchday);
+
+        if (res.feasible) {
+            handleResult(res, allPlayersList, currentMatchday);
+        } else {
+            console.error("[ERROR] Keine Aufstellung gefunden (auch nach Fallback).");
+        }
 
     } catch (error) {
-        console.error(`[ERROR] ${error.message}`);
+        console.error(`[FATAL ERROR] ${error.message}`);
     }
 }
 
 function handleResult(res, allPlayers, currentMatchday) {
     const lineup = allPlayers.filter(p => res[`p_${p.id}`] > 0.5);
     lineup.sort((a, b) => a.position - b.position);
+    
     const totalPoints = lineup.reduce((s, p) => s + p.points, 0);
     const totalBudget = lineup.reduce((s, p) => s + p.marketValue, 0);
+
     const output = {
         matchday: currentMatchday,
         totalPoints: Math.round(totalPoints),
@@ -236,9 +241,10 @@ function handleResult(res, allPlayers, currentMatchday) {
         timestamp: new Date().toISOString(),
         lineup: lineup
     };
+
     const outPath = path.join(__dirname, `../frontend/public/history/optimal-md-${currentMatchday}.json`);
     fs.writeFileSync(outPath, JSON.stringify(output, null, 2));
-    console.log(`[SUCCESS] Optimale Elf berechnet! (Spieler: ${lineup.length}, Punkte: ${Math.round(totalPoints)})`);
+    console.log(`[SUCCESS] Optimale Elf gespeichert! (Spieler: ${lineup.length}, Punkte: ${output.totalPoints})`);
 }
 
 fetchOptimalTeam();
