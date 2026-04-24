@@ -167,7 +167,7 @@ async function fetchOptimalTeam() {
         console.log(`[LOG] Gesamtliste: ${allPlayers.length} Spieler.`);
         if (allPlayers.length === 0) throw new Error("Keine Spieler gefunden.");
 
-        // 6. Points
+        // 6. Punkte abrufen (Schnitt + Spieltag)
         console.log(`[LOG] Rufe Punkte für ${allPlayers.length} Spieler ab...`);
         for (let i = 0; i < allPlayers.length; i++) {
             const p = allPlayers[i];
@@ -177,22 +177,47 @@ async function fetchOptimalTeam() {
                 });
                 if (sRes.ok) {
                     const sData = await sRes.json();
+                    
+                    // Wir nutzen den Schnitt (avp) oder berechnen ihn aus totalPoints (tp)
+                    p.avgPoints = sData.averagePoints || sData.avp || 0;
+                    if (p.avgPoints === 0 && (sData.totalPoints || sData.tp)) {
+                        const played = sData.matchDaysPlayed || sData.mdp || 1;
+                        p.avgPoints = (sData.totalPoints || sData.tp) / played;
+                    }
+
                     const mds = sData.matchDays || sData.mds || [];
                     const stat = mds.find(m => (m.day || m.d) === currentMatchday);
-                    p.points = stat ? (stat.points || stat.p || 0) : 0;
-                } else p.points = 0;
+                    p.currentPoints = stat ? (stat.points || stat.p || 0) : 0;
+                    
+                    // Wir optimieren auf den Schnitt, falls der Spieltag noch nicht war
+                    p.points = p.currentPoints > 0 ? p.currentPoints : p.avgPoints;
+                } else {
+                    p.points = 0;
+                }
             } catch (e) { p.points = 0; }
+            
+            // Sicherheitshalber NaN/Null Checks
+            p.points = isNaN(p.points) ? 0 : p.points;
+            p.marketValue = isNaN(p.marketValue) ? 0 : p.marketValue;
+
             if (i % 100 === 0 && i > 0) console.log(`[LOG] Fortschritt: ${i}/${allPlayers.length}`);
             await delay(100);
         }
 
+        // --- NEU: Alle Spieler für lokale Arbeit speichern ---
+        const dumpPath = path.join(__dirname, 'scratch/all_players_dump.json');
+        if (!fs.existsSync(path.join(__dirname, 'scratch'))) fs.mkdirSync(path.join(__dirname, 'scratch'));
+        fs.writeFileSync(dumpPath, JSON.stringify(allPlayers, null, 2));
+        console.log(`[LOG] Alle ${allPlayers.length} Spieler in ${dumpPath} gespeichert.`);
+        // -----------------------------------------------------
+
         // 7. Solver
-        console.log("[LOG] Starte Solver...");
+        console.log("[LOG] Starte Solver (ILP)...");
         const model = {
             optimize: "points",
             opType: "max",
             constraints: {
-                budget: { max: 250000000 },
+                budget: { max: 500000000 }, // Erhöhtes Budget für Test/Arena
                 total_players: { equal: 11 },
                 pos_1: { equal: 1 },
                 pos_2: { min: 3, max: 5 },
@@ -204,37 +229,63 @@ async function fetchOptimalTeam() {
         };
 
         const tIds = [...new Set(allPlayers.map(p => p.teamId))];
-        tIds.forEach(id => model.constraints[`t_${id}`] = { max: 3 });
+        tIds.forEach(id => {
+            if (id > 0) model.constraints[`t_${id}`] = { max: 3 };
+        });
 
         allPlayers.forEach(p => {
-            const v = `p_${p.id}`;
-            model.variables[v] = {
-                points: p.points,
-                budget: p.marketValue,
-                total_players: 1,
-                [`t_${p.teamId}`]: 1,
-                [`pos_${p.position}`]: 1
-            };
-            model.ints[v] = 1;
+            if (p.points > 0) { // Nur Spieler mit Punkten in Betracht ziehen
+                const v = `p_${p.id}`;
+                model.variables[v] = {
+                    points: p.points,
+                    budget: p.marketValue,
+                    total_players: 1,
+                    [`t_${p.teamId}`]: 1,
+                    [`pos_${p.position}`]: 1
+                };
+                model.ints[v] = 1;
+            }
         });
 
         const res = solver.Solve(model);
-        if (!res.feasible) throw new Error("Keine Lösung gefunden.");
+        if (!res.feasible) {
+             console.log("[WARN] Keine exakte Lösung mit 11 Spielern gefunden. Lockere Constraints...");
+             model.constraints.total_players = { max: 11 };
+             const fallbackRes = solver.Solve(model);
+             if (!fallbackRes.feasible) throw new Error("Solver konnte keine Aufstellung finden.");
+             return handleResult(fallbackRes, allPlayers, currentMatchday);
+        }
 
-        const lineup = allPlayers.filter(p => res[`p_${p.id}`] === 1);
-        lineup.sort((a, b) => a.position - b.position);
+        handleResult(res, allPlayers, currentMatchday);
 
-        const output = {
-            matchday: currentMatchday,
-            totalPoints: lineup.reduce((s, p) => s + p.points, 0),
-            totalBudget: lineup.reduce((s, p) => s + p.marketValue, 0),
-            timestamp: new Date().toISOString(),
-            lineup: lineup
-        };
+    } catch (error) {
+        console.error(`[ERROR] ${error.message}`);
+    }
+}
 
-        const outPath = path.join(__dirname, `../frontend/public/history/optimal-md-${currentMatchday}.json`);
-        fs.writeFileSync(outPath, JSON.stringify(output, null, 2));
-        console.log(`[SUCCESS] Optimale Elf gespeichert!`);
+function handleResult(res, allPlayers, currentMatchday) {
+    const lineup = allPlayers.filter(p => res[`p_${p.id}`] > 0.5);
+    lineup.sort((a, b) => a.position - b.position);
+
+    const totalPoints = lineup.reduce((s, p) => s + p.points, 0);
+    const totalBudget = lineup.reduce((s, p) => s + p.marketValue, 0);
+
+    const output = {
+        matchday: currentMatchday,
+        totalPoints: Math.round(totalPoints),
+        totalBudget: totalBudget,
+        timestamp: new Date().toISOString(),
+        lineup: lineup
+    };
+
+    const outPath = path.join(__dirname, `../frontend/public/history/optimal-md-${currentMatchday}.json`);
+    fs.writeFileSync(outPath, JSON.stringify(output, null, 2));
+    
+    console.log(`[SUCCESS] Optimale Elf berechnet!`);
+    console.log(`  -> Spieler: ${lineup.length}`);
+    console.log(`  -> Gesamtpunkte: ${Math.round(totalPoints)}`);
+    console.log(`  -> Budget genutzt: ${(totalBudget / 1000000).toFixed(1)} Mio.`);
+}
 
     } catch (error) {
         console.error(`[ERROR] ${error.message}`);
