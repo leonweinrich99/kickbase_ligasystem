@@ -71,35 +71,33 @@ const fetchSingleLeagueData = async (email, password, leagueNameContains = "Qual
     }
 };
 
-const fetchKickbaseData = async (previousData = null) => {
+const fetchRawKickbaseData = async () => {
     try {
         const accounts = [];
-
-        // Account 1
         const email1 = process.env.KICKBASE_EMAIL;
         const pass1 = process.env.KICKBASE_PASS;
-        if (email1 && pass1) {
-            accounts.push({ email: email1, pass: pass1 });
-        }
+        if (email1 && pass1) accounts.push({ email: email1, pass: pass1 });
 
-        // Account 2
         const email2 = process.env.KICKBASE_EMAIL_2;
         const pass2 = process.env.KICKBASE_PASS_2;
-        if (email2 && pass2) {
-            accounts.push({ email: email2, pass: pass2 });
-        }
+        if (email2 && pass2) accounts.push({ email: email2, pass: pass2 });
 
         const targets = ['Qualigruppe 1', 'Qualigruppe 2'];
-        
         const tasks = [];
         for (const account of accounts) {
             for (const target of targets) {
                 tasks.push(fetchSingleLeagueData(account.email, account.pass, target));
             }
         }
+        return await Promise.all(tasks);
+    } catch (e) {
+        console.error("Error in fetchRawKickbaseData:", e.message);
+        throw e;
+    }
+};
 
-        const allResults = await Promise.all(tasks);
-
+const transformKickbaseData = (allResults, previousData = null) => {
+    try {
         let combinedUsersMap = new Map();
         let combinedBudgets = {};
         let matchday = 28;
@@ -148,7 +146,6 @@ const fetchKickbaseData = async (previousData = null) => {
             else if (rank === 3) trophyColor = 'bronze';
 
             let status = '';
-            // Status-Logik bleibt gleich
             if (index < col1Count) {
                 if (index >= col1Count - 2) status = 'red';
                 else if (index === col1Count - 3) status = 'yellow';
@@ -209,9 +206,15 @@ const fetchKickbaseData = async (previousData = null) => {
         return dashboardData;
 
     } catch (e) {
-        console.error("Error formatting combined data:", e.message);
+        console.error("Error transforming data:", e.message);
         return { error: e.message };
     }
-}
+};
 
-module.exports = { fetchKickbaseData };
+const fetchKickbaseData = async (previousData = null) => {
+    const rawData = await fetchRawKickbaseData();
+    return transformKickbaseData(rawData, previousData);
+};
+
+module.exports = { fetchKickbaseData, fetchRawKickbaseData, transformKickbaseData };
+
