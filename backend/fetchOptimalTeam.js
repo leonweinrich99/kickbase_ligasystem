@@ -7,7 +7,7 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
-async function fetchOptimalTeam() {
+async function fetchOptimalTeam(force = false) {
     const email = process.env.KICKBASE_EMAIL;
     const password = process.env.KICKBASE_PASS;
     const targetLeagueName = process.env.KICKBASE_LEAGUE || "test"; 
@@ -50,12 +50,17 @@ async function fetchOptimalTeam() {
         const finalPath = path.join(__dirname, `../frontend/public/history/optimal-md-${currentMatchday}-final.json`);
         
         // Check if data already exists to avoid redundant heavy fetching
-        if (fs.existsSync(finalPath)) {
-            console.log(`[LOG] Optimale Elf für MD ${currentMatchday} existiert bereits. Überspringe.`);
+        if (fs.existsSync(finalPath) && !force) {
+            console.log(`[LOG] Optimale Elf für MD ${currentMatchday} existiert bereits. Überspringe. (Benutze --force zum Überschreiben)`);
             return;
         }
 
+        if (force) {
+            console.log(`[LOG] Force-Modus aktiv: MD ${currentMatchday} wird neu berechnet.`);
+        }
+
         console.log(`[LOG] Berechne Optimale Elf für Spieltag ${currentMatchday}...`);
+
 
         let allPlayersMap = new Map();
 
@@ -212,5 +217,8 @@ function updateHistoryIndex(md) {
 module.exports = { fetchOptimalTeam };
 
 if (require.main === module) {
-    fetchOptimalTeam();
+    const args = process.argv.slice(2);
+    const force = args.includes('--force');
+    fetchOptimalTeam(force);
 }
+

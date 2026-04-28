@@ -47,8 +47,9 @@ async function triggerFetch() {
     fs.writeFileSync(snapshotPath, JSON.stringify(data, null, 2));
     console.log(`Snapshot for MD ${data.matchday} updated.`);
 
-    console.log("Triggering Optimal Team fetch...");
-    await fetchOptimalTeam();
+    console.log("Triggering Optimal Team fetch (with force)...");
+    await fetchOptimalTeam(true);
+
     
     console.log("All updates completed at", new Date().toISOString());
 }
