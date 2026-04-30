@@ -48,103 +48,168 @@ async function fetchOptimalTeam(force = false) {
         const currentMatchday = rankingData.day || 0;
         
         const finalPath = path.join(__dirname, `../frontend/public/history/optimal-md-${currentMatchday}-final.json`);
+        const dumpPath = path.join(__dirname, '../frontend/public/history/all_players.json');
         
-        // Check if data already exists to avoid redundant heavy fetching
-        if (fs.existsSync(finalPath) && !force) {
-            console.log(`[LOG] Optimale Elf für MD ${currentMatchday} existiert bereits. Überspringe. (Benutze --force zum Überschreiben)`);
+        // 1. Check if all_players.json exists and how many players it has
+        let existingPlayerCount = 0;
+        let allPlayersMtime = 0;
+        if (fs.existsSync(dumpPath)) {
+            try {
+                const stats = fs.statSync(dumpPath);
+                allPlayersMtime = stats.mtimeMs;
+                const existingData = JSON.parse(fs.readFileSync(dumpPath, 'utf8'));
+                existingPlayerCount = Array.isArray(existingData) ? existingData.length : 0;
+            } catch (e) {}
+        }
+
+        // 2. Check if optimal team exists
+        let optimalMtime = 0;
+        if (fs.existsSync(finalPath)) {
+            optimalMtime = fs.statSync(finalPath).mtimeMs;
+        }
+
+        // 3. Determine if we need to fetch all players
+        // We fetch if: force is true OR all_players.json is missing OR all_players.json has suspiciously few players (< 100)
+        const needsPlayerFetch = force || existingPlayerCount < 100;
+
+        // 4. Determine if we need to solve (if we already fetched, we definitely solve)
+        // If we didn't fetch, we still solve if: optimal team missing OR all_players.json is newer than optimal team
+        const needsSolving = needsPlayerFetch || !fs.existsSync(finalPath) || allPlayersMtime > optimalMtime;
+
+        if (!needsSolving && !force) {
+            console.log(`[LOG] Optimale Elf für MD ${currentMatchday} ist aktuell. Überspringe.`);
             return;
         }
 
         if (force) {
-            console.log(`[LOG] Force-Modus aktiv: MD ${currentMatchday} wird neu berechnet.`);
+            console.log(`[LOG] Force-Modus aktiv: MD ${currentMatchday} wird komplett neu geladen und berechnet.`);
+        } else if (needsPlayerFetch) {
+            console.log(`[LOG] Daten unvollständig (${existingPlayerCount} Spieler). Starte vollständigen Abruf...`);
+        } else if (needsSolving) {
+            console.log(`[LOG] Neue Spielerdaten gefunden. Berechne Optimale Elf für MD ${currentMatchday} neu...`);
         }
-
-        console.log(`[LOG] Berechne Optimale Elf für Spieltag ${currentMatchday}...`);
-
 
         let allPlayersMap = new Map();
 
-        // 4. Markt-Abruf
-        try {
-            const mRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/market`, { headers: { Authorization: `Bearer ${token}` } });
-            if (mRes.ok) {
-                const mData = await mRes.json();
-                const mList = mData.players || mData.pl || mData.it || [];
-                mList.forEach(p => {
-                    const pId = p.i || p.id;
-                    if (pId) {
-                        let pos = p.pos || p.p || 0;
-                        if (pos > 10) pos = (p.p % 10) || 0;
-                        allPlayersMap.set(pId, { id: pId, teamId: p.tid || p.t || 0, name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(), lastName: p.ln || p.n || '', position: pos, marketValue: p.mv || p.marketValue || 0 });
-                    }
-                });
-            }
-        } catch (e) {}
+        if (needsPlayerFetch) {
+            console.log(`[LOG] Berechne Optimale Elf für Spieltag ${currentMatchday}...`);
 
-        // 5. Team-Abrufe (Um alle Spieler zu bekommen)
-        const teamIds = [2,3,4,5,7,9,11,13,14,15,18,19,20,22,24,28,40,43];
-        for (const teamId of teamIds) {
+            // 4. Markt-Abruf
             try {
-                const r = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/teams/${teamId}/players`, { headers: { Authorization: `Bearer ${token}` } });
-                if (r.ok) {
-                    const d = await r.json();
-                    const list = d.it || d.players || d.pl || d.p || [];
-                    list.forEach(p => {
+                const mRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/market`, { headers: { Authorization: `Bearer ${token}` } });
+                if (mRes.ok) {
+                    const mData = await mRes.json();
+                    const mList = mData.players || mData.pl || mData.it || [];
+                    mList.forEach(p => {
                         const pId = p.i || p.id;
-                        if (pId && !allPlayersMap.has(pId)) {
+                        if (pId) {
                             let pos = p.pos || p.p || 0;
                             if (pos > 10) pos = (p.p % 10) || 0;
-                            allPlayersMap.set(pId, { id: pId, teamId: teamId, name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(), lastName: p.ln || p.n || '', position: pos, marketValue: p.mv || p.marketValue || 0 });
+                            allPlayersMap.set(pId, { id: pId, teamId: p.tid || p.t || 0, name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(), lastName: p.ln || p.n || '', position: pos, marketValue: p.mv || p.marketValue || 0 });
                         }
                     });
                 }
             } catch (e) {}
-            await delay(30);
+
+            // 5. Team-Abrufe (Um alle Spieler zu bekommen)
+            // Nutze den robusten Endpunkt ohne League-ID, um wirklich alle Spieler zu erhalten
+            const teamIds = [2,3,4,5,7,8,9,10,11,13,14,15,18,19,20,22,24,28,40,43]; 
+            for (const teamId of teamIds) {
+                try {
+                    const r = await fetch(`https://api.kickbase.com/v4/teams/${teamId}/players`, { headers: { Authorization: `Bearer ${token}` } });
+                    if (r.ok) {
+                        const d = await r.json();
+                        const list = d.it || d.players || d.pl || d.p || [];
+                        list.forEach(p => {
+                            const pId = p.i || p.id;
+                            if (pId && !allPlayersMap.has(pId)) {
+                                let pos = p.pos || p.p || 0;
+                                if (pos > 10) pos = (p.p % 10) || 0;
+                                allPlayersMap.set(pId, { id: pId, teamId: teamId, name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(), lastName: p.ln || p.n || '', position: pos, marketValue: p.mv || p.marketValue || 0 });
+                            }
+                        });
+                    }
+                } catch (e) {}
+                await delay(30);
+            }
+        } else {
+            // Load existing players from disk
+            const existingData = JSON.parse(fs.readFileSync(dumpPath, 'utf8'));
+            existingData.forEach(pData => {
+                // We need to map back to the structure used by the solver
+                let pos = pData.pos || pData.p || 0;
+                if (pos > 10) pos = (pos % 10) || 0;
+                
+                // Extrahiere Punkte für den Solver
+                let points = null;
+                if (pData.performance && pData.performance.it && pData.performance.it.length > 0) {
+                    const currentSeason = pData.performance.it[pData.performance.it.length - 1];
+                    if (currentSeason.ph) {
+                        const mdEntry = currentSeason.ph.find(entry => entry.day === currentMatchday);
+                        if (mdEntry && mdEntry.p !== undefined) {
+                            points = mdEntry.p;
+                        }
+                    }
+                }
+
+                allPlayersMap.set(pData.i, { 
+                    id: pData.i, 
+                    teamId: pData.tid, 
+                    name: `${pData.fn ? pData.fn + ' ' : ''}${pData.ln || pData.n || ''}`.trim(), 
+                    lastName: pData.ln || pData.n || '', 
+                    position: pos, 
+                    marketValue: pData.mv || 0,
+                    points: points,
+                    teamName: pData.tn || "Unknown"
+                });
+            });
         }
 
         const allPlayersList = Array.from(allPlayersMap.values());
-        console.log(`[LOG] Hole Performance-Daten für ${allPlayersList.length} Spieler...`);
         
-        const rawPlayers = [];
-        for (let i = 0; i < allPlayersList.length; i++) {
-            const p = allPlayersList[i];
-            try {
-                const pRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/players/${p.id}`, { headers: { Authorization: `Bearer ${token}` } });
-                if (pRes.ok) {
-                    const pData = await pRes.json();
-                    
-                    // PERFORMANCE FETCH
-                    try {
-                        const perfRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/players/${p.id}/performance`, { headers: { Authorization: `Bearer ${token}` } });
-                        if (perfRes.ok) pData.performance = await perfRes.json();
-                    } catch (pe) {}
+        if (needsPlayerFetch) {
+            console.log(`[LOG] Hole Performance-Daten für ${allPlayersList.length} Spieler...`);
+            
+            const rawPlayers = [];
+            for (let i = 0; i < allPlayersList.length; i++) {
+                const p = allPlayersList[i];
+                try {
+                    const pRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/players/${p.id}`, { headers: { Authorization: `Bearer ${token}` } });
+                    if (pRes.ok) {
+                        const pData = await pRes.json();
+                        
+                        // PERFORMANCE FETCH
+                        try {
+                            const perfRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/players/${p.id}/performance`, { headers: { Authorization: `Bearer ${token}` } });
+                            if (perfRes.ok) pData.performance = await perfRes.json();
+                        } catch (pe) {}
 
-                    rawPlayers.push(pData);
+                        rawPlayers.push(pData);
 
-                    // Strict Point Extraction from Performance History
-                    let points = null;
-                    if (pData.performance && pData.performance.it && pData.performance.it.length > 0) {
-                        const currentSeason = pData.performance.it[pData.performance.it.length - 1];
-                        if (currentSeason.ph) {
-                            const mdEntry = currentSeason.ph.find(entry => entry.day === currentMatchday);
-                            if (mdEntry && mdEntry.p !== undefined) {
-                                points = mdEntry.p;
+                        // Strict Point Extraction from Performance History
+                        let points = null;
+                        if (pData.performance && pData.performance.it && pData.performance.it.length > 0) {
+                            const currentSeason = pData.performance.it[pData.performance.it.length - 1];
+                            if (currentSeason.ph) {
+                                const mdEntry = currentSeason.ph.find(entry => entry.day === currentMatchday);
+                                if (mdEntry && mdEntry.p !== undefined) {
+                                    points = mdEntry.p;
+                                }
                             }
                         }
+                        
+                        p.points = points;
+                        p.imagePath = p.id;
+                        p.teamName = pData.tn || "Unknown";
                     }
-                    
-                    p.points = points;
-                    p.imagePath = p.id;
-                    p.teamName = pData.tn || "Unknown";
-                }
-            } catch (e) {}
-            if (i % 100 === 0) console.log(`[LOG] Progress: ${i}/${allPlayersList.length}`);
-            await delay(20);
-        }
+                } catch (e) {}
+                if (i % 100 === 0) console.log(`[LOG] Progress: ${i}/${allPlayersList.length}`);
+                await delay(20);
+            }
 
-        // Save all_players.json
-        const dumpPath = path.join(__dirname, '../frontend/public/history/all_players.json');
-        fs.writeFileSync(dumpPath, JSON.stringify(rawPlayers, null, 2));
+            // Save all_players.json
+            fs.writeFileSync(dumpPath, JSON.stringify(rawPlayers, null, 2));
+        }
 
         // 7. Solver
         const pool = allPlayersList.filter(p => p.points !== null && p.position >= 1 && p.position <= 4);
