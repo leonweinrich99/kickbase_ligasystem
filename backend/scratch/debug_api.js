@@ -1,12 +1,11 @@
 require('dotenv').config();
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+const fs = require('fs');
 
 async function debug() {
     const email = process.env.KICKBASE_EMAIL;
     const password = process.env.KICKBASE_PASS;
+    const targetLeagueName = process.env.KICKBASE_LEAGUE || "test";
 
-    console.log("--- DEBUG START ---");
-    
     const loginRes = await fetch('https://api.kickbase.com/v4/user/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -14,52 +13,35 @@ async function debug() {
     });
     const loginData = await loginRes.json();
     const token = loginData.tkn;
-    if (!token) {
-        console.log("ERROR: No token found");
-        return;
-    }
 
-    // 1. Competitions check
-    console.log("Fetching competitions...");
-    const compRes = await fetch('https://api.kickbase.com/v4/competitions', {
-        headers: { 
-            Authorization: `Bearer ${token}`,
-            Cookie: `kkstrauth=${token}`
-        }
-    });
-    const compData = await compRes.json();
-    console.log("Competitions Raw:", JSON.stringify(compData));
-
-    // 2. Teams check
-    console.log("Fetching teams...");
-    const teamsRes = await fetch('https://api.kickbase.com/v4/base/predictions/teams/1', {
+    const leaguesRes = await fetch('https://api.kickbase.com/v4/leagues', {
         headers: { Authorization: `Bearer ${token}` }
     });
-    const teamsData = await teamsRes.json();
-    console.log("Teams Keys:", Object.keys(teamsData));
-    const teams = teamsData.tms || [];
-    console.log("Teams Count:", teams.length);
+    const leaguesData = await leaguesRes.json();
+    const leagues = leaguesData.lins || leaguesData.leagues || [];
+    let league = leagues.find(l => (l.n || l.name || "").toLowerCase().includes(targetLeagueName.toLowerCase())) || leagues[0];
+    const leagueId = league.i || league.id;
 
-    if (teams.length > 0) {
-        const teamId = teams[0].tid || teams[0].i;
-        console.log(`Testing Team ${teams[0].tn} (ID: ${teamId})...`);
-        const urls = [
-            `https://api.kickbase.com/competition/teams/${teamId}/players`,
-            `https://api.kickbase.com/v4/leagues/10320440/teams/${teamId}/players`,
-            `https://api.kickbase.com/v4/leagues/10320440/teams/${teamId}/teamprofile`
-        ];
-        for (const url of urls) {
-            console.log(`URL: ${url}`);
-            const r = await fetch(url, {
-                headers: { 
-                    Authorization: `Bearer ${token}`,
-                    Cookie: `kkstrauth=${token}`
-                }
-            });
-            console.log(`  Status: ${r.status}`);
-            const body = await r.text();
-            console.log(`  Body (100 chars): ${body.substring(0, 100)}`);
-        }
+    console.log(`Testing Team Fetch for League ${leagueId}...`);
+
+    const testTeamId = 7; // Leverkusen
+    const url1 = `https://api.kickbase.com/v4/leagues/${leagueId}/teams/${testTeamId}/players`;
+    const url2 = `https://api.kickbase.com/v4/teams/${testTeamId}/players`;
+
+    console.log(`Trying ${url1}...`);
+    const r1 = await fetch(url1, { headers: { Authorization: `Bearer ${token}` } });
+    console.log(`Status: ${r1.status}`);
+    if (r1.ok) {
+        const d1 = await r1.json();
+        console.log(`Players found: ${ (d1.it || d1.players || d1.pl || []).length }`);
+    }
+
+    console.log(`Trying ${url2}...`);
+    const r2 = await fetch(url2, { headers: { Authorization: `Bearer ${token}` } });
+    console.log(`Status: ${r2.status}`);
+    if (r2.ok) {
+        const d2 = await r2.json();
+        console.log(`Players found: ${ (d2.it || d2.players || d2.pl || []).length }`);
     }
 }
 
