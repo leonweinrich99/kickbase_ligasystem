@@ -49,6 +49,7 @@ async function fetchOptimalTeam(force = true) {
         
         const finalPath = path.join(__dirname, `../frontend/public/history/optimal-md-${currentMatchday}-final.json`);
         const dumpPath = path.join(__dirname, '../frontend/public/history/all_players.json');
+        const mappingPath = path.join(__dirname, 'team_mapping.json');
         
         // 1. Check if all_players.json exists and how many players it has
         let existingPlayerCount = 0;
@@ -112,7 +113,24 @@ async function fetchOptimalTeam(force = true) {
             } catch (e) {}
 
             // 5. Team-Abrufe (Um alle Spieler zu bekommen)
-            const teamIds = Array.from({length: 50}, (_, i) => i + 1); // 1 bis 50 abfragen
+            // Lade bestehendes Mapping, falls vorhanden
+            let teamMapping = { teams: [] };
+            if (fs.existsSync(mappingPath)) {
+                try {
+                    teamMapping = JSON.parse(fs.readFileSync(mappingPath, 'utf8'));
+                } catch (e) {}
+            }
+
+            let teamIds = [];
+            if (teamMapping.teams.length > 0) {
+                teamIds = teamMapping.teams.map(t => t.teamId);
+                console.log(`[LOG] Nutze gespeichertes Mapping für ${teamIds.length} Teams.`);
+            } else {
+                teamIds = Array.from({length: 50}, (_, i) => i + 1); // Fallback: 1 bis 50 abfragen
+                console.log(`[LOG] Kein Mapping gefunden. Scanne IDs 1 bis 50...`);
+            }
+
+            const newTeams = [];
             for (const teamId of teamIds) {
                 try {
                     let url = `https://api.kickbase.com/v4/leagues/${leagueId}/teams/${teamId}/teamprofile`;
@@ -124,6 +142,14 @@ async function fetchOptimalTeam(force = true) {
                         if (list.length > 0) {
                             const teamName = list[0].tn || "Unbekannt";
                             console.log(`[DEBUG] Team ID ${teamId} (${teamName}): ${list.length} Spieler gefunden.`);
+                            
+                            // Update Mapping
+                            newTeams.push({
+                                teamId: teamId,
+                                teamName: teamName,
+                                playerIds: list.map(p => p.i || p.id)
+                            });
+
                             list.forEach(p => {
                                 const pId = p.i || p.id;
                                 if (pId && !allPlayersMap.has(pId)) {
@@ -138,6 +164,16 @@ async function fetchOptimalTeam(force = true) {
                     // Ignoriere Fehler bei 404, da wir IDs von 1-50 blind durchprobieren
                 }
                 await delay(20);
+            }
+
+            // Speichere neues Mapping, falls wir Teams gefunden haben
+            if (newTeams.length > 0) {
+                const mappingToSave = {
+                    lastUpdated: new Date().toISOString(),
+                    teams: newTeams
+                };
+                fs.writeFileSync(mappingPath, JSON.stringify(mappingToSave, null, 2));
+                console.log(`[LOG] Mapping mit ${newTeams.length} Teams in ${mappingPath} gespeichert.`);
             }
         } else {
             // Load existing players from disk
