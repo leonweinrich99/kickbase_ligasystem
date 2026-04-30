@@ -115,22 +115,9 @@ async function fetchOptimalTeam(force = false) {
             const teamIds = [2,3,4,5,7,8,9,10,11,13,14,15,18,19,20,22,24,28,40,43]; 
             for (const teamId of teamIds) {
                 try {
-                    // Try competitions endpoint first, as this is the standard v4 endpoint for team players
-                    let url = `https://api.kickbase.com/v4/competitions/1/teams/${teamId}/players`;
+                    let url = `https://api.kickbase.com/v4/leagues/${leagueId}/teams/${teamId}/teamprofile`;
                     let r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
                     
-                    if (!r.ok) {
-                        console.log(`[DEBUG] Endpunkt ${url} fehlgeschlagen (${r.status}). Versuche Fallback 1...`);
-                        url = `https://api.kickbase.com/v4/teams/${teamId}/players`;
-                        r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-                    }
-
-                    if (!r.ok) {
-                        console.log(`[DEBUG] Endpunkt ${url} fehlgeschlagen (${r.status}). Versuche Fallback 2...`);
-                        url = `https://api.kickbase.com/v4/leagues/${leagueId}/teams/${teamId}/players`;
-                        r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-                    }
-
                     if (r.ok) {
                         const d = await r.json();
                         const list = d.it || d.players || d.pl || d.p || [];
@@ -144,7 +131,7 @@ async function fetchOptimalTeam(force = false) {
                             }
                         });
                     } else {
-                        console.log(`[ERROR] Alle Endpunkte für Team ID ${teamId} fehlgeschlagen (Letzter Status: ${r.status}).`);
+                        console.log(`[ERROR] Endpunkt fehlgeschlagen für Team ID ${teamId} (Status: ${r.status}).`);
                     }
                 } catch (e) {
                     console.log(`[ERROR] Exception bei Team ID ${teamId}: ${e.message}`);
