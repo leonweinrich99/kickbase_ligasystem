@@ -290,7 +290,7 @@ module.exports = { fetchOptimalTeam };
 
 if (require.main === module) {
     const args = process.argv.slice(2);
-    const force = args.includes('--force');
+    const force = true; // Temporary force for debugging
     fetchOptimalTeam(force);
 }
 
