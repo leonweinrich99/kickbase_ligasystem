@@ -1,19 +1,19 @@
 {
   "matchday": 31,
-  "totalPoints": 2532,
-  "totalBudget": 239481844,
-  "timestamp": "2026-04-30T08:46:05.604Z",
+  "totalPoints": 2588,
+  "totalBudget": 220946988,
+  "timestamp": "2026-04-30T09:06:41.725Z",
   "lineup": [
     {
-      "id": "3072",
-      "teamId": 2,
-      "name": "Urbig",
-      "lastName": "Urbig",
+      "id": "2597",
+      "teamId": 50,
+      "name": "Ramaj",
+      "lastName": "Ramaj",
       "position": 1,
-      "marketValue": 4200823,
-      "points": 204,
-      "imagePath": "3072",
-      "teamName": "Bayern"
+      "marketValue": 4430518,
+      "points": 255,
+      "imagePath": "2597",
+      "teamName": "Heidenheim"
     },
     {
       "id": "2038",
@@ -36,17 +36,6 @@
       "points": 364,
       "imagePath": "2736",
       "teamName": "Dortmund"
-    },
-    {
-      "id": "3473",
-      "teamId": 40,
-      "name": "Doekhi",
-      "lastName": "Doekhi",
-      "position": 2,
-      "marketValue": 21094177,
-      "points": 198,
-      "imagePath": "3473",
-      "teamName": "Union Berlin"
     },
     {
       "id": "7239",
@@ -102,6 +91,17 @@
       "points": 201,
       "imagePath": "10771",
       "teamName": "Leipzig"
+    },
+    {
+      "id": "2939",
+      "teamId": 50,
+      "name": "Dinkçi",
+      "lastName": "Dinkçi",
+      "position": 3,
+      "marketValue": 2329626,
+      "points": 203,
+      "imagePath": "2939",
+      "teamName": "Heidenheim"
     },
     {
       "id": "2714",
