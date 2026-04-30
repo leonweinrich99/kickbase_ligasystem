@@ -112,14 +112,22 @@ async function fetchOptimalTeam(force = false) {
             } catch (e) {}
 
             // 5. Team-Abrufe (Um alle Spieler zu bekommen)
-            // Nutze den robusten Endpunkt ohne League-ID, um wirklich alle Spieler zu erhalten
             const teamIds = [2,3,4,5,7,8,9,10,11,13,14,15,18,19,20,22,24,28,40,43]; 
             for (const teamId of teamIds) {
                 try {
-                    const r = await fetch(`https://api.kickbase.com/v4/teams/${teamId}/players`, { headers: { Authorization: `Bearer ${token}` } });
+                    let url = `https://api.kickbase.com/v4/teams/${teamId}/players`;
+                    let r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+                    
+                    if (!r.ok) {
+                        console.log(`[DEBUG] Endpunkt ${url} fehlgeschlagen (${r.status}). Versuche Fallback...`);
+                        url = `https://api.kickbase.com/v4/leagues/${leagueId}/teams/${teamId}/players`;
+                        r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+                    }
+
                     if (r.ok) {
                         const d = await r.json();
                         const list = d.it || d.players || d.pl || d.p || [];
+                        console.log(`[DEBUG] Team ID ${teamId} (${url}): ${list.length} Spieler gefunden.`);
                         list.forEach(p => {
                             const pId = p.i || p.id;
                             if (pId && !allPlayersMap.has(pId)) {
@@ -128,8 +136,12 @@ async function fetchOptimalTeam(force = false) {
                                 allPlayersMap.set(pId, { id: pId, teamId: teamId, name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(), lastName: p.ln || p.n || '', position: pos, marketValue: p.mv || p.marketValue || 0 });
                             }
                         });
+                    } else {
+                        console.log(`[ERROR] Beide Endpunkte für Team ID ${teamId} fehlgeschlagen (Letzter Status: ${r.status}).`);
                     }
-                } catch (e) {}
+                } catch (e) {
+                    console.log(`[ERROR] Exception bei Team ID ${teamId}: ${e.message}`);
+                }
                 await delay(30);
             }
         } else {
