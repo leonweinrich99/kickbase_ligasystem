@@ -112,7 +112,7 @@ async function fetchOptimalTeam(force = false) {
             } catch (e) {}
 
             // 5. Team-Abrufe (Um alle Spieler zu bekommen)
-            const teamIds = [2,3,4,5,7,8,9,10,11,13,14,15,18,19,20,22,24,28,40,43]; 
+            const teamIds = Array.from({length: 50}, (_, i) => i + 1); // 1 bis 50 abfragen
             for (const teamId of teamIds) {
                 try {
                     let url = `https://api.kickbase.com/v4/leagues/${leagueId}/teams/${teamId}/teamprofile`;
@@ -121,22 +121,23 @@ async function fetchOptimalTeam(force = false) {
                     if (r.ok) {
                         const d = await r.json();
                         const list = d.it || d.players || d.pl || d.p || [];
-                        console.log(`[DEBUG] Team ID ${teamId} (${url}): ${list.length} Spieler gefunden.`);
-                        list.forEach(p => {
-                            const pId = p.i || p.id;
-                            if (pId && !allPlayersMap.has(pId)) {
-                                let pos = p.pos || p.p || 0;
-                                if (pos > 10) pos = (p.p % 10) || 0;
-                                allPlayersMap.set(pId, { id: pId, teamId: teamId, name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(), lastName: p.ln || p.n || '', position: pos, marketValue: p.mv || p.marketValue || 0 });
-                            }
-                        });
-                    } else {
-                        console.log(`[ERROR] Endpunkt fehlgeschlagen für Team ID ${teamId} (Status: ${r.status}).`);
+                        if (list.length > 0) {
+                            const teamName = list[0].tn || "Unbekannt";
+                            console.log(`[DEBUG] Team ID ${teamId} (${teamName}): ${list.length} Spieler gefunden.`);
+                            list.forEach(p => {
+                                const pId = p.i || p.id;
+                                if (pId && !allPlayersMap.has(pId)) {
+                                    let pos = p.pos || p.p || 0;
+                                    if (pos > 10) pos = (p.p % 10) || 0;
+                                    allPlayersMap.set(pId, { id: pId, teamId: teamId, name: `${p.fn ? p.fn + ' ' : ''}${p.n || p.ln || ''}`.trim(), lastName: p.ln || p.n || '', position: pos, marketValue: p.mv || p.marketValue || 0 });
+                                }
+                            });
+                        }
                     }
                 } catch (e) {
-                    console.log(`[ERROR] Exception bei Team ID ${teamId}: ${e.message}`);
+                    // Ignoriere Fehler bei 404, da wir IDs von 1-50 blind durchprobieren
                 }
-                await delay(30);
+                await delay(20);
             }
         } else {
             // Load existing players from disk
