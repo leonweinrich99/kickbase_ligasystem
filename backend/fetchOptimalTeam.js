@@ -7,7 +7,7 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
-async function fetchOptimalTeam(force = false) {
+async function fetchOptimalTeam(force = true) {
     const email = process.env.KICKBASE_EMAIL;
     const password = process.env.KICKBASE_PASS;
     const targetLeagueName = process.env.KICKBASE_LEAGUE || "test"; 
