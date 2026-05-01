@@ -1,8 +1,8 @@
 {
   "matchday": 31,
   "totalPoints": 2588,
-  "totalBudget": 220946988,
-  "timestamp": "2026-04-30T11:12:50.165Z",
+  "totalBudget": 222004415,
+  "timestamp": "2026-05-01T19:54:45.909Z",
   "lineup": [
     {
       "id": "2597",
@@ -10,7 +10,7 @@
       "name": "Ramaj",
       "lastName": "Ramaj",
       "position": 1,
-      "marketValue": 4430518,
+      "marketValue": 4544535,
       "points": 255,
       "imagePath": "2597",
       "teamName": "Heidenheim"
@@ -21,7 +21,7 @@
       "name": "Laimer",
       "lastName": "Laimer",
       "position": 2,
-      "marketValue": 29880214,
+      "marketValue": 29923547,
       "points": 241,
       "imagePath": "2038",
       "teamName": "Bayern"
@@ -32,7 +32,7 @@
       "name": "Bensebaini",
       "lastName": "Bensebaini",
       "position": 2,
-      "marketValue": 22082242,
+      "marketValue": 22217248,
       "points": 364,
       "imagePath": "2736",
       "teamName": "Dortmund"
@@ -43,7 +43,7 @@
       "name": "Finkgräfe",
       "lastName": "Finkgräfe",
       "position": 2,
-      "marketValue": 2446508,
+      "marketValue": 2667052,
       "points": 214,
       "imagePath": "7239",
       "teamName": "Leipzig"
@@ -54,7 +54,7 @@
       "name": "Ridle  Baku",
       "lastName": "Baku",
       "position": 3,
-      "marketValue": 25458346,
+      "marketValue": 25534188,
       "points": 224,
       "imagePath": "2141",
       "teamName": "Leipzig"
@@ -65,7 +65,7 @@
       "name": "Musiala",
       "lastName": "Musiala",
       "position": 3,
-      "marketValue": 27346515,
+      "marketValue": 27406633,
       "points": 198,
       "imagePath": "2804",
       "teamName": "Bayern"
@@ -76,7 +76,7 @@
       "name": "Uzun",
       "lastName": "Uzun",
       "position": 3,
-      "marketValue": 18948662,
+      "marketValue": 19200874,
       "points": 220,
       "imagePath": "6081",
       "teamName": "Frankfurt"
@@ -87,7 +87,7 @@
       "name": "Diomande",
       "lastName": "Diomande",
       "position": 3,
-      "marketValue": 33625026,
+      "marketValue": 33690703,
       "points": 201,
       "imagePath": "10771",
       "teamName": "Leipzig"
@@ -98,18 +98,18 @@
       "name": "Dinkçi",
       "lastName": "Dinkçi",
       "position": 3,
-      "marketValue": 2329626,
+      "marketValue": 2261990,
       "points": 203,
       "imagePath": "2939",
       "teamName": "Heidenheim"
     },
     {
       "id": "2714",
-      "teamId": 3,
-      "name": "Beier",
+      "teamId": "3",
+      "name": "Maximilian Beier",
       "lastName": "Beier",
       "position": 4,
-      "marketValue": 26676980,
+      "marketValue": 26764182,
       "points": 241,
       "imagePath": "2714",
       "teamName": "Dortmund"
@@ -120,7 +120,7 @@
       "name": "Schick",
       "lastName": "Schick",
       "position": 4,
-      "marketValue": 27722351,
+      "marketValue": 27793463,
       "points": 227,
       "imagePath": "2746",
       "teamName": "Leverkusen"
