@@ -2,7 +2,7 @@
   "matchday": 32,
   "totalPoints": 2887,
   "totalBudget": 149617857,
-  "timestamp": "2026-05-03T17:44:47.656Z",
+  "timestamp": "2026-05-03T18:50:51.421Z",
   "lineup": [
     {
       "id": "1863",
@@ -49,17 +49,6 @@
       "teamName": "Heidenheim"
     },
     {
-      "id": "9605",
-      "teamId": "6",
-      "name": "Albert Grønbæk",
-      "lastName": "Grønbæk",
-      "position": 3,
-      "marketValue": 693701,
-      "points": 249,
-      "imagePath": "9605",
-      "teamName": "Hamburg"
-    },
-    {
       "id": "660",
       "teamId": 2,
       "name": "Goretzka",
@@ -69,6 +58,17 @@
       "points": 334,
       "imagePath": "660",
       "teamName": "Bayern"
+    },
+    {
+      "id": "9605",
+      "teamId": 6,
+      "name": "Grønbæk",
+      "lastName": "Grønbæk",
+      "position": 3,
+      "marketValue": 693701,
+      "points": 249,
+      "imagePath": "9605",
+      "teamName": "Hamburg"
     },
     {
       "id": "7269",
