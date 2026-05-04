@@ -1,8 +1,8 @@
 {
   "matchday": 32,
-  "totalPoints": 2887,
-  "totalBudget": 151119402,
-  "timestamp": "2026-05-03T20:28:12.879Z",
+  "totalPoints": 2928,
+  "totalBudget": 188776871,
+  "timestamp": "2026-05-04T19:48:01.371Z",
   "lineup": [
     {
       "id": "1863",
@@ -11,20 +11,9 @@
       "lastName": "Heuer Fernandes",
       "position": 1,
       "marketValue": 10591868,
-      "points": 135,
+      "points": 119,
       "imagePath": "1863",
       "teamName": "Hamburg"
-    },
-    {
-      "id": "1622",
-      "teamId": "50",
-      "name": "Marnon Busch",
-      "lastName": "Busch",
-      "position": 2,
-      "marketValue": 2938723,
-      "points": 271,
-      "imagePath": "1622",
-      "teamName": "Heidenheim"
     },
     {
       "id": "6173",
@@ -33,7 +22,7 @@
       "lastName": "Grimaldo",
       "position": 2,
       "marketValue": 45153695,
-      "points": 278,
+      "points": 262,
       "imagePath": "6173",
       "teamName": "Leverkusen"
     },
@@ -44,9 +33,20 @@
       "lastName": "Mwene",
       "position": 2,
       "marketValue": 3046922,
-      "points": 226,
+      "points": 233,
       "imagePath": "2232",
       "teamName": "Mainz"
+    },
+    {
+      "id": "1622",
+      "teamId": 50,
+      "name": "Busch",
+      "lastName": "Busch",
+      "position": 2,
+      "marketValue": 2938723,
+      "points": 269,
+      "imagePath": "1622",
+      "teamName": "Heidenheim"
     },
     {
       "id": "660",
@@ -55,8 +55,19 @@
       "lastName": "Goretzka",
       "position": 3,
       "marketValue": 25133655,
-      "points": 334,
+      "points": 333,
       "imagePath": "660",
+      "teamName": "Bayern"
+    },
+    {
+      "id": "8329",
+      "teamId": 2,
+      "name": "Olise",
+      "lastName": "Olise",
+      "position": 3,
+      "marketValue": 61801636,
+      "points": 290,
+      "imagePath": "8329",
       "teamName": "Bayern"
     },
     {
@@ -66,7 +77,7 @@
       "lastName": "Grønbæk",
       "position": 3,
       "marketValue": 932084,
-      "points": 249,
+      "points": 266,
       "imagePath": "9605",
       "teamName": "Hamburg"
     },
@@ -93,24 +104,13 @@
       "teamName": "Augsburg"
     },
     {
-      "id": "10105",
-      "teamId": 14,
-      "name": "Touré",
-      "lastName": "Touré",
-      "position": 3,
-      "marketValue": 24144167,
-      "points": 254,
-      "imagePath": "10105",
-      "teamName": "Hoffenheim"
-    },
-    {
       "id": "2746",
       "teamId": 7,
       "name": "Schick",
       "lastName": "Schick",
       "position": 4,
       "marketValue": 28007416,
-      "points": 351,
+      "points": 367,
       "imagePath": "2746",
       "teamName": "Leverkusen"
     },
