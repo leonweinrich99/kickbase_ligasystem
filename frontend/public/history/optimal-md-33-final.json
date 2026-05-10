@@ -1,16 +1,16 @@
 {
   "matchday": 33,
-  "totalPoints": 2721,
-  "totalBudget": 249987600,
-  "timestamp": "2026-05-09T19:42:51.000Z",
+  "totalPoints": 2933,
+  "totalBudget": 225607092,
+  "timestamp": "2026-05-10T19:58:18.386Z",
   "lineup": [
     {
       "id": "3072",
-      "teamId": 2,
-      "name": "Urbig",
+      "teamId": "2",
+      "name": "Jonas Urbig",
       "lastName": "Urbig",
       "position": 1,
-      "marketValue": 5227388,
+      "marketValue": 5250438,
       "points": 188,
       "imagePath": "3072",
       "teamName": "Bayern"
@@ -21,10 +21,21 @@
       "name": "Schlotterbeck",
       "lastName": "Schlotterbeck",
       "position": 2,
-      "marketValue": 39374948,
+      "marketValue": 39391482,
       "points": 249,
       "imagePath": "2383",
       "teamName": "Dortmund"
+    },
+    {
+      "id": "10963",
+      "teamId": 6,
+      "name": "Vušković",
+      "lastName": "Vušković",
+      "position": 2,
+      "marketValue": 30162380,
+      "points": 264,
+      "imagePath": "10963",
+      "teamName": "Hamburg"
     },
     {
       "id": "7673",
@@ -32,7 +43,7 @@
       "name": "Hajdari",
       "lastName": "Hajdari",
       "position": 2,
-      "marketValue": 17553767,
+      "marketValue": 17644770,
       "points": 245,
       "imagePath": "7673",
       "teamName": "Hoffenheim"
@@ -43,7 +54,7 @@
       "name": "Coufal",
       "lastName": "Coufal",
       "position": 2,
-      "marketValue": 27367079,
+      "marketValue": 27421620,
       "points": 235,
       "imagePath": "7745",
       "teamName": "Hoffenheim"
@@ -54,21 +65,10 @@
       "name": "Orban",
       "lastName": "Orban",
       "position": 2,
-      "marketValue": 32534461,
+      "marketValue": 32612545,
       "points": 315,
       "imagePath": "1246",
       "teamName": "Leipzig"
-    },
-    {
-      "id": "3120",
-      "teamId": 2,
-      "name": "Bischof",
-      "lastName": "Bischof",
-      "position": 3,
-      "marketValue": 11069310,
-      "points": 228,
-      "imagePath": "3120",
-      "teamName": "Bayern"
     },
     {
       "id": "8329",
@@ -76,43 +76,32 @@
       "name": "Olise",
       "lastName": "Olise",
       "position": 3,
-      "marketValue": 61884723,
+      "marketValue": 61908517,
       "points": 349,
       "imagePath": "8329",
       "teamName": "Bayern"
     },
     {
-      "id": "11162",
-      "teamId": 14,
-      "name": "Avdullahu",
-      "lastName": "Avdullahu",
+      "id": "3176",
+      "teamId": 50,
+      "name": "Ibrahimović",
+      "lastName": "Ibrahimović",
       "position": 3,
-      "marketValue": 15922820,
-      "points": 230,
-      "imagePath": "11162",
-      "teamName": "Hoffenheim"
+      "marketValue": 889089,
+      "points": 264,
+      "imagePath": "3176",
+      "teamName": "Heidenheim"
     },
     {
-      "id": "2649",
-      "teamId": 43,
-      "name": "Schlager",
-      "lastName": "Schlager",
+      "id": "3249",
+      "teamId": 50,
+      "name": "Schöppner",
+      "lastName": "Schöppner",
       "position": 3,
-      "marketValue": 10913659,
-      "points": 187,
-      "imagePath": "2649",
-      "teamName": "Leipzig"
-    },
-    {
-      "id": "2854",
-      "teamId": 9,
-      "name": "Demirović",
-      "lastName": "Demirović",
-      "position": 4,
-      "marketValue": 22965400,
-      "points": 221,
-      "imagePath": "2854",
-      "teamName": "Stuttgart"
+      "marketValue": 768124,
+      "points": 295,
+      "imagePath": "3249",
+      "teamName": "Heidenheim"
     },
     {
       "id": "493",
@@ -120,10 +109,21 @@
       "name": "Gregoritsch",
       "lastName": "Gregoritsch",
       "position": 4,
-      "marketValue": 5174045,
+      "marketValue": 5324844,
       "points": 274,
       "imagePath": "493",
       "teamName": "Augsburg"
+    },
+    {
+      "id": "9683",
+      "teamId": 40,
+      "name": "Ilic",
+      "lastName": "Ilic",
+      "position": 4,
+      "marketValue": 4233283,
+      "points": 255,
+      "imagePath": "9683",
+      "teamName": "Union Berlin"
     }
   ]
 }
