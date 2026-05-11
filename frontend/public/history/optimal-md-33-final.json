@@ -1,17 +1,17 @@
 {
   "matchday": 33,
-  "totalPoints": 2933,
-  "totalBudget": 226360954,
-  "timestamp": "2026-05-10T22:15:28.837Z",
+  "totalPoints": 2929,
+  "totalBudget": 214945522,
+  "timestamp": "2026-05-11T17:35:23.699Z",
   "lineup": [
     {
       "id": "3072",
-      "teamId": "2",
-      "name": "Jonas Urbig",
+      "teamId": 2,
+      "name": "Urbig",
       "lastName": "Urbig",
       "position": 1,
       "marketValue": 5312580,
-      "points": 188,
+      "points": 187,
       "imagePath": "3072",
       "teamName": "Bayern"
     },
@@ -22,7 +22,7 @@
       "lastName": "Schlotterbeck",
       "position": 2,
       "marketValue": 39442732,
-      "points": 249,
+      "points": 250,
       "imagePath": "2383",
       "teamName": "Dortmund"
     },
@@ -33,7 +33,7 @@
       "lastName": "Vušković",
       "position": 2,
       "marketValue": 30269272,
-      "points": 264,
+      "points": 262,
       "imagePath": "10963",
       "teamName": "Hamburg"
     },
@@ -49,24 +49,13 @@
       "teamName": "Hoffenheim"
     },
     {
-      "id": "7745",
-      "teamId": 14,
-      "name": "Coufal",
-      "lastName": "Coufal",
-      "position": 2,
-      "marketValue": 27504123,
-      "points": 235,
-      "imagePath": "7745",
-      "teamName": "Hoffenheim"
-    },
-    {
       "id": "1246",
       "teamId": 43,
       "name": "Orban",
       "lastName": "Orban",
       "position": 2,
       "marketValue": 32700846,
-      "points": 315,
+      "points": 313,
       "imagePath": "1246",
       "teamName": "Leipzig"
     },
@@ -77,9 +66,20 @@
       "lastName": "Olise",
       "position": 3,
       "marketValue": 61937579,
-      "points": 349,
+      "points": 334,
       "imagePath": "8329",
       "teamName": "Bayern"
+    },
+    {
+      "id": "11162",
+      "teamId": 14,
+      "name": "Avdullahu",
+      "lastName": "Avdullahu",
+      "position": 3,
+      "marketValue": 16088691,
+      "points": 246,
+      "imagePath": "11162",
+      "teamName": "Hoffenheim"
     },
     {
       "id": "3176",
@@ -99,7 +99,7 @@
       "lastName": "Schöppner",
       "position": 3,
       "marketValue": 772864,
-      "points": 295,
+      "points": 300,
       "imagePath": "3249",
       "teamName": "Heidenheim"
     },
@@ -110,7 +110,7 @@
       "lastName": "Gregoritsch",
       "position": 4,
       "marketValue": 5568685,
-      "points": 274,
+      "points": 273,
       "imagePath": "493",
       "teamName": "Augsburg"
     },
