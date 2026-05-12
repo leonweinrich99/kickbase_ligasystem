@@ -50,36 +50,42 @@ const Header = ({
   const displayLabel = currentView === 'saison' ? 'Gesamt' : `Spieltag ${currentView}`;
 
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-8 border-b border-[#2a2e37] pb-6 gap-6 relative">
-      <div className="flex items-center gap-4 sm:gap-6 pr-32 sm:pr-0">
-        <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center p-0.5 sm:p-1 overflow-hidden">
-          <img src={logo} alt="Kickbase Liga Logo" className="w-full h-full object-contain" />
+    <div className="flex flex-col mb-4 sm:mb-8 border-b border-[#2a2e37] pb-4 sm:pb-6 gap-4">
+      
+      {/* Top Row: Logo, Title, and Mobile Toggle */}
+      <div className="flex justify-between items-start gap-2 w-full">
+        {/* Left: Logo & Title */}
+        <div className="flex items-center gap-3 sm:gap-6 min-w-0 flex-1">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center p-0.5 sm:p-1 overflow-hidden flex-shrink-0">
+            <img src={logo} alt="Kickbase Liga Logo" className="w-full h-full object-contain" />
+          </div>
+          <div className="min-w-0 pr-1">
+            <div className="text-[9px] sm:text-[11px] font-bold tracking-wider text-[#ff5c3e] mb-1">SAISON 26/27</div>
+            <h1 className="text-[17px] sm:text-3xl font-black tracking-tight uppercase leading-[1.1] break-words">Qualifikationsrunde</h1>
+          </div>
         </div>
-        <div>
-          <div className="text-[9px] sm:text-[11px] font-bold tracking-wider text-[#ff5c3e] mb-1">SAISON 26/27</div>
-          <h1 className="text-xl sm:text-3xl font-black tracking-tight uppercase">Qualifikationsrunde</h1>
+
+        {/* Right: Mobile Toggle */}
+        <div className="sm:hidden flex-shrink-0 mt-1">
+          <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden h-9 p-1">
+            <NavLink 
+              to="/"
+              end
+              className={({isActive}) => `px-3 h-full flex items-center justify-center rounded-lg text-[9px] uppercase tracking-widest transition-all ${isActive ? 'bg-[#ff5c3e] text-white shadow-md' : 'text-[#8b92a5]'}`}
+            >
+              Liga
+            </NavLink>
+            <NavLink 
+              to="/pokal"
+              className={({isActive}) => `px-3 h-full flex items-center justify-center rounded-lg text-[9px] uppercase tracking-widest transition-all ${isActive ? 'bg-[#8b5cf6] text-white shadow-md' : 'text-[#8b92a5]'}`}
+            >
+              Pokal
+            </NavLink>
+          </div>
         </div>
       </div>
       
-      {/* Mobile Toggle positioned absolute top right */}
-      <div className="absolute top-0 right-0 sm:hidden">
-        <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden h-10 p-1">
-          <NavLink 
-            to="/"
-            end
-            className={({isActive}) => `px-3 h-full flex items-center justify-center rounded-lg text-[10px] uppercase tracking-widest transition-all ${isActive ? 'bg-[#ff5c3e] text-white shadow-md' : 'text-[#8b92a5]'}`}
-          >
-            Liga
-          </NavLink>
-          <NavLink 
-            to="/pokal"
-            className={({isActive}) => `px-3 h-full flex items-center justify-center rounded-lg text-[10px] uppercase tracking-widest transition-all ${isActive ? 'bg-[#8b5cf6] text-white shadow-md' : 'text-[#8b92a5]'}`}
-          >
-            Pokal
-          </NavLink>
-        </div>
-      </div>
-
+      {/* Bottom Row: Controls */}
       <div className="flex w-full sm:w-auto justify-between sm:justify-end items-center gap-2 sm:gap-4">
         {/* Navigation Toggle Liga/Pokal (Desktop) */}
         <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl items-center shadow-lg font-semibold overflow-hidden h-12 p-1 hidden sm:flex">
