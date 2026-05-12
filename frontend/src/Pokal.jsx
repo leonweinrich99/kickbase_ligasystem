@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import logo from './assets/logo.png';
+import logo from './assets/pokal_logo.jpg';
 
 const MatchBox = ({ match, isFinal }) => {
   const isWinner1 = match.winner === 1;
@@ -256,7 +256,7 @@ const Pokal = () => {
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEndHandler}
         >
-          <AnimatePresence mode="popLayout" custom={direction}>
+          <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={activeRound}
               custom={direction}
@@ -268,6 +268,7 @@ const Pokal = () => {
                 x: { type: "spring", stiffness: 300, damping: 30 }, 
                 opacity: { duration: 0.2 }
               }}
+              className="w-full"
             >
               {activeRound === 'Sechzehntelfinale' && <MobileRoundView matches={[...data.roundOf32Left, ...data.roundOf32Right]} isFirstRound={true} />}
               {activeRound === 'Achtelfinale' && <MobileRoundView matches={[...data.roundOf16Left, ...data.roundOf16Right]} />}
