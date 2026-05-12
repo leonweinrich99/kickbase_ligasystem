@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import logo from './assets/pokal_logo.jpg';
+import logo from './assets/pokal_logo.png';
 
 const MatchBox = ({ match, isFinal }) => {
   const isWinner1 = match.winner === 1;
