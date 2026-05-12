@@ -160,7 +160,7 @@ const Pokal = () => {
   return (
     <div className="max-w-[1600px] mx-auto bg-[#0f1115]">
       {/* Header - Similar to App.jsx but with Toggle */}
-      <div className="flex flex-col mb-4 sm:mb-8 border-b border-[#2a2e37] pb-4 sm:pb-6 gap-4 mt-4 sm:mt-0">
+      <div className="flex flex-col mb-4 sm:mb-8 border-b border-[#2a2e37] pb-4 sm:pb-6 gap-4">
         
         {/* Top Row: Logo, Title, and Mobile Toggle */}
         <div className="flex justify-between items-start gap-2 w-full">
