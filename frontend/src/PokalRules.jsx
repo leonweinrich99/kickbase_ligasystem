@@ -14,6 +14,7 @@ const RuleCard = ({ number, title, text, color, children, icon: Icon }) => {
     orange: 'border-orange-500/40 hover:border-orange-500 hover:bg-orange-500/10',
     green: 'border-green-500/40 hover:border-green-500 hover:bg-green-500/10',
     red: 'border-red-500/40 hover:border-red-500 hover:bg-red-500/10',
+    purple: 'border-purple-500/40 hover:border-purple-500 hover:bg-purple-500/10',
   };
 
   const textColors = {
@@ -21,6 +22,7 @@ const RuleCard = ({ number, title, text, color, children, icon: Icon }) => {
     orange: 'text-orange-400',
     green: 'text-green-400',
     red: 'text-red-400',
+    purple: 'text-purple-400',
   };
 
   return (
@@ -59,13 +61,13 @@ const SectionTitle = ({ title }) => (
   </motion.h2>
 );
 
-const Rules = () => {
+const PokalRules = () => {
   return (
     <div className="max-w-4xl mx-auto py-10 px-4 relative overflow-x-hidden">
       <Link 
-        to="/" 
+        to="/pokal" 
         className="absolute top-4 right-4 sm:top-10 sm:right-0 p-2 text-[#8b92a5] hover:text-white bg-[#1a1d24] border border-[#2a2e37] rounded-xl transition-all hover:border-[#3a3f4a] shadow-lg z-50"
-        title="Zurück zum Dashboard"
+        title="Zurück zum Pokal"
       >
         <CloseIcon />
       </Link>
@@ -76,116 +78,95 @@ const Rules = () => {
         transition={{ duration: 0.7 }}
         className="text-center mb-20 pt-10 sm:pt-0"
       >
-        <div className="inline-block px-3 py-1 mb-4 text-[#f97316] text-[0.85rem] font-extrabold uppercase tracking-[2.5px] bg-orange-500/10 border border-orange-500/20 rounded-full">
+        <div className="inline-block px-3 py-1 mb-4 text-[#8b5cf6] text-[0.85rem] font-extrabold uppercase tracking-[2.5px] bg-purple-500/10 border border-purple-500/20 rounded-full">
           Saison 26/27
         </div>
         <h1 className="text-4xl sm:text-[3.5rem] font-black tracking-tighter uppercase leading-[1.1] mb-4 bg-gradient-to-br from-white to-[#9ca3af] bg-clip-text text-transparent">
-          KICKBASE LIGASYSTEM<br />Regelkatalog
+          KICKBASE POKAL<br />Regelkatalog
         </h1>
       </motion.header>
 
       <div className="space-y-16">
         <section>
-          <SectionTitle title="Fairplay & Verantwortung" />
+          <SectionTitle title="Turniermodus & Einstellungen" />
           <RuleCard 
             color="blue" 
-            title="Fairplay & Mindset" 
-            text="Fairness und Spaß stehen an erster Stelle. Die Regeln sind einzuhalten und Strafen umzusetzen. Niederlagen sollen sportlich genommen werden."
+            title="Die Auslosung" 
+            text="Zu Beginn der Pokal-Saison gibt es eine erste Auslosung, die auf den bestehenden Qualigruppenergebnissen basiert. Dafür werden zwei Lostöpfe gebildet, aus denen die Kontrahenten für das Sechzehntelfinale gezogen werden. Für alle darauffolgenden Runden bzw. Spieltage werden die Partien immer wieder neu ausgelost."
             icon={(props) => (
               <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                <polyline points="16 3 21 3 21 8"></polyline>
+                <line x1="4" y1="20" x2="21" y2="3"></line>
+                <polyline points="21 16 21 21 16 21"></polyline>
+                <line x1="15" y1="15" x2="21" y2="21"></line>
+                <line x1="4" y1="4" x2="9" y2="9"></line>
+              </svg>
+            )}
+          />
+          <RuleCard 
+            color="purple" 
+            title="Head-to-Head Modus" 
+            text="Die Spieler treten an einem festen Spieltag direkt gegeneinander an. Das Duell im Head-to-Head entscheidet über das Weiterkommen."
+            icon={(props) => (
+              <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
               </svg>
             )}
           />
           <RuleCard 
             color="blue" 
-            title="Diskussion" 
-            text="Jeder ist für die Regeleinhaltung verantwortlich. Verstöße werden liga-intern diskutiert, Strafen im Zweifel per Mehrheitsentscheid festgelegt."
+            title="Arena-Modus" 
+            text="Der Pokal wird im speziellen Arenamodus von Kickbase gespielt. Alle Teams haben somit dieselben Voraussetzungen."
             icon={(props) => (
               <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5" />
+                <path d="M2 12l10 5 10-5" />
+              </svg>
+            )}
+          />
+          <RuleCard 
+            color="orange" 
+            title="Budget" 
+            text="Jeder Teilnehmer erhält ein festes Startbudget in Höhe von 250 Millionen Euro, um seinen Kader für den Pokal-Spieltag aufzustellen."
+            icon={(props) => (
+              <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
+                <path d="M12 18V6" />
               </svg>
             )}
           />
         </section>
 
         <section>
-          <SectionTitle title="Limits & Transfers" />
+          <SectionTitle title="Verlauf & Belohnung" />
           <RuleCard 
             color="green" 
-            title="Team-Limits" 
-            text="Maximal 2 Spieler desselben Teams in der Startelf. Im gesamten Kader sind bis zu 3 Spieler eines Teams erlaubt."
+            title="K.O.-System" 
+            text="Der Gewinner jedes Duells zieht direkt in die nächste Runde ein. Der Verlierer scheidet aus dem Pokalwettbewerb aus."
             icon={(props) => (
               <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-              </svg>
-            )}
-          />
-          <RuleCard 
-            color="orange" 
-            title="Spielerleihen" 
-            text="Leihgebühren müssen mindestens 500k pro Spieltag betragen."
-            icon={(props) => (
-              <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+                <path d="M5 12h14" />
+                <path d="M12 5l7 7-7 7" />
               </svg>
             )}
           />
           <RuleCard 
             color="red" 
-            title="Underpay-Verbot" 
-            text="Kauf unter Marktwert ist verboten. 1. Verstoß = Gelb, 2. Verstoß = Rot (Strafe)."
+            title="Die ultimative Belohnung" 
+            text="Der Pokalsieger erhält die einmalige Chance, eine Liga aufzusteigen! Er darf in der Relegation um den Aufstieg in die nächst höhere Liga spielen."
             icon={(props) => (
               <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-              </svg>
-            )}
-          />
-        </section>
-
-        <section>
-          <SectionTitle title="Spieltags-Regeln" />
-          <RuleCard 
-            color="orange" 
-            title="Zwangsverkauf Top 3" 
-            text="Top 3 Manager der Woche müssen ihren besten Spieler (Startelf) bis Montag 22 Uhr an den Transfermarkt verkaufen."
-            icon={(props) => (
-              <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-              </svg>
-            )}
-          />
-          <RuleCard 
-            color="red" 
-            title="Strafen" 
-            text="Bei Verstoß muss am nächsten Spieltag ein Spieler weniger aufgestellt werden. Nichtbefolgung ist ein weiterer Verstoß."
-            icon={(props) => (
-              <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/>
-              </svg>
-            )}
-          />
-        </section>
-
-        <section>
-          <SectionTitle title="Aufstieg & Abstieg" />
-          <RuleCard 
-            color="green" 
-            title="Auf- und Abstieg" 
-            text="Greift nach Hin- und Rückrunde. Platz 1&2 steigen auf, Platz 8&9 steigen ab."
-            icon={(props) => (
-              <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
-              </svg>
-            )}
-          />
-          <RuleCard 
-            color="orange" 
-            title="Relegation" 
-            text="Letzter Spieltag: Platz 3 vs Platz 7 der höheren Liga. Vergleich via Matchday Challenge (Rushmodus)."
-            icon={(props) => (
-              <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                <path d="M4 22h16" />
+                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+                <path d="M18 2H6v7c0 3.31 2.69 6 6 6s6-2.69 6-6V2z" />
               </svg>
             )}
           />
@@ -195,4 +176,4 @@ const Rules = () => {
   );
 };
 
-export default Rules;
+export default PokalRules;
