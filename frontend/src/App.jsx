@@ -61,7 +61,7 @@ const Header = ({
           </div>
           <div className="min-w-0 pr-1">
             <div className="text-[9px] sm:text-[11px] font-bold tracking-wider text-[#ff5c3e] mb-1">SAISON 26/27</div>
-            <h1 className="text-[17px] sm:text-3xl font-black tracking-tight uppercase leading-[1.1] break-words">Qualifikationsrunde</h1>
+            <h1 className="text-[17px] sm:text-3xl font-black tracking-tight uppercase leading-[1.1] break-words">Qualifikations<br/>gruppe</h1>
           </div>
         </div>
 
