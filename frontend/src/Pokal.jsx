@@ -103,6 +103,7 @@ const Pokal = () => {
   const [direction, setDirection] = useState(0);
   const [zoomLevel, setZoomLevel] = useState(1);
   const tabsRef = useRef(null);
+  const desktopScrollRef = useRef(null);
 
   // Touch Swipe Handlers
   const [touchStart, setTouchStart] = useState(null);
@@ -154,6 +155,21 @@ const Pokal = () => {
       .then((json) => setData(json))
       .catch((err) => console.error("Error loading pokal data:", err));
   }, []);
+
+  // Der Desktop-Baum ist breiter als der Bildschirm - standardmäßig aufs Finale
+  // zentrieren, aber (anders als vorher mit CSS justify-center) über echtes
+  // scrollLeft, damit man trotzdem ganz nach links/rechts scrollen kann.
+  useEffect(() => {
+    if (!data) return;
+    const el = desktopScrollRef.current;
+    if (!el) return;
+    const center = () => {
+      el.scrollLeft = Math.max(0, (el.scrollWidth - el.clientWidth) / 2);
+    };
+    // Nach dem Layout (inkl. Zoom-Änderungen) zentrieren
+    const raf = requestAnimationFrame(center);
+    return () => cancelAnimationFrame(raf);
+  }, [data, zoomLevel]);
 
   if (!data) return <div className="min-h-screen bg-[#0f1115]"></div>;
 
@@ -251,7 +267,7 @@ const Pokal = () => {
           </button>
         </div>
 
-        <div className="overflow-x-auto custom-scrollbar mt-6 flex justify-center">
+        <div ref={desktopScrollRef} className="overflow-x-auto custom-scrollbar mt-6">
           <div 
             className="min-w-max flex justify-center items-stretch gap-6 px-8 py-8 mx-auto"
             style={{ zoom: zoomLevel }}

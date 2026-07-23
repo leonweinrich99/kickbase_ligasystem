@@ -272,6 +272,18 @@ const TourOverlay = () => {
 
         if (!scrolledRef.current) {
           scrolledRef.current = true;
+
+          // Manche Bereiche (z.B. der Pokal-Baum am Desktop) liegen in einem
+          // eigenen horizontal scrollbaren Container, der standardmäßig auf
+          // die Mitte des Baums (Finale) zentriert ist. Das reicht ein
+          // normaler vertikaler Scroll nicht ab - hier zusätzlich horizontal
+          // korrigieren, falls das Element seitlich außerhalb des sichtbaren
+          // Bereichs liegt.
+          const r0 = foundEl.getBoundingClientRect();
+          if (r0.left < 0 || r0.right > window.innerWidth) {
+            foundEl.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'auto' });
+          }
+
           if (!isFixed && !step.noAutoScroll) {
             animateScrollTo(foundEl, step.scrollBlock || 'center', () => finalize(foundEl));
             return;
