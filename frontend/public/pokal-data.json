@@ -11,7 +11,7 @@
     },
     {
       "id": "m2",
-      "p1": "Esel",
+      "p1": "Curl3z",
       "p2": "Sebastian",
       "score1": 0,
       "score2": 0,
@@ -19,30 +19,14 @@
     },
     {
       "id": "m3",
-      "p1": "Mo6",
-      "p2": "Baumi",
-      "score1": 0,
-      "score2": 0,
-      "winner": null
-    },
-    {
-      "id": "m4",
-      "p1": "Curl3z",
+      "p1": "DeinHomieEnobi",
       "p2": "Geißbock",
       "score1": 0,
       "score2": 0,
       "winner": null
     },
     {
-      "id": "m5",
-      "p1": "DeinHomieEnobi",
-      "p2": "Fynn",
-      "score1": 0,
-      "score2": 0,
-      "winner": null
-    },
-    {
-      "id": "m6",
+      "id": "m4",
       "p1": "Vinnie JR",
       "p2": "Freilos",
       "score1": null,
@@ -51,16 +35,33 @@
       "isBye": true
     },
     {
-      "id": "m7",
+      "id": "m5",
       "p1": "Leon Weinrich",
+      "p2": "Fynn",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    },
+    {
+      "id": "m6",
+      "p1": "Wat Mamba",
       "p2": "casper",
       "score1": 0,
       "score2": 0,
       "winner": null
     },
     {
+      "id": "m7",
+      "p1": "Blake",
+      "p2": "Freilos",
+      "score1": null,
+      "score2": null,
+      "winner": 1,
+      "isBye": true
+    },
+    {
       "id": "m8",
-      "p1": "Wat Mamba",
+      "p1": "leongarcon",
       "p2": "Marci",
       "score1": 0,
       "score2": 0,
@@ -70,7 +71,7 @@
   "roundOf32Right": [
     {
       "id": "m9",
-      "p1": "leongarcon",
+      "p1": "JulianD47",
       "p2": "kushler",
       "score1": 0,
       "score2": 0,
@@ -78,15 +79,7 @@
     },
     {
       "id": "m10",
-      "p1": "JulianD47",
-      "p2": "KönigMichi",
-      "score1": 0,
-      "score2": 0,
-      "winner": null
-    },
-    {
-      "id": "m11",
-      "p1": "Blake",
+      "p1": "Esel",
       "p2": "Freilos",
       "score1": null,
       "score2": null,
@@ -94,8 +87,16 @@
       "isBye": true
     },
     {
-      "id": "m12",
+      "id": "m11",
       "p1": "Ansgar Trinkmann",
+      "p2": "KönigMichi",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    },
+    {
+      "id": "m12",
+      "p1": "J0tt",
       "p2": "Flocke",
       "score1": 0,
       "score2": 0,
@@ -103,32 +104,33 @@
     },
     {
       "id": "m13",
-      "p1": "J0tt",
+      "p1": "Mo6",
+      "p2": "Freilos",
+      "score1": null,
+      "score2": null,
+      "winner": 1,
+      "isBye": true
+    },
+    {
+      "id": "m14",
+      "p1": "thep",
       "p2": "Puliester",
       "score1": 0,
       "score2": 0,
       "winner": null
     },
     {
-      "id": "m14",
-      "p1": "thep",
+      "id": "m15",
+      "p1": "AchtSieben",
       "p2": "franzi__j",
       "score1": 0,
       "score2": 0,
       "winner": null
     },
     {
-      "id": "m15",
-      "p1": "magarac",
-      "p2": "CarlCarlsenCarlsen",
-      "score1": 0,
-      "score2": 0,
-      "winner": null
-    },
-    {
       "id": "m16",
-      "p1": "AchtSieben",
-      "p2": "Stomping Tantrum",
+      "p1": "Stomping Tantrum",
+      "p2": "CarlCarlsenCarlsen",
       "score1": 0,
       "score2": 0,
       "winner": null
@@ -146,7 +148,7 @@
     {
       "id": "m18",
       "p1": "Sieger SF3",
-      "p2": "Sieger SF4",
+      "p2": "Vinnie JR",
       "score1": 0,
       "score2": 0,
       "winner": null
@@ -154,14 +156,14 @@
     {
       "id": "m19",
       "p1": "Sieger SF5",
-      "p2": "Vinnie JR",
+      "p2": "Sieger SF6",
       "score1": 0,
       "score2": 0,
       "winner": null
     },
     {
       "id": "m20",
-      "p1": "Sieger SF7",
+      "p1": "Blake",
       "p2": "Sieger SF8",
       "score1": 0,
       "score2": 0,
@@ -172,14 +174,14 @@
     {
       "id": "m21",
       "p1": "Sieger SF9",
-      "p2": "Sieger SF10",
+      "p2": "Esel",
       "score1": 0,
       "score2": 0,
       "winner": null
     },
     {
       "id": "m22",
-      "p1": "Blake",
+      "p1": "Sieger SF11",
       "p2": "Sieger SF12",
       "score1": 0,
       "score2": 0,
@@ -187,7 +189,7 @@
     },
     {
       "id": "m23",
-      "p1": "Sieger SF13",
+      "p1": "Mo6",
       "p2": "Sieger SF14",
       "score1": 0,
       "score2": 0,
@@ -269,9 +271,9 @@
     }
   ],
   "meta": {
-    "generatedAt": "2026-07-23T11:13:01.970Z",
-    "participants": 29,
-    "byes": 3,
+    "generatedAt": "2026-07-23T12:32:06.174Z",
+    "participants": 27,
+    "byes": 5,
     "seedSource": "Qualifikationsrunde 25/26 (Gesamtwertung)"
   }
 }

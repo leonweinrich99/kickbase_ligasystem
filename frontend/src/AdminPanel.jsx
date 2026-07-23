@@ -23,6 +23,33 @@ const AdminPanel = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('pending');
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [updateStatus, setUpdateStatus] = useState(null);
+
+  const handleManualUpdate = async () => {
+    const password = window.prompt("Bitte Admin-Passwort eingeben:");
+    if (!password) return;
+
+    setIsUpdating(true);
+    setUpdateStatus("Update wird gestartet...");
+
+    try {
+      const res = await fetch(`/api/cron?secret=${encodeURIComponent(password)}`);
+      if (res.ok) {
+        setUpdateStatus("✅ Update erfolgreich angestoßen! Der Workflow läuft.");
+        setTimeout(() => setUpdateStatus(null), 5000);
+      } else {
+        const errData = await res.json();
+        setUpdateStatus(`❌ Fehler: ${errData.error || "Unbefugt"}`);
+        setTimeout(() => setUpdateStatus(null), 5000);
+      }
+    } catch {
+      setUpdateStatus("❌ Netzwerkfehler beim Update-Aufruf.");
+      setTimeout(() => setUpdateStatus(null), 5000);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -63,6 +90,24 @@ const AdminPanel = () => {
           <Link to="/" className="bg-[#1a1d24] border border-[#2a2e37] px-4 py-2 rounded-xl text-[#8b92a5] hover:text-white transition-all text-xs font-bold uppercase tracking-wider">
             Zurück
           </Link>
+        </div>
+
+        <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <div className="font-bold text-gray-100">Kickbase-Daten aktualisieren</div>
+            <div className="text-xs text-[#8b92a5]">Stößt den GitHub-Actions-Workflow zum Abruf der Ligadaten manuell an.</div>
+          </div>
+          {updateStatus ? (
+            <span className="text-xs font-bold text-[#ff5c3e] animate-pulse">{updateStatus}</span>
+          ) : (
+            <button
+              onClick={handleManualUpdate}
+              disabled={isUpdating}
+              className="text-[10px] font-black uppercase tracking-widest bg-[#ff5c3e]/10 text-[#ff5c3e] border border-[#ff5c3e]/30 px-4 py-2 rounded-lg hover:bg-[#ff5c3e]/20 transition-colors disabled:opacity-50 shrink-0"
+            >
+              {isUpdating ? 'Läuft...' : 'Jetzt aktualisieren'}
+            </button>
+          )}
         </div>
 
         <div className="flex gap-2 mb-6 overflow-x-auto">

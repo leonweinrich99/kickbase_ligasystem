@@ -158,6 +158,7 @@ const Pokal = () => {
   if (!data) return <div className="min-h-screen bg-[#0f1115] flex justify-center items-center text-[#8b5cf6] font-bold tracking-widest uppercase text-xs animate-pulse">Lade Pokal System...</div>;
 
   return (
+    <div className="min-h-screen bg-[#0f1115] p-4 sm:p-10 font-sans select-none">
     <div className="max-w-[1600px] mx-auto bg-[#0f1115]">
       {/* Header - Similar to App.jsx but with Toggle */}
       <div className="flex flex-col mb-4 sm:mb-8 border-b border-[#2a2e37] pb-4 sm:pb-6 gap-4">
@@ -342,9 +343,10 @@ const Pokal = () => {
           </div>
 
         </div>
-      </div>
+        </div>
       </div>
       
+    </div>
     </div>
   );
 };

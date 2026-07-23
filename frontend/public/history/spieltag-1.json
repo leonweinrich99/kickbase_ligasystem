@@ -1,40 +1,323 @@
 {
   "name": "LIGASYSTEM",
   "matchday": 1,
-  "participants": 0,
-  "timestamp": "2026-07-23T11:49:35.821Z",
+  "participants": 27,
+  "timestamp": "2026-07-23T12:31:20.968Z",
   "leagues": [
     {
       "name": "LIGA 1",
       "color": "#3b82f6",
-      "users": [],
-      "error": "Liga \"Liga 1\" nicht gefunden"
+      "users": [
+        {
+          "id": "3283685",
+          "rank": 1,
+          "name": "Justin",
+          "points": "0",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": true,
+          "trophyColor": "gold",
+          "status": "green"
+        },
+        {
+          "id": "2926287",
+          "rank": 2,
+          "name": "Vinnie JR",
+          "points": "0",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": true,
+          "trophyColor": "silver",
+          "status": "green"
+        },
+        {
+          "id": "3607127",
+          "rank": 3,
+          "name": "Blake",
+          "points": "0",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": true,
+          "trophyColor": "bronze",
+          "status": "yellow"
+        },
+        {
+          "id": "3606931",
+          "rank": 4,
+          "name": "Esel",
+          "points": "0",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3901400",
+          "rank": 5,
+          "name": "Mo6",
+          "points": "0",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3397700",
+          "rank": 6,
+          "name": "Curl3z",
+          "points": "0",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3639851",
+          "rank": 7,
+          "name": "DeinHomieEnobi",
+          "points": "0",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "yellow"
+        },
+        {
+          "id": "3607082",
+          "rank": 8,
+          "name": "Leon Weinrich",
+          "points": "0",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "red"
+        },
+        {
+          "id": "2582689",
+          "rank": 9,
+          "name": "Wat Mamba",
+          "points": "0",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "red"
+        }
+      ]
     },
     {
       "name": "LIGA 2",
       "color": "#f97316",
-      "users": [],
-      "error": "Liga \"Liga 2\" nicht gefunden"
+      "users": [
+        {
+          "id": "2934339",
+          "rank": 1,
+          "name": "leongarcon",
+          "points": "0",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": true,
+          "trophyColor": "gold",
+          "status": "green"
+        },
+        {
+          "id": "2651349",
+          "rank": 2,
+          "name": "JulianD47",
+          "points": "0",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": true,
+          "trophyColor": "silver",
+          "status": "green"
+        },
+        {
+          "id": "1630703",
+          "rank": 3,
+          "name": "Ansgar Trinkmann",
+          "points": "0",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": true,
+          "trophyColor": "bronze",
+          "status": "yellow"
+        },
+        {
+          "id": "3906724",
+          "rank": 4,
+          "name": "J0tt",
+          "points": "0",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3533606",
+          "rank": 5,
+          "name": "thep",
+          "points": "0",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3779246",
+          "rank": 6,
+          "name": "AchtSieben",
+          "points": "0",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3792325",
+          "rank": 7,
+          "name": "Stomping Tantrum",
+          "points": "0",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "yellow"
+        },
+        {
+          "id": "2479430",
+          "rank": 8,
+          "name": "CarlCarlsenCarlsen",
+          "points": "0",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "red"
+        },
+        {
+          "id": "3650803",
+          "rank": 9,
+          "name": "franzi__j",
+          "points": "0",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "red"
+        }
+      ]
     },
     {
       "name": "LIGA 3",
       "color": "#22c55e",
-      "users": [],
-      "error": "Liga \"Liga 3\" nicht gefunden"
-    }
-  ],
-  "errors": [
-    {
-      "league": "LIGA 1",
-      "error": "Liga \"Liga 1\" nicht gefunden"
-    },
-    {
-      "league": "LIGA 2",
-      "error": "Liga \"Liga 2\" nicht gefunden"
-    },
-    {
-      "league": "LIGA 3",
-      "error": "Liga \"Liga 3\" nicht gefunden"
+      "users": [
+        {
+          "id": "3905417",
+          "rank": 1,
+          "name": "Puliester",
+          "points": "0",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": true,
+          "trophyColor": "gold",
+          "status": "green"
+        },
+        {
+          "id": "3694149",
+          "rank": 2,
+          "name": "Flocke",
+          "points": "0",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": true,
+          "trophyColor": "silver",
+          "status": "green"
+        },
+        {
+          "id": "3511512",
+          "rank": 3,
+          "name": "KönigMichi",
+          "points": "0",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": true,
+          "trophyColor": "bronze",
+          "status": "yellow"
+        },
+        {
+          "id": "2492332",
+          "rank": 4,
+          "name": "kushler",
+          "points": "0",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3906287",
+          "rank": 5,
+          "name": "Marci",
+          "points": "0",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3850715",
+          "rank": 6,
+          "name": "casper",
+          "points": "0",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3682622",
+          "rank": 7,
+          "name": "Fynn",
+          "points": "0",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "yellow"
+        },
+        {
+          "id": "3646277",
+          "rank": 8,
+          "name": "Geißbock",
+          "points": "0",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "red"
+        },
+        {
+          "id": "2934402",
+          "rank": 9,
+          "name": "Sebastian",
+          "points": "0",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "red"
+        }
+      ]
     }
   ]
 }

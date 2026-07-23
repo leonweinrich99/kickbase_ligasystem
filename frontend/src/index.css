@@ -12,6 +12,7 @@
 
 html {
   height: 100%;
+  background-color: var(--color-brand-bg);
   /* Pinch-Zoom deaktivieren, Scrollen bleibt erlaubt (App-Feeling) */
   touch-action: pan-x pan-y;
   -webkit-text-size-adjust: 100%;
@@ -29,11 +30,18 @@ body {
 
   /* Safe-Area (Notch, Dynamic Island, Home-Indicator etc.) einbeziehen,
      damit Inhalte nicht unter Rundungen/Kerben verschwinden. Wird ZUSÄTZLICH
-     zum bestehenden Innenabstand der Seiten addiert. */
+     zum bestehenden Innenabstand der Seiten addiert. Da body selbst einen
+     dunklen Hintergrund hat, bleibt die Fläche hinter Uhrzeit/Statusleiste
+     immer dunkel, auch im "black-translucent" Standalone-Modus auf iOS. */
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
   padding-left: env(safe-area-inset-left, 0px);
   padding-right: env(safe-area-inset-right, 0px);
+}
+
+#root {
+  min-height: 100%;
+  background-color: var(--color-brand-bg);
 }
 
 /* Scrollbars global ausblenden (App-Feeling), Scrollen bleibt funktional */

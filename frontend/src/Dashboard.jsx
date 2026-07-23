@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import logo from './assets/logo.png';
+import { useAuth } from './AuthContext';
 
 export const AvatarIcon = ({ name }) => {
   return (
@@ -41,6 +42,7 @@ export const Header = ({
   routeBase = '',
   mode = 'live'
 }) => {
+  const { user, isFirebaseConfigured, signOut } = useAuth();
   const displayLabel = currentView === 'saison' ? 'Gesamt' : `Spieltag ${currentView}`;
   const ligaTo = routeBase || '/';
 
@@ -143,6 +145,21 @@ export const Header = ({
             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
           </svg>
         </NavLink>
+
+        {/* Abmelden Button (nur wenn Login aktiv & eingeloggt) */}
+        {isFirebaseConfigured && user && (
+          <button
+            onClick={signOut}
+            className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl w-12 h-12 flex-shrink-0 flex justify-center items-center text-[#8b92a5] hover:text-white hover:border-red-500 transition-all shadow-lg group"
+            title="Abmelden"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+          </button>
+        )}
       </div>
     </div>
   );
