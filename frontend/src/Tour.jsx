@@ -43,7 +43,7 @@ export const TOUR_STEPS = [
     selector: '[data-tour="optimal-team-button"]',
     title: 'Die optimale Elf',
     text: 'Tippe hier, um dir die stärkste mögliche Elf des Spieltags live anzuzeigen.',
-    simulateClick: true,
+    runAction: 'openOptimalTeam',
     scrollBlock: 'end'
   },
   {
@@ -51,7 +51,7 @@ export const TOUR_STEPS = [
     selector: '[data-tour="optimal-team-pitch"]',
     title: 'Die optimale Elf',
     text: 'Hier siehst du die stärkste mögliche Formation inklusive Gesamtpunkten und verbleibendem Budget.',
-    closeSelector: '[data-tour-close="optimal-team-modal"]'
+    runOnLeave: 'closeOptimalTeam'
   },
   {
     path: '/archiv',
@@ -70,33 +70,37 @@ export const TOUR_STEPS = [
     path: '/pokal',
     selector: '[data-round="Achtelfinale"]',
     title: 'Runde für Runde',
-    text: 'Auf dem Handy wechselst du per Tab durch die Runden. Tippe hier für das Achtelfinale.',
+    text: 'Auf dem Handy wechselst du per Tab durch die Runden - das zeigen wir dir jetzt automatisch.',
     simulateClick: true,
-    optional: true
+    optional: true,
+    autoAdvance: 1100
   },
   {
     path: '/pokal',
     selector: '[data-round="Viertelfinale"]',
     title: 'Viertelfinale',
-    text: 'Weiter geht\'s Richtung Finale - tippe hier fürs Viertelfinale.',
+    text: 'Weiter geht\'s Richtung Finale.',
     simulateClick: true,
-    optional: true
+    optional: true,
+    autoAdvance: 1100
   },
   {
     path: '/pokal',
     selector: '[data-round="Halbfinale"]',
     title: 'Halbfinale',
-    text: 'Fast geschafft - tippe hier fürs Halbfinale.',
+    text: 'Fast geschafft.',
     simulateClick: true,
-    optional: true
+    optional: true,
+    autoAdvance: 1100
   },
   {
     path: '/pokal',
     selector: '[data-round="Finale"]',
     title: 'Finale',
-    text: 'Und hier geht\'s zum großen Finale!',
+    text: 'Und hier ist das große Finale!',
     simulateClick: true,
-    optional: true
+    optional: true,
+    autoAdvance: 1400
   },
   {
     path: '/pokal',
@@ -129,6 +133,16 @@ export const TourProvider = ({ children }) => {
   const isActive = stepIndex >= 0;
   const navigate = useNavigate();
   const location = useLocation();
+  const actionsRef = useRef({});
+
+  const registerAction = useCallback((name, fn) => {
+    actionsRef.current[name] = fn;
+  }, []);
+
+  const runAction = useCallback((name) => {
+    const fn = actionsRef.current[name];
+    if (typeof fn === 'function') fn();
+  }, []);
 
   const start = useCallback(() => {
     setDynamicPaths({});
@@ -168,7 +182,7 @@ export const TourProvider = ({ children }) => {
     setStepIndex((i) => (i + 1 >= TOUR_STEPS.length ? -1 : i + 1));
   }, []);
 
-  const value = { isActive, stepIndex, step, start, stop, next, prev, skipUnreachable, captureHref, totalSteps: TOUR_STEPS.length };
+  const value = { isActive, stepIndex, step, start, stop, next, prev, skipUnreachable, captureHref, registerAction, runAction, totalSteps: TOUR_STEPS.length };
 
   return (
     <TourContext.Provider value={value}>
@@ -196,6 +210,7 @@ const TourOverlay = () => {
   const attemptsRef = useRef(0);
   const scrolledRef = useRef(false);
   const targetElRef = useRef(null);
+  const autoAdvanceRef = useRef(false);
 
   const step = tour?.step;
 
@@ -243,6 +258,20 @@ const TourOverlay = () => {
 
         const r = foundEl.getBoundingClientRect();
         setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
+
+        // Manche Schritte (z.B. Pokal-Runden-Tabs) sollen automatisch
+        // weitergehen, ohne dass man selbst tippen/bestätigen muss.
+        if (step.autoAdvance && !autoAdvanceRef.current) {
+          autoAdvanceRef.current = true;
+          setTimeout(() => {
+            if (cancelled) return;
+            if (step.simulateClick) {
+              const el = document.querySelector(step.selector) || foundEl;
+              if (el) el.click();
+            }
+            tour.next();
+          }, step.autoAdvance);
+        }
       } else if (attemptsRef.current < (step.optional ? OPTIONAL_MAX_ATTEMPTS : MAX_ATTEMPTS)) {
         attemptsRef.current += 1;
         setTimeout(locate, 100);
@@ -277,12 +306,14 @@ const TourOverlay = () => {
   const isSearching = Boolean(step.selector) && !rect && !notFound;
 
   const advance = () => {
-    if (step.simulateClick && targetElRef.current) {
-      targetElRef.current.click();
+    if (step.runAction) {
+      tour.runAction(step.runAction);
+    } else if (step.simulateClick) {
+      const el = document.querySelector(step.selector) || targetElRef.current;
+      if (el) el.click();
     }
-    if (step.closeSelector) {
-      const closeEl = document.querySelector(step.closeSelector);
-      if (closeEl) closeEl.click();
+    if (step.runOnLeave) {
+      tour.runAction(step.runOnLeave);
     }
     tour.next();
   };

@@ -4,12 +4,14 @@ import Dashboard from './Dashboard';
 import UserDetail from './UserDetail';
 import CompareView from './CompareView';
 import OptimalTeam from './OptimalTeam';
+import { useTour } from './Tour';
 
 // SeasonView kapselt eine komplette "Saison-Ansicht" (Dashboard + User-Detail + Vergleich)
 // und kann sowohl auf die LIVE-Daten (dataBase="") als auch auf ARCHIVIERTE Daten
 // (dataBase="/archive/...") zeigen. routeBase sorgt dafür, dass interne Links
 // (z.B. /user/:id) im richtigen Teilbaum bleiben ("" für live, "/archiv" fürs Archiv).
 const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
+  const tour = useTour();
   const [data, setData] = useState(null);
   const [latestMatchday, setLatestMatchday] = useState(null);
   const [historyIndex, setHistoryIndex] = useState({ matchdays: [] });
@@ -19,6 +21,14 @@ const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
   const [availableViews, setAvailableViews] = useState(['saison']);
 
   const [isOptimalTeamOpen, setIsOptimalTeamOpen] = useState(false);
+
+  // Der interaktiven Tour erlauben, das Optimale-Elf-Modal direkt zu
+  // steuern (robuster als eine simulierte Klick-Aktion auf den Button).
+  useEffect(() => {
+    if (!tour) return;
+    tour.registerAction('openOptimalTeam', () => setIsOptimalTeamOpen(true));
+    tour.registerAction('closeOptimalTeam', () => setIsOptimalTeamOpen(false));
+  }, [tour]);
 
   useEffect(() => {
     Promise.all([

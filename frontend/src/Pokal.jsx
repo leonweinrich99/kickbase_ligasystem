@@ -163,44 +163,48 @@ const Pokal = () => {
       {/* Header */}
       <div className="flex flex-col mb-4 sm:mb-8 border-b border-[#2a2e37] pb-4 sm:pb-6 gap-4">
 
-        {/* Logo & Title */}
-        <div className="flex items-center gap-3 sm:gap-6 min-w-0 w-full">
-          <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center p-0.5 sm:p-1 overflow-hidden flex-shrink-0">
-            <img src={logo} alt="Kickbase Liga Logo" className="w-full h-full object-contain" />
+        {/* Top Row: Logo, Title, Neuer-Pokalmodus-Badge (oben rechts, mobil) */}
+        <div className="flex justify-between items-start gap-2 w-full">
+          <div className="flex items-center gap-3 sm:gap-6 min-w-0 flex-1">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center p-0.5 sm:p-1 overflow-hidden flex-shrink-0">
+              <img src={logo} alt="Kickbase Liga Logo" className="w-full h-full object-contain" />
+            </div>
+            <div className="min-w-0 pr-1">
+              <div className="text-[9px] sm:text-[11px] font-bold tracking-wider text-[#8b5cf6] mb-1">SAISON 26/27</div>
+              <h1 className="text-[17px] sm:text-3xl font-black tracking-tight uppercase leading-[1.1] break-words">Pokal</h1>
+            </div>
           </div>
-          <div className="min-w-0 pr-1">
-            <div className="text-[9px] sm:text-[11px] font-bold tracking-wider text-[#8b5cf6] mb-1">SAISON 26/27</div>
-            <h1 className="text-[17px] sm:text-3xl font-black tracking-tight uppercase leading-[1.1] break-words">Pokal</h1>
-          </div>
+
+          <Link
+            to="/pokal-rules"
+            className="sm:hidden shrink-0 flex items-center gap-1.5 bg-[#1a1d24] border border-[#8b5cf6]/40 hover:border-[#8b5cf6] transition-colors rounded-full pl-2.5 pr-3 py-1.5 shadow-lg active:scale-95 group mt-1"
+          >
+            <span className="text-[7px] font-black uppercase text-white bg-[#8b5cf6] rounded-full px-1.5 py-0.5 tracking-widest leading-none">Neu</span>
+            <span className="text-[10px] font-bold text-gray-300 group-hover:text-white transition-colors whitespace-nowrap">Pokalmodus</span>
+          </Link>
         </div>
 
-        {/* Mobile Info Tile for Rules */}
-        <Link to="/pokal-rules" className="sm:hidden bg-[#1a1d24] border border-[#8b5cf6]/40 hover:border-[#8b5cf6] transition-colors rounded-xl h-12 flex items-center px-3 shadow-lg relative overflow-hidden active:scale-95 group">
-          <div className="absolute top-0 left-0 bottom-0 w-1 bg-[#8b5cf6]"></div>
-          <div className="flex flex-col justify-center ml-1">
-            <span className="text-[9px] font-black uppercase text-[#8b92a5] tracking-widest leading-none mb-1">Neuer Pokalmodus</span>
-            <span className="text-[11px] font-bold text-gray-200 tracking-wider leading-none group-hover:text-white transition-colors">Schau dir die Regeln an &rarr;</span>
+        {/* Zweite Zeile: Runden-Umschalter (mobil), auf gleicher Höhe wie der Spieltag-Wechsler in der Liga */}
+        <div className="flex xl:hidden w-full items-center gap-2 sm:gap-4">
+          <div ref={tabsRef} className="flex overflow-x-auto gap-2 no-scrollbar scroll-smooth h-12 items-center flex-1 bg-[#1a1d24] border border-[#2a2e37] rounded-xl px-2 shadow-lg">
+            {rounds.map(round => (
+              <button
+                key={round}
+                data-round={round}
+                onClick={() => handleRoundChange(round)}
+                className={`px-4 py-2 rounded-lg whitespace-nowrap text-xs font-bold transition-all flex-shrink-0 ${activeRound === round ? 'bg-white text-black' : 'text-[#8b92a5] hover:text-white'}`}
+              >
+                {round}
+              </button>
+            ))}
           </div>
-        </Link>
+        </div>
       </div>
 
-      {/* Mobile Bracket View (Tabs) */}
+      {/* Mobile Bracket View (Inhalt der Runde) */}
       <div data-tour="pokal-bracket" className="block xl:hidden -mx-4 pb-10 overflow-hidden">
-        <div ref={tabsRef} className="flex overflow-x-auto gap-3 pb-4 mb-4 no-scrollbar scroll-smooth px-4">
-          {rounds.map(round => (
-            <button
-              key={round}
-              data-round={round}
-              onClick={() => handleRoundChange(round)}
-              className={`px-5 py-2.5 rounded-full whitespace-nowrap text-xs font-bold transition-all flex-shrink-0 ${activeRound === round ? 'bg-white text-black' : 'bg-[#1a1d24] text-[#8b92a5] border border-[#2a2e37] hover:text-white'}`}
-            >
-              {round}
-            </button>
-          ))}
-        </div>
-
         <div 
-          className="mt-6 relative min-h-[400px] px-4"
+          className="mt-2 relative min-h-[400px] px-4"
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEndHandler}
