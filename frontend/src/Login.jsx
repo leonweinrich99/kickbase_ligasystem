@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from './AuthContext';
 import logo from './assets/logo.png';
+import Tutorial from './Tutorial';
 
 const GoogleIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24">
@@ -17,6 +18,7 @@ const Login = () => {
   const [submitting, setSubmitting] = useState(false);
   const [localError, setLocalError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -59,7 +61,18 @@ const Login = () => {
             <img src={logo} alt="Logo" className="w-full h-full object-contain" />
           </div>
           <div className="text-[10px] font-bold tracking-wider text-[#ff5c3e] mb-1">SAISON 26/27</div>
-          <h1 className="text-2xl font-black uppercase tracking-tight text-white">Ligasystem Login</h1>
+          <h1 className="text-2xl font-black uppercase tracking-tight text-white mb-4">Ligasystem Login</h1>
+          <button
+            onClick={() => setIsTutorialOpen(true)}
+            className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-yellow-500 border border-yellow-500/30 bg-yellow-500/10 px-4 py-2 rounded-xl hover:bg-yellow-500/20 transition-colors"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            App-Tutorial ansehen
+          </button>
         </div>
 
         <button
@@ -134,6 +147,8 @@ const Login = () => {
           </button>
         </div>
       </div>
+
+      <Tutorial isOpen={isTutorialOpen} onClose={() => setIsTutorialOpen(false)} />
     </div>
   );
 };

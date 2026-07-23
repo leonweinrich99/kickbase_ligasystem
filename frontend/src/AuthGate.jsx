@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from './AuthContext';
 import Login from './Login';
+import Tutorial from './Tutorial';
 
 const Spinner = () => (
   <div className="min-h-screen bg-[#0f1115]"></div>
@@ -8,6 +9,7 @@ const Spinner = () => (
 
 const PendingScreen = ({ status }) => {
   const { signOut, profile } = useAuth();
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const isRejected = status === 'rejected';
 
   return (
@@ -24,6 +26,26 @@ const PendingScreen = ({ status }) => {
             ? 'Dein Zugang wurde von einem Admin abgelehnt. Bei Fragen wende dich bitte direkt an den Admin.'
             : `Hallo ${profile?.displayName || ''}! Dein Account muss noch von einem Admin bestätigt werden, bevor du das Ligasystem sehen kannst.`}
         </p>
+
+        {!isRejected && (
+          <>
+            <p className="text-xs text-[#626978] mt-4 mb-4">
+              Nutze die Wartezeit doch, um dir schon mal anzuschauen, wie die App funktioniert:
+            </p>
+            <button
+              onClick={() => setIsTutorialOpen(true)}
+              className="w-full flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest text-yellow-500 border border-yellow-500/30 bg-yellow-500/10 px-4 py-3 rounded-xl hover:bg-yellow-500/20 transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              App-Tutorial ansehen
+            </button>
+          </>
+        )}
+
         <button
           onClick={signOut}
           className="mt-6 text-xs font-bold uppercase tracking-widest text-[#8b92a5] hover:text-white transition-colors"
@@ -31,6 +53,8 @@ const PendingScreen = ({ status }) => {
           Abmelden
         </button>
       </div>
+
+      <Tutorial isOpen={isTutorialOpen} onClose={() => setIsTutorialOpen(false)} />
     </div>
   );
 };

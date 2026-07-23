@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import Tutorial from './Tutorial';
 
 const MenuLink = ({ to, onClick, icon, label, color = '#8b92a5' }) => {
   const content = (
@@ -53,6 +54,14 @@ const ShieldIcon = (
   </svg>
 );
 
+const TutorialIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+  </svg>
+);
+
 const LogoutIcon = (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -63,6 +72,7 @@ const LogoutIcon = (
 
 const Account = () => {
   const { user, profile, isAdmin, isFirebaseConfigured, signOut } = useAuth();
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#0f1115] p-4 sm:p-10">
@@ -92,6 +102,7 @@ const Account = () => {
         )}
 
         <div className="flex flex-col gap-3 mb-8">
+          <MenuLink onClick={() => setIsTutorialOpen(true)} icon={TutorialIcon} label="App-Tutorial ansehen" color="#eab308" />
           <MenuLink to="/rules" icon={RulesIcon} label="Regelkatalog" color="#ff5c3e" />
           <MenuLink to="/pokal-rules" icon={TrophyIcon} label="Pokal-Regeln" color="#8b5cf6" />
           <MenuLink to="/archiv" icon={ArchiveIcon} label="Quali-Daten (Archiv)" color="#8b92a5" />
@@ -104,6 +115,8 @@ const Account = () => {
           <MenuLink onClick={signOut} icon={LogoutIcon} label="Abmelden" color="#ef4444" />
         )}
       </div>
+
+      <Tutorial isOpen={isTutorialOpen} onClose={() => setIsTutorialOpen(false)} />
     </div>
   );
 };
