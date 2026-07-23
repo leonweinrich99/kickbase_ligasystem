@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { useTour } from './Tour';
+import accountLogo from './assets/account_logo.png';
 
 const MenuLink = ({ to, onClick, icon, label, color = '#8b92a5' }) => {
   const content = (
@@ -77,9 +78,14 @@ const Account = () => {
   return (
     <div className="min-h-screen bg-[#0f1115] p-4 sm:p-10">
       <div className="max-w-lg mx-auto">
-        <div className="mb-8">
-          <div className="text-[10px] font-bold tracking-wider text-[#ff5c3e] mb-1">SAISON 26/27</div>
-          <h1 className="text-2xl sm:text-3xl font-black uppercase text-white">Account</h1>
+        <div className="flex items-center gap-3 sm:gap-6 mb-8">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center p-0.5 sm:p-1 overflow-hidden flex-shrink-0">
+            <img src={accountLogo} alt="Account Logo" className="w-full h-full object-contain" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-[9px] sm:text-[11px] font-bold tracking-wider text-[#ff5c3e] mb-1">SAISON 26/27</div>
+            <h1 className="text-[17px] sm:text-3xl font-black tracking-tight uppercase leading-[1.1]">Account</h1>
+          </div>
         </div>
 
         {isFirebaseConfigured && user && (
