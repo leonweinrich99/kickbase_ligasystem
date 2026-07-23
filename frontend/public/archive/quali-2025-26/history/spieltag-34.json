@@ -1,0 +1,345 @@
+{
+  "name": "QUALIFIKATIONSRUNDE",
+  "matchday": 34,
+  "participants": 29,
+  "timestamp": "2026-07-06T19:06:23.891Z",
+  "leagues": [
+    {
+      "name": "LIGA 1",
+      "color": "#3b82f6",
+      "users": [
+        {
+          "id": "3283685",
+          "rank": 1,
+          "name": "Justin",
+          "points": "10.537",
+          "pointsMatchday": "1.643",
+          "estimatedBudget": "0 €",
+          "isTrophy": true,
+          "trophyColor": "gold",
+          "status": ""
+        },
+        {
+          "id": "2926287",
+          "rank": 2,
+          "name": "Vinnie JR",
+          "points": "10.527",
+          "pointsMatchday": "1.687",
+          "estimatedBudget": "0 €",
+          "isTrophy": true,
+          "trophyColor": "silver",
+          "status": ""
+        },
+        {
+          "id": "3607127",
+          "rank": 3,
+          "name": "Blake",
+          "points": "10.459",
+          "pointsMatchday": "1.685",
+          "estimatedBudget": "0 €",
+          "isTrophy": true,
+          "trophyColor": "bronze",
+          "status": ""
+        },
+        {
+          "id": "3606931",
+          "rank": 4,
+          "name": "Esel",
+          "points": "10.276",
+          "pointsMatchday": "1.608",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3901400",
+          "rank": 5,
+          "name": "Mo6",
+          "points": "10.273",
+          "pointsMatchday": "1.416",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3397700",
+          "rank": 6,
+          "name": "Curl3z",
+          "points": "10.086",
+          "pointsMatchday": "884",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3639851",
+          "rank": 7,
+          "name": "DeinHomieEnobi",
+          "points": "9.818",
+          "pointsMatchday": "1.267",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "yellow"
+        },
+        {
+          "id": "3607082",
+          "rank": 8,
+          "name": "Leon Weinrich",
+          "points": "9.616",
+          "pointsMatchday": "1.227",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "red"
+        },
+        {
+          "id": "2582689",
+          "rank": 9,
+          "name": "Wat Mamba",
+          "points": "9.518",
+          "pointsMatchday": "742",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "red"
+        }
+      ]
+    },
+    {
+      "name": "LIGA 2",
+      "color": "#f97316",
+      "users": [
+        {
+          "id": "2934339",
+          "rank": 10,
+          "name": "leongarcon",
+          "points": "9.446",
+          "pointsMatchday": "1.583",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "green"
+        },
+        {
+          "id": "2651349",
+          "rank": 11,
+          "name": "JulianD47",
+          "points": "9.444",
+          "pointsMatchday": "1.313",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "green"
+        },
+        {
+          "id": "1630703",
+          "rank": 12,
+          "name": "Ansgar Trinkmann",
+          "points": "9.260",
+          "pointsMatchday": "1.306",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "yellow"
+        },
+        {
+          "id": "3906724",
+          "rank": 13,
+          "name": "J0tt",
+          "points": "9.257",
+          "pointsMatchday": "1.274",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3533606",
+          "rank": 14,
+          "name": "thep",
+          "points": "9.028",
+          "pointsMatchday": "858",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3905385",
+          "rank": 15,
+          "name": "magarac",
+          "points": "8.905",
+          "pointsMatchday": "1.310",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3779246",
+          "rank": 16,
+          "name": "AchtSieben",
+          "points": "8.242",
+          "pointsMatchday": "590",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "yellow"
+        },
+        {
+          "id": "3792325",
+          "rank": 17,
+          "name": "Stomping Tantrum",
+          "points": "8.152",
+          "pointsMatchday": "1.362",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "red"
+        },
+        {
+          "id": "2479430",
+          "rank": 18,
+          "name": "CarlCarlsenCarlsen",
+          "points": "8.150",
+          "pointsMatchday": "1.719",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "red"
+        }
+      ]
+    },
+    {
+      "name": "LIGA 3",
+      "color": "#22c55e",
+      "users": [
+        {
+          "id": "3650803",
+          "rank": 19,
+          "name": "franzi__j",
+          "points": "7.713",
+          "pointsMatchday": "1.042",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "green"
+        },
+        {
+          "id": "3905417",
+          "rank": 20,
+          "name": "Puliester",
+          "points": "7.449",
+          "pointsMatchday": "891",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "green"
+        },
+        {
+          "id": "3694149",
+          "rank": 21,
+          "name": "Flocke",
+          "points": "7.273",
+          "pointsMatchday": "1.340",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": "yellow"
+        },
+        {
+          "id": "3511512",
+          "rank": 22,
+          "name": "KönigMichi",
+          "points": "7.146",
+          "pointsMatchday": "819",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "2492332",
+          "rank": 23,
+          "name": "kushler",
+          "points": "6.860",
+          "pointsMatchday": "995",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3906287",
+          "rank": 24,
+          "name": "Marci",
+          "points": "6.792",
+          "pointsMatchday": "1.300",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3850715",
+          "rank": 25,
+          "name": "casper",
+          "points": "6.344",
+          "pointsMatchday": "1.753",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3682622",
+          "rank": 26,
+          "name": "Fynn",
+          "points": "5.890",
+          "pointsMatchday": "1.560",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "3646277",
+          "rank": 27,
+          "name": "Geißbock",
+          "points": "5.482",
+          "pointsMatchday": "1.104",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "1921179",
+          "rank": 28,
+          "name": "Baumi",
+          "points": "4.251",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        },
+        {
+          "id": "2934402",
+          "rank": 29,
+          "name": "Sebastian",
+          "points": "2.703",
+          "pointsMatchday": "0",
+          "estimatedBudget": "0 €",
+          "isTrophy": false,
+          "trophyColor": "",
+          "status": ""
+        }
+      ]
+    }
+  ]
+}

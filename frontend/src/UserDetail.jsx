@@ -23,7 +23,7 @@ const calculatePerformanceScore = (points, avg, opt, max) => {
   return Math.min(10.0, Math.max(1.0, parseFloat(score.toFixed(1))));
 };
 
-const UserDetail = () => {
+const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -44,14 +44,14 @@ const UserDetail = () => {
       try {
         // Parallelize initial fetches
         const [latestRes, indexRes] = await Promise.all([
-          fetch(`/data.json?t=${Date.now()}`),
-          fetch('/history/index.json')
+          fetch(`${dataBase}/data.json?t=${Date.now()}`),
+          fetch(`${dataBase}/history/index.json`)
         ]);
         
         const latestData = await latestRes.json();
         const indexData = await indexRes.json();
         
-        const allUsersFlat = latestData.leagues.flatMap(l => l.users.map(u => ({...u, leagueColor: l.color}))).sort((a,b) => a.rank - b.rank);
+        const allUsersFlat = latestData.leagues.flatMap(l => l.users.map(u => ({...u, leagueColor: l.color, leagueName: l.name}))).sort((a,b) => a.rank - b.rank);
         setAllUsers(allUsersFlat);
 
         const foundUser = allUsersFlat.find(user => user.id === id);
@@ -62,28 +62,30 @@ const UserDetail = () => {
 
         setUserData(foundUser);
 
-        const allUsersSorted = [...allUsersFlat].sort((a,b) => a.rank - b.rank);
-        const t9 = allUsersSorted.find(u => u.rank === 9);
-        const t10 = allUsersSorted.find(u => u.rank === 10);
-        const t18 = allUsersSorted.find(u => u.rank === 18);
-        const t19 = allUsersSorted.find(u => u.rank === 19);
-        const t27 = allUsersSorted.find(u => u.rank === 27);
-        const t28 = allUsersSorted.find(u => u.rank === 28);
+        if (mode === 'archive') {
+          const allUsersSorted = [...allUsersFlat].sort((a,b) => a.rank - b.rank);
+          const t9 = allUsersSorted.find(u => u.rank === 9);
+          const t10 = allUsersSorted.find(u => u.rank === 10);
+          const t18 = allUsersSorted.find(u => u.rank === 18);
+          const t19 = allUsersSorted.find(u => u.rank === 19);
+          const t27 = allUsersSorted.find(u => u.rank === 27);
+          const t28 = allUsersSorted.find(u => u.rank === 28);
 
-        setThresholds({
-          rank9: t9 ? parseInt(t9.points.replace(/\./g, '')) : null,
-          rank10: t10 ? parseInt(t10.points.replace(/\./g, '')) : null,
-          rank18: t18 ? parseInt(t18.points.replace(/\./g, '')) : null,
-          rank19: t19 ? parseInt(t19.points.replace(/\./g, '')) : null,
-          rank27: t27 ? parseInt(t27.points.replace(/\./g, '')) : null,
-          rank28: t28 ? parseInt(t28.points.replace(/\./g, '')) : null
-        });
+          setThresholds({
+            rank9: t9 ? parseInt(t9.points.replace(/\./g, '')) : null,
+            rank10: t10 ? parseInt(t10.points.replace(/\./g, '')) : null,
+            rank18: t18 ? parseInt(t18.points.replace(/\./g, '')) : null,
+            rank19: t19 ? parseInt(t19.points.replace(/\./g, '')) : null,
+            rank27: t27 ? parseInt(t27.points.replace(/\./g, '')) : null,
+            rank28: t28 ? parseInt(t28.points.replace(/\./g, '')) : null
+          });
+        }
 
         const matchdayList = (indexData.matchdays || []).sort((a, b) => a - b);
 
         const historyPromises = matchdayList.map(async (m) => {
           try {
-            const res = await fetch(`/history/spieltag-${m}.json`);
+            const res = await fetch(`${dataBase}/history/spieltag-${m}.json`);
             if (!res.ok) return null;
             const data = await res.json();
             
@@ -101,7 +103,7 @@ const UserDetail = () => {
             const averagePoints = allPoints.length ? Math.round(allPoints.reduce((a, b) => a + b, 0) / allPoints.length) : 0;
             const maxPoints = allPoints.length ? Math.max(...allPoints) : 0;
 
-            const optRes = await fetch(`/history/optimal-md-${m}-final.json`);
+            const optRes = await fetch(`${dataBase}/history/optimal-md-${m}-final.json`);
             let optimalPoints = 0;
             if (optRes.ok) {
               const optData = await optRes.json();
@@ -133,7 +135,7 @@ const UserDetail = () => {
             const latestAvg = latestPoints.length ? Math.round(latestPoints.reduce((a,b) => a+b, 0) / latestPoints.length) : 0;
             const latestMax = latestPoints.length ? Math.max(...latestPoints) : 0;
 
-            const optRes = await fetch(`/history/optimal-md-${latestData.matchday}-final.json`);
+            const optRes = await fetch(`${dataBase}/history/optimal-md-${latestData.matchday}-final.json`);
             let optimalPoints = 0;
             if (optRes.ok) {
               const optData = await optRes.json();
@@ -161,7 +163,7 @@ const UserDetail = () => {
     };
 
     fetchData();
-  }, [id]);
+  }, [id, dataBase, mode]);
 
   const historyWithScores = useMemo(() => {
     return history.map(h => ({
@@ -207,7 +209,7 @@ const UserDetail = () => {
       <div className="min-h-screen bg-[#0f1115] flex flex-col justify-center items-center gap-6">
         <div className="text-gray-400 text-lg font-bold">Spieler nicht gefunden</div>
         <button 
-          onClick={() => navigate('/')}
+          onClick={() => navigate(routeBase || '/')}
           className="bg-[#1a1d24] border border-[#2a2e37] px-6 py-3 rounded-xl text-gray-300 hover:text-white hover:border-[#ff5c3e] transition-all"
         >
           Zurück zur Übersicht
@@ -248,7 +250,7 @@ const UserDetail = () => {
                  <button
                    key={u.id}
                    onClick={() => {
-                     navigate(`/compare/${id}/${u.id}`);
+                     navigate(`${routeBase}/compare/${id}/${u.id}`);
                      setIsModalOpen(false);
                      setSearchQuery('');
                    }}
@@ -277,7 +279,7 @@ const UserDetail = () => {
         {/* Top bar on mobile (Back + Compare buttons) */}
         <div className="flex items-center justify-between w-full sm:w-auto">
             <button 
-              onClick={() => navigate('/')}
+              onClick={() => navigate(routeBase || '/')}
               className="group flex items-center gap-3 bg-[#1a1d24] border border-[#2a2e37] px-4 py-2 rounded-xl text-[#8b92a5] hover:text-white transition-all shrink-0"
             >
               <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
@@ -339,11 +341,15 @@ const UserDetail = () => {
 
       {/* Threshold Section */}
       <div className="grid grid-cols-1 gap-4 mb-6 sm:mb-8">
-        <ThresholdCard 
-          rank={userData.rank}
-          points={parseInt(userData.points.replace(/\./g, ''))}
-          thresholds={thresholds}
-        />
+        {mode === 'archive' ? (
+          <ThresholdCard 
+            rank={userData.rank}
+            points={parseInt(userData.points.replace(/\./g, ''))}
+            thresholds={thresholds}
+          />
+        ) : (
+          <LeagueBadgeCard userData={userData} />
+        )}
       </div>
 
       {/* Stats Grid */}
@@ -552,6 +558,23 @@ const UserDetail = () => {
           </ResponsiveContainer>
         </div>
       </div>
+    </div>
+  );
+};
+
+const LeagueBadgeCard = ({ userData }) => {
+  return (
+    <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-2xl px-4 py-3 flex items-center gap-4 shadow-sm relative overflow-hidden">
+      <div className="p-2 rounded-lg" style={{ backgroundColor: `${userData.leagueColor}1A`, color: userData.leagueColor }}>
+        <Users size={20} />
+      </div>
+      <div className="flex items-center gap-x-4 flex-1">
+        <span className="text-[10px] font-black px-1.5 py-0.5 rounded" style={{ backgroundColor: `${userData.leagueColor}33`, color: userData.leagueColor }}>
+          {userData.leagueName || 'LIGA'}
+        </span>
+        <span className="text-sm font-black text-gray-100">Platz {userData.rank}</span>
+      </div>
+      <div className="absolute right-0 top-0 bottom-0 w-1" style={{ backgroundColor: userData.leagueColor }}></div>
     </div>
   );
 };

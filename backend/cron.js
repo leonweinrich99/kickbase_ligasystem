@@ -1,7 +1,7 @@
 const cron = require('node-cron');
 const fs = require('fs');
 const path = require('path');
-const { fetchRawKickbaseData, transformKickbaseData } = require('./kickbase');
+const { fetchRawIndependentLeagues, transformIndependentLeagues } = require('./kickbase');
 const { fetchOptimalTeam } = require('./fetchOptimalTeam');
 
 const DATA_FILE = path.join(__dirname, 'data.json');
@@ -10,11 +10,11 @@ const HISTORY_DIR = path.join(__dirname, '../frontend/public/history');
 async function triggerFetch() {
     console.log("Triggering scheduled Kickbase refresh...");
     
-    // 1. Rohdaten abrufen
-    const rawResults = await fetchRawKickbaseData();
+    // 1. Rohdaten abrufen (3 unabhängige Ligen, EIN Account)
+    const rawResults = await fetchRawIndependentLeagues();
     
     // 2. Matchday bestimmen
-    let currentMatchday = 28;
+    let currentMatchday = 1;
     for (const res of rawResults) {
         if (res && res.matchday > currentMatchday) currentMatchday = res.matchday;
     }
@@ -34,7 +34,7 @@ async function triggerFetch() {
     }
 
     // 4. Daten transformieren
-    const data = transformKickbaseData(rawResults, previousData);
+    const data = transformIndependentLeagues(rawResults, previousData);
     
     // 5. Speichern
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));

@@ -1,0 +1,234 @@
+import React, { useEffect, useState } from 'react';
+import { Routes, Route, Link } from 'react-router-dom';
+import Dashboard from './Dashboard';
+import UserDetail from './UserDetail';
+import CompareView from './CompareView';
+import OptimalTeam from './OptimalTeam';
+import { useAuth } from './AuthContext';
+
+// SeasonView kapselt eine komplette "Saison-Ansicht" (Dashboard + User-Detail + Vergleich)
+// und kann sowohl auf die LIVE-Daten (dataBase="") als auch auf ARCHIVIERTE Daten
+// (dataBase="/archive/...") zeigen. routeBase sorgt dafür, dass interne Links
+// (z.B. /user/:id) im richtigen Teilbaum bleiben ("" für live, "/archiv" fürs Archiv).
+const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
+  const { isAdmin, isFirebaseConfigured, signOut } = useAuth();
+  const [data, setData] = useState(null);
+  const [latestMatchday, setLatestMatchday] = useState(null);
+  const [historyIndex, setHistoryIndex] = useState({ matchdays: [] });
+  const [prevRanks, setPrevRanks] = useState({});
+
+  const [currentViewIndex, setCurrentViewIndex] = useState(0);
+  const [availableViews, setAvailableViews] = useState(['saison']);
+
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [updateStatus, setUpdateStatus] = useState(null);
+
+  const [isOptimalTeamOpen, setIsOptimalTeamOpen] = useState(false);
+
+  const handleManualUpdate = async () => {
+    const password = window.prompt("Bitte Admin-Passwort eingeben:");
+    if (!password) return;
+
+    setIsUpdating(true);
+    setUpdateStatus("Update wird gestartet...");
+
+    try {
+      const res = await fetch(`/api/cron?secret=${encodeURIComponent(password)}`);
+      if (res.ok) {
+        setUpdateStatus("✅ Update erfolgreich angestoßen! Der Workflow läuft.");
+        setTimeout(() => setUpdateStatus(null), 5000);
+      } else {
+        const errData = await res.json();
+        setUpdateStatus(`❌ Fehler: ${errData.error || "Unbefugt"}`);
+        setTimeout(() => setUpdateStatus(null), 5000);
+      }
+    } catch (err) {
+      setUpdateStatus("❌ Netzwerkfehler beim Update-Aufruf.");
+      setTimeout(() => setUpdateStatus(null), 5000);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  useEffect(() => {
+    Promise.all([
+      fetch(`${dataBase}/history/index.json`).then(res => res.json()).catch(() => ({ matchdays: [] })),
+      fetch(`${dataBase}/data.json`).then(res => res.json())
+    ])
+      .then(([index, latestData]) => {
+        setHistoryIndex(index);
+        const mDay = Number(latestData.matchday);
+        setData(latestData);
+        setLatestMatchday(mDay);
+
+        const historyDays = (index.matchdays || []).map(Number);
+        const views = [
+          ...historyDays.filter(m => m !== mDay).sort((a, b) => a - b),
+          mDay,
+          'saison'
+        ];
+        const uniqueViews = [...new Set(views)];
+        setAvailableViews(uniqueViews);
+        setCurrentViewIndex(uniqueViews.length - 1);
+
+        const mDays = [...uniqueViews.filter(v => typeof v === 'number')].sort((a, b) => b - a);
+        const prevMDay = mDays.length > 1 ? mDays[1] : (mDays.length === 1 && mDays[0] !== mDay ? mDays[0] : null);
+
+        if (prevMDay) {
+          fetch(`${dataBase}/history/spieltag-${prevMDay}.json`)
+            .then(res => res.json())
+            .then(prevData => {
+              const rankMap = {};
+              prevData.leagues.forEach(l => {
+                l.users.forEach(u => {
+                  rankMap[u.id] = u.rank;
+                });
+              });
+              setPrevRanks(rankMap);
+            })
+            .catch(err => console.error("Error loading prev ranks:", err));
+        }
+      })
+      .catch(err => console.error("Initial load error:", err));
+  }, [dataBase]);
+
+  useEffect(() => {
+    if (availableViews.length === 0) return;
+
+    const view = availableViews[currentViewIndex];
+
+    if (view === 'saison') {
+      fetch(`${dataBase}/data.json?t=${Date.now()}`)
+        .then(res => res.json())
+        .then(d => setData(d));
+    } else if (typeof view === 'number') {
+      const path = `${dataBase}/history/spieltag-${view}.json?t=${Date.now()}`;
+
+      fetch(path)
+        .then(res => {
+          if (!res.ok) throw new Error(`History file not found: ${view}`);
+          return res.json();
+        })
+        .then(d => setData(d))
+        .catch(err => {
+          console.error("Matchday fetch error:", err);
+          fetch(`${dataBase}/data.json?t=${Date.now()}`)
+            .then(res => res.json())
+            .then(d => setData(d));
+        });
+    }
+  }, [currentViewIndex, availableViews, latestMatchday, dataBase]);
+
+  const navigate = (dir) => {
+    setCurrentViewIndex(prev => {
+      let next = prev + dir;
+      if (next < 0) next = availableViews.length - 1;
+      if (next >= availableViews.length) next = 0;
+      return next;
+    });
+  };
+
+  const formatTimestamp = (ts) => {
+    if (!ts) return "Unbekannt";
+    const date = new Date(ts);
+    return date.toLocaleString('de-DE', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    }) + " Uhr";
+  };
+
+  if (!data) return <div className="min-h-screen bg-[#0f1115] flex justify-center items-center text-gray-500 font-bold tracking-widest uppercase text-xs animate-pulse">Lade Kickbase System...</div>;
+
+  return (
+    <div className="min-h-screen bg-[#0f1115] p-4 sm:p-10 font-sans select-none flex flex-col">
+      <div className="flex-1">
+        <Routes>
+          <Route index element={
+            <Dashboard
+              data={data}
+              currentView={availableViews[currentViewIndex]}
+              onNext={() => navigate(1)}
+              onPrev={() => navigate(-1)}
+              prevRanks={prevRanks}
+              mode={mode}
+              routeBase={routeBase}
+            />
+          } />
+          <Route path="user/:id" element={<UserDetail dataBase={dataBase} routeBase={routeBase} mode={mode} />} />
+          <Route path="compare/:id1/:id2" element={<CompareView dataBase={dataBase} routeBase={routeBase} />} />
+        </Routes>
+      </div>
+
+      <footer className="mt-20 border-t border-[#2a2e37] pt-8 pb-10 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="flex items-center gap-3 opacity-60">
+          <span className={`w-1.5 h-1.5 rounded-full ${mode === 'live' ? 'bg-green-500 animate-pulse' : 'bg-[#8b92a5]'}`}></span>
+          <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-[#8b92a5]">Status: {mode === 'live' ? 'Live' : 'Archiv'}</span>
+          <span className="text-[#2a2e37]">|</span>
+          <span className="text-[10px] sm:text-xs text-[#626978] font-medium uppercase font-mono">
+            Updated: {formatTimestamp(data.timestamp)}
+          </span>
+        </div>
+
+        <button
+          onClick={() => setIsOptimalTeamOpen(true)}
+          className="flex items-center gap-2 bg-[#1a1d24] text-[#ff5c3e] border border-[#ff5c3e]/30 px-5 py-2.5 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest hover:bg-[#ff5c3e] hover:text-white transition-all shadow-[0_0_15px_rgba(255,92,62,0.1)] hover:shadow-[0_0_25px_rgba(255,92,62,0.3)] active:scale-95 group order-first md:order-none"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:fill-white group-hover:scale-110 transition-transform"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          Die optimale Elf
+        </button>
+
+        <div className="flex items-center gap-6 text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-[#555] opacity-60">
+          {updateStatus ? (
+            <span className="text-[#ff5c3e] transition-all animate-pulse">{updateStatus}</span>
+          ) : (
+            <>
+              {mode === 'live' ? (
+                <button
+                  onClick={handleManualUpdate}
+                  disabled={isUpdating}
+                  className="hover:text-[#ff5c3e] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isUpdating ? 'Läuft...' : 'Update'}
+                </button>
+              ) : (
+                <Link to="/" className="hover:text-[#ff5c3e] transition-colors">Zurück zum Ligasystem</Link>
+              )}
+              <span className="hidden sm:inline opacity-30">•</span>
+              {mode === 'live' && (
+                <>
+                  <Link to="/archiv" className="hover:text-[#ff5c3e] transition-colors">Archiv: Qualigruppe 25/26</Link>
+                  <span className="hidden sm:inline opacity-30">•</span>
+                </>
+              )}
+              <span>© 2024 Kickbase Liga System</span>
+              <span className="hidden sm:inline opacity-30">•</span>
+              <span>Push via GitHub Actions</span>
+              {isFirebaseConfigured && (
+                <>
+                  {isAdmin && (
+                    <>
+                      <span className="hidden sm:inline opacity-30">•</span>
+                      <Link to="/admin" className="hover:text-purple-400 transition-colors">Admin Panel</Link>
+                    </>
+                  )}
+                  <span className="hidden sm:inline opacity-30">•</span>
+                  <button onClick={signOut} className="hover:text-[#ff5c3e] transition-colors">Abmelden</button>
+                </>
+              )}
+            </>
+          )}
+        </div>
+      </footer>
+
+      <OptimalTeam
+        isOpen={isOptimalTeamOpen}
+        onClose={() => setIsOptimalTeamOpen(false)}
+        availableMatchdays={availableViews}
+        currentGlobalMatchday={latestMatchday}
+        dataBase={dataBase}
+      />
+    </div>
+  );
+};
+
+export default SeasonView;

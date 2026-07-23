@@ -1,19 +1,19 @@
 const fs = require('fs');
 const path = require('path');
-const { fetchRawKickbaseData, transformKickbaseData } = require('../kickbase');
+const { fetchRawIndependentLeagues, transformIndependentLeagues } = require('../kickbase');
 
 async function run() {
-    console.log("Starting Kickbase data fetch...");
+    console.log("Starting Kickbase data fetch (unabhängiges Ligasystem)...");
     
     const dataPath = path.join(__dirname, '../../frontend/public/data.json');
     const historyDir = path.join(__dirname, '../../frontend/public/history');
     const indexPropsPath = path.join(historyDir, 'index.json');
     
-    // 1. Rohdaten abrufen
-    const rawResults = await fetchRawKickbaseData();
-    
+    // 1. Rohdaten abrufen (3 unabhängige Ligen, EIN Account)
+    const rawResults = await fetchRawIndependentLeagues();
+
     // 2. Matchday bestimmen (aus den Rohdaten extrahieren)
-    let currentMatchday = 28;
+    let currentMatchday = 1;
     for (const res of rawResults) {
         if (res && res.matchday > currentMatchday) currentMatchday = res.matchday;
     }
@@ -41,11 +41,15 @@ async function run() {
     }
 
     // 4. Daten transformieren
-    const data = transformKickbaseData(rawResults, previousData);
+    const data = transformIndependentLeagues(rawResults, previousData);
     
     if (data.error) {
         console.error("Error transforming data:", data.error);
         process.exit(1);
+    }
+
+    if (data.errors) {
+        console.warn("Warnungen beim Abruf einzelner Ligen:", JSON.stringify(data.errors, null, 2));
     }
 
     // 5. Neueste Daten in data.json speichern

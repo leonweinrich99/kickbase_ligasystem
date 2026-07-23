@@ -216,5 +216,127 @@ const fetchKickbaseData = async (previousData = null) => {
     return transformKickbaseData(rawData, previousData);
 };
 
-module.exports = { fetchKickbaseData, fetchRawKickbaseData, transformKickbaseData };
+// =====================================================================================
+// NEUES LIGASYSTEM (Saison 26/27): 3 komplett unabhängige Ligen aus EINEM Kickbase-Account.
+// Jede Liga hat ihr eigenes Ranking, es findet KEIN Vergleich/Zusammenführen über die
+// Ligen hinweg mehr statt (anders als in der Qualifikationsrunde).
+// =====================================================================================
+
+const LEAGUE_DEFS = [
+    { key: 'LIGA1', name: process.env.KICKBASE_LEAGUE_1_NAME || 'Liga 1', displayName: 'LIGA 1', color: '#3b82f6' },
+    { key: 'LIGA2', name: process.env.KICKBASE_LEAGUE_2_NAME || 'Liga 2', displayName: 'LIGA 2', color: '#f97316' },
+    { key: 'LIGA3', name: process.env.KICKBASE_LEAGUE_3_NAME || 'Liga 3', displayName: 'LIGA 3', color: '#22c55e' }
+];
+
+const fetchRawIndependentLeagues = async () => {
+    const email = process.env.KICKBASE_EMAIL;
+    const password = process.env.KICKBASE_PASS;
+
+    if (!email || !password) {
+        console.error("KICKBASE_EMAIL / KICKBASE_PASS fehlen. Bitte den neuen API-Account in den ENV-Variablen hinterlegen.");
+        return [];
+    }
+
+    const tasks = LEAGUE_DEFS.map(def => fetchSingleLeagueData(email, password, def.name));
+    const results = await Promise.all(tasks);
+    return results.map((res, idx) => ({ ...res, def: LEAGUE_DEFS[idx] }));
+};
+
+const transformIndependentLeagues = (rawResults, previousData = null) => {
+    try {
+        const formatPoints = (sp) => (sp || 0).toLocaleString('de-DE');
+        const formatMoney = (val) => (val || 0).toLocaleString('de-DE') + ' €';
+
+        const prevLeagueMaps = {};
+        if (previousData && previousData.leagues) {
+            previousData.leagues.forEach(l => {
+                const map = new Map();
+                l.users.forEach(u => map.set(u.id, parseInt((u.points || '0').replace(/\./g, '')) || 0));
+                prevLeagueMaps[l.name] = map;
+            });
+        }
+
+        let matchday = 1;
+        let participantsCount = 0;
+        const errors = [];
+
+        const leagues = rawResults.map(res => {
+            const def = res.def;
+            if (!res || res.error) {
+                errors.push({ league: def.displayName, error: res?.error || 'Unbekannter Fehler' });
+                return { name: def.displayName, color: def.color, users: [], error: res?.error || 'Keine Daten' };
+            }
+
+            if (res.matchday > matchday) matchday = res.matchday;
+
+            const users = (res.users || []).filter(u => (u.sp || 0) >= 0);
+            users.sort((a, b) => (b.sp || 0) - (a.sp || 0));
+            participantsCount += users.length;
+
+            const prevMap = prevLeagueMaps[def.displayName] || new Map();
+            const n = users.length;
+
+            const transformedUsers = users.map((u, index) => {
+                const rank = index + 1;
+                let isTrophy = rank <= 3;
+                let trophyColor = '';
+                if (rank === 1) trophyColor = 'gold';
+                else if (rank === 2) trophyColor = 'silver';
+                else if (rank === 3) trophyColor = 'bronze';
+
+                // Auf-/Abstiegszonen INNERHALB der eigenen Liga (Platz 1-2 = Aufstieg, letzte 2 = Abstieg)
+                let status = '';
+                if (rank <= 2) status = 'green';
+                else if (rank === 3) status = 'yellow';
+                else if (rank >= n - 1) status = 'red';
+                else if (rank === n - 2) status = 'yellow';
+
+                const currentPoints = u.sp || 0;
+                const prevPoints = prevMap.get(u.i) || 0;
+                const matchdayPoints = currentPoints - prevPoints;
+
+                return {
+                    id: u.i,
+                    rank,
+                    name: u.n,
+                    points: formatPoints(currentPoints),
+                    pointsMatchday: formatPoints(matchdayPoints),
+                    estimatedBudget: formatMoney(u.tv || 0),
+                    isTrophy,
+                    trophyColor,
+                    status
+                };
+            });
+
+            return { name: def.displayName, color: def.color, users: transformedUsers };
+        });
+
+        return {
+            name: "LIGASYSTEM",
+            matchday,
+            participants: participantsCount,
+            timestamp: new Date().toISOString(),
+            leagues,
+            errors: errors.length ? errors : undefined
+        };
+    } catch (e) {
+        console.error("Error transforming independent league data:", e.message);
+        return { error: e.message };
+    }
+};
+
+const fetchIndependentLeaguesData = async (previousData = null) => {
+    const rawData = await fetchRawIndependentLeagues();
+    return transformIndependentLeagues(rawData, previousData);
+};
+
+module.exports = {
+    fetchKickbaseData,
+    fetchRawKickbaseData,
+    transformKickbaseData,
+    fetchRawIndependentLeagues,
+    transformIndependentLeagues,
+    fetchIndependentLeaguesData,
+    LEAGUE_DEFS
+};
 

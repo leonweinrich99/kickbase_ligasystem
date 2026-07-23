@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // WICHTIG: Trage hier die E-Mail-Adresse der Person ein, die das System einrichtet.
+    // Nur mit GENAU dieser (verifizierten!) E-Mail-Adresse darf sich beim allerersten
+    // Login direkt selbst als Admin freischalten. Google-Login liefert eine verifizierte
+    // E-Mail automatisch - bei Email/Passwort-Login muss die Adresse erst per
+    // Firebase "E-Mail-Verifizierung" bestätigt werden, sonst greift dieser Bootstrap nicht.
+    function isVerifiedInitialAdmin() {
+      return isSignedIn() &&
+        request.auth.token.email == "admin@example.com" &&
+        request.auth.token.email_verified == true;
+    }
+
+    match /users/{userId} {
+      // Jede*r darf das eigene Profil lesen, Admins dürfen alle lesen.
+      allow read: if isSelf(userId) || isAdmin();
+
+      // Anlegen des eigenen Profils beim ersten Login:
+      // - Normalfall: IMMER als 'pending' / 'user' (kein Selbst-Freischalten möglich).
+      // - Ausnahme: die exakte, verifizierte Initial-Admin-Mail darf sich direkt
+      //   als 'approved' / 'admin' anlegen (einmaliger Bootstrap fürs Setup).
+      allow create: if isSelf(userId) && (
+        (request.resource.data.status == 'pending' && request.resource.data.role == 'user') ||
+        (isVerifiedInitialAdmin() && request.resource.data.status == 'approved' && request.resource.data.role == 'admin')
+      );
+
+      // Normale Nutzer dürfen NICHTS an ihrem Profil ändern (kein Selbst-Freischalten
+      // im Nachhinein). Nur Admins dürfen status/role von Nutzern ändern.
+      allow update: if isAdmin();
+
+      allow delete: if isAdmin();
+    }
+  }
+}

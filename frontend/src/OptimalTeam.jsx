@@ -51,7 +51,7 @@ const PositionRow = ({ players, positionName }) => {
   );
 };
 
-const OptimalTeam = ({ isOpen, onClose, availableMatchdays, currentGlobalMatchday }) => {
+const OptimalTeam = ({ isOpen, onClose, availableMatchdays, currentGlobalMatchday, dataBase = '' }) => {
   // Start with the latest matchday, but ensure it's a number
   const initial = availableMatchdays.filter(m => typeof m === 'number').sort((a,b) => b-a)[0] || currentGlobalMatchday;
   const [matchday, setMatchday] = useState(initial);
@@ -67,7 +67,7 @@ const OptimalTeam = ({ isOpen, onClose, availableMatchdays, currentGlobalMatchda
     setError(null);
     
     // Vermeide Caching
-    fetch(`/history/optimal-md-${matchday}-final.json?t=${Date.now()}`)
+    fetch(`${dataBase}/history/optimal-md-${matchday}-final.json?t=${Date.now()}`)
       .then(res => {
         if (!res.ok) {
           throw new Error('Keine optimalen Daten für diesen Spieltag gefunden.');
@@ -84,7 +84,7 @@ const OptimalTeam = ({ isOpen, onClose, availableMatchdays, currentGlobalMatchda
         setData(null);
         setLoading(false);
       });
-  }, [matchday, isOpen]);
+  }, [matchday, isOpen, dataBase]);
 
   // Sync initial matchday when modal opens
   useEffect(() => {

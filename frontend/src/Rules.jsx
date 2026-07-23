@@ -168,6 +168,64 @@ const Rules = () => {
         </section>
 
         <section>
+          <SectionTitle title="Einsatz & Gewinn" />
+          <RuleCard
+            color="green"
+            title="Startgeld"
+            text="Jede*r zahlende Teilnehmer*in überweist 5 € in den gemeinsamen Preispool. Frist: bis Donnerstag, 13.08. (1 Tag vor Start der Vorbereitungsphase)."
+            icon={(props) => (
+              <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" /><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" /><path d="M12 18V6" />
+              </svg>
+            )}
+          />
+          <RuleCard
+            color="orange"
+            title="Preispool"
+            text="Bei 26 zahlenden Manager*innen stehen insgesamt 130 € Preisgeld zur Verfügung, aufgeteilt nach Liga. Die Verteilung gilt unter der Voraussetzung, dass alle 26 Personen ihren Einsatz überweisen."
+            icon={(props) => (
+              <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4" /><path d="M4 6v12c0 1.1.9 2 2 2h14v-4" /><path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
+              </svg>
+            )}
+          >
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="bg-[#0f1115] border border-[#2a2e37] rounded-xl p-3 text-center">
+                <div className="text-[10px] font-black uppercase tracking-widest text-blue-400 mb-2">Liga 1</div>
+                <div className="text-xs text-gray-300 space-y-1">
+                  <div>🥇 25 €</div><div>🥈 18 €</div><div>🥉 12 €</div>
+                </div>
+                <div className="text-[10px] text-[#626978] mt-2 font-bold">= 55 €</div>
+              </div>
+              <div className="bg-[#0f1115] border border-[#2a2e37] rounded-xl p-3 text-center">
+                <div className="text-[10px] font-black uppercase tracking-widest text-orange-400 mb-2">Liga 2</div>
+                <div className="text-xs text-gray-300 space-y-1">
+                  <div>🥇 20 €</div><div>🥈 15 €</div><div>🥉 8 €</div>
+                </div>
+                <div className="text-[10px] text-[#626978] mt-2 font-bold">= 43 €</div>
+              </div>
+              <div className="bg-[#0f1115] border border-[#2a2e37] rounded-xl p-3 text-center">
+                <div className="text-[10px] font-black uppercase tracking-widest text-green-400 mb-2">Liga 3</div>
+                <div className="text-xs text-gray-300 space-y-1">
+                  <div>🥇 15 €</div><div>🥈 10 €</div><div>🥉 7 €</div>
+                </div>
+                <div className="text-[10px] text-[#626978] mt-2 font-bold">= 32 €</div>
+              </div>
+            </div>
+          </RuleCard>
+          <RuleCard
+            color="red"
+            title="Sonderregel: Spiel ohne Einsatz"
+            text="Wer nicht um Geld mitspielt, zahlt die 5 € nicht ein und kann dementsprechend auch kein Preisgeld gewinnen. Erreicht diese Person dennoch einen Treppchenplatz, wird das Preisgeld an den nächsten Platz dahinter ausgezahlt."
+            icon={(props) => (
+              <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" /><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+              </svg>
+            )}
+          />
+        </section>
+
+        <section>
           <SectionTitle title="Aufstieg & Abstieg" />
           <RuleCard 
             color="green" 

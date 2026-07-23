@@ -23,7 +23,7 @@ const parsePoints = (val) => {
     return parseInt(val.toString().replace(/\./g, '').replace(/[^0-9]/g, '')) || 0;
 };
 
-const CompareView = () => {
+const CompareView = ({ dataBase = '', routeBase = '' }) => {
   const { id1, id2 } = useParams();
   const navigate = useNavigate();
 
@@ -38,8 +38,8 @@ const CompareView = () => {
       setLoading(true);
       try {
         const [latestRes, indexRes] = await Promise.all([
-          fetch(`/data.json?t=${Date.now()}`),
-          fetch('/history/index.json')
+          fetch(`${dataBase}/data.json?t=${Date.now()}`),
+          fetch(`${dataBase}/history/index.json`)
         ]);
         
         const latestData = await latestRes.json();
@@ -60,7 +60,7 @@ const CompareView = () => {
 
         const historyPromises = matchdayList.map(async (m) => {
           try {
-            const res = await fetch(`/history/spieltag-${m}.json`);
+            const res = await fetch(`${dataBase}/history/spieltag-${m}.json`);
             if (!res.ok) return null;
             const data = await res.json();
             
@@ -82,7 +82,7 @@ const CompareView = () => {
             const averagePoints = allPoints.length ? Math.round(allPoints.reduce((a, b) => a + b, 0) / allPoints.length) : 0;
             const maxPoints = allPoints.length ? Math.max(...allPoints) : 0;
 
-            const optRes = await fetch(`/history/optimal-md-${m}-final.json`);
+            const optRes = await fetch(`${dataBase}/history/optimal-md-${m}-final.json`);
             let optimalPoints = 0;
             if (optRes.ok) {
               const optData = await optRes.json();
@@ -115,7 +115,7 @@ const CompareView = () => {
             const latestAvg = latestPoints.length ? Math.round(latestPoints.reduce((a,b) => a+b, 0) / latestPoints.length) : 0;
             const latestMax = latestPoints.length ? Math.max(...latestPoints) : 0;
 
-            const optRes = await fetch(`/history/optimal-md-${latestData.matchday}-final.json`);
+            const optRes = await fetch(`${dataBase}/history/optimal-md-${latestData.matchday}-final.json`);
             let latestOptimal = 0;
             if (optRes.ok) {
               const optData = await optRes.json();
@@ -198,7 +198,7 @@ const CompareView = () => {
       <div className="min-h-screen bg-[#0f1115] flex flex-col justify-center items-center gap-6">
         <div className="text-gray-400 text-lg font-bold">Spieler nicht gefunden</div>
         <button 
-          onClick={() => navigate('/')}
+          onClick={() => navigate(routeBase || '/')}
           className="bg-[#1a1d24] border border-[#2a2e37] px-6 py-3 rounded-xl text-gray-300 hover:text-white hover:border-[#ff5c3e] transition-all"
         >
           Zurück zur Übersicht
@@ -213,7 +213,7 @@ const CompareView = () => {
       {/* Back Button */}
       <div className="mb-8">
         <button 
-          onClick={() => navigate(`/user/${id1}`)}
+          onClick={() => navigate(`${routeBase}/user/${id1}`)}
           className="group flex items-center gap-3 bg-[#1a1d24] border border-[#2a2e37] px-4 py-2 rounded-xl text-[#8b92a5] hover:text-white transition-all w-fit"
         >
           <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />

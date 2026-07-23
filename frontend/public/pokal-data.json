@@ -1,51 +1,277 @@
 {
   "roundOf32Left": [
-    { "id": "m1", "p1": "Spieler 1", "p2": "Spieler 2", "score1": 0, "score2": 0, "winner": null },
-    { "id": "m2", "p1": "Spieler 3", "p2": "Spieler 4", "score1": 0, "score2": 0, "winner": null },
-    { "id": "m3", "p1": "Spieler 5", "p2": "Spieler 6", "score1": 0, "score2": 0, "winner": null },
-    { "id": "m4", "p1": "Spieler 7", "p2": "Spieler 8", "score1": 0, "score2": 0, "winner": null },
-    { "id": "m5", "p1": "Spieler 9", "p2": "Spieler 10", "score1": 0, "score2": 0, "winner": null },
-    { "id": "m6", "p1": "Spieler 11", "p2": "Spieler 12", "score1": 0, "score2": 0, "winner": null },
-    { "id": "m7", "p1": "Spieler 13", "p2": "Spieler 14", "score1": 0, "score2": 0, "winner": null },
-    { "id": "m8", "p1": "Spieler 15", "p2": "Spieler 16", "score1": 0, "score2": 0, "winner": null }
+    {
+      "id": "m1",
+      "p1": "Justin",
+      "p2": "Freilos",
+      "score1": null,
+      "score2": null,
+      "winner": 1,
+      "isBye": true
+    },
+    {
+      "id": "m2",
+      "p1": "Esel",
+      "p2": "Sebastian",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    },
+    {
+      "id": "m3",
+      "p1": "Mo6",
+      "p2": "Baumi",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    },
+    {
+      "id": "m4",
+      "p1": "Curl3z",
+      "p2": "Geißbock",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    },
+    {
+      "id": "m5",
+      "p1": "DeinHomieEnobi",
+      "p2": "Fynn",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    },
+    {
+      "id": "m6",
+      "p1": "Vinnie JR",
+      "p2": "Freilos",
+      "score1": null,
+      "score2": null,
+      "winner": 1,
+      "isBye": true
+    },
+    {
+      "id": "m7",
+      "p1": "Leon Weinrich",
+      "p2": "casper",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    },
+    {
+      "id": "m8",
+      "p1": "Wat Mamba",
+      "p2": "Marci",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    }
   ],
   "roundOf32Right": [
-    { "id": "m9", "p1": "Spieler 17", "p2": "Spieler 18", "score1": 0, "score2": 0, "winner": null },
-    { "id": "m10", "p1": "Spieler 19", "p2": "Spieler 20", "score1": 0, "score2": 0, "winner": null },
-    { "id": "m11", "p1": "Spieler 21", "p2": "Spieler 22", "score1": 0, "score2": 0, "winner": null },
-    { "id": "m12", "p1": "Spieler 23", "p2": "Spieler 24", "score1": 0, "score2": 0, "winner": null },
-    { "id": "m13", "p1": "Spieler 25", "p2": "Spieler 26", "score1": 0, "score2": 0, "winner": null },
-    { "id": "m14", "p1": "Spieler 27", "p2": "Spieler 28", "score1": 0, "score2": 0, "winner": null },
-    { "id": "m15", "p1": "Spieler 29", "p2": "Spieler 30", "score1": 0, "score2": 0, "winner": null },
-    { "id": "m16", "p1": "Spieler 31", "p2": "Spieler 32", "score1": 0, "score2": 0, "winner": null }
+    {
+      "id": "m9",
+      "p1": "leongarcon",
+      "p2": "kushler",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    },
+    {
+      "id": "m10",
+      "p1": "JulianD47",
+      "p2": "KönigMichi",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    },
+    {
+      "id": "m11",
+      "p1": "Blake",
+      "p2": "Freilos",
+      "score1": null,
+      "score2": null,
+      "winner": 1,
+      "isBye": true
+    },
+    {
+      "id": "m12",
+      "p1": "Ansgar Trinkmann",
+      "p2": "Flocke",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    },
+    {
+      "id": "m13",
+      "p1": "J0tt",
+      "p2": "Puliester",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    },
+    {
+      "id": "m14",
+      "p1": "thep",
+      "p2": "franzi__j",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    },
+    {
+      "id": "m15",
+      "p1": "magarac",
+      "p2": "CarlCarlsenCarlsen",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    },
+    {
+      "id": "m16",
+      "p1": "AchtSieben",
+      "p2": "Stomping Tantrum",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    }
   ],
   "roundOf16Left": [
-    { "id": "m17", "p1": "Sieger SF1", "p2": "Sieger SF2", "score1": 0, "score2": 0, "winner": null },
-    { "id": "m18", "p1": "Sieger SF3", "p2": "Sieger SF4", "score1": 0, "score2": 0, "winner": null },
-    { "id": "m19", "p1": "Sieger SF5", "p2": "Sieger SF6", "score1": 0, "score2": 0, "winner": null },
-    { "id": "m20", "p1": "Sieger SF7", "p2": "Sieger SF8", "score1": 0, "score2": 0, "winner": null }
+    {
+      "id": "m17",
+      "p1": "Justin",
+      "p2": "Sieger SF2",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    },
+    {
+      "id": "m18",
+      "p1": "Sieger SF3",
+      "p2": "Sieger SF4",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    },
+    {
+      "id": "m19",
+      "p1": "Sieger SF5",
+      "p2": "Vinnie JR",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    },
+    {
+      "id": "m20",
+      "p1": "Sieger SF7",
+      "p2": "Sieger SF8",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    }
   ],
   "roundOf16Right": [
-    { "id": "m21", "p1": "Sieger SF9", "p2": "Sieger SF10", "score1": 0, "score2": 0, "winner": null },
-    { "id": "m22", "p1": "Sieger SF11", "p2": "Sieger SF12", "score1": 0, "score2": 0, "winner": null },
-    { "id": "m23", "p1": "Sieger SF13", "p2": "Sieger SF14", "score1": 0, "score2": 0, "winner": null },
-    { "id": "m24", "p1": "Sieger SF15", "p2": "Sieger SF16", "score1": 0, "score2": 0, "winner": null }
+    {
+      "id": "m21",
+      "p1": "Sieger SF9",
+      "p2": "Sieger SF10",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    },
+    {
+      "id": "m22",
+      "p1": "Blake",
+      "p2": "Sieger SF12",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    },
+    {
+      "id": "m23",
+      "p1": "Sieger SF13",
+      "p2": "Sieger SF14",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    },
+    {
+      "id": "m24",
+      "p1": "Sieger SF15",
+      "p2": "Sieger SF16",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    }
   ],
   "quarterFinalsLeft": [
-    { "id": "m25", "p1": "Sieger AF1", "p2": "Sieger AF2", "score1": 0, "score2": 0, "winner": null },
-    { "id": "m26", "p1": "Sieger AF3", "p2": "Sieger AF4", "score1": 0, "score2": 0, "winner": null }
+    {
+      "id": "m25",
+      "p1": "Sieger AF1",
+      "p2": "Sieger AF2",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    },
+    {
+      "id": "m26",
+      "p1": "Sieger AF3",
+      "p2": "Sieger AF4",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    }
   ],
   "quarterFinalsRight": [
-    { "id": "m27", "p1": "Sieger AF5", "p2": "Sieger AF6", "score1": 0, "score2": 0, "winner": null },
-    { "id": "m28", "p1": "Sieger AF7", "p2": "Sieger AF8", "score1": 0, "score2": 0, "winner": null }
+    {
+      "id": "m27",
+      "p1": "Sieger AF5",
+      "p2": "Sieger AF6",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    },
+    {
+      "id": "m28",
+      "p1": "Sieger AF7",
+      "p2": "Sieger AF8",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    }
   ],
   "semiFinalsLeft": [
-    { "id": "m29", "p1": "Sieger VF1", "p2": "Sieger VF2", "score1": 0, "score2": 0, "winner": null }
+    {
+      "id": "m29",
+      "p1": "Sieger VF1",
+      "p2": "Sieger VF2",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    }
   ],
   "semiFinalsRight": [
-    { "id": "m30", "p1": "Sieger VF3", "p2": "Sieger VF4", "score1": 0, "score2": 0, "winner": null }
+    {
+      "id": "m30",
+      "p1": "Sieger VF3",
+      "p2": "Sieger VF4",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    }
   ],
   "final": [
-    { "id": "m31", "p1": "Sieger HF1", "p2": "Sieger HF2", "score1": 0, "score2": 0, "winner": null }
-  ]
+    {
+      "id": "m31",
+      "p1": "Sieger HF1",
+      "p2": "Sieger HF2",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
+    }
+  ],
+  "meta": {
+    "generatedAt": "2026-07-23T11:13:01.970Z",
+    "participants": 29,
+    "byes": 3,
+    "seedSource": "Qualifikationsrunde 25/26 (Gesamtwertung)"
+  }
 }
