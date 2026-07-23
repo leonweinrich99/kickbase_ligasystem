@@ -8,21 +8,25 @@ import { useLocation, useNavigate } from 'react-router-dom';
 // captureHrefAs: merkt sich den href des gefundenen Elements unter diesem Key.
 // simulateClick: löst beim Weitergehen einen ECHTEN Klick auf dem Element aus
 //   (z.B. um ein Modal wirklich zu öffnen, nicht nur zu markieren).
+//
+// Die Liga-Schritte laufen bewusst über /archiv (Qualifikationsrunde 25/26),
+// weil dort echte, reichhaltige Statistiken vorhanden sind - im neuen Live-
+// Modus stehen aktuell nur Platzhalter-Nullen, das wäre für die Tour witzlos.
 export const TOUR_STEPS = [
   {
-    path: '/',
+    path: '/archiv',
     selector: null,
     title: 'Willkommen! 👋',
-    text: 'Diese kurze Tour zeigt dir direkt in der echten App, wo du was findest. Tippe auf die markierten Bereiche, um weiterzugehen.'
+    text: 'Diese kurze Tour zeigt dir direkt in der echten App, wo du was findest. Tippe auf die markierten Bereiche, um weiterzugehen. (Zur Anschauung nutzen wir hier die Daten der Qualifikationsrunde 25/26.)'
   },
   {
-    path: '/',
+    path: '/archiv',
     selector: '[data-tour="matchday-switcher"]',
     title: 'Spieltag wechseln',
     text: 'Mit den Pfeilen wechselst du zwischen der Gesamtwertung und einzelnen Spieltagen. Tippe hier, um weiterzumachen.'
   },
   {
-    path: '/',
+    path: '/archiv',
     selector: '[data-tour="user-row"]',
     title: 'Spielerdetails',
     text: 'Tippe auf einen Namen für Punkteverlauf & Formkurve - schauen wir uns das gleich mal live an.',
@@ -35,20 +39,20 @@ export const TOUR_STEPS = [
     text: 'Gesamtpunkte, Schnitt pro Spieltag, bester Spieltag und Performance Index - darunter findest du außerdem Charts zu Platzierungsverlauf und Formkurve.'
   },
   {
-    path: '/',
+    path: '/archiv',
     selector: '[data-tour="optimal-team-button"]',
     title: 'Die optimale Elf',
     text: 'Tippe hier, um dir die stärkste mögliche Elf des Spieltags live anzuzeigen.',
     simulateClick: true
   },
   {
-    path: '/',
+    path: '/archiv',
     selector: '[data-tour="optimal-team-pitch"]',
     title: 'Die optimale Elf',
     text: 'Hier siehst du die stärkste mögliche Formation inklusive Gesamtpunkten und verbleibendem Budget.'
   },
   {
-    path: '/',
+    path: '/archiv',
     selector: '[data-tour="tab-pokal"]',
     title: 'Zum Pokal',
     text: 'Tippe auf "Pokal" in der Tabbar, um weiterzugehen.'
@@ -78,6 +82,8 @@ export const TOUR_STEPS = [
     text: 'Das war\'s schon. Viel Erfolg in deiner Liga!'
   }
 ];
+
+const MAX_ATTEMPTS = 70; // ~7s, Archiv-Seiten laden mehrere History-Dateien
 
 const TourContext = createContext(null);
 
@@ -122,7 +128,11 @@ export const TourProvider = ({ children }) => {
     setStepIndex((i) => Math.max(0, i - 1));
   }, []);
 
-  const value = { isActive, stepIndex, step, start, stop, next, prev, captureHref, totalSteps: TOUR_STEPS.length };
+  const skipUnreachable = useCallback(() => {
+    setStepIndex((i) => (i + 1 >= TOUR_STEPS.length ? -1 : i + 1));
+  }, []);
+
+  const value = { isActive, stepIndex, step, start, stop, next, prev, skipUnreachable, captureHref, totalSteps: TOUR_STEPS.length };
 
   return (
     <TourContext.Provider value={value}>
@@ -134,9 +144,19 @@ export const TourProvider = ({ children }) => {
 
 export const useTour = () => useContext(TourContext);
 
+// Sichere Grenzen ermitteln: oben = Safe-Area (Notch), unten = Oberkante der Tabbar
+const getSafeBounds = () => {
+  const bodyStyle = window.getComputedStyle(document.body);
+  const safeTop = parseFloat(bodyStyle.paddingTop) || 0;
+  const tabBarEl = document.querySelector('[data-tabbar]');
+  const safeBottom = tabBarEl ? tabBarEl.getBoundingClientRect().top : window.innerHeight;
+  return { safeTop, safeBottom };
+};
+
 const TourOverlay = () => {
   const tour = useContext(TourContext);
   const [rect, setRect] = useState(null);
+  const [notFound, setNotFound] = useState(false);
   const attemptsRef = useRef(0);
   const scrolledRef = useRef(false);
   const targetElRef = useRef(null);
@@ -171,21 +191,27 @@ const TourOverlay = () => {
           if (href) tour.captureHref(step.captureHrefAs, href);
         }
 
+        const isFixed = window.getComputedStyle(foundEl).position === 'fixed' || Boolean(foundEl.closest('[data-tabbar]'));
+
         if (!scrolledRef.current) {
           scrolledRef.current = true;
-          foundEl.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
-          setTimeout(() => {
-            if (cancelled) return;
-            const r2 = foundEl.getBoundingClientRect();
-            setRect({ top: r2.top, left: r2.left, width: r2.width, height: r2.height });
-          }, 400);
+          if (!isFixed) {
+            foundEl.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+            setTimeout(() => {
+              if (cancelled) return;
+              const r2 = foundEl.getBoundingClientRect();
+              setRect({ top: r2.top, left: r2.left, width: r2.width, height: r2.height });
+            }, 400);
+          }
         }
 
         const r = foundEl.getBoundingClientRect();
         setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
-      } else if (attemptsRef.current < 50) {
+      } else if (attemptsRef.current < MAX_ATTEMPTS) {
         attemptsRef.current += 1;
         setTimeout(locate, 100);
+      } else {
+        setNotFound(true);
       }
     };
 
@@ -208,8 +234,7 @@ const TourOverlay = () => {
   const pad = 8;
   const gap = 20;
   const hasSpotlight = Boolean(step.selector) && Boolean(rect);
-  const isWaitingForTarget = Boolean(step.selector) && !rect;
-  const tooltipWidth = 320;
+  const isSearching = Boolean(step.selector) && !rect && !notFound;
 
   const advance = () => {
     if (step.simulateClick && targetElRef.current) {
@@ -218,43 +243,65 @@ const TourOverlay = () => {
     tour.next();
   };
 
+  const skip = () => {
+    setNotFound(false);
+    tour.skipUnreachable();
+  };
+
   const absorbClick = (e) => e.stopPropagation();
 
-  // Sichere Grenzen ermitteln: oben = Safe-Area (Notch), unten = Oberkante der Tabbar
-  const bodyStyle = typeof window !== 'undefined' ? window.getComputedStyle(document.body) : null;
-  const safeTop = bodyStyle ? parseFloat(bodyStyle.paddingTop) || 0 : 0;
-  const tabBarEl = typeof document !== 'undefined' ? document.querySelector('[data-tabbar]') : null;
-  const safeBottomLimit = tabBarEl ? tabBarEl.getBoundingClientRect().top : window.innerHeight;
+  const { safeTop, safeBottom } = getSafeBounds();
+  const tooltipWidth = 320;
+  const safeMargin = 16;
 
   // Tooltip-Position bestimmen: bevorzugt unter/über dem Element (mit Abstand,
   // damit es sich NIE mit dem markierten Bereich überschneidet), horizontal
   // am Element ausgerichtet statt starr mittig auf dem Screen, und niemals
-  // in der Notch- bzw. Tabbar-Zone.
-  let tooltipStyle = { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
+  // in der Notch- bzw. Tabbar-Zone. Reicht der Platz weder oben noch unten
+  // (z.B. bei sehr großen markierten Bereichen), wird das Tooltip stattdessen
+  // fest oberhalb der Tabbar "angedockt" statt irgendwo zu überlappen.
+  let tooltipStyle;
   if (rect) {
     const viewportW = window.innerWidth;
-    const spaceBelow = safeBottomLimit - (rect.top + rect.height + pad);
-    const spaceAbove = rect.top - pad - safeTop;
-    const estimatedTooltipHeight = 200;
+    const spaceBelow = safeBottom - (rect.top + rect.height + pad) - gap;
+    const spaceAbove = rect.top - pad - safeTop - gap;
+    const estimatedTooltipHeight = 190;
 
     const centerX = rect.left + rect.width / 2;
     const clampedLeft = Math.min(Math.max(centerX, tooltipWidth / 2 + 12), viewportW - tooltipWidth / 2 - 12);
 
-    if (spaceBelow >= estimatedTooltipHeight || spaceBelow >= spaceAbove) {
+    if (spaceBelow >= estimatedTooltipHeight) {
       tooltipStyle = {
         top: rect.top + rect.height + pad + gap,
         left: clampedLeft,
         transform: 'translateX(-50%)',
-        maxHeight: Math.max(140, spaceBelow - gap)
+        maxHeight: Math.max(120, spaceBelow)
       };
-    } else {
+    } else if (spaceAbove >= estimatedTooltipHeight) {
       tooltipStyle = {
-        top: Math.max(safeTop + 16, rect.top - pad - gap),
+        top: rect.top - pad - gap,
         left: clampedLeft,
         transform: 'translate(-50%, -100%)',
-        maxHeight: Math.max(140, spaceAbove - gap)
+        maxHeight: Math.max(120, spaceAbove)
+      };
+    } else {
+      // Weder oben noch unten genug Platz -> fest über der Tabbar andocken
+      tooltipStyle = {
+        top: safeBottom - safeMargin,
+        left: Math.min(Math.max(viewportW / 2, tooltipWidth / 2 + 12), viewportW - tooltipWidth / 2 - 12),
+        transform: 'translate(-50%, -100%)',
+        maxHeight: Math.max(120, safeBottom - safeTop - safeMargin * 2)
       };
     }
+  } else {
+    // Zentrierte Karte (Intro/Outro/Suche), aber innerhalb der Safe-Area geclampt
+    const midY = safeTop + (safeBottom - safeTop) / 2;
+    tooltipStyle = {
+      top: midY,
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      maxHeight: Math.max(160, safeBottom - safeTop - safeMargin * 2)
+    };
   }
 
   return (
@@ -301,47 +348,65 @@ const TourOverlay = () => {
         <div className="absolute inset-0 bg-black/45" onClick={absorbClick}></div>
       )}
 
-      {/* Tooltip */}
-      {!isWaitingForTarget && (
-        <div
-          className="absolute overflow-y-auto bg-[#1a1d24] border border-[#2a2e37] rounded-2xl shadow-2xl p-5 pointer-events-auto"
-          style={{ ...tooltipStyle, width: tooltipWidth, maxWidth: '85vw' }}
+      {/* Tooltip / Such-Status */}
+      <div
+        className="absolute overflow-y-auto bg-[#1a1d24] border border-[#2a2e37] rounded-2xl shadow-2xl p-5 pointer-events-auto"
+        style={{ ...tooltipStyle, width: tooltipWidth, maxWidth: '85vw' }}
+      >
+        <button
+          onClick={tour.stop}
+          className="absolute top-3 right-3 text-[#8b92a5] hover:text-white transition-colors"
+          aria-label="Tour beenden"
         >
-          <button
-            onClick={tour.stop}
-            className="absolute top-3 right-3 text-[#8b92a5] hover:text-white transition-colors"
-            aria-label="Tour beenden"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
 
-          <div className="text-[9px] font-black uppercase tracking-widest text-[#ff5c3e] mb-2">
-            Schritt {tour.stepIndex + 1} / {tour.totalSteps}
+        {isSearching ? (
+          <div className="flex flex-col items-center text-center py-2">
+            <div className="w-6 h-6 border-2 border-[#ff5c3e] border-t-transparent rounded-full animate-spin mb-3"></div>
+            <p className="text-xs text-[#8b92a5]">Lade Bereich...</p>
           </div>
-          <h3 className="text-sm font-black uppercase text-white mb-2 pr-4">{step.title}</h3>
-          <p className="text-xs text-[#8b92a5] leading-relaxed mb-4">{step.text}</p>
-
-          <div className="flex items-center gap-2">
-            {tour.stepIndex > 0 && (
-              <button
-                onClick={tour.prev}
-                className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] hover:text-white transition-colors px-3 py-2"
-              >
-                Zurück
-              </button>
-            )}
+        ) : notFound ? (
+          <>
+            <h3 className="text-sm font-black uppercase text-white mb-2 pr-4">Hoppla</h3>
+            <p className="text-xs text-[#8b92a5] leading-relaxed mb-4">Dieser Bereich konnte gerade nicht gefunden werden. Wir machen einfach weiter.</p>
             <button
-              onClick={advance}
-              className="ml-auto text-[10px] font-black uppercase tracking-widest text-white bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 transition-colors px-4 py-2 rounded-lg"
+              onClick={skip}
+              className="w-full text-[10px] font-black uppercase tracking-widest text-white bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 transition-colors px-4 py-2 rounded-lg"
             >
-              {tour.stepIndex === tour.totalSteps - 1 ? 'Fertig' : 'Weiter'}
+              Weiter
             </button>
-          </div>
-        </div>
-      )}
+          </>
+        ) : (
+          <>
+            <div className="text-[9px] font-black uppercase tracking-widest text-[#ff5c3e] mb-2">
+              Schritt {tour.stepIndex + 1} / {tour.totalSteps}
+            </div>
+            <h3 className="text-sm font-black uppercase text-white mb-2 pr-4">{step.title}</h3>
+            <p className="text-xs text-[#8b92a5] leading-relaxed mb-4">{step.text}</p>
+
+            <div className="flex items-center gap-2">
+              {tour.stepIndex > 0 && (
+                <button
+                  onClick={tour.prev}
+                  className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] hover:text-white transition-colors px-3 py-2"
+                >
+                  Zurück
+                </button>
+              )}
+              <button
+                onClick={advance}
+                className="ml-auto text-[10px] font-black uppercase tracking-widest text-white bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 transition-colors px-4 py-2 rounded-lg"
+              >
+                {tour.stepIndex === tour.totalSteps - 1 ? 'Fertig' : 'Weiter'}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 };

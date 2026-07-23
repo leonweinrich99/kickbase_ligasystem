@@ -2,6 +2,7 @@ import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import ligaLogo from './assets/logo.png';
 import pokalLogo from './assets/pokal_logo.png';
+import accountLogo from './assets/account_logo.png';
 
 const LigaIcon = ({ active }) => (
   <img
@@ -22,10 +23,12 @@ const PokalIcon = ({ active }) => (
 );
 
 const AccountIcon = ({ active }) => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="8" r="4" fill={active ? 'currentColor' : 'none'}></circle>
-    <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" fill={active ? 'currentColor' : 'none'}></path>
-  </svg>
+  <img
+    src={accountLogo}
+    alt="Account"
+    className="w-7 h-7 object-contain transition-all duration-200"
+    style={active ? {} : { filter: 'grayscale(1)', opacity: 0.5 }}
+  />
 );
 
 const TABS = [
