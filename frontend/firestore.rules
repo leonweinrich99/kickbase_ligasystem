@@ -23,7 +23,7 @@ service cloud.firestore {
     // Firebase "E-Mail-Verifizierung" bestätigt werden, sonst greift dieser Bootstrap nicht.
     function isVerifiedInitialAdmin() {
       return isSignedIn() &&
-        request.auth.token.email == "admin@example.com" &&
+        request.auth.token.email == "weinrich99@gmail.com" &&
         request.auth.token.email_verified == true;
     }
 
