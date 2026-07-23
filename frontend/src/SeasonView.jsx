@@ -139,6 +139,20 @@ const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
             Admin Panel
           </Link>
         )}
+
+        {mode === 'live' && (
+          <Link
+            to="/archiv"
+            className="flex items-center gap-2 bg-[#1a1d24] text-[#8b92a5] border border-[#2a2e37] px-5 py-2.5 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest hover:text-white hover:border-[#8b92a5] transition-all active:scale-95 group"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform">
+              <path d="M21 8v13H3V8"></path>
+              <path d="M1 3h22v5H1z"></path>
+              <path d="M10 12h4"></path>
+            </svg>
+            Quali-Daten
+          </Link>
+        )}
       </footer>
 
       {mode === 'archive' && (
