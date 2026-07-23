@@ -52,6 +52,14 @@ async function run() {
         console.warn("Warnungen beim Abruf einzelner Ligen:", JSON.stringify(data.errors, null, 2));
     }
 
+    // Sicherheitsnetz: Wenn ALLE Ligen fehlgeschlagen sind (z.B. weil noch die alten
+    // Kickbase-Zugangsdaten hinterlegt sind), NICHT die bestehenden Daten mit einem
+    // leeren Fehlerzustand überschreiben. Bestehende data.json/Snapshots bleiben erhalten.
+    if (data.errors && data.errors.length === data.leagues.length) {
+        console.error("Alle Ligen konnten nicht geladen werden - bestehende data.json wird NICHT überschrieben.");
+        process.exit(0);
+    }
+
     // 5. Neueste Daten in data.json speichern
     if (!fs.existsSync(path.dirname(dataPath))) {
         fs.mkdirSync(path.dirname(dataPath), { recursive: true });

@@ -35,7 +35,13 @@ async function triggerFetch() {
 
     // 4. Daten transformieren
     const data = transformIndependentLeagues(rawResults, previousData);
-    
+
+    // Sicherheitsnetz: nicht überschreiben, wenn ALLE Ligen fehlgeschlagen sind
+    if (data.errors && data.errors.length === data.leagues.length) {
+        console.error("Alle Ligen konnten nicht geladen werden - bestehende Daten bleiben unangetastet.");
+        return;
+    }
+
     // 5. Speichern
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
     console.log("League data successfully saved to data.json");
