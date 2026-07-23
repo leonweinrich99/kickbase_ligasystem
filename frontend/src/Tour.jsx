@@ -273,21 +273,32 @@ const TourOverlay = () => {
         if (!scrolledRef.current) {
           scrolledRef.current = true;
 
-          // Manche Bereiche (z.B. der Pokal-Baum am Desktop) liegen in einem
-          // eigenen horizontal scrollbaren Container, der standardmäßig auf
-          // die Mitte des Baums (Finale) zentriert ist. Das reicht ein
-          // normaler vertikaler Scroll nicht ab - hier zusätzlich horizontal
-          // korrigieren, falls das Element seitlich außerhalb des sichtbaren
-          // Bereichs liegt.
-          const r0 = foundEl.getBoundingClientRect();
-          if (r0.left < 0 || r0.right > window.innerWidth) {
-            foundEl.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'auto' });
-          }
+          // Kurze Verzögerung, bevor Position gemessen/gescrollt wird: manche
+          // Bereiche haben eine Eintritts-Animation (z.B. Framer Motion beim
+          // Pokal-Rundenwechsel, die mit einem Transform startet und erst zu
+          // x:0 animiert). Würden wir sofort messen, könnten wir mitten in
+          // dieser Animation eine falsche (verschobene) Position erwischen.
+          setTimeout(() => {
+            if (cancelled) return;
 
-          if (!isFixed && !step.noAutoScroll) {
-            animateScrollTo(foundEl, step.scrollBlock || 'center', () => finalize(foundEl));
-            return;
-          }
+            // Manche Bereiche (z.B. der Pokal-Baum am Desktop) liegen in einem
+            // eigenen horizontal scrollbaren Container, der standardmäßig auf
+            // die Mitte des Baums (Finale) zentriert ist. Das reicht ein
+            // normaler vertikaler Scroll nicht ab - hier zusätzlich horizontal
+            // korrigieren, falls das Element seitlich außerhalb des sichtbaren
+            // Bereichs liegt.
+            const r0 = foundEl.getBoundingClientRect();
+            if (r0.left < 0 || r0.right > window.innerWidth) {
+              foundEl.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'auto' });
+            }
+
+            if (!isFixed && !step.noAutoScroll) {
+              animateScrollTo(foundEl, step.scrollBlock || 'center', () => finalize(foundEl));
+            } else {
+              finalize(foundEl);
+            }
+          }, 220);
+          return;
         }
 
         finalize(foundEl);
