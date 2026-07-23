@@ -59,7 +59,7 @@ const TabBar = () => {
               <span className={active ? 'text-[#ff5c3e]' : 'text-[#8b92a5]'}>
                 {React.createElement(tab.Icon, { active })}
               </span>
-              <span className={`text-[9px] font-black uppercase tracking-widest ${active ? 'text-white' : 'text-[#8b92a5]'}`}>
+              <span className={`text-[9px] font-semibold uppercase tracking-widest ${active ? 'text-white' : 'text-[#8b92a5]'}`}>
                 {tab.label}
               </span>
             </Link>

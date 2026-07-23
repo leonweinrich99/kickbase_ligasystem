@@ -43,7 +43,6 @@ export const TOUR_STEPS = [
     selector: '[data-tour="optimal-team-button"]',
     title: 'Die optimale Elf',
     text: 'Tippe hier, um dir die stärkste mögliche Elf des Spieltags live anzuzeigen.',
-    runAction: 'openOptimalTeam',
     scrollBlock: 'end'
   },
   {
@@ -51,7 +50,7 @@ export const TOUR_STEPS = [
     selector: '[data-tour="optimal-team-pitch"]',
     title: 'Die optimale Elf',
     text: 'Hier siehst du die stärkste mögliche Formation inklusive Gesamtpunkten und verbleibendem Budget.',
-    runOnLeave: 'closeOptimalTeam'
+    forceOptimalTeamOpen: true
   },
   {
     path: '/archiv',
@@ -133,16 +132,6 @@ export const TourProvider = ({ children }) => {
   const isActive = stepIndex >= 0;
   const navigate = useNavigate();
   const location = useLocation();
-  const actionsRef = useRef({});
-
-  const registerAction = useCallback((name, fn) => {
-    actionsRef.current[name] = fn;
-  }, []);
-
-  const runAction = useCallback((name) => {
-    const fn = actionsRef.current[name];
-    if (typeof fn === 'function') fn();
-  }, []);
 
   const start = useCallback(() => {
     setDynamicPaths({});
@@ -182,7 +171,11 @@ export const TourProvider = ({ children }) => {
     setStepIndex((i) => (i + 1 >= TOUR_STEPS.length ? -1 : i + 1));
   }, []);
 
-  const value = { isActive, stepIndex, step, start, stop, next, prev, skipUnreachable, captureHref, registerAction, runAction, totalSteps: TOUR_STEPS.length };
+  // Manche Features (z.B. das Optimale-Elf-Modal) werden nicht per simuliertem
+  // Klick geöffnet, sondern rein deklarativ: der jeweilige Screen liest
+  // tour.step?.forceOptimalTeamOpen selbst aus und öffnet/schließt sich
+  // dadurch automatisch mit dem Tour-Schritt - kein Timing-Risiko mehr.
+  const value = { isActive, stepIndex, step, start, stop, next, prev, skipUnreachable, captureHref, totalSteps: TOUR_STEPS.length };
 
   return (
     <TourContext.Provider value={value}>
@@ -306,14 +299,9 @@ const TourOverlay = () => {
   const isSearching = Boolean(step.selector) && !rect && !notFound;
 
   const advance = () => {
-    if (step.runAction) {
-      tour.runAction(step.runAction);
-    } else if (step.simulateClick) {
+    if (step.simulateClick) {
       const el = document.querySelector(step.selector) || targetElRef.current;
       if (el) el.click();
-    }
-    if (step.runOnLeave) {
-      tour.runAction(step.runOnLeave);
     }
     tour.next();
   };

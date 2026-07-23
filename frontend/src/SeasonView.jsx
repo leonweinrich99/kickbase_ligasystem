@@ -21,14 +21,10 @@ const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
   const [availableViews, setAvailableViews] = useState(['saison']);
 
   const [isOptimalTeamOpen, setIsOptimalTeamOpen] = useState(false);
-
-  // Der interaktiven Tour erlauben, das Optimale-Elf-Modal direkt zu
-  // steuern (robuster als eine simulierte Klick-Aktion auf den Button).
-  useEffect(() => {
-    if (!tour) return;
-    tour.registerAction('openOptimalTeam', () => setIsOptimalTeamOpen(true));
-    tour.registerAction('closeOptimalTeam', () => setIsOptimalTeamOpen(false));
-  }, [tour]);
+  // Die Tour kann das Modal rein deklarativ "erzwingen" (z.B. während des
+  // Optimale-Elf-Schritts) - kein simulierter Klick, kein Timing-Risiko.
+  const isOptimalTeamForced = Boolean(tour?.step?.forceOptimalTeamOpen);
+  const optimalTeamVisible = isOptimalTeamOpen || isOptimalTeamForced;
 
   useEffect(() => {
     Promise.all([
@@ -150,7 +146,7 @@ const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
       )}
 
       <OptimalTeam
-        isOpen={isOptimalTeamOpen}
+        isOpen={optimalTeamVisible}
         onClose={() => setIsOptimalTeamOpen(false)}
         availableMatchdays={availableViews}
         currentGlobalMatchday={latestMatchday}
