@@ -1,23 +1,24 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
+import ligaLogo from './assets/logo.png';
+import pokalLogo from './assets/pokal_logo.png';
 
 const LigaIcon = ({ active }) => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill={active ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 9.5 12 3l9 6.5"></path>
-    <path d="M5 8.5V21h14V8.5"></path>
-    <path d="M10 21v-6h4v6"></path>
-  </svg>
+  <img
+    src={ligaLogo}
+    alt="Liga"
+    className="w-7 h-7 object-contain transition-all duration-200"
+    style={active ? {} : { filter: 'grayscale(1)', opacity: 0.5 }}
+  />
 );
 
 const PokalIcon = ({ active }) => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-    <path d="M4 22h16"></path>
-    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
-    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
-    <path d={active ? 'M18 2H6v7c0 3.31 2.69 6 6 6s6-2.69 6-6V2z' : 'M18 2H6v7c0 3.31 2.69 6 6 6s6-2.69 6-6V2z'} fill={active ? 'currentColor' : 'none'}></path>
-  </svg>
+  <img
+    src={pokalLogo}
+    alt="Pokal"
+    className="w-7 h-7 object-contain transition-all duration-200"
+    style={active ? {} : { filter: 'grayscale(1)', opacity: 0.5 }}
+  />
 );
 
 const AccountIcon = ({ active }) => (
