@@ -4,14 +4,12 @@ import Dashboard from './Dashboard';
 import UserDetail from './UserDetail';
 import CompareView from './CompareView';
 import OptimalTeam from './OptimalTeam';
-import { useAuth } from './AuthContext';
 
 // SeasonView kapselt eine komplette "Saison-Ansicht" (Dashboard + User-Detail + Vergleich)
 // und kann sowohl auf die LIVE-Daten (dataBase="") als auch auf ARCHIVIERTE Daten
 // (dataBase="/archive/...") zeigen. routeBase sorgt dafür, dass interne Links
 // (z.B. /user/:id) im richtigen Teilbaum bleiben ("" für live, "/archiv" fürs Archiv).
 const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
-  const { isAdmin } = useAuth();
   const [data, setData] = useState(null);
   const [latestMatchday, setLatestMatchday] = useState(null);
   const [historyIndex, setHistoryIndex] = useState({ matchdays: [] });
@@ -100,7 +98,7 @@ const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
     });
   };
 
-  if (!data) return <div className="min-h-screen bg-[#0f1115] flex justify-center items-center text-gray-500 font-bold tracking-widest uppercase text-xs animate-pulse">Lade Kickbase System...</div>;
+  if (!data) return <div className="min-h-screen bg-[#0f1115]"></div>;
 
   return (
     <div className="min-h-screen bg-[#0f1115] p-4 sm:p-10 font-sans select-none flex flex-col">
@@ -122,7 +120,7 @@ const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
         </Routes>
       </div>
 
-      <footer className="mt-20 pt-2 pb-4 flex flex-wrap items-center justify-center gap-2 sm:gap-3 px-2">
+      <footer className="mt-20 pt-2 pb-4 flex items-center justify-center">
         <button
           onClick={() => setIsOptimalTeamOpen(true)}
           className="flex items-center justify-center gap-2 whitespace-nowrap bg-[#1a1d24] text-[#ff5c3e] border border-[#ff5c3e]/30 px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest hover:bg-[#ff5c3e] hover:text-white transition-all shadow-[0_0_15px_rgba(255,92,62,0.1)] hover:shadow-[0_0_25px_rgba(255,92,62,0.3)] active:scale-95 group"
@@ -130,32 +128,6 @@ const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 group-hover:fill-white group-hover:scale-110 transition-transform"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
           Die optimale Elf
         </button>
-
-        {mode === 'live' && (
-          <Link
-            to="/archiv"
-            className="flex items-center justify-center gap-2 whitespace-nowrap bg-[#1a1d24] text-[#8b92a5] border border-[#2a2e37] px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest hover:text-white hover:border-[#8b92a5] transition-all active:scale-95 group"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 group-hover:scale-110 transition-transform">
-              <path d="M21 8v13H3V8"></path>
-              <path d="M1 3h22v5H1z"></path>
-              <path d="M10 12h4"></path>
-            </svg>
-            Quali-Daten
-          </Link>
-        )}
-
-        {isAdmin && (
-          <Link
-            to="/admin"
-            className="flex items-center justify-center gap-2 whitespace-nowrap bg-[#1a1d24] text-purple-400 border border-purple-500/30 px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest hover:bg-purple-500 hover:text-white transition-all active:scale-95 group"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 group-hover:scale-110 transition-transform">
-              <path d="M12 2 3 6v6c0 5 3.8 8.7 9 10 5.2-1.3 9-5 9-10V6l-9-4z"></path>
-            </svg>
-            Admin Panel
-          </Link>
-        )}
       </footer>
 
       {mode === 'archive' && (

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { NavLink, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import logo from './assets/pokal_logo.png';
 
@@ -155,85 +155,33 @@ const Pokal = () => {
       .catch((err) => console.error("Error loading pokal data:", err));
   }, []);
 
-  if (!data) return <div className="min-h-screen bg-[#0f1115] flex justify-center items-center text-[#8b5cf6] font-bold tracking-widest uppercase text-xs animate-pulse">Lade Pokal System...</div>;
+  if (!data) return <div className="min-h-screen bg-[#0f1115]"></div>;
 
   return (
     <div className="min-h-screen bg-[#0f1115] p-4 sm:p-10 font-sans select-none">
     <div className="max-w-[1600px] mx-auto bg-[#0f1115]">
-      {/* Header - Similar to App.jsx but with Toggle */}
+      {/* Header */}
       <div className="flex flex-col mb-4 sm:mb-8 border-b border-[#2a2e37] pb-4 sm:pb-6 gap-4">
-        
-        {/* Top Row: Logo, Title, and Mobile Toggle */}
-        <div className="flex justify-between items-start gap-2 w-full">
-          {/* Left: Logo & Title */}
-          <div className="flex items-center gap-3 sm:gap-6 min-w-0 flex-1">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center p-0.5 sm:p-1 overflow-hidden flex-shrink-0">
-              <img src={logo} alt="Kickbase Liga Logo" className="w-full h-full object-contain" />
-            </div>
-            <div className="min-w-0 pr-1">
-              <div className="text-[9px] sm:text-[11px] font-bold tracking-wider text-[#8b5cf6] mb-1">SAISON 26/27</div>
-              <h1 className="text-[17px] sm:text-3xl font-black tracking-tight uppercase leading-[1.1] break-words">Pokal</h1>
-            </div>
-          </div>
 
-          {/* Right: Mobile Toggle */}
-          <div className="sm:hidden flex-shrink-0 mt-1">
-            <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden h-9 p-1">
-              <NavLink 
-                to="/"
-                className={({isActive}) => `px-3 h-full flex items-center justify-center rounded-lg text-[9px] uppercase tracking-widest transition-all ${isActive ? 'bg-[#ff5c3e] text-white shadow-md' : 'text-[#8b92a5]'}`}
-              >
-                Liga
-              </NavLink>
-              <NavLink 
-                to="/pokal"
-                className={({isActive}) => `px-3 h-full flex items-center justify-center rounded-lg text-[9px] uppercase tracking-widest transition-all ${isActive ? 'bg-[#8b5cf6] text-white shadow-md' : 'text-[#8b92a5]'}`}
-              >
-                Pokal
-              </NavLink>
-            </div>
+        {/* Logo & Title */}
+        <div className="flex items-center gap-3 sm:gap-6 min-w-0 w-full">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center p-0.5 sm:p-1 overflow-hidden flex-shrink-0">
+            <img src={logo} alt="Kickbase Liga Logo" className="w-full h-full object-contain" />
+          </div>
+          <div className="min-w-0 pr-1">
+            <div className="text-[9px] sm:text-[11px] font-bold tracking-wider text-[#8b5cf6] mb-1">SAISON 26/27</div>
+            <h1 className="text-[17px] sm:text-3xl font-black tracking-tight uppercase leading-[1.1] break-words">Pokal</h1>
           </div>
         </div>
-        
-        <div className="flex w-full sm:w-auto justify-between sm:justify-end items-center gap-3 sm:gap-4 mt-2 sm:mt-0">
-          
-          {/* Mobile Info Tile for Rules */}
-          <Link to="/pokal-rules" className="flex-1 sm:hidden bg-[#1a1d24] border border-[#8b5cf6]/40 hover:border-[#8b5cf6] transition-colors rounded-xl h-12 flex items-center px-3 shadow-lg relative overflow-hidden active:scale-95 group">
-            <div className="absolute top-0 left-0 bottom-0 w-1 bg-[#8b5cf6]"></div>
-            <div className="flex flex-col justify-center ml-1">
-              <span className="text-[9px] font-black uppercase text-[#8b92a5] tracking-widest leading-none mb-1">Neuer Pokalmodus</span>
-              <span className="text-[11px] font-bold text-gray-200 tracking-wider leading-none group-hover:text-white transition-colors">Schau dir die Regeln an &rarr;</span>
-            </div>
-          </Link>
 
-          {/* Navigation Toggle Liga/Pokal (Desktop) */}
-          <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl items-center shadow-lg font-semibold overflow-hidden h-12 p-1 hidden sm:flex">
-            <NavLink 
-              to="/"
-              className={({isActive}) => `px-6 h-full flex items-center justify-center rounded-lg text-xs uppercase tracking-widest transition-all ${isActive ? 'bg-[#ff5c3e] text-white shadow-md' : 'text-[#8b92a5] hover:text-white hover:bg-[#2a2e37]'}`}
-            >
-              Liga
-            </NavLink>
-            <NavLink 
-              to="/pokal"
-              className={({isActive}) => `px-6 h-full flex items-center justify-center rounded-lg text-xs uppercase tracking-widest transition-all ${isActive ? 'bg-[#8b5cf6] text-white shadow-md' : 'text-[#8b92a5] hover:text-white hover:bg-[#2a2e37]'}`}
-            >
-              Pokal
-            </NavLink>
+        {/* Mobile Info Tile for Rules */}
+        <Link to="/pokal-rules" className="sm:hidden bg-[#1a1d24] border border-[#8b5cf6]/40 hover:border-[#8b5cf6] transition-colors rounded-xl h-12 flex items-center px-3 shadow-lg relative overflow-hidden active:scale-95 group">
+          <div className="absolute top-0 left-0 bottom-0 w-1 bg-[#8b5cf6]"></div>
+          <div className="flex flex-col justify-center ml-1">
+            <span className="text-[9px] font-black uppercase text-[#8b92a5] tracking-widest leading-none mb-1">Neuer Pokalmodus</span>
+            <span className="text-[11px] font-bold text-gray-200 tracking-wider leading-none group-hover:text-white transition-colors">Schau dir die Regeln an &rarr;</span>
           </div>
-
-          {/* Regeln Button */}
-          <NavLink 
-            to="/pokal-rules" 
-            className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl w-12 h-12 flex-shrink-0 flex justify-center items-center text-[#8b92a5] hover:text-white hover:border-[#8b5cf6] transition-all shadow-lg group"
-            title="Pokal Regeln ansehen"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-            </svg>
-          </NavLink>
-        </div>
+        </Link>
       </div>
 
       {/* Mobile Bracket View (Tabs) */}

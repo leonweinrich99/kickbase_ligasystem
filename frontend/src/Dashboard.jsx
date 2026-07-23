@@ -1,7 +1,6 @@
 import React from 'react';
-import { NavLink, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import logo from './assets/logo.png';
-import { useAuth } from './AuthContext';
 
 export const AvatarIcon = ({ name }) => {
   return (
@@ -39,12 +38,9 @@ export const Header = ({
   currentView,
   onNext,
   onPrev,
-  routeBase = '',
   mode = 'live'
 }) => {
-  const { user, isFirebaseConfigured, signOut } = useAuth();
   const displayLabel = currentView === 'saison' ? 'Gesamt' : `Spieltag ${currentView}`;
-  const ligaTo = routeBase || '/';
 
   return (
     <div className="flex flex-col mb-4 sm:mb-8 border-b border-[#2a2e37] pb-4 sm:pb-6 gap-4">
@@ -69,45 +65,11 @@ export const Header = ({
           </div>
         </div>
 
-        {/* Right: Mobile Toggle */}
-        <div className="sm:hidden flex-shrink-0 mt-1">
-          <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden h-9 p-1">
-            <NavLink
-              to={ligaTo}
-              end
-              className={({ isActive }) => `px-3 h-full flex items-center justify-center rounded-lg text-[9px] uppercase tracking-widest transition-all ${isActive ? 'bg-[#ff5c3e] text-white shadow-md' : 'text-[#8b92a5]'}`}
-            >
-              Liga
-            </NavLink>
-            <NavLink
-              to="/pokal"
-              className={({ isActive }) => `px-3 h-full flex items-center justify-center rounded-lg text-[9px] uppercase tracking-widest transition-all ${isActive ? 'bg-[#8b5cf6] text-white shadow-md' : 'text-[#8b92a5]'}`}
-            >
-              Pokal
-            </NavLink>
-          </div>
-        </div>
+        {/* Right: Archiv-Badge Platzhalter (Navigation läuft jetzt über die Tabbar) */}
       </div>
 
       {/* Bottom Row: Controls */}
       <div className="flex w-full sm:w-auto justify-between sm:justify-end items-center gap-2 sm:gap-4">
-        {/* Navigation Toggle Liga/Pokal (Desktop) */}
-        <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl items-center shadow-lg font-semibold overflow-hidden h-12 p-1 hidden sm:flex">
-          <NavLink
-            to={ligaTo}
-            end
-            className={({ isActive }) => `px-6 h-full flex items-center justify-center rounded-lg text-xs uppercase tracking-widest transition-all ${isActive ? 'bg-[#ff5c3e] text-white shadow-md' : 'text-[#8b92a5] hover:text-white hover:bg-[#2a2e37]'}`}
-          >
-            Liga
-          </NavLink>
-          <NavLink
-            to="/pokal"
-            className={({ isActive }) => `px-6 h-full flex items-center justify-center rounded-lg text-xs uppercase tracking-widest transition-all ${isActive ? 'bg-[#8b5cf6] text-white shadow-md' : 'text-[#8b92a5] hover:text-white hover:bg-[#2a2e37]'}`}
-          >
-            Pokal
-          </NavLink>
-        </div>
-
         {/* Spieltag-Wechsler (Pfeil-Design) */}
         <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden flex-1 sm:flex-initial justify-between h-12">
           <button
@@ -133,33 +95,6 @@ export const Header = ({
           <span className="text-[8px] sm:text-[10px] font-bold text-[#8b92a5] tracking-widest leading-none uppercase hidden sm:inline">Teilnehmer</span>
           <span className="text-sm sm:text-base font-bold text-gray-200 leading-none">{participants}</span>
         </div>
-
-        {/* Regeln Button */}
-        <NavLink
-          to="/rules"
-          className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl w-12 h-12 flex-shrink-0 flex justify-center items-center text-[#8b92a5] hover:text-white hover:border-[#ff5c3e] transition-all shadow-lg group"
-          title="Regelwerk ansehen"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-          </svg>
-        </NavLink>
-
-        {/* Abmelden Button (nur wenn Login aktiv & eingeloggt) */}
-        {isFirebaseConfigured && user && (
-          <button
-            onClick={signOut}
-            className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl w-12 h-12 flex-shrink-0 flex justify-center items-center text-[#8b92a5] hover:text-white hover:border-red-500 transition-all shadow-lg group"
-            title="Abmelden"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-              <polyline points="16 17 21 12 16 7"></polyline>
-              <line x1="21" y1="12" x2="9" y2="12"></line>
-            </svg>
-          </button>
-        )}
       </div>
     </div>
   );
@@ -283,7 +218,6 @@ const Dashboard = ({ data, currentView, onNext, onPrev, prevRanks, mode = 'live'
         currentView={currentView}
         onNext={onNext}
         onPrev={onPrev}
-        routeBase={routeBase}
         mode={mode}
       />
       <div className="flex flex-col lg:flex-row gap-4">

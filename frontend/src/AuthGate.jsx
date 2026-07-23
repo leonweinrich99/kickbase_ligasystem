@@ -3,9 +3,7 @@ import { useAuth } from './AuthContext';
 import Login from './Login';
 
 const Spinner = () => (
-  <div className="min-h-screen bg-[#0f1115] flex items-center justify-center">
-    <div className="w-10 h-10 border-4 border-[#ff5c3e] border-t-transparent rounded-full animate-spin"></div>
-  </div>
+  <div className="min-h-screen bg-[#0f1115]"></div>
 );
 
 const PendingScreen = ({ status }) => {
