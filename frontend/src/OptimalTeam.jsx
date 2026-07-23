@@ -148,6 +148,7 @@ const OptimalTeam = ({ isOpen, onClose, availableMatchdays, currentGlobalMatchda
           
           <button 
             onClick={onClose}
+            data-tour-close="optimal-team-modal"
             className="w-8 h-8 flex items-center justify-center rounded-full bg-[#20242d] text-[#8b92a5] hover:text-white hover:bg-[#2a2e37] transition-colors"
           >
             ✕

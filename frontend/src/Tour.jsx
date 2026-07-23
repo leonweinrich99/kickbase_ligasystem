@@ -43,13 +43,15 @@ export const TOUR_STEPS = [
     selector: '[data-tour="optimal-team-button"]',
     title: 'Die optimale Elf',
     text: 'Tippe hier, um dir die stärkste mögliche Elf des Spieltags live anzuzeigen.',
-    simulateClick: true
+    simulateClick: true,
+    scrollBlock: 'end'
   },
   {
     path: '/archiv',
     selector: '[data-tour="optimal-team-pitch"]',
     title: 'Die optimale Elf',
-    text: 'Hier siehst du die stärkste mögliche Formation inklusive Gesamtpunkten und verbleibendem Budget.'
+    text: 'Hier siehst du die stärkste mögliche Formation inklusive Gesamtpunkten und verbleibendem Budget.',
+    closeSelector: '[data-tour-close="optimal-team-modal"]'
   },
   {
     path: '/archiv',
@@ -61,7 +63,40 @@ export const TOUR_STEPS = [
     path: '/pokal',
     selector: '[data-tour="pokal-bracket"]',
     title: 'Pokal-Baum',
-    text: 'K.-o.-System vom Sechzehntelfinale bis zum Finale, ausgelost aus der Qualifikationsrunde.'
+    text: 'K.-o.-System vom Sechzehntelfinale bis zum Finale, ausgelost aus der Qualifikationsrunde.',
+    noAutoScroll: true
+  },
+  {
+    path: '/pokal',
+    selector: '[data-round="Achtelfinale"]',
+    title: 'Runde für Runde',
+    text: 'Auf dem Handy wechselst du per Tab durch die Runden. Tippe hier für das Achtelfinale.',
+    simulateClick: true,
+    optional: true
+  },
+  {
+    path: '/pokal',
+    selector: '[data-round="Viertelfinale"]',
+    title: 'Viertelfinale',
+    text: 'Weiter geht\'s Richtung Finale - tippe hier fürs Viertelfinale.',
+    simulateClick: true,
+    optional: true
+  },
+  {
+    path: '/pokal',
+    selector: '[data-round="Halbfinale"]',
+    title: 'Halbfinale',
+    text: 'Fast geschafft - tippe hier fürs Halbfinale.',
+    simulateClick: true,
+    optional: true
+  },
+  {
+    path: '/pokal',
+    selector: '[data-round="Finale"]',
+    title: 'Finale',
+    text: 'Und hier geht\'s zum großen Finale!',
+    simulateClick: true,
+    optional: true
   },
   {
     path: '/pokal',
@@ -84,6 +119,7 @@ export const TOUR_STEPS = [
 ];
 
 const MAX_ATTEMPTS = 70; // ~7s, Archiv-Seiten laden mehrere History-Dateien
+const OPTIONAL_MAX_ATTEMPTS = 8; // ~0.8s - fuer Schritte, die nur mobil existieren (z.B. Runden-Tabs)
 
 const TourContext = createContext(null);
 
@@ -195,8 +231,8 @@ const TourOverlay = () => {
 
         if (!scrolledRef.current) {
           scrolledRef.current = true;
-          if (!isFixed) {
-            foundEl.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+          if (!isFixed && !step.noAutoScroll) {
+            foundEl.scrollIntoView({ behavior: 'smooth', block: step.scrollBlock || 'center', inline: 'nearest' });
             setTimeout(() => {
               if (cancelled) return;
               const r2 = foundEl.getBoundingClientRect();
@@ -207,9 +243,13 @@ const TourOverlay = () => {
 
         const r = foundEl.getBoundingClientRect();
         setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
-      } else if (attemptsRef.current < MAX_ATTEMPTS) {
+      } else if (attemptsRef.current < (step.optional ? OPTIONAL_MAX_ATTEMPTS : MAX_ATTEMPTS)) {
         attemptsRef.current += 1;
         setTimeout(locate, 100);
+      } else if (step.optional) {
+        // Optionale Schritte (z.B. mobile Runden-Tabs) existieren auf manchen
+        // Bildschirmgrößen nicht - dann leise überspringen statt "Hoppla" zu zeigen.
+        tour.skipUnreachable();
       } else {
         setNotFound(true);
       }
@@ -239,6 +279,10 @@ const TourOverlay = () => {
   const advance = () => {
     if (step.simulateClick && targetElRef.current) {
       targetElRef.current.click();
+    }
+    if (step.closeSelector) {
+      const closeEl = document.querySelector(step.closeSelector);
+      if (closeEl) closeEl.click();
     }
     tour.next();
   };
