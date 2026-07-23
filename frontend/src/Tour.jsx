@@ -109,6 +109,7 @@ const TourOverlay = () => {
   const tour = useContext(TourContext);
   const [rect, setRect] = useState(null);
   const attemptsRef = useRef(0);
+  const scrolledRef = useRef(false);
 
   const step = tour?.step;
 
@@ -121,14 +122,28 @@ const TourOverlay = () => {
     const locate = () => {
       if (cancelled) return;
       const candidates = document.querySelectorAll(step.selector);
-      let found = null;
+      let foundEl = null;
       candidates.forEach((el) => {
         const r = el.getBoundingClientRect();
-        if (!found && r.width > 0 && r.height > 0) found = r;
+        if (!foundEl && r.width > 0 && r.height > 0) foundEl = el;
       });
 
-      if (found) {
-        setRect({ top: found.top, left: found.left, width: found.width, height: found.height });
+      if (foundEl) {
+        // Beim ersten Finden automatisch in die Mitte des Bildschirms scrollen,
+        // damit der markierte Bereich garantiert sichtbar ist.
+        if (!scrolledRef.current) {
+          scrolledRef.current = true;
+          foundEl.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+          // Nach dem (smooth) Scrollen die Position neu berechnen
+          setTimeout(() => {
+            if (cancelled) return;
+            const r2 = foundEl.getBoundingClientRect();
+            setRect({ top: r2.top, left: r2.left, width: r2.width, height: r2.height });
+          }, 400);
+        }
+
+        const r = foundEl.getBoundingClientRect();
+        setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
       } else if (attemptsRef.current < 40) {
         attemptsRef.current += 1;
         setTimeout(locate, 100);
@@ -151,26 +166,48 @@ const TourOverlay = () => {
   if (!tour?.isActive || !step) return null;
 
   const pad = 8;
+  const gap = 20;
   const hasSpotlight = Boolean(step.selector) && Boolean(rect);
   const isWaitingForTarget = Boolean(step.selector) && !rect;
+  const tooltipWidth = 320;
 
-  // Tooltip-Position bestimmen (unter dem Element, sonst darüber, sonst Mitte)
+  // Tooltip-Position bestimmen: bevorzugt unter/über dem Element (mit Abstand,
+  // damit es sich NIE mit dem markierten Bereich überschneidet), horizontal
+  // am Element ausgerichtet statt starr mittig auf dem Screen.
   let tooltipStyle = { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
   if (rect) {
-    const spaceBelow = window.innerHeight - (rect.top + rect.height);
-    const preferBelow = spaceBelow > 220;
-    if (preferBelow) {
-      tooltipStyle = { top: rect.top + rect.height + pad + 16, left: '50%', transform: 'translateX(-50%)' };
+    const viewportW = window.innerWidth;
+    const viewportH = window.innerHeight;
+    const spaceBelow = viewportH - (rect.top + rect.height + pad);
+    const spaceAbove = rect.top - pad;
+    const estimatedTooltipHeight = 200;
+
+    const centerX = rect.left + rect.width / 2;
+    const clampedLeft = Math.min(Math.max(centerX, tooltipWidth / 2 + 12), viewportW - tooltipWidth / 2 - 12);
+
+    if (spaceBelow >= estimatedTooltipHeight || spaceBelow >= spaceAbove) {
+      tooltipStyle = {
+        top: rect.top + rect.height + pad + gap,
+        left: clampedLeft,
+        transform: 'translateX(-50%)',
+        maxHeight: Math.max(160, spaceBelow - gap)
+      };
     } else {
-      tooltipStyle = { top: Math.max(16, rect.top - pad - 16), left: '50%', transform: 'translate(-50%, -100%)' };
+      tooltipStyle = {
+        top: Math.max(16, rect.top - pad - gap),
+        left: clampedLeft,
+        transform: 'translate(-50%, -100%)',
+        maxHeight: Math.max(160, spaceAbove - gap)
+      };
     }
   }
 
   return (
     <div className="fixed inset-0 z-[200]">
-      {/* Abdunkelnder Hintergrund - blockiert Klicks außerhalb des markierten Bereichs */}
+      {/* Abdunkelnder Hintergrund - blockiert Klicks außerhalb des markierten Bereichs,
+          bewusst dezent gehalten, damit die App dahinter noch gut erkennbar bleibt */}
       <div
-        className="absolute inset-0 bg-black/80"
+        className="absolute inset-0 bg-black/45"
         onClick={(e) => e.stopPropagation()}
       ></div>
 
@@ -183,7 +220,7 @@ const TourOverlay = () => {
             left: rect.left - pad,
             width: rect.width + pad * 2,
             height: rect.height + pad * 2,
-            boxShadow: '0 0 0 9999px rgba(0,0,0,0.8)',
+            boxShadow: '0 0 0 2000px rgba(0,0,0,0.5)',
             background: 'transparent'
           }}
           onClick={tour.next}
@@ -194,8 +231,8 @@ const TourOverlay = () => {
       {/* Tooltip */}
       {!isWaitingForTarget && (
         <div
-          className="absolute w-[90vw] max-w-xs bg-[#1a1d24] border border-[#2a2e37] rounded-2xl shadow-2xl p-5 pointer-events-auto"
-          style={tooltipStyle}
+          className="absolute overflow-y-auto bg-[#1a1d24] border border-[#2a2e37] rounded-2xl shadow-2xl p-5 pointer-events-auto"
+          style={{ ...tooltipStyle, width: tooltipWidth, maxWidth: '85vw' }}
         >
           <button
             onClick={tour.stop}
