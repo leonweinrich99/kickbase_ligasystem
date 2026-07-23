@@ -418,65 +418,64 @@ const TourOverlay = () => {
         <div className="absolute inset-0 bg-black/45" onClick={absorbClick}></div>
       )}
 
-      {/* Tooltip / Such-Status */}
-      <div
-        className="absolute overflow-y-auto bg-[#1a1d24] border border-[#2a2e37] rounded-2xl shadow-2xl p-5 pointer-events-auto"
-        style={{ ...tooltipStyle, width: tooltipWidth, maxWidth: '85vw' }}
+      {/* Tour jederzeit beenden - immer sichtbar, auch während gesucht wird */}
+      <button
+        onClick={tour.stop}
+        className="fixed text-[#8b92a5] hover:text-white transition-colors bg-[#1a1d24] border border-[#2a2e37] rounded-full w-8 h-8 flex items-center justify-center pointer-events-auto shadow-lg"
+        style={{ top: safeTop + 16, right: 16 }}
+        aria-label="Tour beenden"
       >
-        <button
-          onClick={tour.stop}
-          className="absolute top-3 right-3 text-[#8b92a5] hover:text-white transition-colors"
-          aria-label="Tour beenden"
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      {/* Tooltip - erst anzeigen, wenn der Bereich gefunden wurde (oder nicht gefunden werden konnte) */}
+      {!isSearching && (
+        <div
+          className="absolute overflow-y-auto bg-[#1a1d24] border border-[#2a2e37] rounded-2xl shadow-2xl p-5 pointer-events-auto"
+          style={{ ...tooltipStyle, width: tooltipWidth, maxWidth: '85vw' }}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-
-        {isSearching ? (
-          <div className="flex flex-col items-center text-center py-2">
-            <div className="w-6 h-6 border-2 border-[#ff5c3e] border-t-transparent rounded-full animate-spin mb-3"></div>
-            <p className="text-xs text-[#8b92a5]">Lade Bereich...</p>
-          </div>
-        ) : notFound ? (
-          <>
-            <h3 className="text-sm font-black uppercase text-white mb-2 pr-4">Hoppla</h3>
-            <p className="text-xs text-[#8b92a5] leading-relaxed mb-4">Dieser Bereich konnte gerade nicht gefunden werden. Wir machen einfach weiter.</p>
-            <button
-              onClick={skip}
-              className="w-full text-[10px] font-black uppercase tracking-widest text-white bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 transition-colors px-4 py-2 rounded-lg"
-            >
-              Weiter
-            </button>
-          </>
-        ) : (
-          <>
-            <div className="text-[9px] font-black uppercase tracking-widest text-[#ff5c3e] mb-2">
-              Schritt {tour.stepIndex + 1} / {tour.totalSteps}
-            </div>
-            <h3 className="text-sm font-black uppercase text-white mb-2 pr-4">{step.title}</h3>
-            <p className="text-xs text-[#8b92a5] leading-relaxed mb-4">{step.text}</p>
-
-            <div className="flex items-center gap-2">
-              {tour.stepIndex > 0 && (
-                <button
-                  onClick={tour.prev}
-                  className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] hover:text-white transition-colors px-3 py-2"
-                >
-                  Zurück
-                </button>
-              )}
+          {notFound ? (
+            <>
+              <h3 className="text-sm font-black uppercase text-white mb-2 pr-4">Hoppla</h3>
+              <p className="text-xs text-[#8b92a5] leading-relaxed mb-4">Dieser Bereich konnte gerade nicht gefunden werden. Wir machen einfach weiter.</p>
               <button
-                onClick={advance}
-                className="ml-auto text-[10px] font-black uppercase tracking-widest text-white bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 transition-colors px-4 py-2 rounded-lg"
+                onClick={skip}
+                className="w-full text-[10px] font-black uppercase tracking-widest text-white bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 transition-colors px-4 py-2 rounded-lg"
               >
-                {tour.stepIndex === tour.totalSteps - 1 ? 'Fertig' : 'Weiter'}
+                Weiter
               </button>
-            </div>
-          </>
-        )}
-      </div>
+            </>
+          ) : (
+            <>
+              <div className="text-[9px] font-black uppercase tracking-widest text-[#ff5c3e] mb-2 pr-8">
+                Schritt {tour.stepIndex + 1} / {tour.totalSteps}
+              </div>
+              <h3 className="text-sm font-black uppercase text-white mb-2 pr-4">{step.title}</h3>
+              <p className="text-xs text-[#8b92a5] leading-relaxed mb-4">{step.text}</p>
+
+              <div className="flex items-center gap-2">
+                {tour.stepIndex > 0 && (
+                  <button
+                    onClick={tour.prev}
+                    className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] hover:text-white transition-colors px-3 py-2"
+                  >
+                    Zurück
+                  </button>
+                )}
+                <button
+                  onClick={advance}
+                  className="ml-auto text-[10px] font-black uppercase tracking-widest text-white bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 transition-colors px-4 py-2 rounded-lg"
+                >
+                  {tour.stepIndex === tour.totalSteps - 1 ? 'Fertig' : 'Weiter'}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 };
