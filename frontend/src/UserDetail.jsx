@@ -353,7 +353,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+      <div data-tour="user-stats" className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
         <StatCard 
           icon={<Award className="text-[#ff5c3e]" />} 
           label="Gesamtpunkte" 

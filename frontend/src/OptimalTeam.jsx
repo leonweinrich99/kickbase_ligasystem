@@ -211,7 +211,7 @@ const OptimalTeam = ({ isOpen, onClose, availableMatchdays, currentGlobalMatchda
         </div>
 
         {/* Content (Pitch) */}
-        <div className="flex-1 overflow-y-auto bg-[#1a1d24] relative min-h-[400px] flex flex-col justify-center py-8"
+        <div data-tour="optimal-team-pitch" className="flex-1 overflow-y-auto bg-[#1a1d24] relative min-h-[400px] flex flex-col justify-center py-8"
              style={{
                 backgroundImage: 'radial-gradient(circle at center, #1e2530 0%, #111318 100%)'
              }}>

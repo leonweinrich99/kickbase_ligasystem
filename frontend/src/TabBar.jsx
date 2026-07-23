@@ -39,6 +39,7 @@ const TabBar = () => {
 
   return (
     <nav
+      data-tabbar="true"
       className="fixed bottom-0 left-0 right-0 z-40 bg-[#12141a]/95 backdrop-blur-xl border-t border-[#2a2e37]"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >

@@ -3,6 +3,11 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 // Jeder Schritt zeigt auf ein echtes Element in der App (per data-tour="...").
 // selector: null => zentrierte Karte ohne Spotlight (Intro/Outro).
+// path: entweder eine feste Route ODER ein Platzhalter-Key (z.B. "DYNAMIC_USER"),
+//   dessen echte Route erst zur Laufzeit aus einem vorherigen Schritt ermittelt wird.
+// captureHrefAs: merkt sich den href des gefundenen Elements unter diesem Key.
+// simulateClick: löst beim Weitergehen einen ECHTEN Klick auf dem Element aus
+//   (z.B. um ein Modal wirklich zu öffnen, nicht nur zu markieren).
 export const TOUR_STEPS = [
   {
     path: '/',
@@ -20,13 +25,27 @@ export const TOUR_STEPS = [
     path: '/',
     selector: '[data-tour="user-row"]',
     title: 'Spielerdetails',
-    text: 'Tippe auf einen Namen für Punkteverlauf & Formkurve - von dort kannst du auch zwei Spieler vergleichen.'
+    text: 'Tippe auf einen Namen für Punkteverlauf & Formkurve - schauen wir uns das gleich mal live an.',
+    captureHrefAs: 'DYNAMIC_USER'
+  },
+  {
+    path: 'DYNAMIC_USER',
+    selector: '[data-tour="user-stats"]',
+    title: 'Analyse-Features',
+    text: 'Gesamtpunkte, Schnitt pro Spieltag, bester Spieltag und Performance Index - darunter findest du außerdem Charts zu Platzierungsverlauf und Formkurve.'
   },
   {
     path: '/',
     selector: '[data-tour="optimal-team-button"]',
     title: 'Die optimale Elf',
-    text: 'Zeigt dir die stärkste mögliche Elf des Spieltags über alle Spieler hinweg.'
+    text: 'Tippe hier, um dir die stärkste mögliche Elf des Spieltags live anzuzeigen.',
+    simulateClick: true
+  },
+  {
+    path: '/',
+    selector: '[data-tour="optimal-team-pitch"]',
+    title: 'Die optimale Elf',
+    text: 'Hier siehst du die stärkste mögliche Formation inklusive Gesamtpunkten und verbleibendem Budget.'
   },
   {
     path: '/',
@@ -64,23 +83,33 @@ const TourContext = createContext(null);
 
 export const TourProvider = ({ children }) => {
   const [stepIndex, setStepIndex] = useState(-1);
+  const [dynamicPaths, setDynamicPaths] = useState({});
   const isActive = stepIndex >= 0;
   const navigate = useNavigate();
   const location = useLocation();
 
-  const start = useCallback(() => setStepIndex(0), []);
+  const start = useCallback(() => {
+    setDynamicPaths({});
+    setStepIndex(0);
+  }, []);
   const stop = useCallback(() => setStepIndex(-1), []);
 
   const step = isActive ? TOUR_STEPS[stepIndex] : null;
 
-  // Bei Schrittwechsel ggf. zur passenden Seite navigieren
+  const captureHref = useCallback((key, href) => {
+    if (!key || !href) return;
+    setDynamicPaths((prev) => (prev[key] === href ? prev : { ...prev, [key]: href }));
+  }, []);
+
+  // Bei Schrittwechsel ggf. zur passenden Seite navigieren (inkl. dynamischer Pfade)
   useEffect(() => {
     if (!step) return;
-    if (location.pathname !== step.path) {
-      navigate(step.path);
+    const targetPath = dynamicPaths[step.path] || step.path;
+    if (targetPath && location.pathname !== targetPath) {
+      navigate(targetPath);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stepIndex]);
+  }, [stepIndex, dynamicPaths[step?.path]]);
 
   const next = useCallback(() => {
     setStepIndex((i) => {
@@ -93,7 +122,7 @@ export const TourProvider = ({ children }) => {
     setStepIndex((i) => Math.max(0, i - 1));
   }, []);
 
-  const value = { isActive, stepIndex, step, start, stop, next, prev, totalSteps: TOUR_STEPS.length };
+  const value = { isActive, stepIndex, step, start, stop, next, prev, captureHref, totalSteps: TOUR_STEPS.length };
 
   return (
     <TourContext.Provider value={value}>
@@ -110,11 +139,17 @@ const TourOverlay = () => {
   const [rect, setRect] = useState(null);
   const attemptsRef = useRef(0);
   const scrolledRef = useRef(false);
+  const targetElRef = useRef(null);
 
   const step = tour?.step;
 
   useEffect(() => {
     if (!step) return undefined;
+
+    // Bei jedem Schritt zunächst sauber nach oben springen, damit alte
+    // Scroll-Positionen der vorherigen Seite nicht "durchschlagen".
+    window.scrollTo({ top: 0, behavior: 'auto' });
+
     if (!step.selector) return undefined;
 
     let cancelled = false;
@@ -129,12 +164,16 @@ const TourOverlay = () => {
       });
 
       if (foundEl) {
-        // Beim ersten Finden automatisch in die Mitte des Bildschirms scrollen,
-        // damit der markierte Bereich garantiert sichtbar ist.
+        targetElRef.current = foundEl;
+
+        if (step.captureHrefAs) {
+          const href = foundEl.getAttribute('href');
+          if (href) tour.captureHref(step.captureHrefAs, href);
+        }
+
         if (!scrolledRef.current) {
           scrolledRef.current = true;
           foundEl.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
-          // Nach dem (smooth) Scrollen die Position neu berechnen
           setTimeout(() => {
             if (cancelled) return;
             const r2 = foundEl.getBoundingClientRect();
@@ -144,7 +183,7 @@ const TourOverlay = () => {
 
         const r = foundEl.getBoundingClientRect();
         setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
-      } else if (attemptsRef.current < 40) {
+      } else if (attemptsRef.current < 50) {
         attemptsRef.current += 1;
         setTimeout(locate, 100);
       }
@@ -161,6 +200,7 @@ const TourOverlay = () => {
       window.removeEventListener('resize', onRecalc);
       window.removeEventListener('scroll', onRecalc, true);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
   if (!tour?.isActive || !step) return null;
@@ -171,15 +211,30 @@ const TourOverlay = () => {
   const isWaitingForTarget = Boolean(step.selector) && !rect;
   const tooltipWidth = 320;
 
+  const advance = () => {
+    if (step.simulateClick && targetElRef.current) {
+      targetElRef.current.click();
+    }
+    tour.next();
+  };
+
+  const absorbClick = (e) => e.stopPropagation();
+
+  // Sichere Grenzen ermitteln: oben = Safe-Area (Notch), unten = Oberkante der Tabbar
+  const bodyStyle = typeof window !== 'undefined' ? window.getComputedStyle(document.body) : null;
+  const safeTop = bodyStyle ? parseFloat(bodyStyle.paddingTop) || 0 : 0;
+  const tabBarEl = typeof document !== 'undefined' ? document.querySelector('[data-tabbar]') : null;
+  const safeBottomLimit = tabBarEl ? tabBarEl.getBoundingClientRect().top : window.innerHeight;
+
   // Tooltip-Position bestimmen: bevorzugt unter/über dem Element (mit Abstand,
   // damit es sich NIE mit dem markierten Bereich überschneidet), horizontal
-  // am Element ausgerichtet statt starr mittig auf dem Screen.
+  // am Element ausgerichtet statt starr mittig auf dem Screen, und niemals
+  // in der Notch- bzw. Tabbar-Zone.
   let tooltipStyle = { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
   if (rect) {
     const viewportW = window.innerWidth;
-    const viewportH = window.innerHeight;
-    const spaceBelow = viewportH - (rect.top + rect.height + pad);
-    const spaceAbove = rect.top - pad;
+    const spaceBelow = safeBottomLimit - (rect.top + rect.height + pad);
+    const spaceAbove = rect.top - pad - safeTop;
     const estimatedTooltipHeight = 200;
 
     const centerX = rect.left + rect.width / 2;
@@ -190,42 +245,60 @@ const TourOverlay = () => {
         top: rect.top + rect.height + pad + gap,
         left: clampedLeft,
         transform: 'translateX(-50%)',
-        maxHeight: Math.max(160, spaceBelow - gap)
+        maxHeight: Math.max(140, spaceBelow - gap)
       };
     } else {
       tooltipStyle = {
-        top: Math.max(16, rect.top - pad - gap),
+        top: Math.max(safeTop + 16, rect.top - pad - gap),
         left: clampedLeft,
         transform: 'translate(-50%, -100%)',
-        maxHeight: Math.max(160, spaceAbove - gap)
+        maxHeight: Math.max(140, spaceAbove - gap)
       };
     }
   }
 
   return (
     <div className="fixed inset-0 z-[200]">
-      {/* Abdunkelnder Hintergrund - blockiert Klicks außerhalb des markierten Bereichs,
-          bewusst dezent gehalten, damit die App dahinter noch gut erkennbar bleibt */}
-      <div
-        className="absolute inset-0 bg-black/45"
-        onClick={(e) => e.stopPropagation()}
-      ></div>
+      {hasSpotlight ? (
+        <>
+          {/* 4 dimmende Bereiche RUND UM das Element - blockieren Klicks, lassen
+              das markierte Element selbst aber komplett unberührt/normal */}
+          <div
+            className="absolute bg-black/45"
+            style={{ top: 0, left: 0, right: 0, height: Math.max(0, rect.top - pad) }}
+            onClick={absorbClick}
+          ></div>
+          <div
+            className="absolute bg-black/45"
+            style={{ top: rect.top + rect.height + pad, left: 0, right: 0, bottom: 0 }}
+            onClick={absorbClick}
+          ></div>
+          <div
+            className="absolute bg-black/45"
+            style={{ top: rect.top - pad, left: 0, width: Math.max(0, rect.left - pad), height: rect.height + pad * 2 }}
+            onClick={absorbClick}
+          ></div>
+          <div
+            className="absolute bg-black/45"
+            style={{ top: rect.top - pad, left: rect.left + rect.width + pad, right: 0, height: rect.height + pad * 2 }}
+            onClick={absorbClick}
+          ></div>
 
-      {/* Spotlight-Ausschnitt */}
-      {hasSpotlight && (
-        <div
-          className="absolute rounded-2xl ring-2 ring-[#ff5c3e] transition-all duration-300 cursor-pointer"
-          style={{
-            top: rect.top - pad,
-            left: rect.left - pad,
-            width: rect.width + pad * 2,
-            height: rect.height + pad * 2,
-            boxShadow: '0 0 0 2000px rgba(0,0,0,0.5)',
-            background: 'transparent'
-          }}
-          onClick={tour.next}
-          title="Zum Fortfahren tippen"
-        ></div>
+          {/* Markierungsrahmen - komplett transparent, keine Verdunkelung des Elements selbst */}
+          <div
+            className="absolute rounded-2xl ring-2 ring-[#ff5c3e] transition-all duration-300 cursor-pointer"
+            style={{
+              top: rect.top - pad,
+              left: rect.left - pad,
+              width: rect.width + pad * 2,
+              height: rect.height + pad * 2
+            }}
+            onClick={advance}
+            title="Zum Fortfahren tippen"
+          ></div>
+        </>
+      ) : (
+        <div className="absolute inset-0 bg-black/45" onClick={absorbClick}></div>
       )}
 
       {/* Tooltip */}
@@ -261,7 +334,7 @@ const TourOverlay = () => {
               </button>
             )}
             <button
-              onClick={tour.next}
+              onClick={advance}
               className="ml-auto text-[10px] font-black uppercase tracking-widest text-white bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 transition-colors px-4 py-2 rounded-lg"
             >
               {tour.stepIndex === tour.totalSteps - 1 ? 'Fertig' : 'Weiter'}
