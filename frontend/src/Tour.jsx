@@ -59,46 +59,10 @@ export const TOUR_STEPS = [
   },
   {
     path: '/pokal',
-    selector: '[data-tour="pokal-bracket"]',
+    selector: '[data-tour="pokal-first-match"]',
     title: 'Pokal-Baum',
-    text: 'K.-o.-System vom Sechzehntelfinale bis zum Finale, ausgelost aus der Qualifikationsrunde.',
+    text: 'K.-o.-System vom Sechzehntelfinale bis zum Finale, ausgelost aus der Qualifikationsrunde. Auf dem Handy wechselst du per Tab durch die Runden, am Desktop siehst du alles auf einen Blick.',
     noAutoScroll: true
-  },
-  {
-    path: '/pokal',
-    selector: '[data-round="Achtelfinale"]',
-    title: 'Runde für Runde',
-    text: 'Auf dem Handy wechselst du per Tab durch die Runden - das zeigen wir dir jetzt automatisch.',
-    simulateClick: true,
-    optional: true,
-    autoAdvance: 1100
-  },
-  {
-    path: '/pokal',
-    selector: '[data-round="Viertelfinale"]',
-    title: 'Viertelfinale',
-    text: 'Weiter geht\'s Richtung Finale.',
-    simulateClick: true,
-    optional: true,
-    autoAdvance: 1100
-  },
-  {
-    path: '/pokal',
-    selector: '[data-round="Halbfinale"]',
-    title: 'Halbfinale',
-    text: 'Fast geschafft.',
-    simulateClick: true,
-    optional: true,
-    autoAdvance: 1100
-  },
-  {
-    path: '/pokal',
-    selector: '[data-round="Finale"]',
-    title: 'Finale',
-    text: 'Und hier ist das große Finale!',
-    simulateClick: true,
-    optional: true,
-    autoAdvance: 1400
   },
   {
     path: '/pokal',

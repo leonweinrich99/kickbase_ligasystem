@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import logo from './assets/pokal_logo.png';
 
-const MatchBox = ({ match, isFinal }) => {
+const MatchBox = ({ match, isFinal, tourTarget }) => {
   const isWinner1 = match.winner === 1;
   const isWinner2 = match.winner === 2;
 
   return (
-    <div className={`flex flex-col bg-[#1a1d24] border border-[#2a2e37] rounded-xl overflow-hidden shadow-lg w-full xl:w-48 flex-shrink-0 transition-transform hover:scale-105 hover:border-[#8b5cf6]/50 ${isFinal ? 'ring-2 ring-[#8b5cf6] shadow-[0_0_20px_rgba(139,92,246,0.3)] xl:scale-110 z-10' : ''}`}>
+    <div data-tour={tourTarget ? 'pokal-first-match' : undefined} className={`flex flex-col bg-[#1a1d24] border border-[#2a2e37] rounded-xl overflow-hidden shadow-lg w-full xl:w-48 flex-shrink-0 transition-transform hover:scale-105 hover:border-[#8b5cf6]/50 ${isFinal ? 'ring-2 ring-[#8b5cf6] shadow-[0_0_20px_rgba(139,92,246,0.3)] xl:scale-110 z-10' : ''}`}>
       <div className={`flex justify-between items-center p-2.5 xl:p-2 border-b border-[#2a2e37] ${isWinner1 ? 'bg-green-500/10' : ''}`}>
         <span className={`text-xs sm:text-sm font-bold truncate pr-2 ${isWinner1 ? 'text-white' : 'text-gray-300'}`}>{match.p1 || '-'}</span>
         <span className={`text-xs sm:text-sm font-black ${isWinner1 ? 'text-green-400' : 'text-gray-500'}`}>{match.score1 > 0 ? match.score1 : ''}</span>
@@ -37,7 +37,7 @@ const MobileRoundView = ({ matches, isFirstRound, isFinal }) => {
               {!isFirstRound && (
                 <div className="absolute right-[100%] w-[100vw] top-1/2 border-t-2 border-[#3a3f4a] pointer-events-none"></div>
               )}
-              <MatchBox match={pair[0]} isFinal={isFinal} />
+              <MatchBox match={pair[0]} isFinal={isFinal} tourTarget={idx === 0} />
             </div>
           )}
           {pair[1] && (
@@ -63,15 +63,15 @@ const MobileRoundView = ({ matches, isFirstRound, isFinal }) => {
 };
 
 
-const RoundColumn = ({ matches, title }) => {
+const RoundColumn = ({ matches, title, markFirst = false }) => {
   return (
     <div className="flex flex-col justify-around gap-2 sm:gap-4 flex-1">
       <div className="text-[10px] sm:text-xs font-black uppercase text-center text-[#8b92a5] tracking-widest mb-2 opacity-70">
         {title}
       </div>
       <div className="flex flex-col justify-around flex-1 gap-2 sm:gap-4">
-        {matches.map((match) => (
-          <MatchBox key={match.id} match={match} />
+        {matches.map((match, index) => (
+          <MatchBox key={match.id} match={match} tourTarget={markFirst && index === 0} />
         ))}
       </div>
     </div>
@@ -259,7 +259,7 @@ const Pokal = () => {
           
           {/* Left Bracket */}
           <div className="flex gap-4 sm:gap-8 flex-1">
-            <RoundColumn matches={data.roundOf32Left} title="Sechzehntelfinale" />
+            <RoundColumn matches={data.roundOf32Left} title="Sechzehntelfinale" markFirst />
             <RoundColumn matches={data.roundOf16Left} title="Achtelfinale" />
             <RoundColumn matches={data.quarterFinalsLeft} title="Viertelfinale" />
             <RoundColumn matches={data.semiFinalsLeft} title="Halbfinale" />
