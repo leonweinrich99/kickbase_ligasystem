@@ -74,10 +74,11 @@ const AdminPanel = () => {
   }
 
   const setStatus = (id, status) => updateDoc(doc(db, 'users', id), { status });
-  const setRole = (id, role) => updateDoc(doc(db, 'users', id), { role });
+  const setRole = (id, role) => updateDoc(doc(db, 'users', id), role === 'admin' ? { role, status: 'approved' } : { role });
 
-  const filteredUsers = users.filter(u => filter === 'all' || u.status === filter);
+  const filteredUsers = users.filter(u => filter === 'all' || (filter === 'admin' ? u.role === 'admin' : u.status === filter));
   const pendingCount = users.filter(u => u.status === 'pending').length;
+  const adminCount = users.filter(u => u.role === 'admin').length;
 
   return (
     <div className="min-h-screen bg-[#0f1115] p-4 sm:p-10">
@@ -111,16 +112,20 @@ const AdminPanel = () => {
         </div>
 
         <div className="flex gap-2 mb-6 overflow-x-auto">
-          {['pending', 'approved', 'rejected', 'all'].map(f => (
+          {['pending', 'approved', 'admin', 'rejected', 'all'].map(f => (
             <button
               key={f}
               onClick={() => setFilter(f)}
               className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${filter === f ? 'bg-[#ff5c3e] text-white' : 'bg-[#1a1d24] border border-[#2a2e37] text-[#8b92a5] hover:text-white'}`}
             >
-              {f === 'pending' ? `Ausstehend (${pendingCount})` : f === 'approved' ? 'Freigegeben' : f === 'rejected' ? 'Abgelehnt' : 'Alle'}
+              {f === 'pending' ? `Ausstehend (${pendingCount})` : f === 'approved' ? 'Freigegeben' : f === 'admin' ? `Admins (${adminCount})` : f === 'rejected' ? 'Abgelehnt' : 'Alle'}
             </button>
           ))}
         </div>
+
+        <p className="text-xs text-[#8b92a5] mb-6 -mt-3">
+          Mit <span className="text-purple-400 font-bold">„Zum Admin machen"</span> kannst du jede Person direkt zum Admin ernennen (wird dauerhaft im System gespeichert und automatisch freigeschaltet).
+        </p>
 
         {loading ? (
           <div className="text-center text-[#8b92a5] text-sm py-10">Lade Nutzer...</div>
