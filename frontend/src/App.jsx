@@ -16,8 +16,8 @@ function App() {
     <AuthProvider>
       <Router>
         <div className="min-h-screen bg-[#0f1115]">
-          <AuthGate>
-            <TourProvider>
+          <TourProvider>
+            <AuthGate>
               <div style={{ paddingBottom: 'calc(64px + env(safe-area-inset-bottom, 0px))' }}>
                 <Routes>
                   <Route path="/rules" element={<Rules />} />
@@ -40,8 +40,8 @@ function App() {
                 </Routes>
               </div>
               <TabBar />
-            </TourProvider>
-          </AuthGate>
+            </AuthGate>
+          </TourProvider>
         </div>
       </Router>
     </AuthProvider>

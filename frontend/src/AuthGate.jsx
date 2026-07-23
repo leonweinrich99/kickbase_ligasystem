@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useAuth } from './AuthContext';
 import Login from './Login';
-import Tutorial from './Tutorial';
+import { useTour } from './Tour';
 
 const Spinner = () => (
   <div className="min-h-screen bg-[#0f1115]"></div>
@@ -9,7 +9,7 @@ const Spinner = () => (
 
 const PendingScreen = ({ status }) => {
   const { signOut, profile } = useAuth();
-  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
+  const tour = useTour();
   const isRejected = status === 'rejected';
 
   return (
@@ -33,7 +33,7 @@ const PendingScreen = ({ status }) => {
               Nutze die Wartezeit doch, um dir schon mal anzuschauen, wie die App funktioniert:
             </p>
             <button
-              onClick={() => setIsTutorialOpen(true)}
+              onClick={tour.start}
               className="w-full flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest text-yellow-500 border border-yellow-500/30 bg-yellow-500/10 px-4 py-3 rounded-xl hover:bg-yellow-500/20 transition-colors"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -53,8 +53,6 @@ const PendingScreen = ({ status }) => {
           Abmelden
         </button>
       </div>
-
-      <Tutorial isOpen={isTutorialOpen} onClose={() => setIsTutorialOpen(false)} />
     </div>
   );
 };
@@ -62,9 +60,14 @@ const PendingScreen = ({ status }) => {
 // AuthGate schützt die komplette App hinter Login + Admin-Freigabe.
 // Wenn Firebase (noch) nicht konfiguriert ist, wird die App ohne Login angezeigt,
 // damit lokale Entwicklung ohne Firebase-Setup weiterhin funktioniert.
+// Läuft gerade die interaktive App-Tour, wird die Sperre vorübergehend
+// aufgehoben, damit die Tour echte Seiten zeigen kann (auch für Personen,
+// die noch nicht eingeloggt oder noch nicht freigeschaltet sind).
 const AuthGate = ({ children }) => {
   const { user, profile, loading, isFirebaseConfigured } = useAuth();
+  const tour = useTour();
 
+  if (tour?.isActive) return children;
   if (!isFirebaseConfigured) return children;
   if (loading) return <Spinner />;
   if (!user) return <Login />;
