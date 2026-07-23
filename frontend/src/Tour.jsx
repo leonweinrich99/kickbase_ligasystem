@@ -201,6 +201,56 @@ const TourOverlay = () => {
       }
     };
 
+    // Eigene, selbst gesteuerte Scroll-Animation statt scrollIntoView():
+    // dadurch bleibt die Markierung waehrend des Scrollens sichtbar und
+    // gleitet sanft mit, ohne dass (wie beim nativen scrollIntoView) ein
+    // externer 'scroll'-Listener die Animation unterbrechen muss/kann -
+    // wir kontrollieren scrollY hier selbst, Frame für Frame.
+    const animateScrollTo = (foundEl, block, onDone) => {
+      const startY = window.scrollY;
+      const r0 = foundEl.getBoundingClientRect();
+      const viewportH = window.innerHeight;
+
+      let targetY;
+      if (block === 'end') {
+        targetY = startY + r0.bottom - viewportH + 24;
+      } else if (block === 'start') {
+        targetY = startY + r0.top - 24;
+      } else {
+        targetY = startY + r0.top - (viewportH - r0.height) / 2;
+      }
+      const maxScroll = document.documentElement.scrollHeight - viewportH;
+      targetY = Math.max(0, Math.min(targetY, maxScroll));
+
+      const distance = targetY - startY;
+      if (Math.abs(distance) < 2) {
+        onDone();
+        return;
+      }
+
+      const duration = Math.min(900, Math.max(350, Math.abs(distance) * 0.5));
+      const startTime = performance.now();
+
+      const step = (now) => {
+        if (cancelled) return;
+        const elapsed = now - startTime;
+        const t = Math.min(1, elapsed / duration);
+        const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
+        window.scrollTo(0, startY + distance * eased);
+
+        // Markierung während der Animation live mitziehen
+        const r = foundEl.getBoundingClientRect();
+        setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
+
+        if (t < 1) {
+          requestAnimationFrame(step);
+        } else {
+          onDone();
+        }
+      };
+      requestAnimationFrame(step);
+    };
+
     const locate = () => {
       if (cancelled) return;
       const candidates = document.querySelectorAll(step.selector);
@@ -223,12 +273,7 @@ const TourOverlay = () => {
         if (!scrolledRef.current) {
           scrolledRef.current = true;
           if (!isFixed && !step.noAutoScroll) {
-            foundEl.scrollIntoView({ behavior: 'smooth', block: step.scrollBlock || 'center', inline: 'nearest' });
-            // WICHTIG: Während der Scroll-Animation NICHT laufend neu rendern
-            // (z.B. über einen 'scroll'-Listener) - das hat die Animation in der
-            // Praxis unterbrochen/abgebrochen. Stattdessen einmalig nach Ende
-            // der Animation die finale Position übernehmen.
-            setTimeout(() => finalize(foundEl), 700);
+            animateScrollTo(foundEl, step.scrollBlock || 'center', () => finalize(foundEl));
             return;
           }
         }
@@ -367,7 +412,7 @@ const TourOverlay = () => {
 
           {/* Markierungsrahmen - komplett transparent, keine Verdunkelung des Elements selbst */}
           <div
-            className="absolute rounded-2xl ring-2 ring-[#ff5c3e] transition-all duration-300 cursor-pointer"
+            className="absolute rounded-2xl ring-2 ring-[#ff5c3e] cursor-pointer"
             style={{
               top: rect.top - pad,
               left: rect.left - pad,
