@@ -185,7 +185,7 @@ const Pokal = () => {
       </div>
 
       {/* Mobile Bracket View (Tabs) */}
-      <div className="block xl:hidden -mx-4 pb-10 overflow-hidden">
+      <div data-tour="pokal-bracket" className="block xl:hidden -mx-4 pb-10 overflow-hidden">
         <div ref={tabsRef} className="flex overflow-x-auto gap-3 pb-4 mb-4 no-scrollbar scroll-smooth px-4">
           {rounds.map(round => (
             <button
@@ -230,7 +230,7 @@ const Pokal = () => {
       </div>
 
       {/* Desktop Bracket View - Tree structure */}
-      <div className="hidden xl:block relative pb-10">
+      <div data-tour="pokal-bracket" className="hidden xl:block relative pb-10">
         
         {/* Zoom Controls */}
         <div className="absolute right-8 top-0 flex items-center gap-1.5 bg-[#1a1d24] border border-[#2a2e37] p-1.5 rounded-xl z-20 shadow-lg">

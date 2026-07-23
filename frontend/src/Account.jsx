@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
-import Tutorial from './Tutorial';
+import { useTour } from './Tour';
 
 const MenuLink = ({ to, onClick, icon, label, color = '#8b92a5' }) => {
   const content = (
@@ -72,7 +72,7 @@ const LogoutIcon = (
 
 const Account = () => {
   const { user, profile, isAdmin, isFirebaseConfigured, signOut } = useAuth();
-  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
+  const tour = useTour();
 
   return (
     <div className="min-h-screen bg-[#0f1115] p-4 sm:p-10">
@@ -101,8 +101,8 @@ const Account = () => {
           </div>
         )}
 
-        <div className="flex flex-col gap-3 mb-8">
-          <MenuLink onClick={() => setIsTutorialOpen(true)} icon={TutorialIcon} label="App-Tutorial ansehen" color="#eab308" />
+        <div data-tour="account-menu" className="flex flex-col gap-3 mb-8">
+          <MenuLink onClick={tour.start} icon={TutorialIcon} label="App-Tutorial ansehen" color="#eab308" />
           <MenuLink to="/rules" icon={RulesIcon} label="Regelkatalog" color="#ff5c3e" />
           <MenuLink to="/pokal-rules" icon={TrophyIcon} label="Pokal-Regeln" color="#8b5cf6" />
           <MenuLink to="/archiv" icon={ArchiveIcon} label="Quali-Daten (Archiv)" color="#8b92a5" />
@@ -115,8 +115,6 @@ const Account = () => {
           <MenuLink onClick={signOut} icon={LogoutIcon} label="Abmelden" color="#ef4444" />
         )}
       </div>
-
-      <Tutorial isOpen={isTutorialOpen} onClose={() => setIsTutorialOpen(false)} />
     </div>
   );
 };

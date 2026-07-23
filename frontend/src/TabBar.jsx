@@ -28,9 +28,9 @@ const AccountIcon = ({ active }) => (
 );
 
 const TABS = [
-  { to: '/', label: 'Liga', Icon: LigaIcon, match: (p) => p === '/' || p.startsWith('/archiv') || p.startsWith('/user/') || p.startsWith('/compare/') },
-  { to: '/pokal', label: 'Pokal', Icon: PokalIcon, match: (p) => p.startsWith('/pokal') },
-  { to: '/account', label: 'Account', Icon: AccountIcon, match: (p) => p.startsWith('/account') || p === '/admin' || p === '/rules' }
+  { to: '/', label: 'Liga', Icon: LigaIcon, tourId: 'tab-liga', match: (p) => p === '/' || p.startsWith('/archiv') || p.startsWith('/user/') || p.startsWith('/compare/') },
+  { to: '/pokal', label: 'Pokal', Icon: PokalIcon, tourId: 'tab-pokal', match: (p) => p.startsWith('/pokal') },
+  { to: '/account', label: 'Account', Icon: AccountIcon, tourId: 'tab-account', match: (p) => p.startsWith('/account') || p === '/admin' || p === '/rules' }
 ];
 
 const TabBar = () => {
@@ -48,6 +48,7 @@ const TabBar = () => {
             <Link
               key={tab.to}
               to={tab.to}
+              data-tour={tab.tourId}
               className="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 active:scale-95 transition-transform"
             >
               <span className={active ? 'text-[#ff5c3e]' : 'text-[#8b92a5]'}>

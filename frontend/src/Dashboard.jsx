@@ -71,7 +71,7 @@ export const Header = ({
       {/* Bottom Row: Controls */}
       <div className="flex w-full sm:w-auto justify-between sm:justify-end items-center gap-2 sm:gap-4">
         {/* Spieltag-Wechsler (Pfeil-Design) */}
-        <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden flex-1 sm:flex-initial justify-between h-12">
+        <div data-tour="matchday-switcher" className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden flex-1 sm:flex-initial justify-between h-12">
           <button
             onClick={onPrev}
             className="px-3 sm:px-5 h-full text-[#8b92a5] hover:text-[#ff5c3e] transition-colors bg-[#181a20] active:scale-90"
@@ -106,7 +106,7 @@ export const parsePoints = (str) => {
   return parseInt(str.replace(/\./g, '')) || 0;
 };
 
-export const UserRow = ({ item, color, isSaisonView, displayRank, prevRank, routeBase = '' }) => {
+export const UserRow = ({ item, color, isSaisonView, displayRank, prevRank, routeBase = '', isTourTarget = false }) => {
   const rankChange = prevRank ? prevRank - displayRank : 0;
   const statusColors = {
     green: '#22c55e',
@@ -117,7 +117,7 @@ export const UserRow = ({ item, color, isSaisonView, displayRank, prevRank, rout
   const pointsToShow = isSaisonView ? item.points : (item.pointsMatchday || '0');
 
   return (
-    <Link to={`${routeBase}/user/${item.id}`} className="block transition-transform active:scale-95">
+    <Link to={`${routeBase}/user/${item.id}`} className="block transition-transform active:scale-95" data-tour={isTourTarget ? 'user-row' : undefined}>
       <div className={`flex items-center p-3 mb-2.5 bg-[#1a1d24] border ${isSaisonView && item.status ? 'border-[#3a3f4a]' : 'border-[#2a2e37]'} rounded-[14px] shadow-sm relative group hover:border-[#ff5c3e]/50 hover:bg-[#1e222a] transition-all cursor-pointer`}>
         {isSaisonView && item.status && (
           <div className="absolute left-0 top-0 bottom-0 w-[4px] rounded-l-md" style={{ backgroundColor: statusColors[item.status] }}></div>
@@ -152,7 +152,7 @@ export const UserRow = ({ item, color, isSaisonView, displayRank, prevRank, rout
   );
 };
 
-export const LeagueColumn = ({ league, isSaisonView, rankOffset, prevRanks, routeBase = '' }) => {
+export const LeagueColumn = ({ league, isSaisonView, rankOffset, prevRanks, routeBase = '', isFirstColumn = false }) => {
   return (
     <div className="flex-1 w-full lg:w-1/3 min-w-0 px-0 sm:px-2.5">
       <div className="flex items-center mb-4 mt-4 lg:mt-0">
@@ -169,6 +169,7 @@ export const LeagueColumn = ({ league, isSaisonView, rankOffset, prevRanks, rout
             displayRank={rankOffset + index + 1}
             prevRank={prevRanks?.[u.id]}
             routeBase={routeBase}
+            isTourTarget={isFirstColumn && index === 0}
           />
         ))}
       </div>
@@ -229,6 +230,7 @@ const Dashboard = ({ data, currentView, onNext, onPrev, prevRanks, mode = 'live'
             rankOffset={mode === 'archive' ? idx * 9 : 0}
             prevRanks={prevRanks}
             routeBase={routeBase}
+            isFirstColumn={idx === 0}
           />
         ))}
       </div>
