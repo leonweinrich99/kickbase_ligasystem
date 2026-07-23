@@ -38,14 +38,15 @@ export const Header = ({
   currentView,
   onNext,
   onPrev,
-  mode = 'live'
+  mode = 'live',
+  onOpenOptimalTeam
 }) => {
   const displayLabel = currentView === 'saison' ? 'Gesamt' : `Spieltag ${currentView}`;
 
   return (
     <div className="flex flex-col mb-4 sm:mb-8 border-b border-[#2a2e37] pb-4 sm:pb-6 gap-4">
 
-      {/* Top Row: Logo, Title, and Mobile Toggle */}
+      {/* Top Row: Logo, Title, and Optimale-Elf-Badge */}
       <div className="flex justify-between items-start gap-2 w-full">
         {/* Left: Logo & Title */}
         <div className="flex items-center gap-3 sm:gap-6 min-w-0 flex-1">
@@ -65,7 +66,18 @@ export const Header = ({
           </div>
         </div>
 
-        {/* Right: Archiv-Badge Platzhalter (Navigation läuft jetzt über die Tabbar) */}
+        {/* Right: Optimale-Elf-Badge (oben, wie die Pokal-Kachel) */}
+        <button
+          onClick={onOpenOptimalTeam}
+          data-tour="optimal-team-button"
+          className="shrink-0 flex items-center gap-1.5 bg-[#1a1d24] border border-[#ff5c3e]/40 hover:border-[#ff5c3e] transition-colors rounded-full pl-2.5 pr-3 py-1.5 shadow-lg active:scale-95 group mt-1"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="#ff5c3e" stroke="#ff5c3e" strokeWidth="1" className="shrink-0"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          <span className="text-[10px] font-bold text-gray-300 group-hover:text-white transition-colors whitespace-nowrap">
+            <span className="hidden sm:inline">Optimale Elf</span>
+            <span className="sm:hidden">Elf</span>
+          </span>
+        </button>
       </div>
 
       {/* Bottom Row: Controls */}
@@ -180,7 +192,7 @@ export const LeagueColumn = ({ league, isSaisonView, rankOffset, prevRanks, rout
 // mode 'archive' = altes Qualigruppen-Verhalten: alle Ligen zusammen global sortieren
 //                  und dann wieder in 3 Blöcke á 9 aufteilen (so wie es zur Quali lief).
 // mode 'live'     = neues Ligasystem: jede Liga läuft komplett unabhängig, eigenes Ranking.
-const Dashboard = ({ data, currentView, onNext, onPrev, prevRanks, mode = 'live', routeBase = '' }) => {
+const Dashboard = ({ data, currentView, onNext, onPrev, prevRanks, mode = 'live', routeBase = '', onOpenOptimalTeam }) => {
   const isSaisonView = currentView === 'saison';
 
   const sortByView = (a, b) => {
@@ -220,6 +232,7 @@ const Dashboard = ({ data, currentView, onNext, onPrev, prevRanks, mode = 'live'
         onNext={onNext}
         onPrev={onPrev}
         mode={mode}
+        onOpenOptimalTeam={onOpenOptimalTeam}
       />
       <div className="flex flex-col lg:flex-row gap-4">
         {processedLeagues.map((league, idx) => (

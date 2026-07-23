@@ -42,8 +42,7 @@ export const TOUR_STEPS = [
     path: '/archiv',
     selector: '[data-tour="optimal-team-button"]',
     title: 'Die optimale Elf',
-    text: 'Tippe hier, um dir die stärkste mögliche Elf des Spieltags live anzuzeigen.',
-    scrollBlock: 'end'
+    text: 'Tippe hier, um dir die stärkste mögliche Elf des Spieltags live anzuzeigen.'
   },
   {
     path: '/archiv',
@@ -218,6 +217,26 @@ const TourOverlay = () => {
 
     let cancelled = false;
 
+    const finalize = (foundEl) => {
+      if (cancelled) return;
+      const r = foundEl.getBoundingClientRect();
+      setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
+
+      // Manche Schritte (z.B. Pokal-Runden-Tabs) sollen automatisch
+      // weitergehen, ohne dass man selbst tippen/bestätigen muss.
+      if (step.autoAdvance && !autoAdvanceRef.current) {
+        autoAdvanceRef.current = true;
+        setTimeout(() => {
+          if (cancelled) return;
+          if (step.simulateClick) {
+            const el = document.querySelector(step.selector) || foundEl;
+            if (el) el.click();
+          }
+          tour.next();
+        }, step.autoAdvance);
+      }
+    };
+
     const locate = () => {
       if (cancelled) return;
       const candidates = document.querySelectorAll(step.selector);
@@ -241,30 +260,16 @@ const TourOverlay = () => {
           scrolledRef.current = true;
           if (!isFixed && !step.noAutoScroll) {
             foundEl.scrollIntoView({ behavior: 'smooth', block: step.scrollBlock || 'center', inline: 'nearest' });
-            setTimeout(() => {
-              if (cancelled) return;
-              const r2 = foundEl.getBoundingClientRect();
-              setRect({ top: r2.top, left: r2.left, width: r2.width, height: r2.height });
-            }, 400);
+            // WICHTIG: Während der Scroll-Animation NICHT laufend neu rendern
+            // (z.B. über einen 'scroll'-Listener) - das hat die Animation in der
+            // Praxis unterbrochen/abgebrochen. Stattdessen einmalig nach Ende
+            // der Animation die finale Position übernehmen.
+            setTimeout(() => finalize(foundEl), 700);
+            return;
           }
         }
 
-        const r = foundEl.getBoundingClientRect();
-        setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
-
-        // Manche Schritte (z.B. Pokal-Runden-Tabs) sollen automatisch
-        // weitergehen, ohne dass man selbst tippen/bestätigen muss.
-        if (step.autoAdvance && !autoAdvanceRef.current) {
-          autoAdvanceRef.current = true;
-          setTimeout(() => {
-            if (cancelled) return;
-            if (step.simulateClick) {
-              const el = document.querySelector(step.selector) || foundEl;
-              if (el) el.click();
-            }
-            tour.next();
-          }, step.autoAdvance);
-        }
+        finalize(foundEl);
       } else if (attemptsRef.current < (step.optional ? OPTIONAL_MAX_ATTEMPTS : MAX_ATTEMPTS)) {
         attemptsRef.current += 1;
         setTimeout(locate, 100);
@@ -279,14 +284,16 @@ const TourOverlay = () => {
 
     locate();
 
-    const onRecalc = () => locate();
-    window.addEventListener('resize', onRecalc);
-    window.addEventListener('scroll', onRecalc, true);
+    // Nur bei Größenänderung (z.B. Rotation) neu einmessen. Ein 'scroll'-Listener
+    // wurde hier bewusst NICHT eingebaut: die dadurch ausgelösten Re-Renders haben
+    // die scrollIntoView-Animation selbst unterbrochen, sodass der Zielbereich
+    // teils nie vollständig ins Bild gescrollt wurde.
+    const onResize = () => locate();
+    window.addEventListener('resize', onResize);
 
     return () => {
       cancelled = true;
-      window.removeEventListener('resize', onRecalc);
-      window.removeEventListener('scroll', onRecalc, true);
+      window.removeEventListener('resize', onResize);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);

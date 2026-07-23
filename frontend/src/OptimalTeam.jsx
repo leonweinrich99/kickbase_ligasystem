@@ -62,12 +62,15 @@ const OptimalTeam = ({ isOpen, onClose, availableMatchdays, currentGlobalMatchda
   // Fetch optimal team data
   useEffect(() => {
     if (!isOpen) return;
-    
+
+    let cancelled = false;
+    const requestedMatchday = matchday;
+
     setLoading(true);
     setError(null);
-    
+
     // Vermeide Caching
-    fetch(`${dataBase}/history/optimal-md-${matchday}-final.json?t=${Date.now()}`)
+    fetch(`${dataBase}/history/optimal-md-${requestedMatchday}-final.json?t=${Date.now()}`)
       .then(res => {
         if (!res.ok) {
           throw new Error('Keine optimalen Daten für diesen Spieltag gefunden.');
@@ -75,15 +78,23 @@ const OptimalTeam = ({ isOpen, onClose, availableMatchdays, currentGlobalMatchda
         return res.json();
       })
       .then(d => {
+        // Veraltete Antworten ignorieren, falls der Effekt zwischenzeitlich neu
+        // gelaufen ist (z.B. weil sich der Spieltag kurz hintereinander geändert
+        // hat) - verhindert, dass ein späterer korrekter Request von einem
+        // früheren, inzwischen überholten überschrieben wird.
+        if (cancelled) return;
         setData(d);
         setLoading(false);
       })
       .catch(err => {
+        if (cancelled) return;
         console.error(err);
         setError(err.message);
         setData(null);
         setLoading(false);
       });
+
+    return () => { cancelled = true; };
   }, [matchday, isOpen, dataBase]);
 
   // Sync initial matchday when modal opens
