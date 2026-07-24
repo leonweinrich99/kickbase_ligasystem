@@ -42,7 +42,7 @@ const Login = () => {
   if (!isFirebaseConfigured) {
     return (
       <div className="min-h-screen bg-[#000000] flex items-center justify-center p-4">
-        <div className="max-w-md text-center bg-[#1a1d24] border border-[#2a2e37] rounded-2xl p-8">
+        <div className="max-w-md text-center bg-[#1c1c1c] border border-[#2e2e2e] rounded-2xl p-8">
           <h1 className="text-lg font-black text-white mb-3 uppercase">Login noch nicht konfiguriert</h1>
           <p className="text-sm text-[#8b92a5]">
             Es fehlen die Firebase-Umgebungsvariablen (siehe <code className="text-[#ff5c3e]">frontend/.env.example</code>).
@@ -55,7 +55,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-[#000000] flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-[#1a1d24] border border-[#2a2e37] rounded-3xl p-8 shadow-2xl">
+      <div className="w-full max-w-md bg-[#1c1c1c] border border-[#2e2e2e] rounded-3xl p-8 shadow-2xl">
         <div className="flex flex-col items-center mb-8">
           <div className="w-16 h-16 mb-4">
             <img src={logo} alt="Logo" className="w-full h-full object-contain" />
@@ -84,9 +84,9 @@ const Login = () => {
         </button>
 
         <div className="flex items-center gap-3 mb-6">
-          <div className="flex-1 h-px bg-[#2a2e37]"></div>
+          <div className="flex-1 h-px bg-[#2e2e2e]"></div>
           <span className="text-[10px] uppercase tracking-widest text-[#626978] font-bold">oder</span>
-          <div className="flex-1 h-px bg-[#2a2e37]"></div>
+          <div className="flex-1 h-px bg-[#2e2e2e]"></div>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
@@ -96,7 +96,7 @@ const Login = () => {
               placeholder="Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="bg-[#000000] border border-[#2a2e37] rounded-xl px-4 py-3 text-sm text-gray-200 outline-none focus:border-[#ff5c3e]"
+              className="bg-[#000000] border border-[#2e2e2e] rounded-xl px-4 py-3 text-sm text-gray-200 outline-none focus:border-[#ff5c3e]"
               required
             />
           )}
@@ -105,7 +105,7 @@ const Login = () => {
             placeholder="E-Mail"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="bg-[#000000] border border-[#2a2e37] rounded-xl px-4 py-3 text-sm text-gray-200 outline-none focus:border-[#ff5c3e]"
+            className="bg-[#000000] border border-[#2e2e2e] rounded-xl px-4 py-3 text-sm text-gray-200 outline-none focus:border-[#ff5c3e]"
             required
           />
           <input
@@ -113,7 +113,7 @@ const Login = () => {
             placeholder="Passwort"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="bg-[#000000] border border-[#2a2e37] rounded-xl px-4 py-3 text-sm text-gray-200 outline-none focus:border-[#ff5c3e]"
+            className="bg-[#000000] border border-[#2e2e2e] rounded-xl px-4 py-3 text-sm text-gray-200 outline-none focus:border-[#ff5c3e]"
             required
             minLength={6}
           />

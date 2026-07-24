@@ -17,7 +17,7 @@ const PositionRow = ({ players, positionName }) => {
           return (
             <div key={p.id} className={`relative flex flex-col items-center group ${containerSize}`}>
               {/* Spieler-Bild */}
-              <div className={`${baseSize} rounded-full bg-[#1e222a] border-2 border-[#3a3f4a] overflow-hidden flex items-center justify-center shadow-lg relative group-hover:border-[#ff5c3e] transition-colors`}>
+              <div className={`${baseSize} rounded-full bg-[#1e222a] border-2 border-[#404040] overflow-hidden flex items-center justify-center shadow-lg relative group-hover:border-[#ff5c3e] transition-colors`}>
               {p.imagePath ? (
                 <img 
                   src={`https://cdn.kickbase.com/files/players/${p.imagePath}/1`} 
@@ -39,7 +39,7 @@ const PositionRow = ({ players, positionName }) => {
               <div className="text-[10px] sm:text-[11px] font-bold text-white truncate w-full shadow-sm" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
                 {p.lastName || p.name}
               </div>
-              <div className="text-[8px] sm:text-[9px] font-bold text-[#8b92a5] whitespace-nowrap bg-[#1a1d24]/80 px-1 rounded-sm inline-block mt-0.5">
+              <div className="text-[8px] sm:text-[9px] font-bold text-[#8b92a5] whitespace-nowrap bg-[#1c1c1c]/80 px-1 rounded-sm inline-block mt-0.5">
                 {(p.marketValue / 1000000).toFixed(1)} Mio
               </div>
             </div>
@@ -141,10 +141,10 @@ const OptimalTeam = ({ isOpen, onClose, availableMatchdays, currentGlobalMatchda
       ></div>
       
       {/* Modal Container */}
-      <div className="bg-[#111318] border border-[#2a2e37] w-full max-w-2xl max-h-[90vh] rounded-2xl shadow-2xl relative flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="bg-[#111318] border border-[#2e2e2e] w-full max-w-2xl max-h-[90vh] rounded-2xl shadow-2xl relative flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-[#2a2e37] bg-[#1a1d24]">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-[#2e2e2e] bg-[#1c1c1c]">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-[#ff5c3e]/10 flex items-center justify-center text-[#ff5c3e]">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -159,20 +159,20 @@ const OptimalTeam = ({ isOpen, onClose, availableMatchdays, currentGlobalMatchda
           
           <button 
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-[#20242d] text-[#8b92a5] hover:text-white hover:bg-[#2a2e37] transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-[#242424] text-[#8b92a5] hover:text-white hover:bg-[#2e2e2e] transition-colors"
           >
             ✕
           </button>
         </div>
 
         {/* Matchday Toggle & Summary */}
-        <div className="px-6 py-4 bg-[#14161b] border-b border-[#2a2e37] flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="px-6 py-4 bg-[#14161b] border-b border-[#2e2e2e] flex flex-col md:flex-row justify-between items-center gap-6">
           
           {/* Spieltag-Wechsler (Dashboard-Design) */}
-          <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden w-full md:w-auto h-12">
+          <div className="bg-[#1c1c1c] border border-[#2e2e2e] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden w-full md:w-auto h-12">
             <button 
               onClick={handlePrev}
-              className="px-5 h-full text-[#8b92a5] hover:text-[#ff5c3e] transition-colors bg-[#181a20] active:scale-90"
+              className="px-5 h-full text-[#8b92a5] hover:text-[#ff5c3e] transition-colors bg-[#1a1a1a] active:scale-90"
             >
               <ChevronLeft size={20} />
             </button>
@@ -183,7 +183,7 @@ const OptimalTeam = ({ isOpen, onClose, availableMatchdays, currentGlobalMatchda
             </div>
             <button 
               onClick={handleNext}
-              className="px-5 h-full text-[#8b92a5] hover:text-[#ff5c3e] transition-colors bg-[#181a20] active:scale-90"
+              className="px-5 h-full text-[#8b92a5] hover:text-[#ff5c3e] transition-colors bg-[#1a1a1a] active:scale-90"
             >
               <ChevronRight size={20} />
             </button>
@@ -202,7 +202,7 @@ const OptimalTeam = ({ isOpen, onClose, availableMatchdays, currentGlobalMatchda
                 </div>
               </div>
 
-              <div className="w-[1px] h-8 bg-[#2a2e37]"></div>
+              <div className="w-[1px] h-8 bg-[#2e2e2e]"></div>
 
               {/* Budget */}
               <div className="flex items-center gap-3">
@@ -222,7 +222,7 @@ const OptimalTeam = ({ isOpen, onClose, availableMatchdays, currentGlobalMatchda
         </div>
 
         {/* Content (Pitch) */}
-        <div data-tour="optimal-team-pitch" className="flex-1 overflow-y-auto bg-[#1a1d24] relative min-h-[400px] flex flex-col justify-center py-8"
+        <div data-tour="optimal-team-pitch" className="flex-1 overflow-y-auto bg-[#1c1c1c] relative min-h-[400px] flex flex-col justify-center py-8"
              style={{
                 backgroundImage: 'radial-gradient(circle at center, #1e2530 0%, #111318 100%)'
              }}>

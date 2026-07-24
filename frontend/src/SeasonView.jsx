@@ -86,6 +86,7 @@ const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
     if (availableViews.length === 0) return;
 
     const view = availableViews[currentViewIndex];
+    if (view === undefined) return; // "Die wahre Tabelle" liegt außerhalb von availableViews - kein eigener Fetch nötig
 
     if (view === 'saison') {
       fetch(`${dataBase}/data.json?t=${Date.now()}`)
@@ -109,11 +110,17 @@ const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
     }
   }, [currentViewIndex, availableViews, latestMatchday, dataBase]);
 
+  // "Die wahre Tabelle" ist im neuen, unabhängigen Ligasystem ein zusätzlicher
+  // Klick-Stopp direkt im bestehenden Spieltag-Umschalter (nach "Gesamt"),
+  // kein eigenes UI-Element. Sie zeigt immer die aktuell geladenen
+  // Gesamt-Daten als eine gemeinsame Tabelle über alle Ligen.
+  const extendedViews = mode === 'live' ? [...availableViews, 'wahre-tabelle'] : availableViews;
+
   const navigate = (dir) => {
     setCurrentViewIndex(prev => {
       let next = prev + dir;
-      if (next < 0) next = availableViews.length - 1;
-      if (next >= availableViews.length) next = 0;
+      if (next < 0) next = extendedViews.length - 1;
+      if (next >= extendedViews.length) next = 0;
       return next;
     });
   };
@@ -129,7 +136,7 @@ const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
           <Route index element={
             <Dashboard
               data={data}
-              currentView={availableViews[currentViewIndex]}
+              currentView={extendedViews[currentViewIndex]}
               onNext={() => navigate(1)}
               onPrev={() => navigate(-1)}
               prevRanks={prevRanks}

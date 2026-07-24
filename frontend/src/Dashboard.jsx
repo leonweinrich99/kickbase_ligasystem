@@ -4,7 +4,7 @@ import logo from './assets/logo.png';
 
 export const AvatarIcon = ({ name }) => {
   return (
-    <div className="w-full h-full flex items-center justify-center bg-[#20242d] text-[#ff5c3e] font-black text-xs uppercase">
+    <div className="w-full h-full flex items-center justify-center bg-[#242424] text-[#ff5c3e] font-black text-xs uppercase">
       {name?.charAt(0) || '?'}
     </div>
   );
@@ -40,15 +40,13 @@ export const Header = ({
   onPrev,
   mode = 'live',
   onOpenOptimalTeam,
-  showTrueTableToggle = false,
-  isTrueTable = false,
-  onToggleTrueTable,
   onOpenTrueTableInfo
 }) => {
-  const displayLabel = currentView === 'saison' ? 'Gesamt' : `Spieltag ${currentView}`;
+  const isTrueTable = currentView === 'wahre-tabelle';
+  const displayLabel = isTrueTable ? 'Wahre Tabelle' : (currentView === 'saison' ? 'Gesamt' : `Spieltag ${currentView}`);
 
   return (
-    <div className="flex flex-col mb-4 sm:mb-8 border-b border-[#2a2e37] pb-4 sm:pb-6 gap-4">
+    <div className="flex flex-col mb-4 sm:mb-8 border-b border-[#2e2e2e] pb-4 sm:pb-6 gap-4">
 
       {/* Top Row: Logo, Title, and Optimale-Elf-Badge */}
       <div className="flex justify-between items-start gap-2 w-full">
@@ -61,7 +59,7 @@ export const Header = ({
             <div className="flex items-center gap-2 mb-1 flex-wrap">
               <div className="text-[9px] sm:text-[11px] font-bold tracking-wider text-[#ff5c3e]">SAISON 26/27</div>
               {mode === 'archive' && (
-                <div className="text-[8px] sm:text-[9px] font-black tracking-widest text-[#8b92a5] bg-[#20242d] border border-[#2a2e37] rounded-full px-2 py-0.5 uppercase">Archiv</div>
+                <div className="text-[8px] sm:text-[9px] font-black tracking-widest text-[#8b92a5] bg-[#242424] border border-[#2e2e2e] rounded-full px-2 py-0.5 uppercase">Archiv</div>
               )}
             </div>
             <h1 className="text-[17px] sm:text-3xl font-black tracking-tight uppercase leading-[1.1] break-words">
@@ -74,7 +72,7 @@ export const Header = ({
         <button
           onClick={onOpenOptimalTeam}
           data-tour="optimal-team-button"
-          className="shrink-0 flex items-center gap-1.5 bg-[#1a1d24] border border-[#ff5c3e]/40 hover:border-[#ff5c3e] transition-colors rounded-full pl-2.5 pr-3 py-1.5 shadow-lg active:scale-95 group mt-1"
+          className="shrink-0 flex items-center gap-1.5 bg-[#1c1c1c] border border-[#ff5c3e]/40 hover:border-[#ff5c3e] transition-colors rounded-full pl-2.5 pr-3 py-1.5 shadow-lg active:scale-95 group mt-1"
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="#ff5c3e" stroke="#ff5c3e" strokeWidth="1" className="shrink-0"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
           <span className="text-[10px] font-bold text-gray-300 group-hover:text-white transition-colors whitespace-nowrap">
@@ -84,53 +82,46 @@ export const Header = ({
       </div>
 
       {/* Bottom Row: Controls */}
-      <div className="flex w-full sm:w-auto justify-between sm:justify-end items-center gap-2 sm:gap-4 flex-wrap">
-        {/* Spieltag-Wechsler (Pfeil-Design) */}
-        <div data-tour="matchday-switcher" className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden flex-1 sm:flex-initial justify-between h-12">
+      <div className="flex w-full sm:w-auto justify-between sm:justify-end items-center gap-2 sm:gap-4">
+        {/* Spieltag-Wechsler (Pfeil-Design) - "Die wahre Tabelle" ist hier einfach
+            ein zusätzlicher Klick-Stopp nach "Gesamt", kein eigenes Element. */}
+        <div data-tour="matchday-switcher" className="bg-[#1c1c1c] border border-[#2e2e2e] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden flex-1 sm:flex-initial justify-between h-12">
           <button
             onClick={onPrev}
-            className="px-3 sm:px-5 h-full text-[#8b92a5] hover:text-[#ff5c3e] transition-colors bg-[#181a20] active:scale-90"
+            className="px-3 sm:px-5 h-full text-[#8b92a5] hover:text-[#ff5c3e] transition-colors bg-[#1a1a1a] active:scale-90"
           >
             &lsaquo;
           </button>
-          <span className="px-2 sm:px-10 text-[11px] sm:text-sm text-gray-200 whitespace-nowrap uppercase tracking-widest text-center flex-1">
+          <span className="px-2 sm:px-6 text-[11px] sm:text-sm text-gray-200 whitespace-nowrap uppercase tracking-widest text-center flex-1 flex items-center justify-center gap-1.5">
             {displayLabel}
+            {isTrueTable && (
+              <span
+                role="button"
+                tabIndex={0}
+                onClick={(e) => { e.stopPropagation(); onOpenTrueTableInfo?.(); }}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); onOpenTrueTableInfo?.(); } }}
+                title="Was bedeutet 'Die wahre Tabelle'?"
+                aria-label="Erklärung zur wahren Tabelle"
+                className="text-[#ff5c3e] opacity-80 hover:opacity-100 transition-opacity shrink-0"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+              </span>
+            )}
           </span>
           <button
             onClick={onNext}
-            className="px-3 sm:px-5 h-full text-[#8b92a5] hover:text-[#ff5c3e] transition-colors bg-[#181a20] active:scale-90"
+            className="px-3 sm:px-5 h-full text-[#8b92a5] hover:text-[#ff5c3e] transition-colors bg-[#1a1a1a] active:scale-90"
           >
             &rsaquo;
           </button>
         </div>
 
-        {/* Wahre-Tabelle-Umschalter: direkt neben Gesamt/Spieltag, kein extra Bereich weiter unten */}
-        {showTrueTableToggle && (
-          <button
-            onClick={onToggleTrueTable}
-            className={`flex items-center gap-1.5 rounded-xl px-3 sm:px-4 h-12 shadow-lg border transition-all shrink-0 ${isTrueTable ? 'bg-[#ff5c3e] border-[#ff5c3e] text-white' : 'bg-[#1a1d24] border-[#2a2e37] text-[#8b92a5] hover:text-white'}`}
-          >
-            <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest whitespace-nowrap">Wahre Tabelle</span>
-            <span
-              role="button"
-              tabIndex={0}
-              onClick={(e) => { e.stopPropagation(); onOpenTrueTableInfo?.(); }}
-              onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); onOpenTrueTableInfo?.(); } }}
-              title="Was bedeutet 'Die wahre Tabelle'?"
-              aria-label="Erklärung zur wahren Tabelle"
-              className="opacity-70 hover:opacity-100 transition-opacity shrink-0"
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12.01" y2="8"></line>
-              </svg>
-            </span>
-          </button>
-        )}
-
         {/* Teilnehmer Kachel */}
-        <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl px-3 sm:px-5 h-12 shadow-lg flex items-center gap-2 sm:gap-3 min-w-0">
+        <div className="bg-[#1c1c1c] border border-[#2e2e2e] rounded-xl px-3 sm:px-5 h-12 shadow-lg flex items-center gap-2 sm:gap-3 min-w-0">
           <UsersIcon className="text-[#8b92a5] sm:hidden" />
           <span className="text-[8px] sm:text-[10px] font-bold text-[#8b92a5] tracking-widest leading-none uppercase hidden sm:inline">Teilnehmer</span>
           <span className="text-sm sm:text-base font-bold text-gray-200 leading-none">{participants}</span>
@@ -158,14 +149,14 @@ export const UserRow = ({ item, color, isSaisonView, displayRank, prevRank, rout
 
   return (
     <Link to={`${routeBase}/user/${item.id}`} className="block transition-transform active:scale-95" data-tour={isTourTarget ? 'user-row' : undefined}>
-      <div className={`flex items-center p-3 mb-2.5 bg-[#1a1d24] border ${isSaisonView && item.status ? 'border-[#3a3f4a]' : 'border-[#2a2e37]'} rounded-[14px] shadow-sm relative overflow-hidden group hover:border-[#ff5c3e]/50 hover:bg-[#1e222a] transition-all cursor-pointer`}>
+      <div className={`flex items-center p-3 mb-2.5 bg-[#1c1c1c] border ${isSaisonView && item.status ? 'border-[#404040]' : 'border-[#2e2e2e]'} rounded-[14px] shadow-sm relative overflow-hidden group hover:border-[#ff5c3e]/50 hover:bg-[#1e222a] transition-all cursor-pointer`}>
         {isSaisonView && item.status && (
           <div className="absolute left-0 top-0 bottom-0 w-[4px]" style={{ backgroundColor: statusColors[item.status] }}></div>
         )}
         <div className="w-8 flex justify-center items-center text-xs font-bold text-[#8b92a5]">
           {item.isTrophy && isSaisonView ? <TrophyIcon type={item.trophyColor} /> : displayRank}
         </div>
-        <div className="w-10 h-10 rounded-full bg-[#20242d] ml-2 flex items-center justify-center overflow-hidden border border-[#2a2e37]">
+        <div className="w-10 h-10 rounded-full bg-[#242424] ml-2 flex items-center justify-center overflow-hidden border border-[#2e2e2e]">
           <AvatarIcon name={item.name} />
         </div>
         <div className="ml-3 flex-1 flex flex-col justify-center min-w-0">
@@ -225,7 +216,7 @@ export const LeagueColumn = ({ league, isSaisonView, rankOffset, prevRanks, rout
 const TrueTableInfoModal = ({ onClose }) => (
   <div className="fixed inset-0 z-[90] bg-black/80 flex items-center justify-center p-4" onClick={onClose}>
     <div
-      className="max-w-md w-full bg-[#1a1d24] border border-[#2a2e37] rounded-3xl p-6 shadow-2xl relative"
+      className="max-w-md w-full bg-[#1c1c1c] border border-[#2e2e2e] rounded-3xl p-6 shadow-2xl relative"
       onClick={(e) => e.stopPropagation()}
     >
       <button
@@ -265,8 +256,10 @@ const TrueTableInfoModal = ({ onClose }) => (
 //                  und dann wieder in 3 Blöcke á 9 aufteilen (so wie es zur Quali lief).
 // mode 'live'     = neues Ligasystem: jede Liga läuft komplett unabhängig, eigenes Ranking.
 const Dashboard = ({ data, currentView, onNext, onPrev, prevRanks, mode = 'live', routeBase = '', onOpenOptimalTeam }) => {
-  const isSaisonView = currentView === 'saison';
-  const [viewMode, setViewMode] = useState('ligen'); // 'ligen' | 'wahre'
+  const isTrueTable = currentView === 'wahre-tabelle';
+  // "Die wahre Tabelle" zeigt immer die zuletzt geladenen Gesamt-Daten - für
+  // Punkte-/Sortierzwecke verhält sie sich wie die Saisonansicht.
+  const isSaisonView = currentView === 'saison' || isTrueTable;
   const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   const sortByView = (a, b) => {
@@ -301,14 +294,11 @@ const Dashboard = ({ data, currentView, onNext, onPrev, prevRanks, mode = 'live'
   // "Die wahre Tabelle": alle Ligen zu einer Gesamtliste zusammenfassen, nur
   // fürs neue, unabhängige Ligasystem relevant (im Archiv war das ohnehin
   // schon die einzige Ansicht).
-  const trueTableUsers = mode === 'live'
+  const trueTableUsers = isTrueTable
     ? data.leagues
         .reduce((acc, l) => [...acc, ...l.users.map((u) => ({ ...u, leagueColor: l.color, leagueName: l.name }))], [])
         .sort(sortByView)
     : [];
-
-  const showTrueTableToggle = mode === 'live';
-  const isTrueTable = showTrueTableToggle && viewMode === 'wahre';
 
   return (
     <div className="max-w-[1400px] mx-auto bg-[#000000]">
@@ -319,9 +309,6 @@ const Dashboard = ({ data, currentView, onNext, onPrev, prevRanks, mode = 'live'
         onPrev={onPrev}
         mode={mode}
         onOpenOptimalTeam={onOpenOptimalTeam}
-        showTrueTableToggle={showTrueTableToggle}
-        isTrueTable={isTrueTable}
-        onToggleTrueTable={() => setViewMode(isTrueTable ? 'ligen' : 'wahre')}
         onOpenTrueTableInfo={() => setIsInfoOpen(true)}
       />
 

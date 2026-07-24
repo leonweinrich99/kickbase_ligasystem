@@ -64,7 +64,7 @@ const AdminPanel = () => {
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-[#000000] flex items-center justify-center p-4">
-        <div className="text-center bg-[#1a1d24] border border-[#2a2e37] rounded-2xl p-8">
+        <div className="text-center bg-[#1c1c1c] border border-[#2e2e2e] rounded-2xl p-8">
           <h1 className="text-lg font-black text-white uppercase mb-3">Kein Zugriff</h1>
           <p className="text-sm text-[#8b92a5] mb-6">Diese Seite ist nur für Admins.</p>
           <Link to="/" className="text-[#ff5c3e] text-sm font-bold uppercase tracking-widest">Zurück zum Ligasystem</Link>
@@ -88,12 +88,12 @@ const AdminPanel = () => {
             <div className="text-[10px] font-bold tracking-wider text-[#ff5c3e] mb-1">ADMIN</div>
             <h1 className="text-2xl sm:text-3xl font-black uppercase text-white">Nutzerverwaltung</h1>
           </div>
-          <Link to="/" className="bg-[#1a1d24] border border-[#2a2e37] px-4 py-2 rounded-xl text-[#8b92a5] hover:text-white transition-all text-xs font-bold uppercase tracking-wider">
+          <Link to="/" className="bg-[#1c1c1c] border border-[#2e2e2e] px-4 py-2 rounded-xl text-[#8b92a5] hover:text-white transition-all text-xs font-bold uppercase tracking-wider">
             Zurück
           </Link>
         </div>
 
-        <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div className="bg-[#1c1c1c] border border-[#2e2e2e] rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <div className="font-bold text-gray-100">Kickbase-Daten aktualisieren</div>
             <div className="text-xs text-[#8b92a5]">Stößt den GitHub-Actions-Workflow zum Abruf der Ligadaten manuell an.</div>
@@ -116,7 +116,7 @@ const AdminPanel = () => {
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${filter === f ? 'bg-[#ff5c3e] text-white' : 'bg-[#1a1d24] border border-[#2a2e37] text-[#8b92a5] hover:text-white'}`}
+              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${filter === f ? 'bg-[#ff5c3e] text-white' : 'bg-[#1c1c1c] border border-[#2e2e2e] text-[#8b92a5] hover:text-white'}`}
             >
               {f === 'pending' ? `Ausstehend (${pendingCount})` : f === 'approved' ? 'Freigegeben' : f === 'admin' ? `Admins (${adminCount})` : f === 'rejected' ? 'Abgelehnt' : 'Alle'}
             </button>
@@ -134,9 +134,9 @@ const AdminPanel = () => {
         ) : (
           <div className="flex flex-col gap-3">
             {filteredUsers.map(u => (
-              <div key={u.id} className="bg-[#1a1d24] border border-[#2a2e37] rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div key={u.id} className="bg-[#1c1c1c] border border-[#2e2e2e] rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4 min-w-0">
-                  <div className="w-10 h-10 rounded-full bg-[#20242d] flex items-center justify-center font-black text-[#ff5c3e] shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-[#242424] flex items-center justify-center font-black text-[#ff5c3e] shrink-0">
                     {(u.displayName || u.email || '?').charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0">

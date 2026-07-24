@@ -199,7 +199,7 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
         <div className="text-gray-400 text-lg font-bold">Spieler nicht gefunden</div>
         <button 
           onClick={() => navigate(routeBase || '/')}
-          className="bg-[#1a1d24] border border-[#2a2e37] px-6 py-3 rounded-xl text-gray-300 hover:text-white hover:border-[#ff5c3e] transition-all"
+          className="bg-[#1c1c1c] border border-[#2e2e2e] px-6 py-3 rounded-xl text-gray-300 hover:text-white hover:border-[#ff5c3e] transition-all"
         >
           Zurück zur Übersicht
         </button>
@@ -214,7 +214,7 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
       <div className="mb-8">
         <button 
           onClick={() => navigate(`${routeBase}/user/${id1}`)}
-          className="group flex items-center gap-3 bg-[#1a1d24] border border-[#2a2e37] px-4 py-2 rounded-xl text-[#8b92a5] hover:text-white transition-all w-fit"
+          className="group flex items-center gap-3 bg-[#1c1c1c] border border-[#2e2e2e] px-4 py-2 rounded-xl text-[#8b92a5] hover:text-white transition-all w-fit"
         >
           <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
           <span className="text-xs font-bold uppercase tracking-wider">Zurück zur Detailseite</span>
@@ -222,8 +222,8 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
       </div>
 
       {/* Duel Header Desktop */}
-      <div className="hidden sm:flex justify-between items-center bg-[#1a1d24] border border-[#2a2e37] rounded-3xl p-8 mb-10 shadow-lg relative overflow-hidden">
-         <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-[#2a2e37] px-6 py-1 rounded-b-xl text-xs font-black tracking-widest uppercase text-gray-300 z-10">
+      <div className="hidden sm:flex justify-between items-center bg-[#1c1c1c] border border-[#2e2e2e] rounded-3xl p-8 mb-10 shadow-lg relative overflow-hidden">
+         <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-[#2e2e2e] px-6 py-1 rounded-b-xl text-xs font-black tracking-widest uppercase text-gray-300 z-10">
             Head to Head
          </div>
          <div className="absolute inset-0 bg-gradient-to-r from-[#ff5c3e]/10 via-transparent to-[#3b82f6]/10 opacity-30"></div>
@@ -239,7 +239,7 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
              </div>
          </div>
          
-         <div className="text-4xl font-black text-[#2a2e37] opacity-50 italic z-10">VS</div>
+         <div className="text-4xl font-black text-[#2e2e2e] opacity-50 italic z-10">VS</div>
          
          <div className="flex items-center gap-6 z-10 w-2/5 justify-end text-right">
              <div>
@@ -254,8 +254,8 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
       </div>
 
       {/* Duel Header Mobile */}
-      <div className="sm:hidden flex flex-col items-center bg-[#1a1d24] border border-[#2a2e37] rounded-3xl p-5 mb-8 shadow-lg relative overflow-hidden text-center gap-4">
-         <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-[#2a2e37] px-4 py-0.5 rounded-b-lg text-[9px] font-black tracking-widest uppercase text-gray-300 z-10">
+      <div className="sm:hidden flex flex-col items-center bg-[#1c1c1c] border border-[#2e2e2e] rounded-3xl p-5 mb-8 shadow-lg relative overflow-hidden text-center gap-4">
+         <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-[#2e2e2e] px-4 py-0.5 rounded-b-lg text-[9px] font-black tracking-widest uppercase text-gray-300 z-10">
             Head to Head
          </div>
          <div className="absolute inset-0 bg-gradient-to-b from-[#ff5c3e]/10 via-transparent to-[#3b82f6]/10 opacity-30"></div>
@@ -271,7 +271,7 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
                  </div>
              </div>
              
-             <div className="text-2xl font-black text-[#2a2e37] opacity-60 italic shrink-0 w-[20%]">VS</div>
+             <div className="text-2xl font-black text-[#2e2e2e] opacity-60 italic shrink-0 w-[20%]">VS</div>
              
              <div className="flex flex-col items-center w-[40%] gap-2">
                  <div className="w-14 h-14 rounded-xl bg-[#000000] border-2 border-[#3b82f6] flex items-center justify-center relative shadow-xl overflow-hidden shrink-0">
@@ -322,14 +322,14 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-2xl p-4 sm:p-6 shadow-lg">
+        <div className="bg-[#1c1c1c] border border-[#2e2e2e] rounded-2xl p-4 sm:p-6 shadow-lg">
           <div className="flex justify-between items-center mb-4 sm:mb-6">
             <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Platzierungsverlauf</h3>
           </div>
           <div className="h-[200px] sm:h-[250px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={historyWithScores} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2a2e37" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#2e2e2e" vertical={false} />
                 <XAxis dataKey="matchday" stroke="#4b5563" fontSize={10} tickLine={false} axisLine={false} tickFormatter={val => `ST ${val}`} />
                 <YAxis reversed stroke="#4b5563" fontSize={10} tickLine={false} axisLine={false} domain={[1, 30]} ticks={[1, 5, 10, 15, 20, 25, 30]} />
                 <ReferenceArea y1={1} y2={9} fill="#4ba6ff" fillOpacity={0.12} stroke="none" />
@@ -344,14 +344,14 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
           </div>
         </div>
 
-        <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-2xl p-4 sm:p-6 shadow-lg">
+        <div className="bg-[#1c1c1c] border border-[#2e2e2e] rounded-2xl p-4 sm:p-6 shadow-lg">
           <div className="flex justify-between items-center mb-4 sm:mb-6">
             <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Performance Index</h3>
           </div>
           <div className="h-[200px] sm:h-[250px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={historyWithScores} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2a2e37" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#2e2e2e" vertical={false} />
                 <XAxis dataKey="matchday" stroke="#4b5563" fontSize={10} tickLine={false} axisLine={false} tickFormatter={val => `ST ${val}`} />
                 <YAxis stroke="#4b5563" fontSize={10} tickLine={false} axisLine={false} domain={[1, 10]} ticks={[1, 3, 5, 7, 10]} />
                 <ReferenceArea y1={8} y2={10} fill="#22c55e" fillOpacity={0.1} stroke="none" />
@@ -364,13 +364,13 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
           </div>
         </div>
 
-        <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-2xl p-4 sm:p-6 shadow-lg">
+        <div className="bg-[#1c1c1c] border border-[#2e2e2e] rounded-2xl p-4 sm:p-6 shadow-lg">
           <div className="flex justify-between items-center mb-4 sm:mb-6">
             <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Spieltags-Leistung</h3>
             <div className="flex items-center">
                 <button 
                   onClick={() => setShowAverage(!showAverage)}
-                  className={`px-3 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase transition-all border shadow-lg ${showAverage ? 'bg-[#ff5c3e]/20 border-[#ff5c3e] text-[#ff5c3e]' : 'bg-[#20242d] border-[#2a2e37] text-[#8b92a5]'}`}
+                  className={`px-3 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase transition-all border shadow-lg ${showAverage ? 'bg-[#ff5c3e]/20 border-[#ff5c3e] text-[#ff5c3e]' : 'bg-[#242424] border-[#2e2e2e] text-[#8b92a5]'}`}
                 >
                   Ø Ligaschnitt
                 </button>
@@ -379,7 +379,7 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
           <div className="h-[200px] sm:h-[250px] w-full mt-4">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={historyWithScores} margin={{ top: 20, right: 5, left: -25, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2a2e37" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#2e2e2e" vertical={false} />
                 <XAxis 
                   dataKey="matchday" 
                   stroke="#4b5563" 
@@ -429,7 +429,7 @@ const DuelStatRow = ({ icon, label, val1, val2, isScore }) => {
     const isTie = num1 === num2;
 
     return (
-        <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-2xl p-4 flex items-center shadow-sm relative overflow-hidden group hover:border-[#3a3f4a] transition-all">
+        <div className="bg-[#1c1c1c] border border-[#2e2e2e] rounded-2xl p-4 flex items-center shadow-sm relative overflow-hidden group hover:border-[#404040] transition-all">
             
             {/* Background Color Indication (Subtle) */}
             <div className={`absolute top-0 left-0 bottom-0 w-1/2 opacity-10 transition-colors ${p1Wins ? 'bg-green-500' : p2Wins ? 'bg-red-500' : ''}`}></div>
@@ -443,8 +443,8 @@ const DuelStatRow = ({ icon, label, val1, val2, isScore }) => {
                 </div>
 
                 {/* Center Label */}
-                <div className="w-[40%] flex flex-col items-center justify-center border-x border-[#2a2e37] px-2 border-opacity-50">
-                    <div className="bg-[#20242d] p-1.5 rounded-lg mb-1.5 text-gray-400 group-hover:scale-110 transition-transform group-hover:text-white">
+                <div className="w-[40%] flex flex-col items-center justify-center border-x border-[#2e2e2e] px-2 border-opacity-50">
+                    <div className="bg-[#242424] p-1.5 rounded-lg mb-1.5 text-gray-400 group-hover:scale-110 transition-transform group-hover:text-white">
                         {React.cloneElement(icon, { size: 16 })}
                     </div>
                     <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-[#8b92a5] text-center leading-tight">
@@ -468,8 +468,8 @@ const CustomizedDot = (props) => {
 
   return (
     <g>
-      <circle cx={cx} cy={cy} r={7} fill={stroke} stroke="#1a1d24" strokeWidth={2} />
-      <text x={cx} y={cy} textAnchor="middle" dy=".35em" fill="#1a1d24" fontSize={8} fontWeight="black">
+      <circle cx={cx} cy={cy} r={7} fill={stroke} stroke="#1c1c1c" strokeWidth={2} />
+      <text x={cx} y={cy} textAnchor="middle" dy=".35em" fill="#1c1c1c" fontSize={8} fontWeight="black">
         {value}
       </text>
     </g>

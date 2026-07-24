@@ -53,7 +53,7 @@ const LoadingScreen = () => {
           initial={{ opacity: 0, scaleX: 0 }}
           animate={{ opacity: 1, scaleX: 1 }}
           transition={{ delay: 0.45, duration: 0.5 }}
-          className="mt-8 h-[3px] w-32 rounded-full bg-[#1a1d24] overflow-hidden"
+          className="mt-8 h-[3px] w-32 rounded-full bg-[#1c1c1c] overflow-hidden"
         >
           <motion.div
             className="h-full w-1/3 rounded-full bg-[#ff5c3e]"

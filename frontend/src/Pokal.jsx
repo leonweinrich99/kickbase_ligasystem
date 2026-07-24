@@ -13,16 +13,16 @@ const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {} }) => {
   const color2 = leagueColors[match.p2];
 
   return (
-    <div data-tour={tourTarget ? 'pokal-first-match' : undefined} className={`flex flex-col bg-[#1a1d24] border border-[#2a2e37] rounded-xl overflow-hidden shadow-lg w-full xl:w-48 flex-shrink-0 transition-transform hover:scale-105 hover:border-[#8b5cf6]/50 ${isFinal ? 'ring-2 ring-[#8b5cf6] shadow-[0_0_20px_rgba(139,92,246,0.3)] xl:scale-110 z-10' : ''}`}>
+    <div data-tour={tourTarget ? 'pokal-first-match' : undefined} className={`flex flex-col bg-[#1c1c1c] border border-[#2e2e2e] rounded-xl overflow-hidden shadow-lg w-full xl:w-48 flex-shrink-0 transition-transform hover:scale-105 hover:border-[#8b5cf6]/50 ${isFinal ? 'ring-2 ring-[#8b5cf6] shadow-[0_0_20px_rgba(139,92,246,0.3)] xl:scale-110 z-10' : ''}`}>
       <div
-        className={`flex justify-between items-center p-2.5 xl:p-2 border-b border-[#2a2e37] ${isWinner1 ? 'bg-green-500/20' : ''}`}
+        className={`flex justify-between items-center p-2.5 xl:p-2 border-b border-[#2e2e2e]`}
         style={color1 ? { borderLeft: `3px solid ${color1}` } : undefined}
       >
         <span className={`text-xs sm:text-sm font-bold truncate pr-2 ${isWinner1 ? 'text-white' : 'text-gray-300'}`}>{match.p1 || '-'}</span>
         <span className={`text-xs sm:text-sm font-black ${isWinner1 ? 'text-green-400' : 'text-gray-500'}`}>{match.score1 > 0 ? match.score1 : ''}</span>
       </div>
       <div
-        className={`flex justify-between items-center p-2.5 xl:p-2 ${isWinner2 ? 'bg-green-500/20' : ''}`}
+        className={`flex justify-between items-center p-2.5 xl:p-2`}
         style={color2 ? { borderLeft: `3px solid ${color2}` } : undefined}
       >
         <span className={`text-xs sm:text-sm font-bold truncate pr-2 ${isWinner2 ? 'text-white' : 'text-gray-300'}`}>{match.p2 || '-'}</span>
@@ -46,7 +46,7 @@ const MobileRoundView = ({ matches, isFirstRound, isFinal, leagueColors }) => {
           {pair[0] && (
             <div className="relative">
               {!isFirstRound && (
-                <div className="absolute right-[100%] w-[100vw] top-1/2 border-t-2 border-[#3a3f4a] pointer-events-none"></div>
+                <div className="absolute right-[100%] w-[100vw] top-1/2 border-t-2 border-[#404040] pointer-events-none"></div>
               )}
               <MatchBox match={pair[0]} isFinal={isFinal} tourTarget={idx === 0} leagueColors={leagueColors} />
             </div>
@@ -54,7 +54,7 @@ const MobileRoundView = ({ matches, isFirstRound, isFinal, leagueColors }) => {
           {pair[1] && (
             <div className="relative">
               {!isFirstRound && (
-                <div className="absolute right-[100%] w-[100vw] top-1/2 border-t-2 border-[#3a3f4a] pointer-events-none"></div>
+                <div className="absolute right-[100%] w-[100vw] top-1/2 border-t-2 border-[#404040] pointer-events-none"></div>
               )}
               <MatchBox match={pair[1]} isFinal={isFinal} leagueColors={leagueColors} />
             </div>
@@ -63,8 +63,8 @@ const MobileRoundView = ({ matches, isFirstRound, isFinal, leagueColors }) => {
           {/* Bracket Connecting Line */}
           {pair[1] && (
             <>
-              <div className="absolute left-[100%] w-4 top-[25%] bottom-[25%] border-r-2 border-t-2 border-b-2 border-[#3a3f4a] rounded-r-xl pointer-events-none"></div>
-              <div className="absolute left-[calc(100%+16px)] w-[100vw] top-1/2 border-t-2 border-[#3a3f4a] pointer-events-none"></div>
+              <div className="absolute left-[100%] w-4 top-[25%] bottom-[25%] border-r-2 border-t-2 border-b-2 border-[#404040] rounded-r-xl pointer-events-none"></div>
+              <div className="absolute left-[calc(100%+16px)] w-[100vw] top-1/2 border-t-2 border-[#404040] pointer-events-none"></div>
             </>
           )}
         </div>
@@ -216,7 +216,7 @@ const Pokal = () => {
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10 font-sans select-none">
     <div className="max-w-[1600px] mx-auto bg-[#000000]">
       {/* Header */}
-      <div className="flex flex-col mb-4 sm:mb-8 border-b border-[#2a2e37] pb-4 sm:pb-6 gap-4">
+      <div className="flex flex-col mb-4 sm:mb-8 border-b border-[#2e2e2e] pb-4 sm:pb-6 gap-4">
 
         {/* Top Row: Logo, Title, Neuer-Pokalmodus-Badge (oben rechts, mobil) */}
         <div className="flex justify-between items-start gap-2 w-full">
@@ -232,7 +232,7 @@ const Pokal = () => {
 
           <Link
             to="/pokal-rules"
-            className="sm:hidden shrink-0 flex items-center gap-1.5 bg-[#1a1d24] border border-[#8b5cf6]/40 hover:border-[#8b5cf6] transition-colors rounded-full pl-2.5 pr-3 py-1.5 shadow-lg active:scale-95 group mt-1"
+            className="sm:hidden shrink-0 flex items-center gap-1.5 bg-[#1c1c1c] border border-[#8b5cf6]/40 hover:border-[#8b5cf6] transition-colors rounded-full pl-2.5 pr-3 py-1.5 shadow-lg active:scale-95 group mt-1"
           >
             <span className="text-[7px] font-black uppercase text-white bg-[#8b5cf6] rounded-full px-1.5 py-0.5 tracking-widest leading-none">Neu</span>
             <span className="text-[10px] font-bold text-gray-300 group-hover:text-white transition-colors whitespace-nowrap">Pokalmodus</span>
@@ -241,7 +241,7 @@ const Pokal = () => {
 
         {/* Zweite Zeile: Runden-Umschalter (mobil), auf gleicher Höhe wie der Spieltag-Wechsler in der Liga */}
         <div className="flex xl:hidden w-full items-center gap-2 sm:gap-4">
-          <div ref={tabsRef} className="flex overflow-x-auto gap-2 no-scrollbar scroll-smooth h-12 items-center flex-1 bg-[#1a1d24] border border-[#2a2e37] rounded-xl px-2 shadow-lg">
+          <div ref={tabsRef} className="flex overflow-x-auto gap-2 no-scrollbar scroll-smooth h-12 items-center flex-1 bg-[#1c1c1c] border border-[#2e2e2e] rounded-xl px-2 shadow-lg">
             {rounds.map(round => (
               <button
                 key={round}
@@ -292,16 +292,16 @@ const Pokal = () => {
       <div data-tour="pokal-bracket" className="hidden xl:block relative pb-10">
         
         {/* Zoom Controls */}
-        <div className="absolute right-8 top-0 flex items-center gap-1.5 bg-[#1a1d24] border border-[#2a2e37] p-1.5 rounded-xl z-20 shadow-lg">
-          <button onClick={() => setZoomLevel(prev => Math.max(0.4, prev - 0.15))} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#2a2e37] text-[#8b92a5] hover:text-white transition-colors">
+        <div className="absolute right-8 top-0 flex items-center gap-1.5 bg-[#1c1c1c] border border-[#2e2e2e] p-1.5 rounded-xl z-20 shadow-lg">
+          <button onClick={() => setZoomLevel(prev => Math.max(0.4, prev - 0.15))} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#2e2e2e] text-[#8b92a5] hover:text-white transition-colors">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
           </button>
           <span className="text-[11px] font-black w-12 text-center text-gray-300 tracking-wider">{Math.round(zoomLevel * 100)}%</span>
-          <button onClick={() => setZoomLevel(prev => Math.min(1.5, prev + 0.15))} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#2a2e37] text-[#8b92a5] hover:text-white transition-colors">
+          <button onClick={() => setZoomLevel(prev => Math.min(1.5, prev + 0.15))} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#2e2e2e] text-[#8b92a5] hover:text-white transition-colors">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
           </button>
-          <div className="w-[1px] h-5 bg-[#2a2e37] mx-1"></div>
-          <button onClick={() => setZoomLevel(1)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#2a2e37] text-[#8b92a5] hover:text-white transition-colors" title="Reset Zoom">
+          <div className="w-[1px] h-5 bg-[#2e2e2e] mx-1"></div>
+          <button onClick={() => setZoomLevel(1)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#2e2e2e] text-[#8b92a5] hover:text-white transition-colors" title="Reset Zoom">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
           </button>
         </div>
