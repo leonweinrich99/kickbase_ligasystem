@@ -293,45 +293,39 @@ const Dashboard = ({ data, currentView, onNext, onPrev, prevRanks, mode = 'live'
       />
 
       {showTrueTableToggle && (
-        <div className="flex items-center gap-3 mb-6 flex-wrap">
-          <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl flex items-center p-1 shadow-lg">
-            <button
-              onClick={() => setViewMode('ligen')}
-              className={`px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${viewMode === 'ligen' ? 'bg-[#ff5c3e] text-white shadow-md' : 'text-[#8b92a5] hover:text-white'}`}
-            >
-              Meine Ligen
-            </button>
-            <button
-              onClick={() => setViewMode('wahre')}
-              className={`px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${viewMode === 'wahre' ? 'bg-[#ff5c3e] text-white shadow-md' : 'text-[#8b92a5] hover:text-white'}`}
-            >
-              Die wahre Tabelle
-            </button>
-          </div>
-
-          {isTrueTable && (
-            <button
-              onClick={() => setIsInfoOpen(true)}
-              className="w-8 h-8 rounded-full bg-[#1a1d24] border border-[#2a2e37] text-[#8b92a5] hover:text-white hover:border-[#ff5c3e] transition-all flex items-center justify-center shrink-0"
+        <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl inline-flex items-center p-1 shadow-lg mb-6">
+          <button
+            onClick={() => setViewMode('ligen')}
+            className={`px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${viewMode === 'ligen' ? 'bg-[#ff5c3e] text-white shadow-md' : 'text-[#8b92a5] hover:text-white'}`}
+          >
+            Meine Ligen
+          </button>
+          <button
+            onClick={() => setViewMode('wahre')}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${viewMode === 'wahre' ? 'bg-[#ff5c3e] text-white shadow-md' : 'text-[#8b92a5] hover:text-white'}`}
+          >
+            Die wahre Tabelle
+            <span
+              role="button"
+              tabIndex={0}
+              onClick={(e) => { e.stopPropagation(); setIsInfoOpen(true); }}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); setIsInfoOpen(true); } }}
               title="Was bedeutet 'Die wahre Tabelle'?"
               aria-label="Erklärung zur wahren Tabelle"
+              className="opacity-70 hover:opacity-100 transition-opacity"
             >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
                 <line x1="12" y1="16" x2="12" y2="12"></line>
                 <line x1="12" y1="8" x2="12.01" y2="8"></line>
               </svg>
-            </button>
-          )}
+            </span>
+          </button>
         </div>
       )}
 
       {isTrueTable ? (
         <div className="max-w-2xl mx-auto">
-          <div className="flex items-center mb-4">
-            <div className="w-1 h-5 mr-3 rounded-full bg-[#ff5c3e]"></div>
-            <h2 className="text-base sm:text-lg font-black tracking-wider uppercase text-gray-200">Gesamt - Alle Ligen</h2>
-          </div>
           <div className="flex flex-col">
             {trueTableUsers.map((u, index) => (
               <UserRow
