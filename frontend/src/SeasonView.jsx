@@ -6,6 +6,7 @@ import CompareView from './CompareView';
 import OptimalTeam from './OptimalTeam';
 import LoadingScreen from './LoadingScreen';
 import useMinimumDelay from './useMinimumDelay';
+import { shouldShowSplash, markSplashShown } from './appLoadState';
 import { useTour } from './Tour';
 
 // SeasonView kapselt eine komplette "Saison-Ansicht" (Dashboard + User-Detail + Vergleich)
@@ -29,6 +30,15 @@ const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
   const optimalTeamVisible = isOptimalTeamOpen || isOptimalTeamForced;
 
   const minDelayElapsed = useMinimumDelay(1800);
+
+  // Der animierte Splash-Screen soll nur beim allerersten Öffnen der App
+  // erscheinen - bei jedem weiteren Wechsel (z.B. Archiv <-> Liga) reicht
+  // eine stille, dunkle Fläche.
+  const [showSplash] = useState(() => {
+    const should = shouldShowSplash();
+    if (should) markSplashShown();
+    return should;
+  });
 
   useEffect(() => {
     Promise.all([
@@ -108,7 +118,9 @@ const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
     });
   };
 
-  if (!data || !minDelayElapsed) return <LoadingScreen />;
+  if (!data || (showSplash && !minDelayElapsed)) {
+    return showSplash ? <LoadingScreen /> : <div className="min-h-screen bg-[#000000]"></div>;
+  }
 
   return (
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10 font-sans select-none flex flex-col">

@@ -39,7 +39,11 @@ export const Header = ({
   onNext,
   onPrev,
   mode = 'live',
-  onOpenOptimalTeam
+  onOpenOptimalTeam,
+  showTrueTableToggle = false,
+  isTrueTable = false,
+  onToggleTrueTable,
+  onOpenTrueTableInfo
 }) => {
   const displayLabel = currentView === 'saison' ? 'Gesamt' : `Spieltag ${currentView}`;
 
@@ -80,7 +84,7 @@ export const Header = ({
       </div>
 
       {/* Bottom Row: Controls */}
-      <div className="flex w-full sm:w-auto justify-between sm:justify-end items-center gap-2 sm:gap-4">
+      <div className="flex w-full sm:w-auto justify-between sm:justify-end items-center gap-2 sm:gap-4 flex-wrap">
         {/* Spieltag-Wechsler (Pfeil-Design) */}
         <div data-tour="matchday-switcher" className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden flex-1 sm:flex-initial justify-between h-12">
           <button
@@ -99,6 +103,31 @@ export const Header = ({
             &rsaquo;
           </button>
         </div>
+
+        {/* Wahre-Tabelle-Umschalter: direkt neben Gesamt/Spieltag, kein extra Bereich weiter unten */}
+        {showTrueTableToggle && (
+          <button
+            onClick={onToggleTrueTable}
+            className={`flex items-center gap-1.5 rounded-xl px-3 sm:px-4 h-12 shadow-lg border transition-all shrink-0 ${isTrueTable ? 'bg-[#ff5c3e] border-[#ff5c3e] text-white' : 'bg-[#1a1d24] border-[#2a2e37] text-[#8b92a5] hover:text-white'}`}
+          >
+            <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest whitespace-nowrap">Wahre Tabelle</span>
+            <span
+              role="button"
+              tabIndex={0}
+              onClick={(e) => { e.stopPropagation(); onOpenTrueTableInfo?.(); }}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); onOpenTrueTableInfo?.(); } }}
+              title="Was bedeutet 'Die wahre Tabelle'?"
+              aria-label="Erklärung zur wahren Tabelle"
+              className="opacity-70 hover:opacity-100 transition-opacity shrink-0"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+            </span>
+          </button>
+        )}
 
         {/* Teilnehmer Kachel */}
         <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl px-3 sm:px-5 h-12 shadow-lg flex items-center gap-2 sm:gap-3 min-w-0">
@@ -290,39 +319,11 @@ const Dashboard = ({ data, currentView, onNext, onPrev, prevRanks, mode = 'live'
         onPrev={onPrev}
         mode={mode}
         onOpenOptimalTeam={onOpenOptimalTeam}
+        showTrueTableToggle={showTrueTableToggle}
+        isTrueTable={isTrueTable}
+        onToggleTrueTable={() => setViewMode(isTrueTable ? 'ligen' : 'wahre')}
+        onOpenTrueTableInfo={() => setIsInfoOpen(true)}
       />
-
-      {showTrueTableToggle && (
-        <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl inline-flex items-center p-1 shadow-lg mb-6">
-          <button
-            onClick={() => setViewMode('ligen')}
-            className={`px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${viewMode === 'ligen' ? 'bg-[#ff5c3e] text-white shadow-md' : 'text-[#8b92a5] hover:text-white'}`}
-          >
-            Meine Ligen
-          </button>
-          <button
-            onClick={() => setViewMode('wahre')}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${viewMode === 'wahre' ? 'bg-[#ff5c3e] text-white shadow-md' : 'text-[#8b92a5] hover:text-white'}`}
-          >
-            Die wahre Tabelle
-            <span
-              role="button"
-              tabIndex={0}
-              onClick={(e) => { e.stopPropagation(); setIsInfoOpen(true); }}
-              onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); setIsInfoOpen(true); } }}
-              title="Was bedeutet 'Die wahre Tabelle'?"
-              aria-label="Erklärung zur wahren Tabelle"
-              className="opacity-70 hover:opacity-100 transition-opacity"
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12.01" y2="8"></line>
-              </svg>
-            </span>
-          </button>
-        </div>
-      )}
 
       {isTrueTable ? (
         <div className="max-w-2xl mx-auto">

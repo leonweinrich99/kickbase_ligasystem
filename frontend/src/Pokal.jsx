@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import logo from './assets/pokal_logo.png';
 import LoadingScreen from './LoadingScreen';
 import useMinimumDelay from './useMinimumDelay';
+import { shouldShowSplash, markSplashShown } from './appLoadState';
 
 const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {} }) => {
   const isWinner1 = match.winner === 1;
@@ -111,6 +112,15 @@ const Pokal = () => {
   const [data, setData] = useState(null);
   const [leagueColors, setLeagueColors] = useState({});
   const minDelayElapsed = useMinimumDelay(1800);
+
+  // Der animierte Splash-Screen soll nur beim allerersten Öffnen der App
+  // erscheinen - bei jedem weiteren Besuch von /pokal reicht eine stille,
+  // dunkle Fläche.
+  const [showSplash] = useState(() => {
+    const should = shouldShowSplash();
+    if (should) markSplashShown();
+    return should;
+  });
   const [activeRound, setActiveRound] = useState('Sechzehntelfinale');
   const [direction, setDirection] = useState(0);
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -198,7 +208,9 @@ const Pokal = () => {
     return () => cancelAnimationFrame(raf);
   }, [data, zoomLevel]);
 
-  if (!data || !minDelayElapsed) return <LoadingScreen />;
+  if (!data || (showSplash && !minDelayElapsed)) {
+    return showSplash ? <LoadingScreen /> : <div className="min-h-screen bg-[#000000]"></div>;
+  }
 
   return (
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10 font-sans select-none">
