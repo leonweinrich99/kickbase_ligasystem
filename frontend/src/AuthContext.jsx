@@ -22,8 +22,21 @@ const INITIAL_ADMIN_EMAIL = (import.meta.env.VITE_INITIAL_ADMIN_EMAIL || '').toL
 const NTFY_TOPIC = import.meta.env.VITE_NTFY_TOPIC || '';
 
 const notifyNewSignup = (firebaseUser) => {
-  if (!NTFY_TOPIC) return;
   const name = firebaseUser.displayName || firebaseUser.email || 'Unbekannt';
+
+  // Weg 1: Native Push-Benachrichtigung direkt auf dem Gerät der Admins (iPhone-PWA
+  // etc.) über die eigene Vercel-Serverless-Funktion + Firebase Cloud Messaging.
+  fetch('/api/notify-admins', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, email: firebaseUser.email })
+  }).catch(() => {
+    // Nice-to-have, darf den Login-Flow nicht stören.
+  });
+
+  // Weg 2: Zusätzlich über ntfy.sh, falls konfiguriert - funktioniert auch ohne
+  // dass ein Admin die Push-Benachrichtigungen im Admin Panel aktiviert hat.
+  if (!NTFY_TOPIC) return;
   fetch(`https://ntfy.sh/${NTFY_TOPIC}`, {
     method: 'POST',
     headers: {

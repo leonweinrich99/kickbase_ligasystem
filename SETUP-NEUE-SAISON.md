@@ -105,23 +105,54 @@ der Live-URL funktioniert.
 ## 5. Push-Benachrichtigung bei neuen Registrierungen
 
 Damit du mitbekommst, wenn sich jemand Neues registriert und auf Freischaltung wartet,
-schickt die App bei jeder neuen Registrierung eine Push-Benachrichtigung über
-[ntfy.sh](https://ntfy.sh) - ein kostenloser Dienst ganz ohne Account.
+gibt es **zwei parallele** Wege - der zweite braucht etwas Einrichtung, funktioniert
+dafür als **echte iPhone-Benachrichtigung direkt von der installierten App**.
 
-**Bereits eingerichtet:** `VITE_NTFY_TOPIC` ist lokal und in Vercel bereits mit einem
-zufälligen, einzigartigen Topic-Namen hinterlegt.
+### 5.1 ntfy.sh (schon fertig eingerichtet, separate App)
+[ntfy.sh](https://ntfy.sh) ist ein kostenloser Push-Dienst ganz ohne Account.
+`VITE_NTFY_TOPIC` ist lokal und in Vercel bereits mit einem zufälligen,
+einzigartigen Topic-Namen hinterlegt.
 
-**Das musst du nur noch einmal tun, um die Benachrichtigungen zu empfangen:**
 1. Installiere die **ntfy-App** ([iOS](https://apps.apple.com/app/ntfy/id1625396347) /
    [Android](https://play.google.com/store/apps/details?id=io.heckel.ntfy)) - oder öffne
-   einfach `https://ntfy.sh/<dein-topic>` im Browser (auch am Desktop, bleibt aber nur
-   aktiv, solange der Tab offen ist).
+   `https://ntfy.sh/<dein-topic>` im Browser.
 2. In der App auf "+" tippen und **genau** den Topic-Namen aus `VITE_NTFY_TOPIC`
-   eingeben (steht in `frontend/.env` bzw. den Vercel Environment Variables).
-3. Fertig - ab jetzt bekommst du bei jeder neuen Registrierung eine Push-Mitteilung mit
-   Name und E-Mail der Person.
+   eingeben.
 
-> Möchtest du dein eigenes Topic verwenden (z.B. um es leichter zu merken), einfach
-> `VITE_NTFY_TOPIC` in `frontend/.env` und in Vercel auf einen neuen, möglichst
-> einzigartigen Namen ändern (jeder, der den Topic-Namen kennt, könnte sonst theoretisch
-> mitlesen oder eigene Nachrichten senden - daher lieber nicht leicht zu erraten wählen).
+### 5.2 Native Push direkt von der Ligasystem-App (Firebase Cloud Messaging)
+
+Funktioniert auch für die als PWA auf dem iPhone-Homescreen installierte App
+(**ab iOS 16.4**) - die Benachrichtigung kommt dann wie bei jeder normalen App direkt
+vom Ligasystem-Icon, ganz ohne separate App. **Firebase Cloud Messaging ist komplett
+kostenlos**, es wird kein kostenpflichtiger "Blaze"-Plan benötigt (das war nur bei
+automatisch auslösenden Cloud Functions nötig, die hier bewusst nicht verwendet werden
+- stattdessen läuft der Versand über die schon vorhandene Vercel-Funktion `/api/notify-admins`).
+
+**Einmalige Einrichtung (2 Schritte in der Firebase Console, kein Programmieren nötig):**
+
+1. **VAPID-Schlüssel (öffentlich):** [Firebase Console](https://console.firebase.google.com)
+   → dein Projekt → Zahnrad/Projekteinstellungen → Tab **"Cloud Messaging"** → Abschnitt
+   "Web-Konfiguration" → "Zertifikate für Web-Push" → **"Schlüsselpaar generieren"**.
+   Den angezeigten Schlüssel kopieren und einsetzen in:
+   - `frontend/.env` als `VITE_FIREBASE_VAPID_KEY=...`
+   - Vercel Environment Variables als `VITE_FIREBASE_VAPID_KEY` (Production + Preview)
+
+2. **Service-Account-Schlüssel (geheim, nur für den Server):** Projekteinstellungen →
+   Tab **"Dienstkonten"** → **"Neuen privaten Schlüssel generieren"** → JSON-Datei wird
+   heruntergeladen. Den kompletten Inhalt dieser Datei (als ein Stück Text) einsetzen in:
+   - Vercel Environment Variables als `FIREBASE_SERVICE_ACCOUNT_KEY`
+     (**wichtig:** ohne `VITE_`-Präfix, sonst landet das Geheimnis im öffentlichen
+     Frontend-Bundle! Nur in Vercel eintragen, nicht in `frontend/.env`.)
+
+**Danach im Admin Panel (`/admin`):**
+- Ganz oben erscheint die Karte "Push-Benachrichtigungen auf diesem Gerät" ->
+  "Benachrichtigungen aktivieren" antippen (muss ein echter Tap sein, iOS blockt
+  automatische Anfragen).
+- Auf dem iPhone **wichtig:** Die App muss dafür über "Zum Home-Bildschirm hinzufügen"
+  installiert und von dort (nicht im Safari-Tab) geöffnet sein.
+- Erlaubnis bestätigen - fertig. Jede*r Admin kann das auf beliebig vielen eigenen
+  Geräten aktivieren.
+
+> Beide Wege laufen unabhängig voneinander - du kannst nur ntfy, nur FCM, beide oder
+> keins davon nutzen. Ist `VITE_FIREBASE_VAPID_KEY` nicht gesetzt, blendet sich die
+> Karte im Admin Panel automatisch aus.
