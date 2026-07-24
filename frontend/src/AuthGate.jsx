@@ -1,11 +1,10 @@
 import React from 'react';
 import { useAuth } from './AuthContext';
 import Login from './Login';
+import LoadingScreen from './LoadingScreen';
 import { useTour } from './Tour';
 
-const Spinner = () => (
-  <div className="min-h-screen bg-[#0f1115]"></div>
-);
+const Spinner = () => <LoadingScreen />;
 
 const PendingScreen = ({ status }) => {
   const { signOut, profile } = useAuth();

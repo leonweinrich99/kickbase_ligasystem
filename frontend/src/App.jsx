@@ -7,6 +7,7 @@ import SeasonView from './SeasonView';
 import AdminPanel from './AdminPanel';
 import Account from './Account';
 import TabBar from './TabBar';
+import ScrollToTop from './ScrollToTop';
 import { AuthProvider } from './AuthContext';
 import AuthGate from './AuthGate';
 import { TourProvider } from './Tour';
@@ -16,6 +17,16 @@ function App() {
     <AuthProvider>
       <Router>
         <div className="min-h-screen bg-[#0f1115]">
+          <ScrollToTop />
+
+          {/* Deckt die Safe-Area oben (Notch/Dynamic Island/Statusleiste) permanent
+              mit der Hintergrundfarbe ab - fix positioniert, damit hochgescrollter
+              Inhalt nicht darunter/dahinter sichtbar wird. */}
+          <div
+            className="fixed top-0 left-0 right-0 z-[100] pointer-events-none bg-[#0f1115]"
+            style={{ height: 'env(safe-area-inset-top, 0px)' }}
+          ></div>
+
           <TourProvider>
             <AuthGate>
               <div style={{ paddingBottom: 'calc(64px + env(safe-area-inset-bottom, 0px))' }}>

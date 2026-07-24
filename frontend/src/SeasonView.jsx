@@ -4,6 +4,7 @@ import Dashboard from './Dashboard';
 import UserDetail from './UserDetail';
 import CompareView from './CompareView';
 import OptimalTeam from './OptimalTeam';
+import LoadingScreen from './LoadingScreen';
 import { useTour } from './Tour';
 
 // SeasonView kapselt eine komplette "Saison-Ansicht" (Dashboard + User-Detail + Vergleich)
@@ -104,7 +105,7 @@ const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
     });
   };
 
-  if (!data) return <div className="min-h-screen bg-[#0f1115]"></div>;
+  if (!data) return <LoadingScreen />;
 
   return (
     <div className="min-h-screen bg-[#0f1115] p-4 sm:p-10 font-sans select-none flex flex-col">

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import logo from './assets/pokal_logo.png';
+import LoadingScreen from './LoadingScreen';
 
 const MatchBox = ({ match, isFinal, tourTarget }) => {
   const isWinner1 = match.winner === 1;
@@ -171,7 +172,7 @@ const Pokal = () => {
     return () => cancelAnimationFrame(raf);
   }, [data, zoomLevel]);
 
-  if (!data) return <div className="min-h-screen bg-[#0f1115]"></div>;
+  if (!data) return <LoadingScreen />;
 
   return (
     <div className="min-h-screen bg-[#0f1115] p-4 sm:p-10 font-sans select-none">
