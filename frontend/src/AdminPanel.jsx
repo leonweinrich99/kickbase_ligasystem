@@ -88,27 +88,16 @@ const AdminPanel = () => {
             <div className="text-[10px] font-bold tracking-wider text-[#ff5c3e] mb-1">ADMIN</div>
             <h1 className="text-2xl sm:text-3xl font-black uppercase text-white">Nutzerverwaltung</h1>
           </div>
-          <Link to="/" className="bg-[#1c1c1c] border border-[#2e2e2e] px-4 py-2 rounded-xl text-[#8b92a5] hover:text-white transition-all text-xs font-bold uppercase tracking-wider">
-            Zurück
+          <Link
+            to="/account"
+            aria-label="Schließen"
+            className="w-10 h-10 shrink-0 flex items-center justify-center bg-[#1c1c1c] border border-[#2e2e2e] rounded-xl text-[#8b92a5] hover:text-white hover:border-[#404040] transition-all"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
           </Link>
-        </div>
-
-        <div className="bg-[#1c1c1c] border border-[#2e2e2e] rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-          <div>
-            <div className="font-bold text-gray-100">Kickbase-Daten aktualisieren</div>
-            <div className="text-xs text-[#8b92a5]">Stößt den GitHub-Actions-Workflow zum Abruf der Ligadaten manuell an.</div>
-          </div>
-          {updateStatus ? (
-            <span className="text-xs font-bold text-[#ff5c3e] animate-pulse">{updateStatus}</span>
-          ) : (
-            <button
-              onClick={handleManualUpdate}
-              disabled={isUpdating}
-              className="text-[10px] font-black uppercase tracking-widest bg-[#ff5c3e]/10 text-[#ff5c3e] border border-[#ff5c3e]/30 px-4 py-2 rounded-lg hover:bg-[#ff5c3e]/20 transition-colors disabled:opacity-50 shrink-0"
-            >
-              {isUpdating ? 'Läuft...' : 'Jetzt aktualisieren'}
-            </button>
-          )}
         </div>
 
         <div className="flex gap-2 mb-6 overflow-x-auto">
@@ -181,6 +170,24 @@ const AdminPanel = () => {
             ))}
           </div>
         )}
+
+        {/* Kickbase-Daten aktualisieren: bewusst ganz unten, als klar klickbarer
+            Abschluss der Seite statt einer kleinen Kachel oben zwischen den Filtern. */}
+        <div className="mt-10 pt-6 border-t border-[#2e2e2e]">
+          <button
+            onClick={handleManualUpdate}
+            disabled={isUpdating}
+            className="w-full flex items-center justify-center gap-2 bg-[#1c1c1c] border border-[#ff5c3e]/30 text-[#ff5c3e] font-black uppercase tracking-widest text-xs py-4 rounded-2xl hover:bg-[#ff5c3e]/10 hover:border-[#ff5c3e] transition-all disabled:opacity-50 shadow-lg"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            {updateStatus ? updateStatus : isUpdating ? 'Läuft...' : 'Kickbase-Daten jetzt aktualisieren'}
+          </button>
+          <p className="text-[10px] text-[#8b92a5] text-center mt-3">Stößt den GitHub-Actions-Workflow zum Abruf der Ligadaten manuell an.</p>
+        </div>
       </div>
     </div>
   );

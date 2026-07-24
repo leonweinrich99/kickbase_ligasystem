@@ -16,6 +16,27 @@ const AuthContext = createContext(null);
 // freigeschaltet, damit nicht ausgesperrt wird, wer das System einrichtet.
 const INITIAL_ADMIN_EMAIL = (import.meta.env.VITE_INITIAL_ADMIN_EMAIL || '').toLowerCase();
 
+// Push-Benachrichtigung an die Admins über ntfy.sh (kostenlos, kein Account
+// nötig) - einfach die ntfy-App installieren oder https://ntfy.sh/<Topic> im
+// Browser öffnen und dieses Topic abonnieren, siehe SETUP-NEUE-SAISON.md.
+const NTFY_TOPIC = import.meta.env.VITE_NTFY_TOPIC || '';
+
+const notifyNewSignup = (firebaseUser) => {
+  if (!NTFY_TOPIC) return;
+  const name = firebaseUser.displayName || firebaseUser.email || 'Unbekannt';
+  fetch(`https://ntfy.sh/${NTFY_TOPIC}`, {
+    method: 'POST',
+    headers: {
+      'Title': 'Neue Registrierung - Ligasystem',
+      'Priority': 'default',
+      'Tags': 'bust_in_silhouette'
+    },
+    body: `${name} (${firebaseUser.email}) hat sich registriert und wartet auf Freischaltung.`
+  }).catch(() => {
+    // Benachrichtigung ist ein Nice-to-have und darf den Login-Flow nicht stören.
+  });
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -54,6 +75,10 @@ export const AuthProvider = ({ children }) => {
             role: isInitialAdmin ? 'admin' : 'user',
             createdAt: serverTimestamp()
           });
+
+          if (!isInitialAdmin) {
+            notifyNewSignup(firebaseUser);
+          }
         } catch (e) {
           // Wird z.B. von firestore.rules abgelehnt, falls VITE_INITIAL_ADMIN_EMAIL
           // nicht exakt mit der in firestore.rules hinterlegten Admin-Mail übereinstimmt.

@@ -101,3 +101,27 @@ der Live-URL funktioniert.
 
 > Hinweis: Solange keine `VITE_FIREBASE_*` Variablen gesetzt sind, läuft die App wie
 > gehabt **ohne** Login (Fail-Open für die lokale Entwicklung).
+
+## 5. Push-Benachrichtigung bei neuen Registrierungen
+
+Damit du mitbekommst, wenn sich jemand Neues registriert und auf Freischaltung wartet,
+schickt die App bei jeder neuen Registrierung eine Push-Benachrichtigung über
+[ntfy.sh](https://ntfy.sh) - ein kostenloser Dienst ganz ohne Account.
+
+**Bereits eingerichtet:** `VITE_NTFY_TOPIC` ist lokal und in Vercel bereits mit einem
+zufälligen, einzigartigen Topic-Namen hinterlegt.
+
+**Das musst du nur noch einmal tun, um die Benachrichtigungen zu empfangen:**
+1. Installiere die **ntfy-App** ([iOS](https://apps.apple.com/app/ntfy/id1625396347) /
+   [Android](https://play.google.com/store/apps/details?id=io.heckel.ntfy)) - oder öffne
+   einfach `https://ntfy.sh/<dein-topic>` im Browser (auch am Desktop, bleibt aber nur
+   aktiv, solange der Tab offen ist).
+2. In der App auf "+" tippen und **genau** den Topic-Namen aus `VITE_NTFY_TOPIC`
+   eingeben (steht in `frontend/.env` bzw. den Vercel Environment Variables).
+3. Fertig - ab jetzt bekommst du bei jeder neuen Registrierung eine Push-Mitteilung mit
+   Name und E-Mail der Person.
+
+> Möchtest du dein eigenes Topic verwenden (z.B. um es leichter zu merken), einfach
+> `VITE_NTFY_TOPIC` in `frontend/.env` und in Vercel auf einen neuen, möglichst
+> einzigartigen Namen ändern (jeder, der den Topic-Namen kennt, könnte sonst theoretisch
+> mitlesen oder eigene Nachrichten senden - daher lieber nicht leicht zu erraten wählen).
