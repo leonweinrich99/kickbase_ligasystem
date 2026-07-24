@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import logo from './assets/pokal_logo.png';
 import LoadingScreen from './LoadingScreen';
+import useMinimumDelay from './useMinimumDelay';
 
 const MatchBox = ({ match, isFinal, tourTarget }) => {
   const isWinner1 = match.winner === 1;
@@ -100,6 +101,7 @@ const variants = {
 
 const Pokal = () => {
   const [data, setData] = useState(null);
+  const minDelayElapsed = useMinimumDelay(1800);
   const [activeRound, setActiveRound] = useState('Sechzehntelfinale');
   const [direction, setDirection] = useState(0);
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -172,7 +174,7 @@ const Pokal = () => {
     return () => cancelAnimationFrame(raf);
   }, [data, zoomLevel]);
 
-  if (!data) return <LoadingScreen />;
+  if (!data || !minDelayElapsed) return <LoadingScreen />;
 
   return (
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10 font-sans select-none">

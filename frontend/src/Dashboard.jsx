@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import logo from './assets/logo.png';
 
@@ -117,7 +117,7 @@ export const parsePoints = (str) => {
   return parseInt(str.replace(/\./g, '')) || 0;
 };
 
-export const UserRow = ({ item, color, isSaisonView, displayRank, prevRank, routeBase = '', isTourTarget = false }) => {
+export const UserRow = ({ item, color, isSaisonView, displayRank, prevRank, routeBase = '', isTourTarget = false, leagueBadge = null }) => {
   const rankChange = prevRank ? prevRank - displayRank : 0;
   const statusColors = {
     green: '#22c55e',
@@ -148,6 +148,14 @@ export const UserRow = ({ item, color, isSaisonView, displayRank, prevRank, rout
               </div>
             )}
           </div>
+          {leagueBadge && (
+            <span
+              className="mt-1 inline-flex items-center self-start text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded"
+              style={{ backgroundColor: `${leagueBadge.color}26`, color: leagueBadge.color }}
+            >
+              {leagueBadge.name}
+            </span>
+          )}
         </div>
         <div className="text-right mr-2">
           <div className="text-[17px] font-bold" style={{ color: color }}>
@@ -185,11 +193,52 @@ export const LeagueColumn = ({ league, isSaisonView, rankOffset, prevRanks, rout
   );
 };
 
+const TrueTableInfoModal = ({ onClose }) => (
+  <div className="fixed inset-0 z-[90] bg-black/80 flex items-center justify-center p-4" onClick={onClose}>
+    <div
+      className="max-w-md w-full bg-[#1a1d24] border border-[#2a2e37] rounded-3xl p-6 shadow-2xl relative"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 text-[#8b92a5] hover:text-white transition-colors"
+        aria-label="Schließen"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <div className="w-11 h-11 rounded-xl bg-[#ff5c3e]/10 text-[#ff5c3e] flex items-center justify-center mb-4">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+      </div>
+
+      <h2 className="text-lg font-black uppercase text-white mb-3">Die wahre Tabelle</h2>
+      <p className="text-sm text-[#8b92a5] leading-relaxed mb-3">
+        Hier siehst du alle Teilnehmer:innen aus allen drei Ligen in einer einzigen, nach Punkten sortierten Gesamttabelle.
+      </p>
+      <p className="text-sm text-[#8b92a5] leading-relaxed mb-3">
+        Wichtig dabei: Diese Tabelle ist <span className="text-white font-bold">nicht zu 100 % vergleichbar</span>. Jede der drei Ligen läuft komplett unabhängig - dieselben echten Fußballprofis sind daher in jeder Liga separat und exklusiv verfügbar. Ein Spieler kann also gleichzeitig in bis zu drei verschiedenen Teams (einem pro Liga) stehen und dort jeweils Punkte einbringen, während er innerhalb einer einzelnen Liga natürlich nur ein einziges Team verstärken kann.
+      </p>
+      <p className="text-sm text-[#8b92a5] leading-relaxed">
+        Die wahre Tabelle ist deshalb eher zur Unterhaltung und groben Einordnung gedacht - offiziell zählt weiterhin nur die Platzierung innerhalb der eigenen Liga.
+      </p>
+    </div>
+  </div>
+);
+
 // mode 'archive' = altes Qualigruppen-Verhalten: alle Ligen zusammen global sortieren
 //                  und dann wieder in 3 Blöcke á 9 aufteilen (so wie es zur Quali lief).
 // mode 'live'     = neues Ligasystem: jede Liga läuft komplett unabhängig, eigenes Ranking.
 const Dashboard = ({ data, currentView, onNext, onPrev, prevRanks, mode = 'live', routeBase = '', onOpenOptimalTeam }) => {
   const isSaisonView = currentView === 'saison';
+  const [viewMode, setViewMode] = useState('ligen'); // 'ligen' | 'wahre'
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   const sortByView = (a, b) => {
     const valA = isSaisonView ? parsePoints(a.points) : parsePoints(a.pointsMatchday);
@@ -220,6 +269,18 @@ const Dashboard = ({ data, currentView, onNext, onPrev, prevRanks, mode = 'live'
     }));
   }
 
+  // "Die wahre Tabelle": alle Ligen zu einer Gesamtliste zusammenfassen, nur
+  // fürs neue, unabhängige Ligasystem relevant (im Archiv war das ohnehin
+  // schon die einzige Ansicht).
+  const trueTableUsers = mode === 'live'
+    ? data.leagues
+        .reduce((acc, l) => [...acc, ...l.users.map((u) => ({ ...u, leagueColor: l.color, leagueName: l.name }))], [])
+        .sort(sortByView)
+    : [];
+
+  const showTrueTableToggle = mode === 'live';
+  const isTrueTable = showTrueTableToggle && viewMode === 'wahre';
+
   return (
     <div className="max-w-[1400px] mx-auto bg-[#000000]">
       <Header
@@ -230,19 +291,79 @@ const Dashboard = ({ data, currentView, onNext, onPrev, prevRanks, mode = 'live'
         mode={mode}
         onOpenOptimalTeam={onOpenOptimalTeam}
       />
-      <div className="flex flex-col lg:flex-row gap-4">
-        {processedLeagues.map((league, idx) => (
-          <LeagueColumn
-            key={league.name}
-            league={league}
-            isSaisonView={isSaisonView}
-            rankOffset={mode === 'archive' ? idx * 9 : 0}
-            prevRanks={prevRanks}
-            routeBase={routeBase}
-            isFirstColumn={idx === 0}
-          />
-        ))}
-      </div>
+
+      {showTrueTableToggle && (
+        <div className="flex items-center gap-3 mb-6 flex-wrap">
+          <div className="bg-[#1a1d24] border border-[#2a2e37] rounded-xl flex items-center p-1 shadow-lg">
+            <button
+              onClick={() => setViewMode('ligen')}
+              className={`px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${viewMode === 'ligen' ? 'bg-[#ff5c3e] text-white shadow-md' : 'text-[#8b92a5] hover:text-white'}`}
+            >
+              Meine Ligen
+            </button>
+            <button
+              onClick={() => setViewMode('wahre')}
+              className={`px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${viewMode === 'wahre' ? 'bg-[#ff5c3e] text-white shadow-md' : 'text-[#8b92a5] hover:text-white'}`}
+            >
+              Die wahre Tabelle
+            </button>
+          </div>
+
+          {isTrueTable && (
+            <button
+              onClick={() => setIsInfoOpen(true)}
+              className="w-8 h-8 rounded-full bg-[#1a1d24] border border-[#2a2e37] text-[#8b92a5] hover:text-white hover:border-[#ff5c3e] transition-all flex items-center justify-center shrink-0"
+              title="Was bedeutet 'Die wahre Tabelle'?"
+              aria-label="Erklärung zur wahren Tabelle"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+            </button>
+          )}
+        </div>
+      )}
+
+      {isTrueTable ? (
+        <div className="max-w-2xl mx-auto">
+          <div className="flex items-center mb-4">
+            <div className="w-1 h-5 mr-3 rounded-full bg-[#ff5c3e]"></div>
+            <h2 className="text-base sm:text-lg font-black tracking-wider uppercase text-gray-200">Gesamt - Alle Ligen</h2>
+          </div>
+          <div className="flex flex-col">
+            {trueTableUsers.map((u, index) => (
+              <UserRow
+                key={u.id}
+                item={u}
+                color={u.leagueColor}
+                isSaisonView={isSaisonView}
+                displayRank={index + 1}
+                prevRank={prevRanks?.[u.id]}
+                routeBase={routeBase}
+                leagueBadge={{ name: u.leagueName, color: u.leagueColor }}
+              />
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col lg:flex-row gap-4">
+          {processedLeagues.map((league, idx) => (
+            <LeagueColumn
+              key={league.name}
+              league={league}
+              isSaisonView={isSaisonView}
+              rankOffset={mode === 'archive' ? idx * 9 : 0}
+              prevRanks={prevRanks}
+              routeBase={routeBase}
+              isFirstColumn={idx === 0}
+            />
+          ))}
+        </div>
+      )}
+
+      {isInfoOpen && <TrueTableInfoModal onClose={() => setIsInfoOpen(false)} />}
     </div>
   );
 };

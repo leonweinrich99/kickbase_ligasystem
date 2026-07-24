@@ -5,6 +5,7 @@ import UserDetail from './UserDetail';
 import CompareView from './CompareView';
 import OptimalTeam from './OptimalTeam';
 import LoadingScreen from './LoadingScreen';
+import useMinimumDelay from './useMinimumDelay';
 import { useTour } from './Tour';
 
 // SeasonView kapselt eine komplette "Saison-Ansicht" (Dashboard + User-Detail + Vergleich)
@@ -26,6 +27,8 @@ const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
   // Optimale-Elf-Schritts) - kein simulierter Klick, kein Timing-Risiko.
   const isOptimalTeamForced = Boolean(tour?.step?.forceOptimalTeamOpen);
   const optimalTeamVisible = isOptimalTeamOpen || isOptimalTeamForced;
+
+  const minDelayElapsed = useMinimumDelay(1800);
 
   useEffect(() => {
     Promise.all([
@@ -105,7 +108,7 @@ const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
     });
   };
 
-  if (!data) return <LoadingScreen />;
+  if (!data || !minDelayElapsed) return <LoadingScreen />;
 
   return (
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10 font-sans select-none flex flex-col">
