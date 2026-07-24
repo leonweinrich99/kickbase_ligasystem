@@ -6,7 +6,7 @@ import accountLogo from './assets/account_logo.png';
 
 const MenuLink = ({ to, onClick, icon, label, color = '#8b92a5' }) => {
   const content = (
-    <div className="flex items-center gap-4 bg-[#1c1c1c] border border-[#2e2e2e] rounded-2xl px-5 py-4 hover:border-[#404040] transition-all active:scale-[0.98]">
+    <div className="flex items-center gap-4 bg-[#171717] border border-[#2e2e2e] rounded-2xl px-5 py-4 hover:border-[#404040] transition-all active:scale-[0.98]">
       <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${color}1A`, color }}>
         {icon}
       </div>
@@ -89,8 +89,8 @@ const Account = () => {
         </div>
 
         {isFirebaseConfigured && user && (
-          <div className="flex items-center gap-4 bg-[#1c1c1c] border border-[#2e2e2e] rounded-2xl p-5 mb-8">
-            <div className="w-14 h-14 rounded-full bg-[#242424] border border-[#2e2e2e] flex items-center justify-center overflow-hidden shrink-0">
+          <div className="flex items-center gap-4 bg-[#171717] border border-[#2e2e2e] rounded-2xl p-5 mb-8">
+            <div className="w-14 h-14 rounded-full bg-[#1f1f1f] border border-[#2e2e2e] flex items-center justify-center overflow-hidden shrink-0">
               {user.photoURL ? (
                 <img src={user.photoURL} alt={profile?.displayName || 'Avatar'} className="w-full h-full object-cover" />
               ) : (

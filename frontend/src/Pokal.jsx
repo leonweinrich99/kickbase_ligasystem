@@ -13,7 +13,7 @@ const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {} }) => {
   const color2 = leagueColors[match.p2];
 
   return (
-    <div data-tour={tourTarget ? 'pokal-first-match' : undefined} className={`flex flex-col bg-[#1c1c1c] border border-[#2e2e2e] rounded-xl overflow-hidden shadow-lg w-full xl:w-48 flex-shrink-0 transition-transform hover:scale-105 hover:border-[#8b5cf6]/50 ${isFinal ? 'ring-2 ring-[#8b5cf6] shadow-[0_0_20px_rgba(139,92,246,0.3)] xl:scale-110 z-10' : ''}`}>
+    <div data-tour={tourTarget ? 'pokal-first-match' : undefined} className={`flex flex-col bg-[#171717] border border-[#2e2e2e] rounded-xl overflow-hidden shadow-lg w-full xl:w-48 flex-shrink-0 transition-transform hover:scale-105 hover:border-[#8b5cf6]/50 ${isFinal ? 'ring-2 ring-[#8b5cf6] shadow-[0_0_20px_rgba(139,92,246,0.3)] xl:scale-110 z-10' : ''}`}>
       <div
         className={`flex justify-between items-center p-2.5 xl:p-2 border-b border-[#2e2e2e]`}
         style={color1 ? { borderLeft: `3px solid ${color1}` } : undefined}
@@ -232,7 +232,7 @@ const Pokal = () => {
 
           <Link
             to="/pokal-rules"
-            className="sm:hidden shrink-0 flex items-center gap-1.5 bg-[#1c1c1c] border border-[#8b5cf6]/40 hover:border-[#8b5cf6] transition-colors rounded-full pl-2.5 pr-3 py-1.5 shadow-lg active:scale-95 group mt-1"
+            className="sm:hidden shrink-0 flex items-center gap-1.5 bg-[#171717] border border-[#8b5cf6]/40 hover:border-[#8b5cf6] transition-colors rounded-full pl-2.5 pr-3 py-1.5 shadow-lg active:scale-95 group mt-1"
           >
             <span className="text-[7px] font-black uppercase text-white bg-[#8b5cf6] rounded-full px-1.5 py-0.5 tracking-widest leading-none">Neu</span>
             <span className="text-[10px] font-bold text-gray-300 group-hover:text-white transition-colors whitespace-nowrap">Pokalmodus</span>
@@ -241,7 +241,7 @@ const Pokal = () => {
 
         {/* Zweite Zeile: Runden-Umschalter (mobil), auf gleicher Höhe wie der Spieltag-Wechsler in der Liga */}
         <div className="flex xl:hidden w-full items-center gap-2 sm:gap-4">
-          <div ref={tabsRef} className="flex overflow-x-auto gap-2 no-scrollbar scroll-smooth h-12 items-center flex-1 bg-[#1c1c1c] border border-[#2e2e2e] rounded-xl px-2 shadow-lg">
+          <div ref={tabsRef} className="flex overflow-x-auto gap-2 no-scrollbar scroll-smooth h-12 items-center flex-1 bg-[#171717] border border-[#2e2e2e] rounded-xl px-2 shadow-lg">
             {rounds.map(round => (
               <button
                 key={round}
@@ -292,7 +292,7 @@ const Pokal = () => {
       <div data-tour="pokal-bracket" className="hidden xl:block relative pb-10">
         
         {/* Zoom Controls */}
-        <div className="absolute right-8 top-0 flex items-center gap-1.5 bg-[#1c1c1c] border border-[#2e2e2e] p-1.5 rounded-xl z-20 shadow-lg">
+        <div className="absolute right-8 top-0 flex items-center gap-1.5 bg-[#171717] border border-[#2e2e2e] p-1.5 rounded-xl z-20 shadow-lg">
           <button onClick={() => setZoomLevel(prev => Math.max(0.4, prev - 0.15))} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#2e2e2e] text-[#8b92a5] hover:text-white transition-colors">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
           </button>

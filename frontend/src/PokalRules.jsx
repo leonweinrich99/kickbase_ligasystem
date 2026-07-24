@@ -38,7 +38,7 @@ const RuleCard = ({ number, title, text, color, children, icon: Icon }) => {
         {Icon ? <Icon className={`w-6 h-6 sm:w-8 sm:h-8 ${textColors[color]}`} /> : <span className={`text-lg sm:text-xl font-black ${textColors[color]}`}>{number}</span>}
       </div>
 
-      <div className="bg-[#1c1c1c] border border-[#2e2e2e] rounded-2xl p-5 sm:p-6 transition-all duration-300 group-hover:border-[#404040] group-hover:translate-x-1 shadow-lg">
+      <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl p-5 sm:p-6 transition-all duration-300 group-hover:border-[#404040] group-hover:translate-x-1 shadow-lg">
         <h3 className="text-lg sm:text-xl font-black text-gray-100 mb-3 uppercase tracking-tight">{title}</h3>
         <div className="text-sm sm:text-base text-[#8b92a5] leading-relaxed font-medium">
           {text}
@@ -66,7 +66,7 @@ const PokalRules = () => {
     <div className="max-w-4xl mx-auto py-10 px-4 relative overflow-x-hidden">
       <Link 
         to="/pokal" 
-        className="absolute top-4 right-4 sm:top-10 sm:right-0 p-2 text-[#8b92a5] hover:text-white bg-[#1c1c1c] border border-[#2e2e2e] rounded-xl transition-all hover:border-[#404040] shadow-lg z-50"
+        className="absolute top-4 right-4 sm:top-10 sm:right-0 p-2 text-[#8b92a5] hover:text-white bg-[#171717] border border-[#2e2e2e] rounded-xl transition-all hover:border-[#404040] shadow-lg z-50"
         title="Zurück zum Pokal"
       >
         <CloseIcon />

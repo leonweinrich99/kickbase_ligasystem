@@ -453,7 +453,7 @@ const TourOverlay = () => {
       {/* Tour jederzeit beenden - immer sichtbar, auch während gesucht wird */}
       <button
         onClick={tour.stop}
-        className="fixed text-[#8b92a5] hover:text-white transition-colors bg-[#1c1c1c] border border-[#2e2e2e] rounded-full w-8 h-8 flex items-center justify-center pointer-events-auto shadow-lg"
+        className="fixed text-[#8b92a5] hover:text-white transition-colors bg-[#171717] border border-[#2e2e2e] rounded-full w-8 h-8 flex items-center justify-center pointer-events-auto shadow-lg"
         style={{ top: safeTop + 16, right: 16 }}
         aria-label="Tour beenden"
       >
@@ -466,7 +466,7 @@ const TourOverlay = () => {
       {/* Tooltip - erst anzeigen, wenn der Bereich gefunden wurde (oder nicht gefunden werden konnte) */}
       {!isSearching && (
         <div
-          className="absolute overflow-y-auto bg-[#1c1c1c] border border-[#2e2e2e] rounded-2xl shadow-2xl p-5 pointer-events-auto"
+          className="absolute overflow-y-auto bg-[#171717] border border-[#2e2e2e] rounded-2xl shadow-2xl p-5 pointer-events-auto"
           style={{ ...tooltipStyle, width: tooltipWidth, maxWidth: '85vw' }}
         >
           {notFound ? (

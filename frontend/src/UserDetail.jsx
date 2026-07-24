@@ -219,7 +219,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
         <div className="text-gray-400 text-lg font-bold">Spieler nicht gefunden</div>
         <button 
           onClick={() => navigate(routeBase || '/')}
-          className="bg-[#1c1c1c] border border-[#2e2e2e] px-6 py-3 rounded-xl text-gray-300 hover:text-white hover:border-[#ff5c3e] transition-all"
+          className="bg-[#171717] border border-[#2e2e2e] px-6 py-3 rounded-xl text-gray-300 hover:text-white hover:border-[#ff5c3e] transition-all"
         >
           Zurück zur Übersicht
         </button>
@@ -232,7 +232,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
       {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#1c1c1c] border border-[#2e2e2e] rounded-2xl w-full max-w-md flex flex-col max-h-[80vh] shadow-2xl">
+          <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl w-full max-w-md flex flex-col max-h-[80vh] shadow-2xl">
              <div className="p-4 border-b border-[#2e2e2e] flex justify-between items-center">
                <h3 className="text-lg font-bold text-gray-200">Gegner auswählen</h3>
                <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white transition-colors">
@@ -263,7 +263,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                      setIsModalOpen(false);
                      setSearchQuery('');
                    }}
-                   className="w-full text-left p-3 hover:bg-[#242424] rounded-xl flex items-center gap-3 transition-colors"
+                   className="w-full text-left p-3 hover:bg-[#1f1f1f] rounded-xl flex items-center gap-3 transition-colors"
                  >
                    <div className="w-8 h-8 rounded-full bg-[#2e2e2e] flex items-center justify-center font-bold text-xs text-gray-300">
                      {u.name.charAt(0)}
@@ -289,7 +289,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
         <div className="flex items-center justify-between w-full sm:w-auto">
             <button 
               onClick={() => navigate(routeBase || '/')}
-              className="group flex items-center gap-3 bg-[#1c1c1c] border border-[#2e2e2e] px-4 py-2 rounded-xl text-[#8b92a5] hover:text-white transition-all shrink-0"
+              className="group flex items-center gap-3 bg-[#171717] border border-[#2e2e2e] px-4 py-2 rounded-xl text-[#8b92a5] hover:text-white transition-all shrink-0"
             >
               <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
               <span className="text-xs font-bold uppercase tracking-wider">Dashboard</span>
@@ -299,7 +299,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
             <div className="flex sm:hidden items-center gap-2">
                 <button 
                   onClick={() => setIsModalOpen(true)}
-                  className="group flex items-center gap-2 bg-[#1c1c1c] border border-[#2e2e2e] px-4 py-2 rounded-xl text-[#8b92a5] hover:text-white hover:border-[#ff5c3e] transition-all"
+                  className="group flex items-center gap-2 bg-[#171717] border border-[#2e2e2e] px-4 py-2 rounded-xl text-[#8b92a5] hover:text-white hover:border-[#ff5c3e] transition-all"
                 >
                   <Users size={16} className="group-hover:text-[#ff5c3e] transition-colors" />
                   <span className="text-xs font-bold uppercase tracking-wider">VS</span>
@@ -312,7 +312,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
           <div className="hidden sm:flex items-center gap-2">
               <button 
                 onClick={() => setIsModalOpen(true)}
-                className="group flex items-center gap-2 bg-[#1c1c1c] border border-[#2e2e2e] px-4 py-2 rounded-xl text-[#8b92a5] hover:text-white hover:border-[#ff5c3e] transition-all"
+                className="group flex items-center gap-2 bg-[#171717] border border-[#2e2e2e] px-4 py-2 rounded-xl text-[#8b92a5] hover:text-white hover:border-[#ff5c3e] transition-all"
               >
                 <Users size={16} className="group-hover:text-[#ff5c3e] transition-colors" />
                 <span className="text-xs font-bold uppercase tracking-wider">Vergleichen</span>
@@ -321,7 +321,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
 
           <div className="flex items-center gap-3 sm:gap-4">
               <div className="flex items-center">
-                   <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#1c1c1c] border border-[#2e2e2e] flex items-center justify-center relative shadow-xl overflow-hidden shrink-0 z-10">
+                   <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#171717] border border-[#2e2e2e] flex items-center justify-center relative shadow-xl overflow-hidden shrink-0 z-10">
                       <div className="absolute inset-0 bg-[#ff5c3e] opacity-5"></div>
                       <Star className="text-[#ff5c3e] opacity-20 absolute -right-2 -bottom-2 w-12 h-12 rotate-12" />
                       <div className="text-2xl font-black text-[#ff5c3e] z-10">{userData.name.charAt(0)}</div>
@@ -332,7 +332,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                   <span className="truncate">{userData.name}</span>
                 </h1>
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1.5 sm:mt-1">
-                   <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#1c1c1c] border border-[#2e2e2e]">
+                   <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#171717] border border-[#2e2e2e]">
                       <Target size={12} className="text-[#8b92a5]" />
                       <span className="text-[9px] sm:text-[10px] font-bold text-gray-300 uppercase tracking-widest">Rank #{userData.rank}</span>
                    </div>
@@ -396,14 +396,14 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Rank History */}
-        <div className="bg-[#1c1c1c] border border-[#2e2e2e] rounded-2xl p-4 sm:p-6 shadow-lg">
+        <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl p-4 sm:p-6 shadow-lg">
           <div className="flex justify-between items-center mb-4 sm:mb-6">
             <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Platzierungsverlauf</h3>
-            <div className="px-2 py-1 bg-[#242424] rounded text-[9px] sm:text-[10px] text-gray-400 font-bold uppercase">Liga Zonen</div>
+            <div className="px-2 py-1 bg-[#1f1f1f] rounded text-[9px] sm:text-[10px] text-gray-400 font-bold uppercase">Liga Zonen</div>
           </div>
           <div className="h-[200px] sm:h-[250px] w-full">
             {historyLoading ? (
-              <div className="w-full h-full rounded-xl bg-[#242424] animate-pulse"></div>
+              <div className="w-full h-full rounded-xl bg-[#1f1f1f] animate-pulse"></div>
             ) : (
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={historyWithScores} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
@@ -449,19 +449,19 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
         </div>
 
         {/* Matchday Performance */}
-        <div className="bg-[#1c1c1c] border border-[#2e2e2e] rounded-2xl p-4 sm:p-6 shadow-lg">
+        <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl p-4 sm:p-6 shadow-lg">
           <div className="flex justify-between items-center mb-4 sm:mb-6">
             <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Spieltags-Leistung</h3>
             <div className="flex items-center gap-2">
                 <button 
                   onClick={() => setShowAverage(!showAverage)}
-                  className={`px-2.5 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase transition-all border shadow-lg ${showAverage ? 'bg-[#ff5c3e]/20 border-[#ff5c3e] text-[#ff5c3e]' : 'bg-[#242424] border-[#2e2e2e] text-[#8b92a5]'}`}
+                  className={`px-2.5 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase transition-all border shadow-lg ${showAverage ? 'bg-[#ff5c3e]/20 border-[#ff5c3e] text-[#ff5c3e]' : 'bg-[#1f1f1f] border-[#2e2e2e] text-[#8b92a5]'}`}
                 >
                   Ø Schnitt
                 </button>
                 <button 
                   onClick={() => setShowOptimal(!showOptimal)}
-                  className={`px-2.5 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase transition-all border shadow-lg ${showOptimal ? 'bg-green-500/20 border-green-500 text-green-500' : 'bg-[#242424] border-[#2e2e2e] text-[#8b92a5]'}`}
+                  className={`px-2.5 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase transition-all border shadow-lg ${showOptimal ? 'bg-green-500/20 border-green-500 text-green-500' : 'bg-[#1f1f1f] border-[#2e2e2e] text-[#8b92a5]'}`}
                 >
                   Beste Elf
                 </button>
@@ -469,7 +469,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
           </div>
           <div className="h-[200px] sm:h-[250px] w-full mt-4">
             {historyLoading ? (
-              <div className="w-full h-full rounded-xl bg-[#242424] animate-pulse"></div>
+              <div className="w-full h-full rounded-xl bg-[#1f1f1f] animate-pulse"></div>
             ) : (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={historyWithScores} margin={{ top: 20, right: 5, left: -25, bottom: 5 }}>
@@ -529,7 +529,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
       </div>
       
       {/* Performance Rating History */}
-      <div className="mt-4 sm:mt-6 bg-[#1c1c1c] border border-[#2e2e2e] rounded-2xl p-4 sm:p-6 shadow-lg">
+      <div className="mt-4 sm:mt-6 bg-[#171717] border border-[#2e2e2e] rounded-2xl p-4 sm:p-6 shadow-lg">
         <div className="flex justify-between items-center mb-4 sm:mb-6">
           <div className="flex flex-col gap-1">
             <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Performance Index</h3>
@@ -539,7 +539,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
         </div>
         <div className="h-[200px] sm:h-[250px] w-full">
           {historyLoading ? (
-            <div className="w-full h-full rounded-xl bg-[#242424] animate-pulse"></div>
+            <div className="w-full h-full rounded-xl bg-[#1f1f1f] animate-pulse"></div>
           ) : (
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={historyWithScores} margin={{ top: 20, right: 5, left: -25, bottom: 5 }}>
@@ -588,7 +588,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
 
 const LeagueBadgeCard = ({ userData }) => {
   return (
-    <div className="bg-[#1c1c1c] border border-[#2e2e2e] rounded-2xl px-4 py-3 flex items-center gap-4 shadow-sm relative overflow-hidden">
+    <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl px-4 py-3 flex items-center gap-4 shadow-sm relative overflow-hidden">
       <div className="p-2 rounded-lg" style={{ backgroundColor: `${userData.leagueColor}1A`, color: userData.leagueColor }}>
         <Users size={20} />
       </div>
@@ -638,7 +638,7 @@ const ThresholdCard = ({ rank, points, thresholds }) => {
   const info = getLigaInfo();
 
   return (
-    <div className={`bg-[#1c1c1c] border ${info.type === 'success' ? 'border-green-500/30' : info.type === 'warning' ? 'border-yellow-500/30' : 'border-blue-500/30'} rounded-2xl px-4 py-3 flex items-center gap-4 shadow-sm relative overflow-hidden`}>
+    <div className={`bg-[#171717] border ${info.type === 'success' ? 'border-green-500/30' : info.type === 'warning' ? 'border-yellow-500/30' : 'border-blue-500/30'} rounded-2xl px-4 py-3 flex items-center gap-4 shadow-sm relative overflow-hidden`}>
       <div className={`p-2 rounded-lg ${info.type === 'success' ? 'bg-green-500/10 text-green-500' : info.type === 'warning' ? 'bg-yellow-500/10 text-yellow-500' : 'bg-blue-500/10 text-blue-500'}`}>
         <TrendingUp size={20} />
       </div>
@@ -676,9 +676,9 @@ const StatCard = ({ icon, label, value, subValue, isRating, loading }) => {
   };
 
   return (
-    <div className="bg-[#1c1c1c] border border-[#2e2e2e] p-3 sm:p-5 rounded-2xl shadow-sm hover:border-[#404040] transition-all group relative overflow-hidden flex flex-col justify-between">
+    <div className="bg-[#171717] border border-[#2e2e2e] p-3 sm:p-5 rounded-2xl shadow-sm hover:border-[#404040] transition-all group relative overflow-hidden flex flex-col justify-between">
       <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-        <div className="bg-[#242424] p-1.5 sm:p-2 rounded-lg group-hover:scale-110 transition-transform shrink-0">
+        <div className="bg-[#1f1f1f] p-1.5 sm:p-2 rounded-lg group-hover:scale-110 transition-transform shrink-0">
           {React.cloneElement(icon, { size: 16, className: "sm:w-[18px] sm:h-[18px]" })}
         </div>
         <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-[#8b92a5] leading-tight">{label}</span>
@@ -686,7 +686,7 @@ const StatCard = ({ icon, label, value, subValue, isRating, loading }) => {
       
       <div className="flex flex-col mb-1 gap-1">
           {loading ? (
-            <div className="h-5 sm:h-6 w-12 rounded bg-[#242424] animate-pulse"></div>
+            <div className="h-5 sm:h-6 w-12 rounded bg-[#1f1f1f] animate-pulse"></div>
           ) : (
             <div className={`text-[17px] sm:text-xl font-black leading-none ${isRating ? getRatingColor(value) : ''}`}>
               {value}
@@ -705,8 +705,8 @@ const CustomizedDot = (props) => {
 
   return (
     <g>
-      <circle cx={cx} cy={cy} r={7} fill={stroke} stroke="#1c1c1c" strokeWidth={2} />
-      <text x={cx} y={cy} textAnchor="middle" dy=".35em" fill="#1c1c1c" fontSize={8} fontWeight="black">
+      <circle cx={cx} cy={cy} r={7} fill={stroke} stroke="#171717" strokeWidth={2} />
+      <text x={cx} y={cy} textAnchor="middle" dy=".35em" fill="#171717" fontSize={8} fontWeight="black">
         {value}
       </text>
     </g>

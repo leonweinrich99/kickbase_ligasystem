@@ -4,7 +4,7 @@ import logo from './assets/logo.png';
 
 export const AvatarIcon = ({ name }) => {
   return (
-    <div className="w-full h-full flex items-center justify-center bg-[#242424] text-[#ff5c3e] font-black text-xs uppercase">
+    <div className="w-full h-full flex items-center justify-center bg-[#1f1f1f] text-[#ff5c3e] font-black text-xs uppercase">
       {name?.charAt(0) || '?'}
     </div>
   );
@@ -59,7 +59,7 @@ export const Header = ({
             <div className="flex items-center gap-2 mb-1 flex-wrap">
               <div className="text-[9px] sm:text-[11px] font-bold tracking-wider text-[#ff5c3e]">SAISON 26/27</div>
               {mode === 'archive' && (
-                <div className="text-[8px] sm:text-[9px] font-black tracking-widest text-[#8b92a5] bg-[#242424] border border-[#2e2e2e] rounded-full px-2 py-0.5 uppercase">Archiv</div>
+                <div className="text-[8px] sm:text-[9px] font-black tracking-widest text-[#8b92a5] bg-[#1f1f1f] border border-[#2e2e2e] rounded-full px-2 py-0.5 uppercase">Archiv</div>
               )}
             </div>
             <h1 className="text-[17px] sm:text-3xl font-black tracking-tight uppercase leading-[1.1] break-words">
@@ -72,7 +72,7 @@ export const Header = ({
         <button
           onClick={onOpenOptimalTeam}
           data-tour="optimal-team-button"
-          className="shrink-0 flex items-center gap-1.5 bg-[#1c1c1c] border border-[#ff5c3e]/40 hover:border-[#ff5c3e] transition-colors rounded-full pl-2.5 pr-3 py-1.5 shadow-lg active:scale-95 group mt-1"
+          className="shrink-0 flex items-center gap-1.5 bg-[#171717] border border-[#ff5c3e]/40 hover:border-[#ff5c3e] transition-colors rounded-full pl-2.5 pr-3 py-1.5 shadow-lg active:scale-95 group mt-1"
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="#ff5c3e" stroke="#ff5c3e" strokeWidth="1" className="shrink-0"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
           <span className="text-[10px] font-bold text-gray-300 group-hover:text-white transition-colors whitespace-nowrap">
@@ -85,10 +85,10 @@ export const Header = ({
       <div className="flex w-full sm:w-auto justify-between sm:justify-end items-center gap-2 sm:gap-4">
         {/* Spieltag-Wechsler (Pfeil-Design) - "Die wahre Tabelle" ist hier einfach
             ein zusätzlicher Klick-Stopp nach "Gesamt", kein eigenes Element. */}
-        <div data-tour="matchday-switcher" className="bg-[#1c1c1c] border border-[#2e2e2e] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden flex-1 sm:flex-initial justify-between h-12">
+        <div data-tour="matchday-switcher" className="bg-[#171717] border border-[#2e2e2e] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden flex-1 sm:flex-initial justify-between h-12">
           <button
             onClick={onPrev}
-            className="px-3 sm:px-5 h-full text-[#8b92a5] hover:text-[#ff5c3e] transition-colors bg-[#1a1a1a] active:scale-90"
+            className="px-3 sm:px-5 h-full text-[#8b92a5] hover:text-[#ff5c3e] transition-colors bg-[#141414] active:scale-90"
           >
             &lsaquo;
           </button>
@@ -114,14 +114,14 @@ export const Header = ({
           </span>
           <button
             onClick={onNext}
-            className="px-3 sm:px-5 h-full text-[#8b92a5] hover:text-[#ff5c3e] transition-colors bg-[#1a1a1a] active:scale-90"
+            className="px-3 sm:px-5 h-full text-[#8b92a5] hover:text-[#ff5c3e] transition-colors bg-[#141414] active:scale-90"
           >
             &rsaquo;
           </button>
         </div>
 
         {/* Teilnehmer Kachel */}
-        <div className="bg-[#1c1c1c] border border-[#2e2e2e] rounded-xl px-3 sm:px-5 h-12 shadow-lg flex items-center gap-2 sm:gap-3 min-w-0">
+        <div className="bg-[#171717] border border-[#2e2e2e] rounded-xl px-3 sm:px-5 h-12 shadow-lg flex items-center gap-2 sm:gap-3 min-w-0">
           <UsersIcon className="text-[#8b92a5] sm:hidden" />
           <span className="text-[8px] sm:text-[10px] font-bold text-[#8b92a5] tracking-widest leading-none uppercase hidden sm:inline">Teilnehmer</span>
           <span className="text-sm sm:text-base font-bold text-gray-200 leading-none">{participants}</span>
@@ -149,14 +149,14 @@ export const UserRow = ({ item, color, isSaisonView, displayRank, prevRank, rout
 
   return (
     <Link to={`${routeBase}/user/${item.id}`} className="block transition-transform active:scale-95" data-tour={isTourTarget ? 'user-row' : undefined}>
-      <div className={`flex items-center p-3 mb-2.5 bg-[#1c1c1c] border ${isSaisonView && item.status ? 'border-[#404040]' : 'border-[#2e2e2e]'} rounded-[14px] shadow-sm relative overflow-hidden group hover:border-[#ff5c3e]/50 hover:bg-[#1e222a] transition-all cursor-pointer`}>
+      <div className={`flex items-center p-3 mb-2.5 bg-[#171717] border ${isSaisonView && item.status ? 'border-[#404040]' : 'border-[#2e2e2e]'} rounded-[14px] shadow-sm relative overflow-hidden group hover:border-[#ff5c3e]/50 hover:bg-[#202020] transition-all cursor-pointer`}>
         {isSaisonView && item.status && (
           <div className="absolute left-0 top-0 bottom-0 w-[4px]" style={{ backgroundColor: statusColors[item.status] }}></div>
         )}
         <div className="w-8 flex justify-center items-center text-xs font-bold text-[#8b92a5]">
           {item.isTrophy && isSaisonView ? <TrophyIcon type={item.trophyColor} /> : displayRank}
         </div>
-        <div className="w-10 h-10 rounded-full bg-[#242424] ml-2 flex items-center justify-center overflow-hidden border border-[#2e2e2e]">
+        <div className="w-10 h-10 rounded-full bg-[#1f1f1f] ml-2 flex items-center justify-center overflow-hidden border border-[#2e2e2e]">
           <AvatarIcon name={item.name} />
         </div>
         <div className="ml-3 flex-1 flex flex-col justify-center min-w-0">
@@ -216,7 +216,7 @@ export const LeagueColumn = ({ league, isSaisonView, rankOffset, prevRanks, rout
 const TrueTableInfoModal = ({ onClose }) => (
   <div className="fixed inset-0 z-[90] bg-black/80 flex items-center justify-center p-4" onClick={onClose}>
     <div
-      className="max-w-md w-full bg-[#1c1c1c] border border-[#2e2e2e] rounded-3xl p-6 shadow-2xl relative"
+      className="max-w-md w-full bg-[#171717] border border-[#2e2e2e] rounded-3xl p-6 shadow-2xl relative"
       onClick={(e) => e.stopPropagation()}
     >
       <button

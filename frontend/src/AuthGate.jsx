@@ -26,7 +26,7 @@ const PendingScreen = ({ status }) => {
 
   return (
     <div className="min-h-screen bg-[#000000] flex items-center justify-center p-4">
-      <div className="max-w-md w-full text-center bg-[#1c1c1c] border border-[#2e2e2e] rounded-3xl p-8 shadow-2xl">
+      <div className="max-w-md w-full text-center bg-[#171717] border border-[#2e2e2e] rounded-3xl p-8 shadow-2xl">
         <div className={`w-14 h-14 mx-auto mb-5 rounded-2xl flex items-center justify-center ${isRejected ? 'bg-red-500/10 text-red-400' : 'bg-yellow-500/10 text-yellow-400'}`}>
           {isRejected ? '✕' : '⏳'}
         </div>

@@ -54,7 +54,7 @@ const PushNotificationCard = () => {
   };
 
   return (
-    <div className="bg-[#1c1c1c] border border-[#2e2e2e] rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+    <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
       <div>
         <div className="font-bold text-gray-100">Push-Benachrichtigungen auf diesem Gerät</div>
         <div className="text-xs text-[#8b92a5]">Erhalte eine Mitteilung, sobald sich jemand Neues registriert.</div>
@@ -131,7 +131,7 @@ const AdminPanel = () => {
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-[#000000] flex items-center justify-center p-4">
-        <div className="text-center bg-[#1c1c1c] border border-[#2e2e2e] rounded-2xl p-8">
+        <div className="text-center bg-[#171717] border border-[#2e2e2e] rounded-2xl p-8">
           <h1 className="text-lg font-black text-white uppercase mb-3">Kein Zugriff</h1>
           <p className="text-sm text-[#8b92a5] mb-6">Diese Seite ist nur für Admins.</p>
           <Link to="/" className="text-[#ff5c3e] text-sm font-bold uppercase tracking-widest">Zurück zum Ligasystem</Link>
@@ -158,7 +158,7 @@ const AdminPanel = () => {
           <Link
             to="/account"
             aria-label="Schließen"
-            className="w-10 h-10 shrink-0 flex items-center justify-center bg-[#1c1c1c] border border-[#2e2e2e] rounded-xl text-[#8b92a5] hover:text-white hover:border-[#404040] transition-all"
+            className="w-10 h-10 shrink-0 flex items-center justify-center bg-[#171717] border border-[#2e2e2e] rounded-xl text-[#8b92a5] hover:text-white hover:border-[#404040] transition-all"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -174,7 +174,7 @@ const AdminPanel = () => {
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${filter === f ? 'bg-[#ff5c3e] text-white' : 'bg-[#1c1c1c] border border-[#2e2e2e] text-[#8b92a5] hover:text-white'}`}
+              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${filter === f ? 'bg-[#ff5c3e] text-white' : 'bg-[#171717] border border-[#2e2e2e] text-[#8b92a5] hover:text-white'}`}
             >
               {f === 'pending' ? `Ausstehend (${pendingCount})` : f === 'approved' ? 'Freigegeben' : f === 'admin' ? `Admins (${adminCount})` : f === 'rejected' ? 'Abgelehnt' : 'Alle'}
             </button>
@@ -192,9 +192,9 @@ const AdminPanel = () => {
         ) : (
           <div className="flex flex-col gap-3">
             {filteredUsers.map(u => (
-              <div key={u.id} className="bg-[#1c1c1c] border border-[#2e2e2e] rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div key={u.id} className="bg-[#171717] border border-[#2e2e2e] rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4 min-w-0">
-                  <div className="w-10 h-10 rounded-full bg-[#242424] flex items-center justify-center font-black text-[#ff5c3e] shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-[#1f1f1f] flex items-center justify-center font-black text-[#ff5c3e] shrink-0">
                     {(u.displayName || u.email || '?').charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0">
@@ -246,7 +246,7 @@ const AdminPanel = () => {
           <button
             onClick={handleManualUpdate}
             disabled={isUpdating}
-            className="w-full flex items-center justify-center gap-2 bg-[#1c1c1c] border border-[#ff5c3e]/30 text-[#ff5c3e] font-black uppercase tracking-widest text-xs py-4 rounded-2xl hover:bg-[#ff5c3e]/10 hover:border-[#ff5c3e] transition-all disabled:opacity-50 shadow-lg"
+            className="w-full flex items-center justify-center gap-2 bg-[#171717] border border-[#ff5c3e]/30 text-[#ff5c3e] font-black uppercase tracking-widest text-xs py-4 rounded-2xl hover:bg-[#ff5c3e]/10 hover:border-[#ff5c3e] transition-all disabled:opacity-50 shadow-lg"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="23 4 23 10 17 10"></polyline>
