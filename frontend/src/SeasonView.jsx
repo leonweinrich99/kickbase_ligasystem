@@ -125,26 +125,33 @@ const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
     });
   };
 
-  if (!data || (showSplash && !minDelayElapsed)) {
-    return showSplash ? <LoadingScreen /> : <div className="min-h-screen bg-[#000000]"></div>;
-  }
+  // Nur die Dashboard-Startseite braucht die hier geladenen Saison-Daten
+  // (data/availableViews) - UserDetail und CompareView holen ihre Daten
+  // komplett selbststaendig und unabhaengig. Sie hinter demselben Splash zu
+  // blockieren waere unnoetig und wuerde die Ladeanimation ein zweites Mal
+  // zeigen, obwohl diese Unterseiten laengst eigene, leichtgewichtige
+  // Ladezustaende haben.
+  const dashboardReady = data && !(showSplash && !minDelayElapsed);
+  const dashboardElement = dashboardReady
+    ? (
+      <Dashboard
+        data={data}
+        currentView={extendedViews[currentViewIndex]}
+        onNext={() => navigate(1)}
+        onPrev={() => navigate(-1)}
+        prevRanks={prevRanks}
+        mode={mode}
+        routeBase={routeBase}
+        onOpenOptimalTeam={() => setIsOptimalTeamOpen(true)}
+      />
+    )
+    : (showSplash ? <LoadingScreen /> : <div className="min-h-screen bg-[#000000]"></div>);
 
   return (
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10 font-sans select-none flex flex-col">
       <div className="flex-1">
         <Routes>
-          <Route index element={
-            <Dashboard
-              data={data}
-              currentView={extendedViews[currentViewIndex]}
-              onNext={() => navigate(1)}
-              onPrev={() => navigate(-1)}
-              prevRanks={prevRanks}
-              mode={mode}
-              routeBase={routeBase}
-              onOpenOptimalTeam={() => setIsOptimalTeamOpen(true)}
-            />
-          } />
+          <Route index element={dashboardElement} />
           <Route path="user/:id" element={<UserDetail dataBase={dataBase} routeBase={routeBase} mode={mode} />} />
           <Route path="compare/:id1/:id2" element={<CompareView dataBase={dataBase} routeBase={routeBase} />} />
         </Routes>

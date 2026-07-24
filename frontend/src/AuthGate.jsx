@@ -1,10 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from './AuthContext';
 import Login from './Login';
 import LoadingScreen from './LoadingScreen';
+import { shouldShowSplash, markSplashShown } from './appLoadState';
 import { useTour } from './Tour';
 
-const Spinner = () => <LoadingScreen />;
+// Zeigt die grosse animierte Splash-Animation NUR, wenn sie in dieser Sitzung
+// noch nicht lief (gemeinsamer Flag mit SeasonView/Pokal - siehe appLoadState.js).
+// Sonst reicht eine stille, dunkle Flaeche, damit die Animation nicht ein
+// zweites Mal direkt hintereinander abgespielt wird (einmal hier waehrend des
+// Login-Checks, einmal in SeasonView/Pokal waehrend des Datenabrufs).
+const Spinner = () => {
+  const [show] = useState(() => {
+    const should = shouldShowSplash();
+    if (should) markSplashShown();
+    return should;
+  });
+  return show ? <LoadingScreen /> : <div className="min-h-screen bg-[#000000]"></div>;
+};
 
 const PendingScreen = ({ status }) => {
   const { signOut, profile } = useAuth();

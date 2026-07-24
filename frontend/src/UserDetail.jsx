@@ -33,7 +33,12 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const [history, setHistory] = useState([]);
+  // "loading" deckt nur den schnellen ersten Schritt ab (Nutzer finden) - die
+  // Kopfzeile mit Name/Rang/Statistik-Kacheln kann sofort stehen, sobald das
+  // da ist. "historyLoading" ist fuer die Charts, die auf mehrere
+  // Spieltag-Dateien warten muessen und deutlich laenger brauchen koennen.
   const [loading, setLoading] = useState(true);
+  const [historyLoading, setHistoryLoading] = useState(true);
   const [thresholds, setThresholds] = useState(null);
   const [showAverage, setShowAverage] = useState(false);
   const [showOptimal, setShowOptimal] = useState(false);
@@ -41,6 +46,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+      setHistoryLoading(true);
       try {
         // Parallelize initial fetches
         const [latestRes, indexRes] = await Promise.all([
@@ -57,10 +63,14 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
         const foundUser = allUsersFlat.find(user => user.id === id);
         if (!foundUser) {
           setLoading(false);
+          setHistoryLoading(false);
           return;
         }
 
         setUserData(foundUser);
+        // Kopfzeile ist ab hier vollstaendig darstellbar - der Rest (Charts)
+        // laedt im Hintergrund weiter, ohne die ganze Seite zu blockieren.
+        setLoading(false);
 
         if (mode === 'archive') {
           const allUsersSorted = [...allUsersFlat].sort((a,b) => a.rank - b.rank);
@@ -155,10 +165,11 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
         }
 
         setHistory(historyResults.sort((a, b) => a.matchday - b.matchday));
-        setLoading(false);
+        setHistoryLoading(false);
       } catch (err) {
         console.error("Error fetching user details:", err);
         setLoading(false);
+        setHistoryLoading(false);
       }
     };
 
@@ -196,12 +207,10 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
   }, [historyWithScores]);
 
   if (loading) {
-    return (
-      <div className="text-white font-sans pb-8">
-        <div className="w-12 h-12 border-4 border-[#ff5c3e] border-t-transparent rounded-full animate-spin"></div>
-        <div className="text-gray-500 font-bold tracking-widest uppercase text-xs">Lade Statistiken...</div>
-      </div>
-    );
+    // Bewusst schlicht gehalten: Dieser Schritt ist eine einzelne, schnelle
+    // Abfrage - keine aufwendige Ladeanimation noetig, ein kurzer dunkler
+    // Zwischenzustand reicht.
+    return <div className="min-h-screen bg-[#000000]"></div>;
   }
 
   if (!userData) {
@@ -327,7 +336,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                       <Target size={12} className="text-[#8b92a5]" />
                       <span className="text-[9px] sm:text-[10px] font-bold text-gray-300 uppercase tracking-widest">Rank #{userData.rank}</span>
                    </div>
-                   {stats?.rankChange !== 0 && (
+                   {stats && stats.rankChange !== 0 && (
                      <div className={`flex items-center gap-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest ${stats.rankChange > 0 ? 'text-green-500' : 'text-red-500'}`}>
                         {stats.rankChange > 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
                         {Math.abs(stats.rankChange)} {stats.rankChange > 0 ? 'auf' : 'ab'}
@@ -363,14 +372,16 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
         <StatCard 
           icon={<Activity className="text-blue-400" />} 
           label="Schnitt / Spieltag" 
-          value={stats?.avgPoints.toLocaleString('de-DE')} 
+          value={stats?.avgPoints?.toLocaleString('de-DE')} 
           subValue="Pkt. pro Spieltag" 
+          loading={historyLoading}
         />
         <StatCard 
           icon={<Target className="text-yellow-500" />} 
           label="Bester Spieltag" 
-          value={stats?.bestMD.toLocaleString('de-DE')} 
+          value={stats?.bestMD?.toLocaleString('de-DE')} 
           subValue="Saisonrekord" 
+          loading={historyLoading}
         />
         <StatCard 
           icon={<Zap className="text-purple-400" />} 
@@ -378,6 +389,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
           value={stats?.performanceScore} 
           subValue="Saison-Rating (1-10)" 
           isRating={true}
+          loading={historyLoading}
         />
       </div>
 
@@ -390,6 +402,9 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
             <div className="px-2 py-1 bg-[#242424] rounded text-[9px] sm:text-[10px] text-gray-400 font-bold uppercase">Liga Zonen</div>
           </div>
           <div className="h-[200px] sm:h-[250px] w-full">
+            {historyLoading ? (
+              <div className="w-full h-full rounded-xl bg-[#242424] animate-pulse"></div>
+            ) : (
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={historyWithScores} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#2e2e2e" vertical={false} />
@@ -429,6 +444,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                 />
               </LineChart>
             </ResponsiveContainer>
+            )}
           </div>
         </div>
 
@@ -452,6 +468,9 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
             </div>
           </div>
           <div className="h-[200px] sm:h-[250px] w-full mt-4">
+            {historyLoading ? (
+              <div className="w-full h-full rounded-xl bg-[#242424] animate-pulse"></div>
+            ) : (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={historyWithScores} margin={{ top: 20, right: 5, left: -25, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#2e2e2e" vertical={false} />
@@ -504,6 +523,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                 )}
               </BarChart>
             </ResponsiveContainer>
+            )}
           </div>
         </div>
       </div>
@@ -515,9 +535,12 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
             <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Performance Index</h3>
             <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Performance Index (1-10) pro Spieltag</p>
           </div>
-          <div className="px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-full text-[9px] text-green-400 font-bold uppercase tracking-widest">Ø {stats?.performanceScore}</div>
+          <div className="px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-full text-[9px] text-green-400 font-bold uppercase tracking-widest">Ø {stats?.performanceScore ?? '–'}</div>
         </div>
         <div className="h-[200px] sm:h-[250px] w-full">
+          {historyLoading ? (
+            <div className="w-full h-full rounded-xl bg-[#242424] animate-pulse"></div>
+          ) : (
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={historyWithScores} margin={{ top: 20, right: 5, left: -25, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#2e2e2e" vertical={false} />
@@ -556,6 +579,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
               <ReferenceArea y1={4.95} y2={5.05} fill="#8b92a5" fillOpacity={0.5} label={{ value: 'Ø SCHNITT', position: 'right', fill: '#8b92a5', fontSize: 8, fontWeight: 'bold' }} />
             </LineChart>
           </ResponsiveContainer>
+          )}
         </div>
       </div>
     </div>
@@ -640,7 +664,7 @@ const ThresholdCard = ({ rank, points, thresholds }) => {
   );
 };
 
-const StatCard = ({ icon, label, value, subValue, isRating }) => {
+const StatCard = ({ icon, label, value, subValue, isRating, loading }) => {
   const getRatingColor = (val) => {
     if (!val) return 'text-gray-400';
     const num = parseFloat(val.toString().replace(',', '.'));
@@ -661,10 +685,14 @@ const StatCard = ({ icon, label, value, subValue, isRating }) => {
       </div>
       
       <div className="flex flex-col mb-1 gap-1">
-          <div className={`text-[17px] sm:text-xl font-black leading-none ${isRating ? getRatingColor(value) : ''}`}>
-            {value}
-            {isRating && <span className="text-[10px] text-gray-500 ml-1">/ 10</span>}
-          </div>
+          {loading ? (
+            <div className="h-5 sm:h-6 w-12 rounded bg-[#242424] animate-pulse"></div>
+          ) : (
+            <div className={`text-[17px] sm:text-xl font-black leading-none ${isRating ? getRatingColor(value) : ''}`}>
+              {value}
+              {isRating && <span className="text-[10px] text-gray-500 ml-1">/ 10</span>}
+            </div>
+          )}
       </div>
       <div className="text-[8px] sm:text-[9px] font-bold text-[#626978] uppercase tracking-wider mt-1">{subValue}</div>
     </div>

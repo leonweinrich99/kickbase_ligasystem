@@ -30,12 +30,17 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
   const [user1, setUser1] = useState(null);
   const [user2, setUser2] = useState(null);
   const [history, setHistory] = useState([]);
+  // Aufgeteilt wie in UserDetail.jsx: "loading" nur fuer den schnellen ersten
+  // Schritt (beide Spieler finden), "historyLoading" fuer die Charts, die auf
+  // mehrere Spieltag-Dateien warten muessen.
   const [loading, setLoading] = useState(true);
+  const [historyLoading, setHistoryLoading] = useState(true);
   const [showAverage, setShowAverage] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+      setHistoryLoading(true);
       try {
         const [latestRes, indexRes] = await Promise.all([
           fetch(`${dataBase}/data.json?t=${Date.now()}`),
@@ -50,11 +55,14 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
 
         if (!foundUser1 || !foundUser2) {
           setLoading(false);
+          setHistoryLoading(false);
           return;
         }
 
         setUser1(foundUser1);
         setUser2(foundUser2);
+        // Kopfbereich (Namen, Ranks) kann ab hier sofort stehen.
+        setLoading(false);
 
         const matchdayList = (indexData.matchdays || []).sort((a, b) => a - b);
 
@@ -139,10 +147,11 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
         }
 
         setHistory(historyResults.sort((a, b) => a.matchday - b.matchday));
-        setLoading(false);
+        setHistoryLoading(false);
       } catch (err) {
         console.error("Error fetching user details:", err);
         setLoading(false);
+        setHistoryLoading(false);
       }
     };
 
@@ -185,12 +194,9 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
   }, [historyWithScores]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#000000] flex flex-col justify-center items-center gap-4">
-        <div className="w-12 h-12 border-4 border-[#ff5c3e] border-t-transparent rounded-full animate-spin"></div>
-        <div className="text-gray-500 font-bold tracking-widest uppercase text-xs">Lade Duell...</div>
-      </div>
-    );
+    // Bewusst schlicht: einzelne, schnelle Abfrage - keine aufwendige
+    // Ladeanimation noetig.
+    return <div className="min-h-screen bg-[#000000]"></div>;
   }
 
   if (!user1 || !user2) {
@@ -299,24 +305,28 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
             val1={stats?.p1Score} 
             val2={stats?.p2Score}
             isScore={true}
+            loading={historyLoading}
          />
          <DuelStatRow 
             icon={<Activity />} 
             label="Schnitt pro Spieltag" 
-            val1={stats?.p1Avg.toLocaleString('de-DE')} 
-            val2={stats?.p2Avg.toLocaleString('de-DE')} 
+            val1={stats?.p1Avg?.toLocaleString('de-DE')} 
+            val2={stats?.p2Avg?.toLocaleString('de-DE')} 
+            loading={historyLoading}
          />
          <DuelStatRow 
             icon={<Target />} 
             label="Bester Spieltag" 
-            val1={stats?.p1Best.toLocaleString('de-DE')} 
-            val2={stats?.p2Best.toLocaleString('de-DE')} 
+            val1={stats?.p1Best?.toLocaleString('de-DE')} 
+            val2={stats?.p2Best?.toLocaleString('de-DE')} 
+            loading={historyLoading}
          />
          <DuelStatRow 
             icon={<Wallet />} 
             label="Pkt. / Mio. (Effizienz)" 
             val1={stats?.p1PointsPerMio} 
             val2={stats?.p2PointsPerMio} 
+            loading={historyLoading}
          />
       </div>
 
@@ -327,6 +337,9 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
             <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Platzierungsverlauf</h3>
           </div>
           <div className="h-[200px] sm:h-[250px] w-full">
+            {historyLoading ? (
+              <div className="w-full h-full rounded-xl bg-[#242424] animate-pulse"></div>
+            ) : (
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={historyWithScores} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#2e2e2e" vertical={false} />
@@ -341,6 +354,7 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
                 <Line type="monotone" dataKey="p2Rank" name={user2.name} stroke="#3b82f6" strokeWidth={3} dot={<CustomizedDot />} activeDot={{ r: 8, strokeWidth: 0 }} animationDuration={1500} />
               </LineChart>
             </ResponsiveContainer>
+            )}
           </div>
         </div>
 
@@ -349,6 +363,9 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
             <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Performance Index</h3>
           </div>
           <div className="h-[200px] sm:h-[250px] w-full">
+            {historyLoading ? (
+              <div className="w-full h-full rounded-xl bg-[#242424] animate-pulse"></div>
+            ) : (
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={historyWithScores} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#2e2e2e" vertical={false} />
@@ -361,6 +378,7 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
                 <Line type="monotone" dataKey="p2Score" name={user2.name} stroke="#3b82f6" strokeWidth={3} dot={<CustomizedDot />} activeDot={{ r: 8, strokeWidth: 0 }} animationDuration={1500} />
               </LineChart>
             </ResponsiveContainer>
+            )}
           </div>
         </div>
 
@@ -377,6 +395,9 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
             </div>
           </div>
           <div className="h-[200px] sm:h-[250px] w-full mt-4">
+            {historyLoading ? (
+              <div className="w-full h-full rounded-xl bg-[#242424] animate-pulse"></div>
+            ) : (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={historyWithScores} margin={{ top: 20, right: 5, left: -25, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#2e2e2e" vertical={false} />
@@ -411,6 +432,7 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
+            )}
           </div>
         </div>
       </div>
@@ -418,15 +440,14 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
   );
 };
 
-const DuelStatRow = ({ icon, label, val1, val2, isScore }) => {
+const DuelStatRow = ({ icon, label, val1, val2, isScore, loading }) => {
     const parseScore = (v) => parseFloat(v?.toString().replace(',', '.') || 0);
     
     const num1 = isScore ? parseScore(val1) : parsePoints(val1);
     const num2 = isScore ? parseScore(val2) : parsePoints(val2);
     
-    const p1Wins = num1 > num2;
-    const p2Wins = num2 > num1;
-    const isTie = num1 === num2;
+    const p1Wins = !loading && num1 > num2;
+    const p2Wins = !loading && num2 > num1;
 
     return (
         <div className="bg-[#1c1c1c] border border-[#2e2e2e] rounded-2xl p-4 flex items-center shadow-sm relative overflow-hidden group hover:border-[#404040] transition-all">
@@ -438,7 +459,11 @@ const DuelStatRow = ({ icon, label, val1, val2, isScore }) => {
             <div className="w-full flex justify-between items-center relative z-10">
                 {/* User 1 Value */}
                 <div className={`w-[30%] text-left flex flex-col justify-center ${p1Wins ? 'text-green-500' : p2Wins ? 'text-gray-400' : 'text-gray-200'}`}>
-                    <span className="text-sm sm:text-2xl font-black truncate">{val1}{isScore && <span className="text-[10px] ml-1 opacity-50">/ 10</span>}</span>
+                    {loading ? (
+                      <div className="h-5 sm:h-7 w-10 rounded bg-[#242424] animate-pulse"></div>
+                    ) : (
+                      <span className="text-sm sm:text-2xl font-black truncate">{val1}{isScore && <span className="text-[10px] ml-1 opacity-50">/ 10</span>}</span>
+                    )}
                     {p1Wins && <span className="text-[9px] font-bold uppercase tracking-widest mt-0.5 opacity-80 hidden sm:block">Führend</span>}
                 </div>
 
@@ -454,7 +479,11 @@ const DuelStatRow = ({ icon, label, val1, val2, isScore }) => {
 
                 {/* User 2 Value */}
                 <div className={`w-[30%] text-right flex flex-col justify-center ${p2Wins ? 'text-green-500' : p1Wins ? 'text-gray-400' : 'text-gray-200'}`}>
-                    <span className="text-sm sm:text-2xl font-black truncate">{val2}{isScore && <span className="text-[10px] ml-1 opacity-50">/ 10</span>}</span>
+                    {loading ? (
+                      <div className="h-5 sm:h-7 w-10 rounded bg-[#242424] animate-pulse ml-auto"></div>
+                    ) : (
+                      <span className="text-sm sm:text-2xl font-black truncate">{val2}{isScore && <span className="text-[10px] ml-1 opacity-50">/ 10</span>}</span>
+                    )}
                     {p2Wins && <span className="text-[9px] font-bold uppercase tracking-widest mt-0.5 opacity-80 hidden sm:block">Führend</span>}
                 </div>
             </div>
