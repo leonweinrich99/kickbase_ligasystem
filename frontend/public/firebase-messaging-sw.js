@@ -2,20 +2,21 @@
 // im Hintergrund). Muss im Web-Root liegen (nicht unter /src), damit der Browser
 // ihn mit vollem Scope registrieren kann.
 //
-// Die Firebase-Web-Config ist NICHT geheim (oeffentlich einsehbare Client-Config,
-// siehe frontend/src/firebase.js) und wird hier bewusst fest hinterlegt, da
-// Service Worker keine Vite-Umgebungsvariablen lesen koennen.
+// WICHTIG: Diese Datei enthaelt bewusst NUR Platzhalter. Die echten Firebase-
+// Config-Werte werden beim Build (vite.config.js, Plugin "inject-sw-config")
+// aus den VITE_FIREBASE_*-Umgebungsvariablen eingesetzt und landen nur im
+// generierten dist/-Ordner (nicht im Git-Repo, das oeffentlich ist).
 
 importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js');
 
 firebase.initializeApp({
-  apiKey: 'AIzaSyDnLGo-_UFaDKFVwpvjb1yhx9LUOGKYQdg',
-  authDomain: 'kickbase-ligasystem.firebaseapp.com',
-  projectId: 'kickbase-ligasystem',
-  storageBucket: 'kickbase-ligasystem.firebasestorage.app',
-  messagingSenderId: '401740931804',
-  appId: '1:401740931804:web:8110ae77069e7830d48a19'
+  apiKey: '__VITE_FIREBASE_API_KEY__',
+  authDomain: '__VITE_FIREBASE_AUTH_DOMAIN__',
+  projectId: '__VITE_FIREBASE_PROJECT_ID__',
+  storageBucket: '__VITE_FIREBASE_STORAGE_BUCKET__',
+  messagingSenderId: '__VITE_FIREBASE_MESSAGING_SENDER_ID__',
+  appId: '__VITE_FIREBASE_APP_ID__'
 });
 
 const messaging = firebase.messaging();
