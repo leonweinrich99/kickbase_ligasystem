@@ -129,9 +129,9 @@ export const UserRow = ({ item, color, isSaisonView, displayRank, prevRank, rout
 
   return (
     <Link to={`${routeBase}/user/${item.id}`} className="block transition-transform active:scale-95" data-tour={isTourTarget ? 'user-row' : undefined}>
-      <div className={`flex items-center p-3 mb-2.5 bg-[#1a1d24] border ${isSaisonView && item.status ? 'border-[#3a3f4a]' : 'border-[#2a2e37]'} rounded-[14px] shadow-sm relative group hover:border-[#ff5c3e]/50 hover:bg-[#1e222a] transition-all cursor-pointer`}>
+      <div className={`flex items-center p-3 mb-2.5 bg-[#1a1d24] border ${isSaisonView && item.status ? 'border-[#3a3f4a]' : 'border-[#2a2e37]'} rounded-[14px] shadow-sm relative overflow-hidden group hover:border-[#ff5c3e]/50 hover:bg-[#1e222a] transition-all cursor-pointer`}>
         {isSaisonView && item.status && (
-          <div className="absolute left-0 top-0 bottom-0 w-[4px] rounded-l-md" style={{ backgroundColor: statusColors[item.status] }}></div>
+          <div className="absolute left-0 top-0 bottom-0 w-[4px]" style={{ backgroundColor: statusColors[item.status] }}></div>
         )}
         <div className="w-8 flex justify-center items-center text-xs font-bold text-[#8b92a5]">
           {item.isTrophy && isSaisonView ? <TrophyIcon type={item.trophyColor} /> : displayRank}
@@ -139,17 +139,14 @@ export const UserRow = ({ item, color, isSaisonView, displayRank, prevRank, rout
         <div className="w-10 h-10 rounded-full bg-[#20242d] ml-2 flex items-center justify-center overflow-hidden border border-[#2a2e37]">
           <AvatarIcon name={item.name} />
         </div>
-        <div className="ml-3 flex-1 flex flex-col justify-center">
+        <div className="ml-3 flex-1 flex flex-col justify-center min-w-0">
           <div className="flex items-center gap-2">
-            <div className="text-[14px] font-bold tracking-wide text-gray-100">{item.name}</div>
+            <div className="text-[16px] font-bold tracking-wide text-gray-100 truncate">{item.name}</div>
             {rankChange !== 0 && isSaisonView && (
-              <div className={`flex items-center text-[10px] font-black ${rankChange > 0 ? 'text-green-500' : 'text-red-500'}`}>
+              <div className={`flex items-center text-[10px] font-black shrink-0 ${rankChange > 0 ? 'text-green-500' : 'text-red-500'}`}>
                 {rankChange > 0 ? '▲' : '▼'} {Math.abs(rankChange)}
               </div>
             )}
-          </div>
-          <div className="text-[10px] font-bold text-[#8b92a5] tracking-wider mt-0.5 opacity-70">
-            Budget: {item.estimatedBudget}
           </div>
         </div>
         <div className="text-right mr-2">
@@ -224,7 +221,7 @@ const Dashboard = ({ data, currentView, onNext, onPrev, prevRanks, mode = 'live'
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto bg-[#0f1115]">
+    <div className="max-w-[1400px] mx-auto bg-[#000000]">
       <Header
         participants={data.participants}
         currentView={currentView}

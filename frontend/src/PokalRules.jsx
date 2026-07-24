@@ -34,7 +34,7 @@ const RuleCard = ({ number, title, text, color, children, icon: Icon }) => {
       className="group relative pl-16 sm:pl-24 mb-10"
     >
       {/* Number/Icon Circle */}
-      <div className={`absolute left-0 top-0 w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#0f1115] border-2 flex items-center justify-center z-10 transition-all duration-300 ${borderColors[color]}`}>
+      <div className={`absolute left-0 top-0 w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#000000] border-2 flex items-center justify-center z-10 transition-all duration-300 ${borderColors[color]}`}>
         {Icon ? <Icon className={`w-6 h-6 sm:w-8 sm:h-8 ${textColors[color]}`} /> : <span className={`text-lg sm:text-xl font-black ${textColors[color]}`}>{number}</span>}
       </div>
 

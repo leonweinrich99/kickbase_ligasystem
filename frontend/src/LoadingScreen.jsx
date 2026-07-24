@@ -24,7 +24,7 @@ const LoadingScreen = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0f1115] flex flex-col items-center justify-center px-6">
+    <div className="min-h-screen bg-[#000000] flex flex-col items-center justify-center px-6">
       <motion.div
         initial={{ opacity: 0, scale: 0.85 }}
         animate={{ opacity: 1, scale: 1 }}

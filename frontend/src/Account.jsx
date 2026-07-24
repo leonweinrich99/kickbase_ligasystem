@@ -76,7 +76,7 @@ const Account = () => {
   const tour = useTour();
 
   return (
-    <div className="min-h-screen bg-[#0f1115] p-4 sm:p-10">
+    <div className="min-h-screen bg-[#000000] p-4 sm:p-10">
       <div className="max-w-lg mx-auto">
         <div className="flex items-center gap-3 sm:gap-6 mb-8">
           <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center p-0.5 sm:p-1 overflow-hidden flex-shrink-0">

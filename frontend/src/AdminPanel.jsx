@@ -63,7 +63,7 @@ const AdminPanel = () => {
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-[#0f1115] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#000000] flex items-center justify-center p-4">
         <div className="text-center bg-[#1a1d24] border border-[#2a2e37] rounded-2xl p-8">
           <h1 className="text-lg font-black text-white uppercase mb-3">Kein Zugriff</h1>
           <p className="text-sm text-[#8b92a5] mb-6">Diese Seite ist nur für Admins.</p>
@@ -81,7 +81,7 @@ const AdminPanel = () => {
   const adminCount = users.filter(u => u.role === 'admin').length;
 
   return (
-    <div className="min-h-screen bg-[#0f1115] p-4 sm:p-10">
+    <div className="min-h-screen bg-[#000000] p-4 sm:p-10">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>

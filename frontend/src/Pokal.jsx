@@ -175,8 +175,8 @@ const Pokal = () => {
   if (!data) return <LoadingScreen />;
 
   return (
-    <div className="min-h-screen bg-[#0f1115] p-4 sm:p-10 font-sans select-none">
-    <div className="max-w-[1600px] mx-auto bg-[#0f1115]">
+    <div className="min-h-screen bg-[#000000] p-4 sm:p-10 font-sans select-none">
+    <div className="max-w-[1600px] mx-auto bg-[#000000]">
       {/* Header */}
       <div className="flex flex-col mb-4 sm:mb-8 border-b border-[#2a2e37] pb-4 sm:pb-6 gap-4">
 

@@ -186,7 +186,7 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0f1115] flex flex-col justify-center items-center gap-4">
+      <div className="min-h-screen bg-[#000000] flex flex-col justify-center items-center gap-4">
         <div className="w-12 h-12 border-4 border-[#ff5c3e] border-t-transparent rounded-full animate-spin"></div>
         <div className="text-gray-500 font-bold tracking-widest uppercase text-xs">Lade Duell...</div>
       </div>
@@ -195,7 +195,7 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
 
   if (!user1 || !user2) {
     return (
-      <div className="min-h-screen bg-[#0f1115] flex flex-col justify-center items-center gap-6">
+      <div className="min-h-screen bg-[#000000] flex flex-col justify-center items-center gap-6">
         <div className="text-gray-400 text-lg font-bold">Spieler nicht gefunden</div>
         <button 
           onClick={() => navigate(routeBase || '/')}
@@ -229,7 +229,7 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
          <div className="absolute inset-0 bg-gradient-to-r from-[#ff5c3e]/10 via-transparent to-[#3b82f6]/10 opacity-30"></div>
          
          <div className="flex items-center gap-6 z-10 w-2/5">
-             <div className="w-20 h-20 rounded-2xl bg-[#0f1115] border-2 border-[#ff5c3e] flex items-center justify-center relative shadow-xl overflow-hidden shrink-0">
+             <div className="w-20 h-20 rounded-2xl bg-[#000000] border-2 border-[#ff5c3e] flex items-center justify-center relative shadow-xl overflow-hidden shrink-0">
                  <Star className="text-[#ff5c3e] opacity-20 absolute -right-3 -bottom-3 w-16 h-16 rotate-12" />
                  <div className="text-3xl font-black text-[#ff5c3e] z-10">{user1.name.charAt(0)}</div>
              </div>
@@ -246,7 +246,7 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
                 <h1 className="text-2xl font-black tracking-tight uppercase text-white">{user2.name}</h1>
                 <div className="text-sm font-bold text-[#3b82f6] uppercase tracking-widest mt-1">Rank #{user2.rank}</div>
              </div>
-             <div className="w-20 h-20 rounded-2xl bg-[#0f1115] border-2 border-[#3b82f6] flex items-center justify-center relative shadow-xl overflow-hidden shrink-0">
+             <div className="w-20 h-20 rounded-2xl bg-[#000000] border-2 border-[#3b82f6] flex items-center justify-center relative shadow-xl overflow-hidden shrink-0">
                  <Star className="text-[#3b82f6] opacity-20 absolute -left-3 -bottom-3 w-16 h-16 -rotate-12" />
                  <div className="text-3xl font-black text-[#3b82f6] z-10">{user2.name.charAt(0)}</div>
              </div>
@@ -262,7 +262,7 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
 
          <div className="flex justify-between items-center w-full z-10 mt-3">
              <div className="flex flex-col items-center w-[40%] gap-2">
-                 <div className="w-14 h-14 rounded-xl bg-[#0f1115] border-2 border-[#ff5c3e] flex items-center justify-center relative shadow-xl overflow-hidden shrink-0">
+                 <div className="w-14 h-14 rounded-xl bg-[#000000] border-2 border-[#ff5c3e] flex items-center justify-center relative shadow-xl overflow-hidden shrink-0">
                     <div className="text-xl font-black text-[#ff5c3e] z-10">{user1.name.charAt(0)}</div>
                  </div>
                  <div>
@@ -274,7 +274,7 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
              <div className="text-2xl font-black text-[#2a2e37] opacity-60 italic shrink-0 w-[20%]">VS</div>
              
              <div className="flex flex-col items-center w-[40%] gap-2">
-                 <div className="w-14 h-14 rounded-xl bg-[#0f1115] border-2 border-[#3b82f6] flex items-center justify-center relative shadow-xl overflow-hidden shrink-0">
+                 <div className="w-14 h-14 rounded-xl bg-[#000000] border-2 border-[#3b82f6] flex items-center justify-center relative shadow-xl overflow-hidden shrink-0">
                     <div className="text-xl font-black text-[#3b82f6] z-10">{user2.name.charAt(0)}</div>
                  </div>
                  <div>

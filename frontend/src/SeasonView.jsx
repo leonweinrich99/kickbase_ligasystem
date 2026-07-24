@@ -108,7 +108,7 @@ const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
   if (!data) return <LoadingScreen />;
 
   return (
-    <div className="min-h-screen bg-[#0f1115] p-4 sm:p-10 font-sans select-none flex flex-col">
+    <div className="min-h-screen bg-[#000000] p-4 sm:p-10 font-sans select-none flex flex-col">
       <div className="flex-1">
         <Routes>
           <Route index element={

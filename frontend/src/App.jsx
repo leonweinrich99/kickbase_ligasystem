@@ -16,14 +16,14 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="min-h-screen bg-[#0f1115]">
+        <div className="min-h-screen bg-[#000000]">
           <ScrollToTop />
 
           {/* Deckt die Safe-Area oben (Notch/Dynamic Island/Statusleiste) permanent
               mit der Hintergrundfarbe ab - fix positioniert, damit hochgescrollter
               Inhalt nicht darunter/dahinter sichtbar wird. */}
           <div
-            className="fixed top-0 left-0 right-0 z-[100] pointer-events-none bg-[#0f1115]"
+            className="fixed top-0 left-0 right-0 z-[100] pointer-events-none bg-[#000000]"
             style={{ height: 'env(safe-area-inset-top, 0px)' }}
           ></div>
 

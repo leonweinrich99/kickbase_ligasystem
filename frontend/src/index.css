@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-bg: #0f1115;
+  --color-brand-bg: #000000;
   --color-card-bg: #1a1d24;
   --color-card-border: #2a2e37;
   --color-text-muted: #8b92a5;

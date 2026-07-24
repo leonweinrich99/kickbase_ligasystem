@@ -32,7 +32,7 @@ const RuleCard = ({ number, title, text, color, children, icon: Icon }) => {
       className="group relative pl-16 sm:pl-24 mb-10"
     >
       {/* Number/Icon Circle */}
-      <div className={`absolute left-0 top-0 w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#0f1115] border-2 flex items-center justify-center z-10 transition-all duration-300 ${borderColors[color]}`}>
+      <div className={`absolute left-0 top-0 w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#000000] border-2 flex items-center justify-center z-10 transition-all duration-300 ${borderColors[color]}`}>
         {Icon ? <Icon className={`w-6 h-6 sm:w-8 sm:h-8 ${textColors[color]}`} /> : <span className={`text-lg sm:text-xl font-black ${textColors[color]}`}>{number}</span>}
       </div>
 
@@ -190,21 +190,21 @@ const Rules = () => {
             )}
           >
             <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="bg-[#0f1115] border border-[#2a2e37] rounded-xl p-3 text-center">
+              <div className="bg-[#000000] border border-[#2a2e37] rounded-xl p-3 text-center">
                 <div className="text-[10px] font-black uppercase tracking-widest text-blue-400 mb-2">Liga 1</div>
                 <div className="text-xs text-gray-300 space-y-1">
                   <div>🥇 25 €</div><div>🥈 18 €</div><div>🥉 12 €</div>
                 </div>
                 <div className="text-[10px] text-[#626978] mt-2 font-bold">= 55 €</div>
               </div>
-              <div className="bg-[#0f1115] border border-[#2a2e37] rounded-xl p-3 text-center">
+              <div className="bg-[#000000] border border-[#2a2e37] rounded-xl p-3 text-center">
                 <div className="text-[10px] font-black uppercase tracking-widest text-orange-400 mb-2">Liga 2</div>
                 <div className="text-xs text-gray-300 space-y-1">
                   <div>🥇 20 €</div><div>🥈 15 €</div><div>🥉 8 €</div>
                 </div>
                 <div className="text-[10px] text-[#626978] mt-2 font-bold">= 43 €</div>
               </div>
-              <div className="bg-[#0f1115] border border-[#2a2e37] rounded-xl p-3 text-center">
+              <div className="bg-[#000000] border border-[#2a2e37] rounded-xl p-3 text-center">
                 <div className="text-[10px] font-black uppercase tracking-widest text-green-400 mb-2">Liga 3</div>
                 <div className="text-xs text-gray-300 space-y-1">
                   <div>🥇 15 €</div><div>🥈 10 €</div><div>🥉 7 €</div>

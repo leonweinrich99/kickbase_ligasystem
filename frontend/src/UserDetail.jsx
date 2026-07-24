@@ -206,7 +206,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
 
   if (!userData) {
     return (
-      <div className="min-h-screen bg-[#0f1115] flex flex-col justify-center items-center gap-6">
+      <div className="min-h-screen bg-[#000000] flex flex-col justify-center items-center gap-6">
         <div className="text-gray-400 text-lg font-bold">Spieler nicht gefunden</div>
         <button 
           onClick={() => navigate(routeBase || '/')}
@@ -231,7 +231,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                </button>
              </div>
              <div className="p-4 border-b border-[#2a2e37]">
-               <div className="bg-[#0f1115] rounded-xl flex items-center px-3 py-2 border border-[#2a2e37]">
+               <div className="bg-[#000000] rounded-xl flex items-center px-3 py-2 border border-[#2a2e37]">
                  <Search size={16} className="text-gray-500 mr-2" />
                  <input 
                    type="text" 
