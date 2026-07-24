@@ -21,6 +21,11 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+// Neue Version des Service Workers sofort aktivieren (statt erst nach
+// mehrfachem Schliessen/Neuoeffnen der App), damit Updates schnell ankommen.
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', (event) => event.waitUntil(clients.claim()));
+
 // Hintergrund-Benachrichtigungen anzeigen (App nicht im Vordergrund).
 //
 // WICHTIG: Der Server schickt bewusst nur "data" (kein "notification"-Feld).
