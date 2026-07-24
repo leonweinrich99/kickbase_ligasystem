@@ -48,12 +48,15 @@ export default async function handler(req, res) {
     const messaging = getMessaging(app);
     const result = await messaging.sendEachForMulticast({
       tokens,
-      notification: {
+      // Bewusst NUR "data" statt "notification": Bei einem "notification"-Payload
+      // zeigt der Browser/Service Worker automatisch selbst eine Benachrichtigung
+      // an - zusaetzlich zu unserem eigenen showNotification()-Aufruf in
+      // firebase-messaging-sw.js. Das fuehrte zu doppelten Benachrichtigungen.
+      // Mit reinem "data"-Payload haben wir die volle (und einzige) Kontrolle.
+      data: {
         title: 'Neue Registrierung',
-        body: `${name || 'Jemand'} (${email || 'unbekannt'}) wartet auf Freischaltung.`
-      },
-      webpush: {
-        fcmOptions: { link: 'https://www.developtimize.de/admin' }
+        body: `${name || 'Jemand'} (${email || 'unbekannt'}) wartet auf Freischaltung.`,
+        link: 'https://www.developtimize.de/admin'
       }
     });
 

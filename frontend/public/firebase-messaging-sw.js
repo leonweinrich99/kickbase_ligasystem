@@ -22,13 +22,18 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 // Hintergrund-Benachrichtigungen anzeigen (App nicht im Vordergrund).
+//
+// WICHTIG: Der Server schickt bewusst nur "data" (kein "notification"-Feld).
+// Bei einem "notification"-Payload wuerde der Browser automatisch selbst eine
+// Benachrichtigung anzeigen - zusaetzlich zu unserem eigenen
+// showNotification()-Aufruf hier, was zu doppelten Benachrichtigungen fuehrt.
 messaging.onBackgroundMessage((payload) => {
-  const title = payload.notification?.title || 'Ligasystem';
+  const title = payload.data?.title || 'Ligasystem';
   const options = {
-    body: payload.notification?.body || '',
+    body: payload.data?.body || '',
     icon: '/icons/icon-192.png',
     badge: '/icons/icon-192.png',
-    data: { url: payload.fcmOptions?.link || payload.data?.link || '/admin' }
+    data: { url: payload.data?.link || '/admin' }
   };
   self.registration.showNotification(title, options);
 });

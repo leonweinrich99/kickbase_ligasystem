@@ -57,9 +57,10 @@ export const enablePushNotifications = async (uid) => {
   await updateDoc(doc(db, 'users', uid), { fcmTokens: arrayUnion(token) });
 
   // Benachrichtigungen anzeigen, waehrend die App gerade selbst geoeffnet ist.
+  // Server schickt bewusst nur "data" (kein "notification"), siehe firebase-messaging-sw.js.
   onMessage(messaging, (payload) => {
-    const title = payload.notification?.title || 'Ligasystem';
-    const body = payload.notification?.body || '';
+    const title = payload.data?.title || 'Ligasystem';
+    const body = payload.data?.body || '';
     if (Notification.permission === 'granted') {
       registration.showNotification(title, { body, icon: '/icons/icon-192.png' });
     }
