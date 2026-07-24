@@ -169,14 +169,14 @@ const OptimalTeam = ({ isOpen, onClose, availableMatchdays, currentGlobalMatchda
         <div className="px-6 py-4 bg-[#14161b] border-b border-[#2e2e2e] flex flex-col md:flex-row justify-between items-center gap-6">
           
           {/* Spieltag-Wechsler (Dashboard-Design) */}
-          <div className="bg-[#1c1c1c] border border-[#2e2e2e] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden w-full md:w-auto h-12">
+          <div className="bg-[#1c1c1c] border border-[#2e2e2e] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden w-full md:w-auto justify-between h-12">
             <button 
               onClick={handlePrev}
               className="px-5 h-full text-[#8b92a5] hover:text-[#ff5c3e] transition-colors bg-[#1a1a1a] active:scale-90"
             >
               <ChevronLeft size={20} />
             </button>
-            <div className="px-6 flex flex-col items-center min-w-[120px]">
+            <div className="px-6 flex-1 flex flex-col items-center justify-center min-w-[120px]">
               <span className="text-[11px] font-bold text-gray-200 whitespace-nowrap uppercase tracking-widest text-center">
                 Spieltag {matchday}
               </span>
