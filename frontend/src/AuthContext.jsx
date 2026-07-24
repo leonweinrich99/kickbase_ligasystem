@@ -9,6 +9,7 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { auth, db, googleProvider, isFirebaseConfigured } from './firebase';
+import { initForegroundPushListener } from './pushNotifications';
 
 const AuthContext = createContext(null);
 
@@ -60,6 +61,11 @@ export const AuthProvider = ({ children }) => {
     if (!isFirebaseConfigured) {
       return;
     }
+
+    // Muss bei JEDEM App-Start neu registriert werden (siehe Kommentar in
+    // pushNotifications.js) - sonst verschwinden Push-Nachrichten spurlos,
+    // wenn die App beim Zustellzeitpunkt gerade sichtbar/im Vordergrund war.
+    initForegroundPushListener();
 
     const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);

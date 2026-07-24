@@ -20,6 +20,41 @@ const isIOS = () => typeof navigator !== 'undefined' && /iphone|ipad|ipod/i.test
 
 export const needsHomeScreenInstall = () => isIOS() && !isRunningAsInstalledApp();
 
+// Zeigt eine per Data-Payload empfangene FCM-Nachricht als Benachrichtigung an
+// (Server schickt bewusst nur "data", kein "notification" - siehe
+// firebase-messaging-sw.js fuer die Begruendung).
+const showDataNotification = async (payload) => {
+  const title = payload.data?.title || 'Ligasystem';
+  const body = payload.data?.body || '';
+  if (Notification.permission !== 'granted') return;
+  const registration = await navigator.serviceWorker.getRegistration('/firebase-messaging-sw.js');
+  if (registration) {
+    registration.showNotification(title, { body, icon: '/icons/icon-192.png' });
+  } else {
+    new Notification(title, { body, icon: '/icons/icon-192.png' });
+  }
+};
+
+let foregroundListenerReady = false;
+
+/**
+ * Registriert den Foreground-Handler (onMessage), der Nachrichten anzeigt,
+ * WAEHREND die App gerade offen/sichtbar ist. Muss bei JEDEM App-Start neu
+ * aufgerufen werden - anders als der Service Worker (der dauerhaft bestehen
+ * bleibt), verliert die Firebase-Messaging-Instanz diesen Handler bei jedem
+ * Reload/Neustart der Seite. Ohne diesen erneuten Aufruf verschwinden
+ * Nachrichten spurlos, wenn die App zum Zustellzeitpunkt sichtbar war (der
+ * Service Worker liefert sie dann NICHT selbst aus, sondern reicht sie an die
+ * Seite weiter - und ohne Handler landet sie im Nichts).
+ */
+export const initForegroundPushListener = async () => {
+  if (foregroundListenerReady || !VAPID_KEY) return;
+  const messaging = await getMessagingIfSupported();
+  if (!messaging) return;
+  foregroundListenerReady = true;
+  onMessage(messaging, showDataNotification);
+};
+
 /**
  * Fragt die Benachrichtigungs-Erlaubnis an (MUSS von einem direkten Klick
  * ausgeloest werden, sonst blockt iOS Safari das stillschweigend) und speichert
@@ -56,15 +91,10 @@ export const enablePushNotifications = async (uid) => {
 
   await updateDoc(doc(db, 'users', uid), { fcmTokens: arrayUnion(token) });
 
-  // Benachrichtigungen anzeigen, waehrend die App gerade selbst geoeffnet ist.
-  // Server schickt bewusst nur "data" (kein "notification"), siehe firebase-messaging-sw.js.
-  onMessage(messaging, (payload) => {
-    const title = payload.data?.title || 'Ligasystem';
-    const body = payload.data?.body || '';
-    if (Notification.permission === 'granted') {
-      registration.showNotification(title, { body, icon: '/icons/icon-192.png' });
-    }
-  });
+  // Sicherstellen, dass der Foreground-Handler aktiv ist (falls initForegroundPushListener()
+  // z.B. wegen fehlendem VAPID-Key beim App-Start noch uebersprungen wurde).
+  foregroundListenerReady = false;
+  await initForegroundPushListener();
 
   return token;
 };
