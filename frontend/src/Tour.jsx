@@ -394,7 +394,7 @@ const TourOverlay = () => {
     };
   }
 
-  // IOS Tutorial Content definition (rein visuell, ohne externe Screenshots)
+  // IOS Tutorial Content definition (rein visuell, inkl. iOS 18 "Als Web-App öffnen" Option)
   const iosSteps = [
     {
       title: '1. Safari Browser & Menü öffnen',
@@ -439,23 +439,44 @@ const TourOverlay = () => {
       )
     },
     {
-      title: '3. Bestätigen & App auf Home-Bildschirm 🚀',
-      text: 'Tippe oben rechts im iOS-Fenster auf "Hinzufügen". Die App erscheint nun wie eine native App auf deinem Home-Bildschirm!',
+      title: '3. "Als Web-App öffnen" aktivieren & Hinzufügen 🚀',
+      text: 'Stelle sicher, dass der Schalter "Als Web-App öffnen" AKTIVERT ist, und tippe oben rechts auf "Hinzufügen".',
       renderGraphic: () => (
-        <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-3 my-2 text-left">
-          <div className="flex items-center justify-between border-b border-[#2e2e2e] pb-2 mb-3">
-            <span className="text-xs text-gray-400 font-medium">Zum Home-Bildschirm</span>
-            <span className="text-xs bg-sky-500 text-white font-bold px-2.5 py-1 rounded-lg animate-pulse shadow-md">
+        <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-3.5 my-2 text-left shadow-inner">
+          <div className="flex items-center justify-between border-b border-[#2e2e2e] pb-2 mb-2.5">
+            <span className="text-xs text-white font-bold flex items-center gap-1.5">
+              <span>✕</span> Zum Home-Bildschirm
+            </span>
+            <span className="text-xs bg-sky-500 text-white font-bold px-3 py-1 rounded-full animate-pulse shadow-md">
               Hinzufügen
             </span>
           </div>
-          <div className="flex items-center gap-3 bg-[#1a1a1a] p-2.5 rounded-lg border border-[#333]">
-            <div className="w-10 h-10 bg-gradient-to-br from-[#ff5c3e] to-orange-600 rounded-xl flex items-center justify-center text-white text-lg font-black shadow-md">
+
+          <div className="flex items-center gap-3 bg-[#1a1a1a] p-2 rounded-lg border border-[#333] mb-2.5">
+            <div className="w-9 h-9 bg-gradient-to-br from-[#ff5c3e] to-orange-600 rounded-xl flex items-center justify-center text-white text-base font-black shadow-md shrink-0">
               ⚽
             </div>
-            <div>
+            <div className="truncate">
               <div className="text-xs font-bold text-white">Ligasystem</div>
-              <div className="text-[10px] text-gray-400">https://developtimize.de/</div>
+              <div className="text-[9.5px] text-gray-400 truncate">https://www.developtimize.de/</div>
+            </div>
+          </div>
+
+          {/* iOS 18 Option Switch */}
+          <div className="bg-[#1a1a1a] p-2.5 rounded-lg border border-[#ff5c3e]/50 relative overflow-hidden">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                <span className="text-emerald-400">⚡</span> Als Web-App öffnen
+              </span>
+              <div className="w-9 h-5 bg-emerald-500 rounded-full p-0.5 flex items-center justify-end shadow-inner">
+                <div className="w-4 h-4 bg-white rounded-full shadow-md"></div>
+              </div>
+            </div>
+            <p className="text-[9.5px] text-gray-400 leading-snug">
+              Für schnellen Zugriff wird auf deinem Home-Bildschirm ein Symbol hinzugefügt.
+            </p>
+            <div className="mt-1.5 text-[9px] font-black uppercase text-[#ff5c3e] tracking-wider flex items-center gap-1">
+              <span>👆</span> WICHTIG: Schalter muss GRÜN / AN sein!
             </div>
           </div>
         </div>
