@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-// Offizielle SVG Marken-Logos für Apple, Android, Safari und Chrome
+// Offizielle SVG Marken-Logos & Echte Browser-Icons
 const AppleIcon = ({ className = "w-6 h-6" }) => (
   <svg className={className} viewBox="0 0 384 512" fill="currentColor">
     <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-92.1zm-56.3-157.9c21.1-25.5 35.3-61.1 31.4-96.8-30.4 1.2-67.4 20.3-89.2 45.8-19.6 22.8-36.8 59-32.2 93.9 33.9 2.6 68.9-17.4 90-42.9z"/>
@@ -10,7 +10,7 @@ const AppleIcon = ({ className = "w-6 h-6" }) => (
 
 const AndroidIcon = ({ className = "w-6 h-6" }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M17.523 15.3414c-.5511 0-.998.4469-.998.998 0 .551.4469.998.998.998.551 0 .998-.447.998-.998 0-.5511-.447-.998-.998-.998zm-11.046 0c-.5511 0-.998.4469-.998.998 0 .551.4469.998.998.998.5511 0 .998-.447.998-.998 0-.5511-.4469-.998-.998-.998zM6.16 7.5022l-1.674-2.899c-.1446-.2504-.0587-.571.1917-.7157.2505-.1446.5711-.0587.7157.1917l1.7062 2.9547c1.4704-.6721 3.1258-1.0491 4.9004-1.0491 1.7746 0 3.43.377 4.9004 1.0491l1.7062-2.9547c.1446-.2504.4652-.3363.7157-.1917.2504.1446.3363.4653.1917.7157l-1.674 2.899C20.6133 9.0768 22 11.3853 22 14.0204H2C2 11.3853 3.3867 9.0768 6.16 7.5022zM12 21.02c-4.9706 0-9-4.0294-9-9 0-.34.0205-.675.0592-1.004h17.8816c.0387.329.0592.664.0592 1.004 0 4.9706-4.0294 9-9 9z"/>
+    <path d="M17.523 15.3414c-.5511 0-.998.4469-.998.998 0 .551.4469.998.998.998.551 0 .998-.447.998-.998 0-.5511-.447-.998-.998-.998zm-11.046 0c-.5511 0-.998.4469-.998.998 0 .551.4469.998.998.998.5511 0 .998-.447.998-.998 0-.5511-.4469-.998-.998-.998zM6.16 7.5022l-1.674-2.899c-.1446-.2504-.0587-.571.1917-.7157.2505-.1446.5711-.0587.7157.1917l1.7062 2.9547c1.4704-.6721 3.1258-1.0491 4.9004-1.0491 1.7746 0 3.43.377 4.9004 1.0491l1.7062-2.9547c.1446-.2504.4652-.3363.7157-.1917.2504.1446.3363.4653.1917.7157l-1.674 2.899C20.6133 9.0768 22 11.3853 22 14.0204H2C2 11.3853 3.3867 9.0768 6.16 7.5022zM12 21.02c-4.9706 0-4.0294-9-9-9 0-.34.0205-.675.0592-1.004h17.8816c.0387.329.0592.664.0592 1.004 0 4.9706-4.0294 9-9 9z"/>
   </svg>
 );
 
@@ -18,6 +18,14 @@ const SafariIcon = ({ className = "w-4 h-4" }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="10"/>
     <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+  </svg>
+);
+
+const SafariShareIcon = ({ className = "w-4 h-4" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+    <polyline points="16 6 12 2 8 6"/>
+    <line x1="12" y1="2" x2="12" y2="15"/>
   </svg>
 );
 
@@ -329,7 +337,68 @@ const TourOverlay = () => {
 
   const pad = 8;
   const gap = 20;
-  const hasSpotlight = Boolean(step.selector) && Boolean(rect);
+
+  const { safeTop, safeBottom } = getSafeBounds();
+  const isIntroStep = tour.stepIndex === 0;
+
+  // Echte Bildschirm-Bereiche für PWA-Schritte ermitteln (Spotlight auf echte Browser-Buttons!)
+  let activePwaRect = null;
+  if (isIntroStep && selectedOS === 'ios') {
+    if (pwaStep === 0) {
+      // iOS Schritt 1: Untere Safari-Navigationsleiste (Teilen- / Drei-Punkte-Button)
+      activePwaRect = {
+        top: window.innerHeight - 65,
+        left: Math.max(10, window.innerWidth - 120),
+        width: 110,
+        height: 50
+      };
+    } else if (pwaStep === 1) {
+      // iOS Schritt 2: Unterer Share-Sheet Bereich (+ Zum Home-Bildschirm)
+      activePwaRect = {
+        top: Math.max(120, window.innerHeight * 0.45),
+        left: Math.max(16, (window.innerWidth - 340) / 2),
+        width: Math.min(340, window.innerWidth - 32),
+        height: 175
+      };
+    } else if (pwaStep === 2) {
+      // iOS Schritt 3: Oben rechts (Hinzufügen-Button)
+      activePwaRect = {
+        top: Math.max(10, safeTop + 8),
+        left: Math.max(10, window.innerWidth - 130),
+        width: 120,
+        height: 46
+      };
+    }
+  } else if (isIntroStep && selectedOS === 'android') {
+    if (pwaStep === 0) {
+      // Android Schritt 1: Oben rechts (Drei-Punkte-Menü in Chrome)
+      activePwaRect = {
+        top: Math.max(10, safeTop + 6),
+        left: Math.max(10, window.innerWidth - 60),
+        width: 50,
+        height: 50
+      };
+    } else if (pwaStep === 1) {
+      // Android Schritt 2: Oben rechts Dropdown-Menü Bereich
+      activePwaRect = {
+        top: Math.max(55, safeTop + 55),
+        left: Math.max(16, window.innerWidth - 290),
+        width: 270,
+        height: 185
+      };
+    } else if (pwaStep === 2) {
+      // Android Schritt 3: Bildschirmsymmetrisches Installations-Popup
+      activePwaRect = {
+        top: Math.max(120, (window.innerHeight - 170) / 2),
+        left: Math.max(16, (window.innerWidth - 330) / 2),
+        width: Math.min(330, window.innerWidth - 32),
+        height: 170
+      };
+    }
+  }
+
+  const effectiveRect = rect || activePwaRect;
+  const hasSpotlight = Boolean(effectiveRect);
   const isSearching = Boolean(step.selector) && !rect && !notFound;
 
   const advance = () => {
@@ -347,31 +416,29 @@ const TourOverlay = () => {
 
   const absorbClick = (e) => e.stopPropagation();
 
-  const { safeTop, safeBottom } = getSafeBounds();
-  const isIntroStep = tour.stepIndex === 0;
   const tooltipWidth = isIntroStep ? 380 : 320;
   const safeMargin = 16;
 
   let tooltipStyle;
-  if (rect) {
+  if (effectiveRect) {
     const viewportW = window.innerWidth;
-    const spaceBelow = safeBottom - (rect.top + rect.height + pad) - gap;
-    const spaceAbove = rect.top - pad - safeTop - gap;
+    const spaceBelow = safeBottom - (effectiveRect.top + effectiveRect.height + pad) - gap;
+    const spaceAbove = effectiveRect.top - pad - safeTop - gap;
     const estimatedTooltipHeight = 190;
 
-    const centerX = rect.left + rect.width / 2;
+    const centerX = effectiveRect.left + effectiveRect.width / 2;
     const clampedLeft = Math.min(Math.max(centerX, tooltipWidth / 2 + 12), viewportW - tooltipWidth / 2 - 12);
 
     if (spaceBelow >= estimatedTooltipHeight) {
       tooltipStyle = {
-        top: rect.top + rect.height + pad + gap,
+        top: effectiveRect.top + effectiveRect.height + pad + gap,
         left: clampedLeft,
         transform: 'translateX(-50%)',
         maxHeight: Math.max(120, spaceBelow)
       };
     } else if (spaceAbove >= estimatedTooltipHeight) {
       tooltipStyle = {
-        top: rect.top - pad - gap,
+        top: effectiveRect.top - pad - gap,
         left: clampedLeft,
         transform: 'translate(-50%, -100%)',
         maxHeight: Math.max(120, spaceAbove)
@@ -394,34 +461,35 @@ const TourOverlay = () => {
     };
   }
 
-  // IOS Tutorial Content definition (rein visuell, ursprüngliche kompakte Größen)
+  // IOS Tutorial Content definition (mit echten Icons & echtem Safari-Workflow)
   const iosSteps = [
     {
-      title: '1. Safari Browser & Menü öffnen',
-      text: 'Öffne das Ligasystem in Safari. Tippe unten in der Navigationsleiste auf das Teilen-Symbol oder die drei Punkte ( ... ).',
+      title: '1. Safari Teilen-Menü öffnen',
+      text: 'Blicke auf den hervorgehobenen Bereich unten in der Safari-Leiste. Tippe dort auf das Teilen-Symbol [↑] oder auf die drei Punkte ( ... ).',
       renderGraphic: () => (
         <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-3 my-2 text-left shadow-inner">
           <div className="flex items-center justify-between bg-[#1f1f1f] rounded-lg px-3 py-2 border border-[#333]">
             <div className="flex items-center gap-2 text-xs text-gray-300 truncate">
               <span className="text-emerald-400">🔒</span> developtimize.de
             </div>
-            <div className="relative flex items-center justify-center w-7 h-7 bg-sky-500/20 border border-sky-500 rounded-full animate-pulse">
-              <span className="text-sky-400 font-bold text-sm">...</span>
-              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-sky-500"></span>
-              </span>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center w-7 h-7 bg-sky-500/20 border border-sky-500 rounded-full animate-pulse text-sky-400">
+                <SafariShareIcon className="w-4 h-4" />
+              </div>
+              <div className="flex items-center justify-center w-7 h-7 bg-sky-500/20 border border-sky-500 rounded-full animate-pulse text-sky-400 font-bold text-xs">
+                ...
+              </div>
             </div>
           </div>
-          <div className="text-[10px] text-sky-400 mt-2 text-center font-semibold flex items-center justify-center gap-1">
-            <SafariIcon className="w-3.5 h-3.5" /> Unten auf Teilen / 3-Punkte-Button tippen
+          <div className="text-[10px] text-sky-400 mt-2 text-center font-semibold flex items-center justify-center gap-1.5">
+            <SafariShareIcon className="w-3.5 h-3.5" /> Unten in Safari auf [↑] oder ( ... ) tippen
           </div>
         </div>
       )
     },
     {
       title: '2. "Zum Home-Bildschirm" wählen',
-      text: 'Scrolle im iOS-Teilen-Menü nach unten und wähle den Menüeintrag "Zum Home-Bildschirm" mit dem Plus-Symbol (+).',
+      text: 'Scrolle im aufstappenden iOS-Teilen-Menü nach unten und tippe auf den Menüeintrag "Zum Home-Bildschirm" mit dem Plus-Icon (+).',
       renderGraphic: () => (
         <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-3 my-2 text-left">
           <div className="space-y-1.5 text-xs text-gray-300">
@@ -484,11 +552,11 @@ const TourOverlay = () => {
     }
   ];
 
-  // Android Tutorial Content definition
+  // Android Tutorial Content definition (mit echten Icons & Chrome-Workflow)
   const androidSteps = [
     {
-      title: '1. Chrome Browser & Menü öffnen',
-      text: 'Öffne die Seite in Google Chrome. Tippe oben rechts auf das Drei-Punkte-Menü ( ⋮ ).',
+      title: '1. Chrome 3-Punkte-Menü öffnen',
+      text: 'Blicke auf den hervorgehobenen Bereich oben rechts in Chrome. Tippe dort auf das Drei-Punkte-Menü ( ⋮ ).',
       renderGraphic: () => (
         <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-3 my-2 text-left shadow-inner">
           <div className="flex items-center justify-between bg-[#1f1f1f] rounded-lg px-3 py-2 border border-[#333]">
@@ -496,7 +564,7 @@ const TourOverlay = () => {
               <span className="text-emerald-400">🔒</span> developtimize.de
             </div>
             <div className="relative flex items-center justify-center w-7 h-7 bg-amber-500/20 border border-amber-500 rounded-full animate-pulse">
-              <span className="text-amber-400 font-bold text-sm">⋮</span>
+              <span className="text-amber-400 font-bold text-base">⋮</span>
               <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
@@ -504,14 +572,14 @@ const TourOverlay = () => {
             </div>
           </div>
           <div className="text-[10px] text-amber-400 mt-2 text-center font-semibold flex items-center justify-center gap-1">
-            <ChromeIcon className="w-3.5 h-3.5" /> Hier oben rechts auf die 3 Punkte tippen
+            <ChromeIcon className="w-3.5 h-3.5" /> Oben rechts in Chrome auf ( ⋮ ) tippen
           </div>
         </div>
       )
     },
     {
       title: '2. "App installieren" wählen',
-      text: 'Suche im Menü nach der Option "App installieren" oder "Zum Startbildschirm hinzufügen".',
+      text: 'Suche im geöffneten Menü nach der Option "App installieren" 📲 oder "Zum Startbildschirm hinzufügen".',
       renderGraphic: () => (
         <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-3 my-2 text-left">
           <div className="space-y-1.5 text-xs text-gray-300">
@@ -551,34 +619,42 @@ const TourOverlay = () => {
         <>
           <div
             className="absolute bg-black/45"
-            style={{ top: 0, left: 0, right: 0, height: Math.max(0, rect.top - pad) }}
+            style={{ top: 0, left: 0, right: 0, height: Math.max(0, effectiveRect.top - pad) }}
             onClick={absorbClick}
           ></div>
           <div
             className="absolute bg-black/45"
-            style={{ top: rect.top + rect.height + pad, left: 0, right: 0, bottom: 0 }}
+            style={{ top: effectiveRect.top + effectiveRect.height + pad, left: 0, right: 0, bottom: 0 }}
             onClick={absorbClick}
           ></div>
           <div
             className="absolute bg-black/45"
-            style={{ top: rect.top - pad, left: 0, width: Math.max(0, rect.left - pad), height: rect.height + pad * 2 }}
+            style={{ top: effectiveRect.top - pad, left: 0, width: Math.max(0, effectiveRect.left - pad), height: effectiveRect.height + pad * 2 }}
             onClick={absorbClick}
           ></div>
           <div
             className="absolute bg-black/45"
-            style={{ top: rect.top - pad, left: rect.left + rect.width + pad, right: 0, height: rect.height + pad * 2 }}
+            style={{ top: effectiveRect.top - pad, left: effectiveRect.left + effectiveRect.width + pad, right: 0, height: effectiveRect.height + pad * 2 }}
             onClick={absorbClick}
           ></div>
 
+          {/* Animierter Spotlight-Rahmen auf den ECHTEN Bildschirm-Bereich */}
           <div
-            className="absolute rounded-2xl ring-2 ring-[#ff5c3e] cursor-pointer"
+            className="absolute rounded-2xl ring-2 ring-[#ff5c3e] cursor-pointer animate-pulse z-[205]"
             style={{
-              top: rect.top - pad,
-              left: rect.left - pad,
-              width: rect.width + pad * 2,
-              height: rect.height + pad * 2
+              top: effectiveRect.top - pad,
+              left: effectiveRect.left - pad,
+              width: effectiveRect.width + pad * 2,
+              height: effectiveRect.height + pad * 2
             }}
-            onClick={advance}
+            onClick={() => {
+              if (isIntroStep && selectedOS) {
+                if (pwaStep < 2) setPwaStep((s) => s + 1);
+                else advance();
+              } else {
+                advance();
+              }
+            }}
             title="Zum Fortfahren tippen"
           ></div>
         </>
