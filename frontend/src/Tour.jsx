@@ -39,7 +39,6 @@ const ChromeIcon = ({ className = "w-4 h-4" }) => (
   </svg>
 );
 
-// Jeder Schritt zeigt auf ein echtes Element in der App (per data-tour="...").
 export const TOUR_STEPS = [
   {
     path: '/archiv',
@@ -125,7 +124,7 @@ export const TourProvider = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Listen for native Android/Chrome PWA install prompt
+  // Native Chrome/Android install event
   useEffect(() => {
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
@@ -148,9 +147,18 @@ export const TourProvider = ({ children }) => {
     setDynamicPaths((prev) => (prev[key] === href ? prev : { ...prev, [key]: href }));
   }, []);
 
+  // Robust path navigation resolution (mit DYNAMIC_USER Fallback!)
   useEffect(() => {
     if (!step) return;
-    const targetPath = dynamicPaths[step.path] || step.path;
+    let targetPath = dynamicPaths[step.path] || step.path;
+    
+    // Fallback if DYNAMIC_USER wasn't captured yet
+    if (targetPath === 'DYNAMIC_USER') {
+      const userEl = document.querySelector('[data-tour="user-row"]');
+      const fallbackHref = userEl?.getAttribute('href') || '/archiv';
+      targetPath = fallbackHref;
+    }
+
     if (targetPath && location.pathname !== targetPath) {
       navigate(targetPath);
     }
@@ -218,7 +226,7 @@ const TourOverlay = () => {
 
   const step = tour?.step;
 
-  // Sauberer Reset der PWA-Zustände bei Schrittwechsel
+  // Striktes Zurücksetzen bei jedem Schrittwechsel
   useEffect(() => {
     setSelectedOS(null);
     setPwaStep(0);
@@ -368,58 +376,7 @@ const TourOverlay = () => {
   const { safeTop, safeBottom } = getSafeBounds();
   const isIntroStep = tour.stepIndex === 0;
 
-  // STRENG ISOLIERT: Echte Bildschirm-Bereiche NUR für Schritt 0 bei aktivem OS
-  let activePwaRect = null;
-  if (isIntroStep && selectedOS === 'ios') {
-    if (pwaStep === 0) {
-      activePwaRect = {
-        top: window.innerHeight - 65,
-        left: Math.max(10, window.innerWidth - 120),
-        width: 110,
-        height: 50
-      };
-    } else if (pwaStep === 1) {
-      activePwaRect = {
-        top: Math.max(120, window.innerHeight * 0.45),
-        left: Math.max(16, (window.innerWidth - 340) / 2),
-        width: Math.min(340, window.innerWidth - 32),
-        height: 175
-      };
-    } else if (pwaStep === 2) {
-      activePwaRect = {
-        top: Math.max(10, safeTop + 8),
-        left: Math.max(10, window.innerWidth - 130),
-        width: 120,
-        height: 46
-      };
-    }
-  } else if (isIntroStep && selectedOS === 'android') {
-    if (pwaStep === 0) {
-      activePwaRect = {
-        top: Math.max(10, safeTop + 6),
-        left: Math.max(10, window.innerWidth - 60),
-        width: 50,
-        height: 50
-      };
-    } else if (pwaStep === 1) {
-      activePwaRect = {
-        top: Math.max(55, safeTop + 55),
-        left: Math.max(16, window.innerWidth - 290),
-        width: 270,
-        height: 185
-      };
-    } else if (pwaStep === 2) {
-      activePwaRect = {
-        top: Math.max(120, (window.innerHeight - 170) / 2),
-        left: Math.max(16, (window.innerWidth - 330) / 2),
-        width: Math.min(330, window.innerWidth - 32),
-        height: 170
-      };
-    }
-  }
-
-  const effectiveRect = rect || activePwaRect;
-  const hasSpotlight = Boolean(effectiveRect);
+  const hasSpotlight = Boolean(rect);
   const isSearching = Boolean(step.selector) && !rect && !notFound;
 
   const advance = () => {
@@ -447,25 +404,25 @@ const TourOverlay = () => {
   const safeMargin = 16;
 
   let tooltipStyle;
-  if (effectiveRect) {
+  if (rect) {
     const viewportW = window.innerWidth;
-    const spaceBelow = safeBottom - (effectiveRect.top + effectiveRect.height + pad) - gap;
-    const spaceAbove = effectiveRect.top - pad - safeTop - gap;
+    const spaceBelow = safeBottom - (rect.top + rect.height + pad) - gap;
+    const spaceAbove = rect.top - pad - safeTop - gap;
     const estimatedTooltipHeight = 190;
 
-    const centerX = effectiveRect.left + effectiveRect.width / 2;
+    const centerX = rect.left + rect.width / 2;
     const clampedLeft = Math.min(Math.max(centerX, tooltipWidth / 2 + 12), viewportW - tooltipWidth / 2 - 12);
 
     if (spaceBelow >= estimatedTooltipHeight) {
       tooltipStyle = {
-        top: effectiveRect.top + effectiveRect.height + pad + gap,
+        top: rect.top + rect.height + pad + gap,
         left: clampedLeft,
         transform: 'translateX(-50%)',
         maxHeight: Math.max(120, spaceBelow)
       };
     } else if (spaceAbove >= estimatedTooltipHeight) {
       tooltipStyle = {
-        top: effectiveRect.top - pad - gap,
+        top: rect.top - pad - gap,
         left: clampedLeft,
         transform: 'translate(-50%, -100%)',
         maxHeight: Math.max(120, spaceAbove)
@@ -492,7 +449,7 @@ const TourOverlay = () => {
   const iosSteps = [
     {
       title: '1. Safari Teilen-Menü öffnen',
-      text: 'Blicke auf den hervorgehobenen Bereich unten in Safari oder nutze den Button unten, um das Teilen-Menü direkt aufzuklappen!',
+      text: 'Tippe unten in der Navigationsleiste auf das Teilen-Symbol [↑] oder die drei Punkte ( ... ) oder nutze den Button darunter.',
       renderGraphic: () => (
         <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-3 my-2 text-left shadow-inner">
           <button
@@ -660,42 +617,37 @@ const TourOverlay = () => {
         <>
           <div
             className="absolute bg-black/45"
-            style={{ top: 0, left: 0, right: 0, height: Math.max(0, effectiveRect.top - pad) }}
+            style={{ top: 0, left: 0, right: 0, height: Math.max(0, rect.top - pad) }}
             onClick={absorbClick}
           ></div>
           <div
             className="absolute bg-black/45"
-            style={{ top: effectiveRect.top + effectiveRect.height + pad, left: 0, right: 0, bottom: 0 }}
+            style={{ top: rect.top + rect.height + pad, left: 0, right: 0, bottom: 0 }}
             onClick={absorbClick}
           ></div>
           <div
             className="absolute bg-black/45"
-            style={{ top: effectiveRect.top - pad, left: 0, width: Math.max(0, effectiveRect.left - pad), height: effectiveRect.height + pad * 2 }}
+            style={{ top: rect.top - pad, left: 0, width: Math.max(0, rect.left - pad), height: rect.height + pad * 2 }}
             onClick={absorbClick}
           ></div>
           <div
             className="absolute bg-black/45"
-            style={{ top: effectiveRect.top - pad, left: effectiveRect.left + effectiveRect.width + pad, right: 0, height: effectiveRect.height + pad * 2 }}
+            style={{ top: rect.top - pad, left: rect.left + rect.width + pad, right: 0, height: rect.height + pad * 2 }}
             onClick={absorbClick}
           ></div>
 
-          {/* Animierter Spotlight-Rahmen auf den ECHTEN Bildschirm-Bereich */}
+          {/* Animierter Spotlight-Rahmen auf das ECHTE DOM-Element */}
           <div
             className="absolute rounded-2xl ring-2 ring-[#ff5c3e] cursor-pointer animate-pulse z-[205]"
             style={{
-              top: effectiveRect.top - pad,
-              left: effectiveRect.left - pad,
-              width: effectiveRect.width + pad * 2,
-              height: effectiveRect.height + pad * 2
+              top: rect.top - pad,
+              left: rect.left - pad,
+              width: rect.width + pad * 2,
+              height: rect.height + pad * 2
             }}
             onClick={(e) => {
               e.stopPropagation();
-              if (isIntroStep && selectedOS) {
-                if (pwaStep < 2) setPwaStep((s) => s + 1);
-                else advanceToFeatureTour();
-              } else {
-                advance();
-              }
+              advance();
             }}
             title="Zum Fortfahren tippen"
           ></div>
@@ -720,7 +672,7 @@ const TourOverlay = () => {
       {/* Tooltip & PWA Setup Card */}
       {!isSearching && (
         <div
-          className="absolute overflow-y-auto bg-[#171717] border border-[#2e2e2e] rounded-2xl shadow-2xl p-5 pointer-events-auto"
+          className="absolute overflow-y-auto bg-[#171717] border border-[#2e2e2e] rounded-2xl shadow-2xl p-5 pointer-events-auto z-[215]"
           style={{ ...tooltipStyle, width: tooltipWidth, maxWidth: '92vw' }}
         >
           {notFound ? (
