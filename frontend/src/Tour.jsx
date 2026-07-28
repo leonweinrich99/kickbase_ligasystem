@@ -184,7 +184,6 @@ const TourOverlay = () => {
 
   const [selectedOS, setSelectedOS] = useState(null); // null | 'ios' | 'android'
   const [pwaStep, setPwaStep] = useState(0); // 0, 1, 2
-  const [previewImage, setPreviewImage] = useState(null);
 
   const step = tour?.step;
 
@@ -395,27 +394,76 @@ const TourOverlay = () => {
     };
   }
 
+  // IOS Tutorial Content definition (rein visuell, ohne externe Screenshots)
   const iosSteps = [
     {
       title: '1. Safari Browser & Menü öffnen',
       text: 'Öffne das Ligasystem in Safari. Tippe unten in der Navigationsleiste auf das Teilen-Symbol oder die drei Punkte ( ... ).',
-      images: ['/tutorial/ios_step1.png', '/tutorial/ios_step2.png'],
-      highlights: ['Drei-Punkte-Button ( ... ) ganz unten rechts antippen', 'Im aufstappenden Menü "Teilen" wählen']
+      renderGraphic: () => (
+        <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-3 my-2 text-left shadow-inner">
+          <div className="flex items-center justify-between bg-[#1f1f1f] rounded-lg px-3 py-2 border border-[#333]">
+            <div className="flex items-center gap-2 text-xs text-gray-300 truncate">
+              <span className="text-emerald-400">🔒</span> developtimize.de
+            </div>
+            <div className="relative flex items-center justify-center w-7 h-7 bg-sky-500/20 border border-sky-500 rounded-full animate-pulse">
+              <span className="text-sky-400 font-bold text-sm">...</span>
+              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-sky-500"></span>
+              </span>
+            </div>
+          </div>
+          <div className="text-[10px] text-sky-400 mt-2 text-center font-semibold flex items-center justify-center gap-1">
+            <SafariIcon className="w-3.5 h-3.5" /> Unten auf Teilen / 3-Punkte-Button tippen
+          </div>
+        </div>
+      )
     },
     {
       title: '2. "Zum Home-Bildschirm" wählen',
       text: 'Scrolle im iOS-Teilen-Menü nach unten und wähle den Menüeintrag "Zum Home-Bildschirm" mit dem Plus-Symbol (+).',
-      images: ['/tutorial/ios_step3.png', '/tutorial/ios_step4.png'],
-      highlights: ['Im Teilen-Menü nach unten wischen', 'Auf "+ Zum Home-Bildschirm" tippen']
+      renderGraphic: () => (
+        <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-3 my-2 text-left">
+          <div className="space-y-1.5 text-xs text-gray-300">
+            <div className="px-3 py-1.5 text-gray-500">Als Favoriten sichern</div>
+            <div className="px-3 py-1.5 text-gray-500">Auf der Seite suchen</div>
+            <div className="flex items-center justify-between px-3 py-2 bg-[#ff5c3e]/20 border border-[#ff5c3e] rounded-lg text-white font-bold animate-pulse">
+              <span className="flex items-center gap-2">
+                <span className="text-[#ff5c3e] font-black text-sm">⊕</span> Zum Home-Bildschirm
+              </span>
+              <span className="text-[10px] bg-[#ff5c3e] px-2 py-0.5 rounded text-white font-black">HIER TIPPEN</span>
+            </div>
+            <div className="px-3 py-1.5 text-gray-500">Markierung...</div>
+          </div>
+        </div>
+      )
     },
     {
       title: '3. Bestätigen & App auf Home-Bildschirm 🚀',
-      text: 'Tippe oben rechts auf "Hinzufügen". Die App erscheint nun wie eine native App auf deinem Home-Bildschirm!',
-      images: ['/tutorial/ios_step5.png'],
-      highlights: ['Name prüfen (optional anpassen)', 'Oben rechts auf "Hinzufügen" klicken']
+      text: 'Tippe oben rechts im iOS-Fenster auf "Hinzufügen". Die App erscheint nun wie eine native App auf deinem Home-Bildschirm!',
+      renderGraphic: () => (
+        <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-3 my-2 text-left">
+          <div className="flex items-center justify-between border-b border-[#2e2e2e] pb-2 mb-3">
+            <span className="text-xs text-gray-400 font-medium">Zum Home-Bildschirm</span>
+            <span className="text-xs bg-sky-500 text-white font-bold px-2.5 py-1 rounded-lg animate-pulse shadow-md">
+              Hinzufügen
+            </span>
+          </div>
+          <div className="flex items-center gap-3 bg-[#1a1a1a] p-2.5 rounded-lg border border-[#333]">
+            <div className="w-10 h-10 bg-gradient-to-br from-[#ff5c3e] to-orange-600 rounded-xl flex items-center justify-center text-white text-lg font-black shadow-md">
+              ⚽
+            </div>
+            <div>
+              <div className="text-xs font-bold text-white">Ligasystem</div>
+              <div className="text-[10px] text-gray-400">https://developtimize.de/</div>
+            </div>
+          </div>
+        </div>
+      )
     }
   ];
 
+  // Android Tutorial Content definition
   const androidSteps = [
     {
       title: '1. Chrome Browser & Menü öffnen',
@@ -616,41 +664,14 @@ const TourOverlay = () => {
                   <h3 className="text-sm font-black uppercase text-white mb-1 flex items-center gap-1.5">
                     {iosSteps[pwaStep].title}
                   </h3>
-                  <p className="text-xs text-[#8b92a5] leading-relaxed mb-3">
+                  <p className="text-xs text-[#8b92a5] leading-relaxed mb-2">
                     {iosSteps[pwaStep].text}
                   </p>
 
-                  <div className="grid grid-cols-2 gap-2 mb-3">
-                    {iosSteps[pwaStep].images.map((imgSrc, idx) => (
-                      <div
-                        key={idx}
-                        onClick={() => setPreviewImage(imgSrc)}
-                        className="relative group cursor-pointer bg-[#000] border border-[#333] rounded-xl overflow-hidden shadow-md hover:border-[#ff5c3e] transition-colors"
-                      >
-                        <img
-                          src={imgSrc}
-                          alt={`Schritt ${pwaStep + 1} screenshot ${idx + 1}`}
-                          className="w-full h-36 object-contain object-top group-hover:scale-105 transition-transform duration-300"
-                        />
-                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <span className="bg-black/75 text-white text-[10px] font-bold px-2 py-1 rounded-md border border-white/20">
-                            🔍 Große Ansicht
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  {/* Render Visual Graphic */}
+                  {iosSteps[pwaStep].renderGraphic()}
 
-                  <div className="bg-[#222] border border-[#333] rounded-xl p-2.5 mb-4 text-[11px] text-gray-300">
-                    <div className="font-bold text-[#ff5c3e] mb-1">Wichtig:</div>
-                    <ul className="list-disc list-inside space-y-0.5 text-[10px] text-[#a0a5b5]">
-                      {iosSteps[pwaStep].highlights.map((h, i) => (
-                        <li key={i}>{h}</li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 mt-4">
                     {pwaStep > 0 ? (
                       <button
                         onClick={() => setPwaStep((s) => s - 1)}
@@ -772,31 +793,6 @@ const TourOverlay = () => {
               </div>
             </>
           )}
-        </div>
-      )}
-
-      {/* Lightbox / Screenshot Fullscreen Preview Modal */}
-      {previewImage && (
-        <div
-          className="fixed inset-0 z-[300] bg-black/90 flex flex-col items-center justify-center p-4"
-          onClick={() => setPreviewImage(null)}
-        >
-          <div className="relative max-w-sm max-h-[85vh] bg-[#1a1a1a] border border-[#333] rounded-2xl overflow-hidden p-2 shadow-2xl">
-            <button
-              onClick={() => setPreviewImage(null)}
-              className="absolute top-4 right-4 bg-black/80 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm border border-white/20 z-10"
-            >
-              ✕
-            </button>
-            <img
-              src={previewImage}
-              alt="Screenshot Vorschau"
-              className="w-full h-full object-contain rounded-xl max-h-[80vh]"
-            />
-            <div className="text-center text-[11px] text-gray-400 mt-2 font-bold">
-              Zum Schließen beliebig tippen
-            </div>
-          </div>
         </div>
       )}
     </div>
