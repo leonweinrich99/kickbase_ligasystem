@@ -489,10 +489,10 @@ const TourOverlay = () => {
     },
     {
       title: '3. "Zum Home-Bildschirm" wählen',
-      text: 'Scrolle im iOS-Freigabefenster nach unten und wähle den Menüeintrag "Zum Home-Bildschirm" mit dem Plus-Symbol (+).',
+      text: 'Scrolle im iOS-Freigabefenster nach unten und tippe auf den Menüeintrag "Zum Home-Bildschirm" mit dem Plus-Icon (+).',
       renderGraphic: () => (
         <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-2 my-2 text-center shadow-inner">
-          <img src="/tutorial/ios_3.png" alt="Zum Home-Bildschirm" className="w-full max-h-[190px] object-contain mx-auto rounded-lg" />
+          <img src="/tutorial/ios_3.jpg" alt="Zum Home-Bildschirm" className="w-full max-h-[190px] object-contain mx-auto rounded-lg" />
         </div>
       )
     },
