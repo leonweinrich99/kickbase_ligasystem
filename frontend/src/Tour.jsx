@@ -502,7 +502,7 @@ const TourOverlay = () => {
                 setPwaStep(1);
               }
             }}
-            className="w-full py-2.5 px-3 bg-sky-500 hover:bg-sky-400 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all transform active:scale-95 mb-2"
+            className="w-full py-2.5 px-3 bg-sky-500 hover:bg-sky-400 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all transform active:scale-95 mb-2 cursor-pointer"
           >
             <SafariShareIcon className="w-4 h-4 text-white" /> Teilen-Menü jetzt direkt öffnen [↑]
           </button>
@@ -596,7 +596,7 @@ const TourOverlay = () => {
                 setPwaStep(1);
               }
             }}
-            className="w-full py-2.5 px-3 bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all transform active:scale-95 mb-2"
+            className="w-full py-2.5 px-3 bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all transform active:scale-95 mb-2 cursor-pointer"
           >
             <AndroidIcon className="w-4 h-4 text-white" /> Jetzt automatisch installieren 📲
           </button>
@@ -738,35 +738,53 @@ const TourOverlay = () => {
 
                   <div className="grid grid-cols-2 gap-3 mb-4">
                     <button
-                      onClick={() => { setSelectedOS('ios'); setPwaStep(0); }}
-                      className="flex flex-col items-center justify-center p-4 bg-[#222222] hover:bg-[#2e2e2e] border border-[#3a3a3a] hover:border-[#ff5c3e]/60 rounded-xl transition-all group"
+                      onClick={async () => {
+                        setSelectedOS('ios');
+                        setPwaStep(0);
+                        if (navigator.share) {
+                          try {
+                            await navigator.share({
+                              title: 'Kickbase Ligasystem',
+                              text: 'Kickbase Ligasystem App auf Home-Bildschirm speichern',
+                              url: window.location.href
+                            });
+                          } catch (err) {}
+                        }
+                      }}
+                      className="flex flex-col items-center justify-center p-4 bg-[#222222] hover:bg-[#2e2e2e] border border-[#3a3a3a] hover:border-[#ff5c3e]/60 rounded-xl transition-all group cursor-pointer"
                     >
                       <div className="w-10 h-10 mb-2 rounded-xl bg-white/10 flex items-center justify-center text-white group-hover:scale-110 group-hover:bg-white/20 transition-all">
                         <AppleIcon className="w-6 h-6 text-white" />
                       </div>
                       <span className="text-xs font-black text-white uppercase tracking-wider">Apple (iOS)</span>
-                      <span className="text-[10px] text-[#8b92a5] flex items-center gap-1 mt-0.5">
-                        <SafariIcon className="w-3 h-3 text-sky-400" /> Safari Browser
+                      <span className="text-[10px] text-sky-400 font-bold mt-1 bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/30">
+                        ⚡ Teilen öffnen [↑]
                       </span>
                     </button>
 
                     <button
-                      onClick={() => { setSelectedOS('android'); setPwaStep(0); }}
-                      className="flex flex-col items-center justify-center p-4 bg-[#222222] hover:bg-[#2e2e2e] border border-[#3a3a3a] hover:border-[#ff5c3e]/60 rounded-xl transition-all group"
+                      onClick={async () => {
+                        setSelectedOS('android');
+                        setPwaStep(0);
+                        if (tour.deferredPrompt) {
+                          tour.deferredPrompt.prompt();
+                        }
+                      }}
+                      className="flex flex-col items-center justify-center p-4 bg-[#222222] hover:bg-[#2e2e2e] border border-[#3a3a3a] hover:border-[#ff5c3e]/60 rounded-xl transition-all group cursor-pointer"
                     >
                       <div className="w-10 h-10 mb-2 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:scale-110 group-hover:bg-emerald-500/20 transition-all">
                         <AndroidIcon className="w-6 h-6 text-emerald-400" />
                       </div>
                       <span className="text-xs font-black text-white uppercase tracking-wider">Android</span>
-                      <span className="text-[10px] text-[#8b92a5] flex items-center gap-1 mt-0.5">
-                        <ChromeIcon className="w-3 h-3 text-amber-400" /> Chrome Browser
+                      <span className="text-[10px] text-emerald-400 font-bold mt-1 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
+                        📲 Auto-Install
                       </span>
                     </button>
                   </div>
 
                   <button
                     onClick={advance}
-                    className="w-full py-2.5 text-[10px] font-black uppercase tracking-widest text-[#8b92a5] hover:text-white bg-[#1a1a1a] hover:bg-[#262626] border border-[#2e2e2e] rounded-xl transition-colors"
+                    className="w-full py-2.5 text-[10px] font-black uppercase tracking-widest text-[#8b92a5] hover:text-white bg-[#1a1a1a] hover:bg-[#262626] border border-[#2e2e2e] rounded-xl transition-colors cursor-pointer"
                   >
                     Direkt zur App Feature-Tour 🚀
                   </button>
@@ -781,7 +799,7 @@ const TourOverlay = () => {
                     </div>
                     <button
                       onClick={() => setSelectedOS(null)}
-                      className="text-[9px] font-bold text-[#8b92a5] hover:text-white underline"
+                      className="text-[9px] font-bold text-[#8b92a5] hover:text-white underline cursor-pointer"
                     >
                       System wechseln
                     </button>
@@ -801,14 +819,14 @@ const TourOverlay = () => {
                     {pwaStep > 0 ? (
                       <button
                         onClick={() => setPwaStep((s) => s - 1)}
-                        className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] hover:text-white transition-colors px-3 py-2"
+                        className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] hover:text-white transition-colors px-3 py-2 cursor-pointer"
                       >
                         Zurück
                       </button>
                     ) : (
                       <button
                         onClick={() => setSelectedOS(null)}
-                        className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] hover:text-white transition-colors px-2 py-2"
+                        className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] hover:text-white transition-colors px-2 py-2 cursor-pointer"
                       >
                         Abbrechen
                       </button>
@@ -817,14 +835,14 @@ const TourOverlay = () => {
                     {pwaStep < iosSteps.length - 1 ? (
                       <button
                         onClick={() => setPwaStep((s) => s + 1)}
-                        className="ml-auto text-[10px] font-black uppercase tracking-widest text-white bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 transition-colors px-4 py-2 rounded-lg"
+                        className="ml-auto text-[10px] font-black uppercase tracking-widest text-white bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 transition-colors px-4 py-2 rounded-lg cursor-pointer"
                       >
                         Weiter ({pwaStep + 1}/3)
                       </button>
                     ) : (
                       <button
                         onClick={advance}
-                        className="ml-auto text-[10px] font-black uppercase tracking-widest text-white bg-emerald-500 hover:bg-emerald-600 transition-colors px-4 py-2 rounded-lg"
+                        className="ml-auto text-[10px] font-black uppercase tracking-widest text-white bg-emerald-500 hover:bg-emerald-600 transition-colors px-4 py-2 rounded-lg cursor-pointer"
                       >
                         Zur Feature-Tour 🚀
                       </button>
@@ -841,7 +859,7 @@ const TourOverlay = () => {
                     </div>
                     <button
                       onClick={() => setSelectedOS(null)}
-                      className="text-[9px] font-bold text-[#8b92a5] hover:text-white underline"
+                      className="text-[9px] font-bold text-[#8b92a5] hover:text-white underline cursor-pointer"
                     >
                       System wechseln
                     </button>
@@ -860,14 +878,14 @@ const TourOverlay = () => {
                     {pwaStep > 0 ? (
                       <button
                         onClick={() => setPwaStep((s) => s - 1)}
-                        className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] hover:text-white transition-colors px-3 py-2"
+                        className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] hover:text-white transition-colors px-3 py-2 cursor-pointer"
                       >
                         Zurück
                       </button>
                     ) : (
                       <button
                         onClick={() => setSelectedOS(null)}
-                        className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] hover:text-white transition-colors px-2 py-2"
+                        className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] hover:text-white transition-colors px-2 py-2 cursor-pointer"
                       >
                         Abbrechen
                       </button>
@@ -876,14 +894,14 @@ const TourOverlay = () => {
                     {pwaStep < androidSteps.length - 1 ? (
                       <button
                         onClick={() => setPwaStep((s) => s + 1)}
-                        className="ml-auto text-[10px] font-black uppercase tracking-widest text-white bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 transition-colors px-4 py-2 rounded-lg"
+                        className="ml-auto text-[10px] font-black uppercase tracking-widest text-white bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 transition-colors px-4 py-2 rounded-lg cursor-pointer"
                       >
                         Weiter ({pwaStep + 1}/3)
                       </button>
                     ) : (
                       <button
                         onClick={advance}
-                        className="ml-auto text-[10px] font-black uppercase tracking-widest text-white bg-emerald-500 hover:bg-emerald-600 transition-colors px-4 py-2 rounded-lg"
+                        className="ml-auto text-[10px] font-black uppercase tracking-widest text-white bg-emerald-500 hover:bg-emerald-600 transition-colors px-4 py-2 rounded-lg cursor-pointer"
                       >
                         Zur Feature-Tour 🚀
                       </button>
@@ -905,14 +923,14 @@ const TourOverlay = () => {
                 {tour.stepIndex > 0 && (
                   <button
                     onClick={tour.prev}
-                    className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] hover:text-white transition-colors px-3 py-2"
+                    className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] hover:text-white transition-colors px-3 py-2 cursor-pointer"
                   >
                     Zurück
                   </button>
                 )}
                 <button
                   onClick={advance}
-                  className="ml-auto text-[10px] font-black uppercase tracking-widest text-white bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 transition-colors px-4 py-2 rounded-lg"
+                  className="ml-auto text-[10px] font-black uppercase tracking-widest text-white bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 transition-colors px-4 py-2 rounded-lg cursor-pointer"
                 >
                   {tour.stepIndex === tour.totalSteps - 1 ? 'Fertig' : 'Weiter'}
                 </button>
