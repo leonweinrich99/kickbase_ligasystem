@@ -120,9 +120,20 @@ const TourContext = createContext(null);
 export const TourProvider = ({ children }) => {
   const [stepIndex, setStepIndex] = useState(-1);
   const [dynamicPaths, setDynamicPaths] = useState({});
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
   const isActive = stepIndex >= 0;
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Listen for native Android/Chrome PWA install prompt
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  }, []);
 
   const start = useCallback(() => {
     setDynamicPaths({});
@@ -161,7 +172,19 @@ export const TourProvider = ({ children }) => {
     setStepIndex((i) => (i + 1 >= TOUR_STEPS.length ? -1 : i + 1));
   }, []);
 
-  const value = { isActive, stepIndex, step, start, stop, next, prev, skipUnreachable, captureHref, totalSteps: TOUR_STEPS.length };
+  const value = {
+    isActive,
+    stepIndex,
+    step,
+    start,
+    stop,
+    next,
+    prev,
+    skipUnreachable,
+    captureHref,
+    totalSteps: TOUR_STEPS.length,
+    deferredPrompt
+  };
 
   return (
     <TourContext.Provider value={value}>
@@ -345,7 +368,6 @@ const TourOverlay = () => {
   let activePwaRect = null;
   if (isIntroStep && selectedOS === 'ios') {
     if (pwaStep === 0) {
-      // iOS Schritt 1: Untere Safari-Navigationsleiste (Teilen- / Drei-Punkte-Button)
       activePwaRect = {
         top: window.innerHeight - 65,
         left: Math.max(10, window.innerWidth - 120),
@@ -353,7 +375,6 @@ const TourOverlay = () => {
         height: 50
       };
     } else if (pwaStep === 1) {
-      // iOS Schritt 2: Unterer Share-Sheet Bereich (+ Zum Home-Bildschirm)
       activePwaRect = {
         top: Math.max(120, window.innerHeight * 0.45),
         left: Math.max(16, (window.innerWidth - 340) / 2),
@@ -361,7 +382,6 @@ const TourOverlay = () => {
         height: 175
       };
     } else if (pwaStep === 2) {
-      // iOS Schritt 3: Oben rechts (Hinzufügen-Button)
       activePwaRect = {
         top: Math.max(10, safeTop + 8),
         left: Math.max(10, window.innerWidth - 130),
@@ -371,7 +391,6 @@ const TourOverlay = () => {
     }
   } else if (isIntroStep && selectedOS === 'android') {
     if (pwaStep === 0) {
-      // Android Schritt 1: Oben rechts (Drei-Punkte-Menü in Chrome)
       activePwaRect = {
         top: Math.max(10, safeTop + 6),
         left: Math.max(10, window.innerWidth - 60),
@@ -379,7 +398,6 @@ const TourOverlay = () => {
         height: 50
       };
     } else if (pwaStep === 1) {
-      // Android Schritt 2: Oben rechts Dropdown-Menü Bereich
       activePwaRect = {
         top: Math.max(55, safeTop + 55),
         left: Math.max(16, window.innerWidth - 290),
@@ -387,7 +405,6 @@ const TourOverlay = () => {
         height: 185
       };
     } else if (pwaStep === 2) {
-      // Android Schritt 3: Bildschirmsymmetrisches Installations-Popup
       activePwaRect = {
         top: Math.max(120, (window.innerHeight - 170) / 2),
         left: Math.max(16, (window.innerWidth - 330) / 2),
@@ -461,28 +478,36 @@ const TourOverlay = () => {
     };
   }
 
-  // IOS Tutorial Content definition (mit echten Icons & echtem Safari-Workflow)
+  // IOS Tutorial Content definition (mit Direkt-Trigger Button!)
   const iosSteps = [
     {
       title: '1. Safari Teilen-Menü öffnen',
-      text: 'Blicke auf den hervorgehobenen Bereich unten in der Safari-Leiste. Tippe dort auf das Teilen-Symbol [↑] oder auf die drei Punkte ( ... ).',
+      text: 'Blicke auf den hervorgehobenen Bereich unten in Safari oder nutze den Button unten, um das Teilen-Menü direkt aufzuklappen!',
       renderGraphic: () => (
         <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-3 my-2 text-left shadow-inner">
-          <div className="flex items-center justify-between bg-[#1f1f1f] rounded-lg px-3 py-2 border border-[#333]">
-            <div className="flex items-center gap-2 text-xs text-gray-300 truncate">
-              <span className="text-emerald-400">🔒</span> developtimize.de
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center justify-center w-7 h-7 bg-sky-500/20 border border-sky-500 rounded-full animate-pulse text-sky-400">
-                <SafariShareIcon className="w-4 h-4" />
-              </div>
-              <div className="flex items-center justify-center w-7 h-7 bg-sky-500/20 border border-sky-500 rounded-full animate-pulse text-sky-400 font-bold text-xs">
-                ...
-              </div>
-            </div>
-          </div>
-          <div className="text-[10px] text-sky-400 mt-2 text-center font-semibold flex items-center justify-center gap-1.5">
-            <SafariShareIcon className="w-3.5 h-3.5" /> Unten in Safari auf [↑] oder ( ... ) tippen
+          <button
+            onClick={async () => {
+              if (navigator.share) {
+                try {
+                  await navigator.share({
+                    title: 'Kickbase Ligasystem',
+                    text: 'Ligasystem App auf Home-Bildschirm speichern',
+                    url: window.location.href
+                  });
+                  setPwaStep(1);
+                } catch (err) {
+                  setPwaStep(1);
+                }
+              } else {
+                setPwaStep(1);
+              }
+            }}
+            className="w-full py-2.5 px-3 bg-sky-500 hover:bg-sky-400 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all transform active:scale-95 mb-2"
+          >
+            <SafariShareIcon className="w-4 h-4 text-white" /> Teilen-Menü jetzt direkt öffnen [↑]
+          </button>
+          <div className="text-[10px] text-gray-400 text-center font-semibold">
+            Oder manuell unten in Safari auf [↑] / ( ... ) tippen
           </div>
         </div>
       )
@@ -552,27 +577,31 @@ const TourOverlay = () => {
     }
   ];
 
-  // Android Tutorial Content definition (mit echten Icons & Chrome-Workflow)
+  // Android Tutorial Content definition (mit Auto-Install Button!)
   const androidSteps = [
     {
-      title: '1. Chrome 3-Punkte-Menü öffnen',
-      text: 'Blicke auf den hervorgehobenen Bereich oben rechts in Chrome. Tippe dort auf das Drei-Punkte-Menü ( ⋮ ).',
+      title: '1. Chrome 3-Punkte-Menü & Auto-Install',
+      text: 'Nutze den Button für die automatische 1-Klick Installation oder tippe oben rechts auf das Drei-Punkte-Menü ( ⋮ ).',
       renderGraphic: () => (
         <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-3 my-2 text-left shadow-inner">
-          <div className="flex items-center justify-between bg-[#1f1f1f] rounded-lg px-3 py-2 border border-[#333]">
-            <div className="flex items-center gap-2 text-xs text-gray-300 truncate">
-              <span className="text-emerald-400">🔒</span> developtimize.de
-            </div>
-            <div className="relative flex items-center justify-center w-7 h-7 bg-amber-500/20 border border-amber-500 rounded-full animate-pulse">
-              <span className="text-amber-400 font-bold text-base">⋮</span>
-              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
-              </span>
-            </div>
-          </div>
-          <div className="text-[10px] text-amber-400 mt-2 text-center font-semibold flex items-center justify-center gap-1">
-            <ChromeIcon className="w-3.5 h-3.5" /> Oben rechts in Chrome auf ( ⋮ ) tippen
+          <button
+            onClick={async () => {
+              if (tour.deferredPrompt) {
+                tour.deferredPrompt.prompt();
+                const { outcome } = await tour.deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                  advance();
+                }
+              } else {
+                setPwaStep(1);
+              }
+            }}
+            className="w-full py-2.5 px-3 bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all transform active:scale-95 mb-2"
+          >
+            <AndroidIcon className="w-4 h-4 text-white" /> Jetzt automatisch installieren 📲
+          </button>
+          <div className="text-[10px] text-gray-400 text-center font-semibold">
+            Oder manuell oben rechts in Chrome auf ( ⋮ ) tippen
           </div>
         </div>
       )
