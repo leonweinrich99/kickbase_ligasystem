@@ -222,7 +222,7 @@ const TourOverlay = () => {
   const autoAdvanceRef = useRef(false);
 
   const [selectedOS, setSelectedOS] = useState(null); // null | 'ios' | 'android'
-  const [pwaStep, setPwaStep] = useState(0); // 0, 1, 2
+  const [pwaStep, setPwaStep] = useState(0); // 0, 1, 2, 3
 
   const step = tour?.step;
 
@@ -445,13 +445,14 @@ const TourOverlay = () => {
     };
   }
 
-  // IOS Tutorial Content definition
+  // IOS Tutorial Content definition (unter Nutzung der echten Screenshots aus Downloads)
   const iosSteps = [
     {
-      title: '1. Safari Teilen-Menü öffnen',
-      text: 'Tippe unten in der Navigationsleiste auf das Teilen-Symbol [↑] oder die drei Punkte ( ... ) oder nutze den Button darunter.',
+      title: '1. Safari Menü ( ... ) öffnen',
+      text: 'Tippe unten in der Adressleiste von Safari auf die drei Punkte ( ... ) auf der rechten Seite.',
       renderGraphic: () => (
-        <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-3 my-2 text-left shadow-inner">
+        <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-2 my-2 text-center shadow-inner">
+          <img src="/tutorial/ios_1.jpg" alt="Safari Menü" className="w-full max-h-[160px] object-contain mx-auto rounded-lg mb-2" />
           <button
             onClick={async (e) => {
               e.stopPropagation();
@@ -462,7 +463,7 @@ const TourOverlay = () => {
                     text: 'Ligasystem App auf Home-Bildschirm speichern',
                     url: window.location.href
                   });
-                  setPwaStep(1);
+                  setPwaStep(2);
                 } catch (err) {
                   setPwaStep(1);
                 }
@@ -470,76 +471,37 @@ const TourOverlay = () => {
                 setPwaStep(1);
               }
             }}
-            className="w-full py-2.5 px-3 bg-sky-500 hover:bg-sky-400 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all transform active:scale-95 mb-2 cursor-pointer"
+            className="w-full py-2 px-3 bg-sky-500 hover:bg-sky-400 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all transform active:scale-95 cursor-pointer"
           >
-            <SafariShareIcon className="w-4 h-4 text-white" /> Teilen-Menü jetzt direkt öffnen [↑]
+            <SafariShareIcon className="w-4 h-4 text-white" /> Teilen-Menü direkt öffnen [↑]
           </button>
-          <div className="text-[10px] text-gray-400 text-center font-semibold">
-            Oder manuell unten in Safari auf [↑] / ( ... ) tippen
-          </div>
         </div>
       )
     },
     {
-      title: '2. "Zum Home-Bildschirm" wählen',
-      text: 'Scrolle im aufstappenden iOS-Teilen-Menü nach unten und tippe auf den Menüeintrag "Zum Home-Bildschirm" mit dem Plus-Icon (+).',
+      title: '2. Auf "Teilen" tippen',
+      text: 'Tippe ganz oben im aufstappenden Safari-Menü auf "Teilen" mit dem Quadrat-Symbol [↑].',
       renderGraphic: () => (
-        <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-3 my-2 text-left">
-          <div className="space-y-1.5 text-xs text-gray-300">
-            <div className="px-3 py-1.5 text-gray-500">Als Favoriten sichern</div>
-            <div className="px-3 py-1.5 text-gray-500">Auf der Seite suchen</div>
-            <div className="flex items-center justify-between px-3 py-2 bg-[#ff5c3e]/20 border border-[#ff5c3e] rounded-lg text-white font-bold animate-pulse">
-              <span className="flex items-center gap-2">
-                <span className="text-[#ff5c3e] font-black text-sm">⊕</span> Zum Home-Bildschirm
-              </span>
-              <span className="text-[10px] bg-[#ff5c3e] px-2 py-0.5 rounded text-white font-black">HIER TIPPEN</span>
-            </div>
-            <div className="px-3 py-1.5 text-gray-500">Markierung...</div>
-          </div>
+        <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-2 my-2 text-center shadow-inner">
+          <img src="/tutorial/ios_2.jpg" alt="Teilen wählen" className="w-full max-h-[180px] object-contain mx-auto rounded-lg" />
         </div>
       )
     },
     {
-      title: '3. "Als Web-App öffnen" aktivieren & Hinzufügen 🚀',
-      text: 'Stelle sicher, dass der Schalter "Als Web-App öffnen" AKTIVIERT ist, und tippe oben rechts auf "Hinzufügen".',
+      title: '3. "Zum Home-Bildschirm" wählen',
+      text: 'Scrolle im iOS-Freigabefenster nach unten und wähle den Menüeintrag "Zum Home-Bildschirm" mit dem Plus-Symbol (+).',
       renderGraphic: () => (
-        <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-3.5 my-2 text-left shadow-inner">
-          <div className="flex items-center justify-between border-b border-[#2e2e2e] pb-2 mb-2.5">
-            <span className="text-xs text-white font-bold flex items-center gap-1.5">
-              <span>✕</span> Zum Home-Bildschirm
-            </span>
-            <span className="text-xs bg-sky-500 text-white font-bold px-3 py-1 rounded-full animate-pulse shadow-md">
-              Hinzufügen
-            </span>
-          </div>
-
-          <div className="flex items-center gap-3 bg-[#1a1a1a] p-2 rounded-lg border border-[#333] mb-2.5">
-            <div className="w-9 h-9 bg-gradient-to-br from-[#ff5c3e] to-orange-600 rounded-xl flex items-center justify-center text-white text-base font-black shadow-md shrink-0">
-              ⚽
-            </div>
-            <div className="truncate">
-              <div className="text-xs font-bold text-white">Ligasystem</div>
-              <div className="text-[9.5px] text-gray-400 truncate">https://www.developtimize.de/</div>
-            </div>
-          </div>
-
-          {/* iOS 18 Option Switch */}
-          <div className="bg-[#1a1a1a] p-2.5 rounded-lg border border-[#ff5c3e]/50 relative overflow-hidden">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                <span className="text-emerald-400">⚡</span> Als Web-App öffnen
-              </span>
-              <div className="w-9 h-5 bg-emerald-500 rounded-full p-0.5 flex items-center justify-end shadow-inner">
-                <div className="w-4 h-4 bg-white rounded-full shadow-md"></div>
-              </div>
-            </div>
-            <p className="text-[9.5px] text-gray-400 leading-snug">
-              Für schnellen Zugriff wird auf deinem Home-Bildschirm ein Symbol hinzugefügt.
-            </p>
-            <div className="mt-1.5 text-[9px] font-black uppercase text-[#ff5c3e] tracking-wider flex items-center gap-1">
-              <span>👆</span> WICHTIG: Schalter muss GRÜN / AN sein!
-            </div>
-          </div>
+        <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-2 my-2 text-center shadow-inner">
+          <img src="/tutorial/ios_3.png" alt="Zum Home-Bildschirm" className="w-full max-h-[190px] object-contain mx-auto rounded-lg" />
+        </div>
+      )
+    },
+    {
+      title: '4. "Als Web-App öffnen" prüfen & Hinzufügen 🚀',
+      text: 'Achte darauf, dass der Schalter "Als Web-App öffnen" GRÜN ist, und tippe oben rechts auf "Hinzufügen".',
+      renderGraphic: () => (
+        <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-2 my-2 text-center shadow-inner">
+          <img src="/tutorial/ios_4.jpg" alt="Als Web-App öffnen & Hinzufügen" className="w-full max-h-[180px] object-contain mx-auto rounded-lg" />
         </div>
       )
     }
@@ -762,7 +724,7 @@ const TourOverlay = () => {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-[9px] font-black uppercase tracking-widest text-[#ff5c3e] flex items-center gap-1.5">
-                      <AppleIcon className="w-3.5 h-3.5 text-white" /> Apple iOS • Schritt {pwaStep + 1} / 3
+                      <AppleIcon className="w-3.5 h-3.5 text-white" /> Apple iOS • Schritt {pwaStep + 1} / {iosSteps.length}
                     </div>
                     <button
                       onClick={() => setSelectedOS(null)}
@@ -779,7 +741,7 @@ const TourOverlay = () => {
                     {iosSteps[pwaStep].text}
                   </p>
 
-                  {/* Render Visual Graphic */}
+                  {/* Render Screenshot Graphic */}
                   {iosSteps[pwaStep].renderGraphic()}
 
                   <div className="flex items-center gap-2 mt-4">
@@ -804,7 +766,7 @@ const TourOverlay = () => {
                         onClick={() => setPwaStep((s) => s + 1)}
                         className="ml-auto text-[10px] font-black uppercase tracking-widest text-white bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 transition-colors px-4 py-2 rounded-lg cursor-pointer"
                       >
-                        Weiter ({pwaStep + 1}/3)
+                        Weiter ({pwaStep + 1}/{iosSteps.length})
                       </button>
                     ) : (
                       <button
@@ -822,7 +784,7 @@ const TourOverlay = () => {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-[9px] font-black uppercase tracking-widest text-[#ff5c3e] flex items-center gap-1.5">
-                      <AndroidIcon className="w-3.5 h-3.5 text-emerald-400" /> Android • Schritt {pwaStep + 1} / 3
+                      <AndroidIcon className="w-3.5 h-3.5 text-emerald-400" /> Android • Schritt {pwaStep + 1} / {androidSteps.length}
                     </div>
                     <button
                       onClick={() => setSelectedOS(null)}
@@ -863,7 +825,7 @@ const TourOverlay = () => {
                         onClick={() => setPwaStep((s) => s + 1)}
                         className="ml-auto text-[10px] font-black uppercase tracking-widest text-white bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 transition-colors px-4 py-2 rounded-lg cursor-pointer"
                       >
-                        Weiter ({pwaStep + 1}/3)
+                        Weiter ({pwaStep + 1}/{androidSteps.length})
                       </button>
                     ) : (
                       <button
