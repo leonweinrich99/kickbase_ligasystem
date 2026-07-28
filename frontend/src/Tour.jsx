@@ -218,11 +218,15 @@ const TourOverlay = () => {
 
   const step = tour?.step;
 
+  // Sauberer Reset der PWA-Zustände bei Schrittwechsel
   useEffect(() => {
-    if (tour?.stepIndex === 0) {
-      setSelectedOS(null);
-      setPwaStep(0);
-    }
+    setSelectedOS(null);
+    setPwaStep(0);
+    setRect(null);
+    setNotFound(false);
+    attemptsRef.current = 0;
+    scrolledRef.current = false;
+    autoAdvanceRef.current = false;
   }, [tour?.stepIndex]);
 
   useEffect(() => {
@@ -364,7 +368,7 @@ const TourOverlay = () => {
   const { safeTop, safeBottom } = getSafeBounds();
   const isIntroStep = tour.stepIndex === 0;
 
-  // Echte Bildschirm-Bereiche für PWA-Schritte ermitteln (Spotlight auf echte Browser-Buttons!)
+  // STRENG ISOLIERT: Echte Bildschirm-Bereiche NUR für Schritt 0 bei aktivem OS
   let activePwaRect = null;
   if (isIntroStep && selectedOS === 'ios') {
     if (pwaStep === 0) {
@@ -426,6 +430,12 @@ const TourOverlay = () => {
     tour.next();
   };
 
+  const advanceToFeatureTour = () => {
+    setSelectedOS(null);
+    setPwaStep(0);
+    tour.next();
+  };
+
   const skip = () => {
     setNotFound(false);
     tour.skipUnreachable();
@@ -478,7 +488,7 @@ const TourOverlay = () => {
     };
   }
 
-  // IOS Tutorial Content definition (mit Direkt-Trigger Button!)
+  // IOS Tutorial Content definition
   const iosSteps = [
     {
       title: '1. Safari Teilen-Menü öffnen',
@@ -486,7 +496,8 @@ const TourOverlay = () => {
       renderGraphic: () => (
         <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-3 my-2 text-left shadow-inner">
           <button
-            onClick={async () => {
+            onClick={async (e) => {
+              e.stopPropagation();
               if (navigator.share) {
                 try {
                   await navigator.share({
@@ -577,7 +588,7 @@ const TourOverlay = () => {
     }
   ];
 
-  // Android Tutorial Content definition (mit Auto-Install Button!)
+  // Android Tutorial Content definition
   const androidSteps = [
     {
       title: '1. Chrome 3-Punkte-Menü & Auto-Install',
@@ -585,12 +596,13 @@ const TourOverlay = () => {
       renderGraphic: () => (
         <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-3 my-2 text-left shadow-inner">
           <button
-            onClick={async () => {
+            onClick={async (e) => {
+              e.stopPropagation();
               if (tour.deferredPrompt) {
                 tour.deferredPrompt.prompt();
                 const { outcome } = await tour.deferredPrompt.userChoice;
                 if (outcome === 'accepted') {
-                  advance();
+                  advanceToFeatureTour();
                 }
               } else {
                 setPwaStep(1);
@@ -676,10 +688,11 @@ const TourOverlay = () => {
               width: effectiveRect.width + pad * 2,
               height: effectiveRect.height + pad * 2
             }}
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               if (isIntroStep && selectedOS) {
                 if (pwaStep < 2) setPwaStep((s) => s + 1);
-                else advance();
+                else advanceToFeatureTour();
               } else {
                 advance();
               }
@@ -694,7 +707,7 @@ const TourOverlay = () => {
       {/* Tour beenden button */}
       <button
         onClick={tour.stop}
-        className="fixed text-[#8b92a5] hover:text-white transition-colors bg-[#171717] border border-[#2e2e2e] rounded-full w-8 h-8 flex items-center justify-center pointer-events-auto shadow-lg z-[210]"
+        className="fixed text-[#8b92a5] hover:text-white transition-colors bg-[#171717] border border-[#2e2e2e] rounded-full w-8 h-8 flex items-center justify-center pointer-events-auto shadow-lg z-[210] cursor-pointer"
         style={{ top: safeTop + 16, right: 16 }}
         aria-label="Tour beenden"
       >
@@ -716,7 +729,7 @@ const TourOverlay = () => {
               <p className="text-xs text-[#8b92a5] leading-relaxed mb-4">Dieser Bereich konnte gerade nicht gefunden werden. Wir machen einfach weiter.</p>
               <button
                 onClick={skip}
-                className="w-full text-[10px] font-black uppercase tracking-widest text-white bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 transition-colors px-4 py-2 rounded-lg"
+                className="w-full text-[10px] font-black uppercase tracking-widest text-white bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 transition-colors px-4 py-2 rounded-lg cursor-pointer"
               >
                 Weiter
               </button>
@@ -738,7 +751,8 @@ const TourOverlay = () => {
 
                   <div className="grid grid-cols-2 gap-3 mb-4">
                     <button
-                      onClick={async () => {
+                      onClick={async (e) => {
+                        e.stopPropagation();
                         setSelectedOS('ios');
                         setPwaStep(0);
                         if (navigator.share) {
@@ -763,7 +777,8 @@ const TourOverlay = () => {
                     </button>
 
                     <button
-                      onClick={async () => {
+                      onClick={async (e) => {
+                        e.stopPropagation();
                         setSelectedOS('android');
                         setPwaStep(0);
                         if (tour.deferredPrompt) {
@@ -783,7 +798,7 @@ const TourOverlay = () => {
                   </div>
 
                   <button
-                    onClick={advance}
+                    onClick={advanceToFeatureTour}
                     className="w-full py-2.5 text-[10px] font-black uppercase tracking-widest text-[#8b92a5] hover:text-white bg-[#1a1a1a] hover:bg-[#262626] border border-[#2e2e2e] rounded-xl transition-colors cursor-pointer"
                   >
                     Direkt zur App Feature-Tour 🚀
@@ -841,7 +856,7 @@ const TourOverlay = () => {
                       </button>
                     ) : (
                       <button
-                        onClick={advance}
+                        onClick={advanceToFeatureTour}
                         className="ml-auto text-[10px] font-black uppercase tracking-widest text-white bg-emerald-500 hover:bg-emerald-600 transition-colors px-4 py-2 rounded-lg cursor-pointer"
                       >
                         Zur Feature-Tour 🚀
@@ -900,7 +915,7 @@ const TourOverlay = () => {
                       </button>
                     ) : (
                       <button
-                        onClick={advance}
+                        onClick={advanceToFeatureTour}
                         className="ml-auto text-[10px] font-black uppercase tracking-widest text-white bg-emerald-500 hover:bg-emerald-600 transition-colors px-4 py-2 rounded-lg cursor-pointer"
                       >
                         Zur Feature-Tour 🚀
