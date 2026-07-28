@@ -349,7 +349,7 @@ const TourOverlay = () => {
 
   const { safeTop, safeBottom } = getSafeBounds();
   const isIntroStep = tour.stepIndex === 0;
-  const tooltipWidth = isIntroStep ? 380 : 320;
+  const tooltipWidth = isIntroStep ? 410 : 360;
   const safeMargin = 16;
 
   let tooltipStyle;
@@ -357,7 +357,7 @@ const TourOverlay = () => {
     const viewportW = window.innerWidth;
     const spaceBelow = safeBottom - (rect.top + rect.height + pad) - gap;
     const spaceAbove = rect.top - pad - safeTop - gap;
-    const estimatedTooltipHeight = 190;
+    const estimatedTooltipHeight = 220;
 
     const centerX = rect.left + rect.width / 2;
     const clampedLeft = Math.min(Math.max(centerX, tooltipWidth / 2 + 12), viewportW - tooltipWidth / 2 - 12);
@@ -367,21 +367,21 @@ const TourOverlay = () => {
         top: rect.top + rect.height + pad + gap,
         left: clampedLeft,
         transform: 'translateX(-50%)',
-        maxHeight: Math.max(120, spaceBelow)
+        maxHeight: Math.max(140, spaceBelow)
       };
     } else if (spaceAbove >= estimatedTooltipHeight) {
       tooltipStyle = {
         top: rect.top - pad - gap,
         left: clampedLeft,
         transform: 'translate(-50%, -100%)',
-        maxHeight: Math.max(120, spaceAbove)
+        maxHeight: Math.max(140, spaceAbove)
       };
     } else {
       tooltipStyle = {
         top: safeBottom - safeMargin,
         left: Math.min(Math.max(viewportW / 2, tooltipWidth / 2 + 12), viewportW - tooltipWidth / 2 - 12),
         transform: 'translate(-50%, -100%)',
-        maxHeight: Math.max(120, safeBottom - safeTop - safeMargin * 2)
+        maxHeight: Math.max(140, safeBottom - safeTop - safeMargin * 2)
       };
     }
   } else {
@@ -390,31 +390,31 @@ const TourOverlay = () => {
       top: midY,
       left: '50%',
       transform: 'translate(-50%, -50%)',
-      maxHeight: Math.max(200, safeBottom - safeTop - safeMargin * 2)
+      maxHeight: Math.max(220, safeBottom - safeTop - safeMargin * 2)
     };
   }
 
-  // IOS Tutorial Content definition (rein visuell, inkl. iOS 18 "Als Web-App öffnen" Option)
+  // IOS Tutorial Content definition (rein visuell, vergrößerte Schrift)
   const iosSteps = [
     {
       title: '1. Safari Browser & Menü öffnen',
       text: 'Öffne das Ligasystem in Safari. Tippe unten in der Navigationsleiste auf das Teilen-Symbol oder die drei Punkte ( ... ).',
       renderGraphic: () => (
-        <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-3 my-2 text-left shadow-inner">
-          <div className="flex items-center justify-between bg-[#1f1f1f] rounded-lg px-3 py-2 border border-[#333]">
-            <div className="flex items-center gap-2 text-xs text-gray-300 truncate">
-              <span className="text-emerald-400">🔒</span> developtimize.de
+        <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-3.5 my-3 text-left shadow-inner">
+          <div className="flex items-center justify-between bg-[#1f1f1f] rounded-xl px-3.5 py-2.5 border border-[#333]">
+            <div className="flex items-center gap-2 text-xs font-semibold text-gray-200 truncate">
+              <span className="text-emerald-400 text-sm">🔒</span> developtimize.de
             </div>
-            <div className="relative flex items-center justify-center w-7 h-7 bg-sky-500/20 border border-sky-500 rounded-full animate-pulse">
-              <span className="text-sky-400 font-bold text-sm">...</span>
-              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+            <div className="relative flex items-center justify-center w-8 h-8 bg-sky-500/20 border border-sky-500 rounded-full animate-pulse">
+              <span className="text-sky-400 font-black text-base">...</span>
+              <span className="absolute -top-1 -right-1 flex h-3 w-3">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-sky-500"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-sky-500"></span>
               </span>
             </div>
           </div>
-          <div className="text-[10px] text-sky-400 mt-2 text-center font-semibold flex items-center justify-center gap-1">
-            <SafariIcon className="w-3.5 h-3.5" /> Unten auf Teilen / 3-Punkte-Button tippen
+          <div className="text-xs text-sky-400 mt-2.5 text-center font-bold flex items-center justify-center gap-1.5">
+            <SafariIcon className="w-4 h-4" /> Unten auf Teilen / 3-Punkte-Button tippen
           </div>
         </div>
       )
@@ -423,59 +423,59 @@ const TourOverlay = () => {
       title: '2. "Zum Home-Bildschirm" wählen',
       text: 'Scrolle im iOS-Teilen-Menü nach unten und wähle den Menüeintrag "Zum Home-Bildschirm" mit dem Plus-Symbol (+).',
       renderGraphic: () => (
-        <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-3 my-2 text-left">
-          <div className="space-y-1.5 text-xs text-gray-300">
-            <div className="px-3 py-1.5 text-gray-500">Als Favoriten sichern</div>
-            <div className="px-3 py-1.5 text-gray-500">Auf der Seite suchen</div>
-            <div className="flex items-center justify-between px-3 py-2 bg-[#ff5c3e]/20 border border-[#ff5c3e] rounded-lg text-white font-bold animate-pulse">
-              <span className="flex items-center gap-2">
-                <span className="text-[#ff5c3e] font-black text-sm">⊕</span> Zum Home-Bildschirm
+        <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-3.5 my-3 text-left">
+          <div className="space-y-2 text-xs text-gray-300">
+            <div className="px-3 py-1.5 text-gray-500 font-medium">Als Favoriten sichern</div>
+            <div className="px-3 py-1.5 text-gray-500 font-medium">Auf der Seite suchen</div>
+            <div className="flex items-center justify-between px-3.5 py-2.5 bg-[#ff5c3e]/20 border border-[#ff5c3e] rounded-xl text-white font-black animate-pulse">
+              <span className="flex items-center gap-2 text-sm">
+                <span className="text-[#ff5c3e] font-black text-base">⊕</span> Zum Home-Bildschirm
               </span>
-              <span className="text-[10px] bg-[#ff5c3e] px-2 py-0.5 rounded text-white font-black">HIER TIPPEN</span>
+              <span className="text-xs bg-[#ff5c3e] px-2.5 py-1 rounded-md text-white font-black">HIER TIPPEN</span>
             </div>
-            <div className="px-3 py-1.5 text-gray-500">Markierung...</div>
+            <div className="px-3 py-1.5 text-gray-500 font-medium">Markierung...</div>
           </div>
         </div>
       )
     },
     {
       title: '3. "Als Web-App öffnen" aktivieren & Hinzufügen 🚀',
-      text: 'Stelle sicher, dass der Schalter "Als Web-App öffnen" AKTIVERT ist, und tippe oben rechts auf "Hinzufügen".',
+      text: 'Stelle sicher, dass der Schalter "Als Web-App öffnen" AKTIVIERT ist, und tippe oben rechts auf "Hinzufügen".',
       renderGraphic: () => (
-        <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-3.5 my-2 text-left shadow-inner">
-          <div className="flex items-center justify-between border-b border-[#2e2e2e] pb-2 mb-2.5">
-            <span className="text-xs text-white font-bold flex items-center gap-1.5">
+        <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-4 my-3 text-left shadow-inner">
+          <div className="flex items-center justify-between border-b border-[#2e2e2e] pb-3 mb-3">
+            <span className="text-xs text-white font-black flex items-center gap-1.5">
               <span>✕</span> Zum Home-Bildschirm
             </span>
-            <span className="text-xs bg-sky-500 text-white font-bold px-3 py-1 rounded-full animate-pulse shadow-md">
+            <span className="text-xs bg-sky-500 text-white font-black px-3.5 py-1.5 rounded-full animate-pulse shadow-md">
               Hinzufügen
             </span>
           </div>
 
-          <div className="flex items-center gap-3 bg-[#1a1a1a] p-2 rounded-lg border border-[#333] mb-2.5">
-            <div className="w-9 h-9 bg-gradient-to-br from-[#ff5c3e] to-orange-600 rounded-xl flex items-center justify-center text-white text-base font-black shadow-md shrink-0">
+          <div className="flex items-center gap-3 bg-[#1a1a1a] p-3 rounded-xl border border-[#333] mb-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-[#ff5c3e] to-orange-600 rounded-xl flex items-center justify-center text-white text-lg font-black shadow-md shrink-0">
               ⚽
             </div>
             <div className="truncate">
-              <div className="text-xs font-bold text-white">Ligasystem</div>
-              <div className="text-[9.5px] text-gray-400 truncate">https://www.developtimize.de/</div>
+              <div className="text-xs font-black text-white">Ligasystem</div>
+              <div className="text-xs text-gray-400 truncate">https://www.developtimize.de/</div>
             </div>
           </div>
 
           {/* iOS 18 Option Switch */}
-          <div className="bg-[#1a1a1a] p-2.5 rounded-lg border border-[#ff5c3e]/50 relative overflow-hidden">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-bold text-white flex items-center gap-1.5">
+          <div className="bg-[#1a1a1a] p-3 rounded-xl border border-[#ff5c3e]/60 relative overflow-hidden">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs font-black text-white flex items-center gap-1.5">
                 <span className="text-emerald-400">⚡</span> Als Web-App öffnen
               </span>
-              <div className="w-9 h-5 bg-emerald-500 rounded-full p-0.5 flex items-center justify-end shadow-inner">
-                <div className="w-4 h-4 bg-white rounded-full shadow-md"></div>
+              <div className="w-10 h-5.5 bg-emerald-500 rounded-full p-0.5 flex items-center justify-end shadow-inner">
+                <div className="w-4.5 h-4.5 bg-white rounded-full shadow-md"></div>
               </div>
             </div>
-            <p className="text-[9.5px] text-gray-400 leading-snug">
+            <p className="text-xs text-gray-300 leading-snug">
               Für schnellen Zugriff wird auf deinem Home-Bildschirm ein Symbol hinzugefügt.
             </p>
-            <div className="mt-1.5 text-[9px] font-black uppercase text-[#ff5c3e] tracking-wider flex items-center gap-1">
+            <div className="mt-2 text-xs font-black uppercase text-[#ff5c3e] tracking-wider flex items-center gap-1">
               <span>👆</span> WICHTIG: Schalter muss GRÜN / AN sein!
             </div>
           </div>
@@ -490,21 +490,21 @@ const TourOverlay = () => {
       title: '1. Chrome Browser & Menü öffnen',
       text: 'Öffne die Seite in Google Chrome. Tippe oben rechts auf das Drei-Punkte-Menü ( ⋮ ).',
       renderGraphic: () => (
-        <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-3 my-2 text-left shadow-inner">
-          <div className="flex items-center justify-between bg-[#1f1f1f] rounded-lg px-3 py-2 border border-[#333]">
-            <div className="flex items-center gap-2 text-xs text-gray-300 truncate">
-              <span className="text-emerald-400">🔒</span> developtimize.de
+        <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-3.5 my-3 text-left shadow-inner">
+          <div className="flex items-center justify-between bg-[#1f1f1f] rounded-xl px-3.5 py-2.5 border border-[#333]">
+            <div className="flex items-center gap-2 text-xs font-semibold text-gray-200 truncate">
+              <span className="text-emerald-400 text-sm">🔒</span> developtimize.de
             </div>
-            <div className="relative flex items-center justify-center w-7 h-7 bg-amber-500/20 border border-amber-500 rounded-full animate-pulse">
-              <span className="text-amber-400 font-bold text-sm">⋮</span>
-              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+            <div className="relative flex items-center justify-center w-8 h-8 bg-amber-500/20 border border-amber-500 rounded-full animate-pulse">
+              <span className="text-amber-400 font-black text-base">⋮</span>
+              <span className="absolute -top-1 -right-1 flex h-3 w-3">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
               </span>
             </div>
           </div>
-          <div className="text-[10px] text-amber-400 mt-2 text-center font-semibold flex items-center justify-center gap-1">
-            <ChromeIcon className="w-3.5 h-3.5" /> Hier oben rechts auf die 3 Punkte tippen
+          <div className="text-xs text-amber-400 mt-2.5 text-center font-bold flex items-center justify-center gap-1.5">
+            <ChromeIcon className="w-4 h-4" /> Hier oben rechts auf die 3 Punkte tippen
           </div>
         </div>
       )
@@ -513,17 +513,17 @@ const TourOverlay = () => {
       title: '2. "App installieren" wählen',
       text: 'Suche im Menü nach der Option "App installieren" oder "Zum Startbildschirm hinzufügen".',
       renderGraphic: () => (
-        <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-3 my-2 text-left">
-          <div className="space-y-1.5 text-xs text-gray-300">
-            <div className="px-3 py-1.5 text-gray-500">Neuer Tab</div>
-            <div className="px-3 py-1.5 text-gray-500">Lesezeichen</div>
-            <div className="flex items-center justify-between px-3 py-2 bg-[#ff5c3e]/20 border border-[#ff5c3e] rounded-lg text-white font-bold animate-pulse">
-              <span className="flex items-center gap-2">
+        <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-3.5 my-3 text-left">
+          <div className="space-y-2 text-xs text-gray-300">
+            <div className="px-3 py-1.5 text-gray-500 font-medium">Neuer Tab</div>
+            <div className="px-3 py-1.5 text-gray-500 font-medium">Lesezeichen</div>
+            <div className="flex items-center justify-between px-3.5 py-2.5 bg-[#ff5c3e]/20 border border-[#ff5c3e] rounded-xl text-white font-black animate-pulse">
+              <span className="flex items-center gap-2 text-sm">
                 <AndroidIcon className="w-4 h-4 text-emerald-400" /> App installieren
               </span>
-              <span className="text-[10px] bg-[#ff5c3e] px-2 py-0.5 rounded text-white font-black">HIER TIPPEN</span>
+              <span className="text-xs bg-[#ff5c3e] px-2.5 py-1 rounded-md text-white font-black">HIER TIPPEN</span>
             </div>
-            <div className="px-3 py-1.5 text-gray-500">Zum Startbildschirm...</div>
+            <div className="px-3 py-1.5 text-gray-500 font-medium">Zum Startbildschirm...</div>
           </div>
         </div>
       )
@@ -532,12 +532,12 @@ const TourOverlay = () => {
       title: '3. Bestätigen & Schnellzugriff nutzen 🚀',
       text: 'Tippe im Bestätigungs-Popup auf "Installieren". Die App wird direkt auf deinem Home-Bildschirm abgelegt!',
       renderGraphic: () => (
-        <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-4 my-2 text-center">
-          <div className="w-12 h-12 mx-auto mb-2 bg-[#1f1f1f] border border-[#333] rounded-2xl flex items-center justify-center text-emerald-400 shadow-lg">
+        <div className="w-full bg-[#111] border border-[#2e2e2e] rounded-xl p-4 my-3 text-center">
+          <div className="w-12 h-12 mx-auto mb-2.5 bg-[#1f1f1f] border border-[#333] rounded-2xl flex items-center justify-center text-emerald-400 shadow-lg">
             <AndroidIcon className="w-7 h-7" />
           </div>
-          <div className="text-xs font-bold text-white mb-1">Ligasystem App installieren?</div>
-          <div className="inline-block bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-black uppercase px-3 py-1 rounded-full">
+          <div className="text-sm font-black text-white mb-1.5">Ligasystem App installieren?</div>
+          <div className="inline-block bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs font-black uppercase px-3.5 py-1.5 rounded-full">
             ✓ Bereit zur Installation
           </div>
         </div>
@@ -589,11 +589,11 @@ const TourOverlay = () => {
       {/* Tour beenden button */}
       <button
         onClick={tour.stop}
-        className="fixed text-[#8b92a5] hover:text-white transition-colors bg-[#171717] border border-[#2e2e2e] rounded-full w-8 h-8 flex items-center justify-center pointer-events-auto shadow-lg z-[210]"
+        className="fixed text-[#8b92a5] hover:text-white transition-colors bg-[#171717] border border-[#2e2e2e] rounded-full w-9 h-9 flex items-center justify-center pointer-events-auto shadow-lg z-[210]"
         style={{ top: safeTop + 16, right: 16 }}
         aria-label="Tour beenden"
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <line x1="18" y1="6" x2="6" y2="18"></line>
           <line x1="6" y1="6" x2="18" y2="18"></line>
         </svg>
@@ -602,16 +602,16 @@ const TourOverlay = () => {
       {/* Tooltip & PWA Setup Card */}
       {!isSearching && (
         <div
-          className="absolute overflow-y-auto bg-[#171717] border border-[#2e2e2e] rounded-2xl shadow-2xl p-5 pointer-events-auto"
-          style={{ ...tooltipStyle, width: tooltipWidth, maxWidth: '92vw' }}
+          className="absolute overflow-y-auto bg-[#171717] border border-[#2e2e2e] rounded-2xl shadow-2xl p-6 pointer-events-auto"
+          style={{ ...tooltipStyle, width: tooltipWidth, maxWidth: '94vw' }}
         >
           {notFound ? (
             <>
-              <h3 className="text-sm font-black uppercase text-white mb-2 pr-4">Hoppla</h3>
-              <p className="text-xs text-[#8b92a5] leading-relaxed mb-4">Dieser Bereich konnte gerade nicht gefunden werden. Wir machen einfach weiter.</p>
+              <h3 className="text-base font-black uppercase text-white mb-2 pr-4">Hoppla</h3>
+              <p className="text-sm text-[#a0a8bb] leading-relaxed mb-4">Dieser Bereich konnte gerade nicht gefunden werden. Wir machen einfach weiter.</p>
               <button
                 onClick={skip}
-                className="w-full text-[10px] font-black uppercase tracking-widest text-white bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 transition-colors px-4 py-2 rounded-lg"
+                className="w-full text-xs font-black uppercase tracking-widest text-white bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 transition-colors px-4 py-2.5 rounded-xl shadow-md"
               >
                 Weiter
               </button>
@@ -621,47 +621,47 @@ const TourOverlay = () => {
             <div>
               {selectedOS === null && (
                 <div className="text-center">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-[#ff5c3e] mb-1">
+                  <div className="text-xs font-black uppercase tracking-widest text-[#ff5c3e] mb-1.5">
                     Kickbase Ligasystem 📲
                   </div>
-                  <h3 className="text-base font-black uppercase text-white mb-2">
+                  <h3 className="text-lg font-black uppercase text-white mb-2">
                     App auf Home-Bildschirm speichern
                   </h3>
-                  <p className="text-xs text-[#8b92a5] leading-relaxed mb-5">
+                  <p className="text-sm text-[#a0a8bb] leading-relaxed mb-6">
                     Für schnellen Zugriff und echtes App-Feeling kannst du das Ligasystem als App speichern. Welches Betriebssystem nutzt du?
                   </p>
 
-                  <div className="grid grid-cols-2 gap-3 mb-4">
+                  <div className="grid grid-cols-2 gap-3 mb-5">
                     <button
                       onClick={() => { setSelectedOS('ios'); setPwaStep(0); }}
-                      className="flex flex-col items-center justify-center p-4 bg-[#222222] hover:bg-[#2e2e2e] border border-[#3a3a3a] hover:border-[#ff5c3e]/60 rounded-xl transition-all group"
+                      className="flex flex-col items-center justify-center p-4 bg-[#222222] hover:bg-[#2e2e2e] border border-[#3a3a3a] hover:border-[#ff5c3e]/60 rounded-2xl transition-all group"
                     >
-                      <div className="w-10 h-10 mb-2 rounded-xl bg-white/10 flex items-center justify-center text-white group-hover:scale-110 group-hover:bg-white/20 transition-all">
-                        <AppleIcon className="w-6 h-6 text-white" />
+                      <div className="w-12 h-12 mb-2 rounded-2xl bg-white/10 flex items-center justify-center text-white group-hover:scale-110 group-hover:bg-white/20 transition-all">
+                        <AppleIcon className="w-7 h-7 text-white" />
                       </div>
-                      <span className="text-xs font-black text-white uppercase tracking-wider">Apple (iOS)</span>
-                      <span className="text-[10px] text-[#8b92a5] flex items-center gap-1 mt-0.5">
-                        <SafariIcon className="w-3 h-3 text-sky-400" /> Safari Browser
+                      <span className="text-sm font-black text-white uppercase tracking-wider">Apple (iOS)</span>
+                      <span className="text-xs text-[#9aa0b0] flex items-center gap-1.5 mt-1 font-medium">
+                        <SafariIcon className="w-3.5 h-3.5 text-sky-400" /> Safari Browser
                       </span>
                     </button>
 
                     <button
                       onClick={() => { setSelectedOS('android'); setPwaStep(0); }}
-                      className="flex flex-col items-center justify-center p-4 bg-[#222222] hover:bg-[#2e2e2e] border border-[#3a3a3a] hover:border-[#ff5c3e]/60 rounded-xl transition-all group"
+                      className="flex flex-col items-center justify-center p-4 bg-[#222222] hover:bg-[#2e2e2e] border border-[#3a3a3a] hover:border-[#ff5c3e]/60 rounded-2xl transition-all group"
                     >
-                      <div className="w-10 h-10 mb-2 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:scale-110 group-hover:bg-emerald-500/20 transition-all">
-                        <AndroidIcon className="w-6 h-6 text-emerald-400" />
+                      <div className="w-12 h-12 mb-2 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:scale-110 group-hover:bg-emerald-500/20 transition-all">
+                        <AndroidIcon className="w-7 h-7 text-emerald-400" />
                       </div>
-                      <span className="text-xs font-black text-white uppercase tracking-wider">Android</span>
-                      <span className="text-[10px] text-[#8b92a5] flex items-center gap-1 mt-0.5">
-                        <ChromeIcon className="w-3 h-3 text-amber-400" /> Chrome Browser
+                      <span className="text-sm font-black text-white uppercase tracking-wider">Android</span>
+                      <span className="text-xs text-[#9aa0b0] flex items-center gap-1.5 mt-1 font-medium">
+                        <ChromeIcon className="w-3.5 h-3.5 text-amber-400" /> Chrome Browser
                       </span>
                     </button>
                   </div>
 
                   <button
                     onClick={advance}
-                    className="w-full py-2.5 text-[10px] font-black uppercase tracking-widest text-[#8b92a5] hover:text-white bg-[#1a1a1a] hover:bg-[#262626] border border-[#2e2e2e] rounded-xl transition-colors"
+                    className="w-full py-3 text-xs font-black uppercase tracking-widest text-[#9aa0b0] hover:text-white bg-[#1a1a1a] hover:bg-[#262626] border border-[#2e2e2e] rounded-xl transition-colors"
                   >
                     Direkt zur App Feature-Tour 🚀
                   </button>
@@ -670,40 +670,40 @@ const TourOverlay = () => {
 
               {selectedOS === 'ios' && (
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="text-[9px] font-black uppercase tracking-widest text-[#ff5c3e] flex items-center gap-1.5">
-                      <AppleIcon className="w-3.5 h-3.5 text-white" /> Apple iOS • Schritt {pwaStep + 1} / 3
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="text-xs font-black uppercase tracking-widest text-[#ff5c3e] flex items-center gap-1.5">
+                      <AppleIcon className="w-4 h-4 text-white" /> Apple iOS • Schritt {pwaStep + 1} / 3
                     </div>
                     <button
                       onClick={() => setSelectedOS(null)}
-                      className="text-[9px] font-bold text-[#8b92a5] hover:text-white underline"
+                      className="text-xs font-bold text-[#9aa0b0] hover:text-white underline"
                     >
                       System wechseln
                     </button>
                   </div>
 
-                  <h3 className="text-sm font-black uppercase text-white mb-1 flex items-center gap-1.5">
+                  <h3 className="text-base font-black uppercase text-white mb-1.5 flex items-center gap-2">
                     {iosSteps[pwaStep].title}
                   </h3>
-                  <p className="text-xs text-[#8b92a5] leading-relaxed mb-2">
+                  <p className="text-sm text-[#a0a8bb] leading-relaxed mb-3">
                     {iosSteps[pwaStep].text}
                   </p>
 
                   {/* Render Visual Graphic */}
                   {iosSteps[pwaStep].renderGraphic()}
 
-                  <div className="flex items-center gap-2 mt-4">
+                  <div className="flex items-center gap-2 mt-5">
                     {pwaStep > 0 ? (
                       <button
                         onClick={() => setPwaStep((s) => s - 1)}
-                        className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] hover:text-white transition-colors px-3 py-2"
+                        className="text-xs font-black uppercase tracking-widest text-[#9aa0b0] hover:text-white transition-colors px-3 py-2.5"
                       >
                         Zurück
                       </button>
                     ) : (
                       <button
                         onClick={() => setSelectedOS(null)}
-                        className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] hover:text-white transition-colors px-2 py-2"
+                        className="text-xs font-black uppercase tracking-widest text-[#9aa0b0] hover:text-white transition-colors px-2 py-2.5"
                       >
                         Abbrechen
                       </button>
@@ -712,14 +712,14 @@ const TourOverlay = () => {
                     {pwaStep < iosSteps.length - 1 ? (
                       <button
                         onClick={() => setPwaStep((s) => s + 1)}
-                        className="ml-auto text-[10px] font-black uppercase tracking-widest text-white bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 transition-colors px-4 py-2 rounded-lg"
+                        className="ml-auto text-xs font-black uppercase tracking-widest text-white bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 transition-colors px-5 py-2.5 rounded-xl shadow-md"
                       >
                         Weiter ({pwaStep + 1}/3)
                       </button>
                     ) : (
                       <button
                         onClick={advance}
-                        className="ml-auto text-[10px] font-black uppercase tracking-widest text-white bg-emerald-500 hover:bg-emerald-600 transition-colors px-4 py-2 rounded-lg"
+                        className="ml-auto text-xs font-black uppercase tracking-widest text-white bg-emerald-500 hover:bg-emerald-600 transition-colors px-5 py-2.5 rounded-xl shadow-md"
                       >
                         Zur Feature-Tour 🚀
                       </button>
@@ -730,39 +730,39 @@ const TourOverlay = () => {
 
               {selectedOS === 'android' && (
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="text-[9px] font-black uppercase tracking-widest text-[#ff5c3e] flex items-center gap-1.5">
-                      <AndroidIcon className="w-3.5 h-3.5 text-emerald-400" /> Android • Schritt {pwaStep + 1} / 3
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="text-xs font-black uppercase tracking-widest text-[#ff5c3e] flex items-center gap-1.5">
+                      <AndroidIcon className="w-4 h-4 text-emerald-400" /> Android • Schritt {pwaStep + 1} / 3
                     </div>
                     <button
                       onClick={() => setSelectedOS(null)}
-                      className="text-[9px] font-bold text-[#8b92a5] hover:text-white underline"
+                      className="text-xs font-bold text-[#9aa0b0] hover:text-white underline"
                     >
                       System wechseln
                     </button>
                   </div>
 
-                  <h3 className="text-sm font-black uppercase text-white mb-1 flex items-center gap-1.5">
+                  <h3 className="text-base font-black uppercase text-white mb-1.5 flex items-center gap-2">
                     {androidSteps[pwaStep].title}
                   </h3>
-                  <p className="text-xs text-[#8b92a5] leading-relaxed mb-2">
+                  <p className="text-sm text-[#a0a8bb] leading-relaxed mb-3">
                     {androidSteps[pwaStep].text}
                   </p>
 
                   {androidSteps[pwaStep].renderGraphic()}
 
-                  <div className="flex items-center gap-2 mt-4">
+                  <div className="flex items-center gap-2 mt-5">
                     {pwaStep > 0 ? (
                       <button
                         onClick={() => setPwaStep((s) => s - 1)}
-                        className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] hover:text-white transition-colors px-3 py-2"
+                        className="text-xs font-black uppercase tracking-widest text-[#9aa0b0] hover:text-white transition-colors px-3 py-2.5"
                       >
                         Zurück
                       </button>
                     ) : (
                       <button
                         onClick={() => setSelectedOS(null)}
-                        className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] hover:text-white transition-colors px-2 py-2"
+                        className="text-xs font-black uppercase tracking-widest text-[#9aa0b0] hover:text-white transition-colors px-2 py-2.5"
                       >
                         Abbrechen
                       </button>
@@ -771,14 +771,14 @@ const TourOverlay = () => {
                     {pwaStep < androidSteps.length - 1 ? (
                       <button
                         onClick={() => setPwaStep((s) => s + 1)}
-                        className="ml-auto text-[10px] font-black uppercase tracking-widest text-white bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 transition-colors px-4 py-2 rounded-lg"
+                        className="ml-auto text-xs font-black uppercase tracking-widest text-white bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 transition-colors px-5 py-2.5 rounded-xl shadow-md"
                       >
                         Weiter ({pwaStep + 1}/3)
                       </button>
                     ) : (
                       <button
                         onClick={advance}
-                        className="ml-auto text-[10px] font-black uppercase tracking-widest text-white bg-emerald-500 hover:bg-emerald-600 transition-colors px-4 py-2 rounded-lg"
+                        className="ml-auto text-xs font-black uppercase tracking-widest text-white bg-emerald-500 hover:bg-emerald-600 transition-colors px-5 py-2.5 rounded-xl shadow-md"
                       >
                         Zur Feature-Tour 🚀
                       </button>
@@ -790,24 +790,24 @@ const TourOverlay = () => {
           ) : (
             /* REGULAR FEATURE TOUR STEPS */
             <>
-              <div className="text-[9px] font-black uppercase tracking-widest text-[#ff5c3e] mb-2 pr-8">
+              <div className="text-xs font-black uppercase tracking-widest text-[#ff5c3e] mb-2 pr-8">
                 Feature-Tour • Schritt {tour.stepIndex} / {tour.totalSteps - 1}
               </div>
-              <h3 className="text-sm font-black uppercase text-white mb-2 pr-4">{step.title}</h3>
-              <p className="text-xs text-[#8b92a5] leading-relaxed mb-4">{step.text}</p>
+              <h3 className="text-base font-black uppercase text-white mb-2 pr-4">{step.title}</h3>
+              <p className="text-sm text-[#a0a8bb] leading-relaxed mb-5">{step.text}</p>
 
               <div className="flex items-center gap-2">
                 {tour.stepIndex > 0 && (
                   <button
                     onClick={tour.prev}
-                    className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] hover:text-white transition-colors px-3 py-2"
+                    className="text-xs font-black uppercase tracking-widest text-[#9aa0b0] hover:text-white transition-colors px-3.5 py-2.5"
                   >
                     Zurück
                   </button>
                 )}
                 <button
                   onClick={advance}
-                  className="ml-auto text-[10px] font-black uppercase tracking-widest text-white bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 transition-colors px-4 py-2 rounded-lg"
+                  className="ml-auto text-xs font-black uppercase tracking-widest text-white bg-[#ff5c3e] hover:bg-[#ff5c3e]/90 transition-colors px-5 py-2.5 rounded-xl shadow-md"
                 >
                   {tour.stepIndex === tour.totalSteps - 1 ? 'Fertig' : 'Weiter'}
                 </button>
