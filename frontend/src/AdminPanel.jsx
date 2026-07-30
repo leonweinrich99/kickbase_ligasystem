@@ -90,6 +90,7 @@ const RuleEditor = () => {
   const [activeType, setActiveType] = useState('league');
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     loadRules().then(setRules).finally(() => setLoading(false));
@@ -117,21 +118,26 @@ const RuleEditor = () => {
 
   return (
     <section className="mb-10">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-4">
+      <button
+        onClick={() => setIsOpen((open) => !open)}
+        className="w-full bg-[#171717] border border-[#2e2e2e] rounded-2xl p-4 sm:p-5 flex items-center justify-between gap-4 text-left hover:border-[#404040] transition-colors"
+        aria-expanded={isOpen}
+      >
         <div>
           <div className="text-[10px] font-bold tracking-wider text-[#ff5c3e] mb-1">INHALT</div>
-          <h2 className="text-xl font-black uppercase text-white">Regelwerk bearbeiten</h2>
-          <p className="text-xs text-[#8b92a5] mt-2">Änderungen werden sofort für alle eingeloggten Nutzer sichtbar.</p>
+          <h2 className="text-xl font-black uppercase text-white">Regelwerk</h2>
+          <p className="text-xs text-[#8b92a5] mt-2">Nur öffnen, wenn du eine Regel ändern möchtest.</p>
         </div>
-        <div className="flex gap-2">
+        <span className={`text-[#8b92a5] text-xl transition-transform ${isOpen ? 'rotate-180' : ''}`}>⌄</span>
+      </button>
+      {isOpen && <div className="mt-3 bg-[#171717] border border-[#2e2e2e] rounded-2xl p-4 sm:p-6 space-y-5">
+        <div className="flex flex-wrap gap-2">
           {['league', 'cup'].map((type) => (
-            <button key={type} onClick={() => setActiveType(type)} className={`px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest ${activeType === type ? 'bg-[#ff5c3e] text-white' : 'bg-[#171717] border border-[#2e2e2e] text-[#8b92a5]'}`}>
+            <button key={type} onClick={() => setActiveType(type)} className={`px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest ${activeType === type ? 'bg-[#ff5c3e] text-white' : 'bg-[#000] border border-[#2e2e2e] text-[#8b92a5]'}`}>
               {type === 'league' ? 'Ligaregeln' : 'Pokalregeln'}
             </button>
           ))}
         </div>
-      </div>
-      <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl p-4 sm:p-6 space-y-5">
         <label className="block">
           <span className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5]">Saison</span>
           <input value={rules.season} onChange={(event) => setRules({ ...rules, season: event.target.value })} className="mt-2 w-full bg-[#000] border border-[#2e2e2e] rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-[#ff5c3e]" />
@@ -150,7 +156,7 @@ const RuleEditor = () => {
           <span className={`text-xs ${status?.startsWith('Fehler') ? 'text-red-400' : 'text-green-400'}`}>{status}</span>
           <button onClick={handleSave} className="bg-[#ff5c3e] text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#ff7056] transition-colors">Regeln speichern</button>
         </div>
-      </div>
+      </div>}
     </section>
   );
 };
@@ -240,8 +246,6 @@ const AdminPanel = () => {
 
         <PushNotificationCard />
 
-        <RuleEditor />
-
         <div className="flex gap-2 mb-6 overflow-x-auto">
           {['pending', 'approved', 'admin', 'rejected', 'all'].map(f => (
             <button
@@ -330,6 +334,8 @@ const AdminPanel = () => {
           </button>
           <p className="text-[10px] text-[#8b92a5] text-center mt-3">Stößt den GitHub-Actions-Workflow zum Abruf der Ligadaten manuell an.</p>
         </div>
+
+        <RuleEditor />
       </div>
     </div>
   );
