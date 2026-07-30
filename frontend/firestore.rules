@@ -46,5 +46,12 @@ service cloud.firestore {
 
       allow delete: if isAdmin();
     }
+
+    // Das Regelwerk ist öffentlich lesbar für eingeloggte Nutzer, Änderungen
+    // bleiben ausschließlich Admins vorbehalten.
+    match /settings/rules {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
   }
 }

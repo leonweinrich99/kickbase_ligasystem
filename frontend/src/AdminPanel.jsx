@@ -4,6 +4,7 @@ import { collection, onSnapshot, doc, updateDoc, query, orderBy } from 'firebase
 import { db } from './firebase';
 import { useAuth } from './AuthContext';
 import { enablePushNotifications, disablePushNotifications, isPushConfigured, needsHomeScreenInstall } from './pushNotifications';
+import { DEFAULT_RULES, loadRules, saveRules } from './rulesConfig';
 
 const StatusBadge = ({ status }) => {
   const styles = {
@@ -81,6 +82,76 @@ const PushNotificationCard = () => {
         </button>
       )}
     </div>
+  );
+};
+
+const RuleEditor = () => {
+  const [rules, setRules] = useState(DEFAULT_RULES);
+  const [activeType, setActiveType] = useState('league');
+  const [status, setStatus] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadRules().then(setRules).finally(() => setLoading(false));
+  }, []);
+
+  const updateRule = (type, id, field, value) => {
+    setRules((current) => ({
+      ...current,
+      [type]: current[type].map((rule) => rule.id === id ? { ...rule, [field]: value } : rule),
+    }));
+  };
+
+  const handleSave = async () => {
+    setStatus('Speichere...');
+    try {
+      await saveRules(rules);
+      setStatus('Regeln gespeichert');
+      setTimeout(() => setStatus(null), 3500);
+    } catch (error) {
+      setStatus(`Fehler: ${error.message}`);
+    }
+  };
+
+  if (loading) return <div className="text-sm text-[#8b92a5] py-6">Lade Regelwerk...</div>;
+
+  return (
+    <section className="mb-10">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-4">
+        <div>
+          <div className="text-[10px] font-bold tracking-wider text-[#ff5c3e] mb-1">INHALT</div>
+          <h2 className="text-xl font-black uppercase text-white">Regelwerk bearbeiten</h2>
+          <p className="text-xs text-[#8b92a5] mt-2">Änderungen werden sofort für alle eingeloggten Nutzer sichtbar.</p>
+        </div>
+        <div className="flex gap-2">
+          {['league', 'cup'].map((type) => (
+            <button key={type} onClick={() => setActiveType(type)} className={`px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest ${activeType === type ? 'bg-[#ff5c3e] text-white' : 'bg-[#171717] border border-[#2e2e2e] text-[#8b92a5]'}`}>
+              {type === 'league' ? 'Ligaregeln' : 'Pokalregeln'}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl p-4 sm:p-6 space-y-5">
+        <label className="block">
+          <span className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5]">Saison</span>
+          <input value={rules.season} onChange={(event) => setRules({ ...rules, season: event.target.value })} className="mt-2 w-full bg-[#000] border border-[#2e2e2e] rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-[#ff5c3e]" />
+        </label>
+        {rules[activeType].map((rule, index) => (
+          <div key={rule.id} className="border-t border-[#2e2e2e] pt-5">
+            <div className="text-[10px] font-black uppercase tracking-widest text-[#626978] mb-3">Regel {index + 1}</div>
+            <div className="grid sm:grid-cols-2 gap-3">
+              <label><span className="field-label">Abschnitt</span><input value={rule.section} onChange={(e) => updateRule(activeType, rule.id, 'section', e.target.value)} className="field-input" /></label>
+              <label><span className="field-label">Titel</span><input value={rule.title} onChange={(e) => updateRule(activeType, rule.id, 'title', e.target.value)} className="field-input" /></label>
+            </div>
+            <label className="block mt-3"><span className="field-label">Beschreibung</span><textarea rows="3" value={rule.text} onChange={(e) => updateRule(activeType, rule.id, 'text', e.target.value)} className="field-input resize-y" /></label>
+          </div>
+        ))}
+        <div className="flex items-center justify-between gap-3 pt-2">
+          <span className={`text-xs ${status?.startsWith('Fehler') ? 'text-red-400' : 'text-green-400'}`}>{status}</span>
+          <button onClick={handleSave} className="bg-[#ff5c3e] text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#ff7056] transition-colors">Regeln speichern</button>
+        </div>
+      </div>
+    </section>
   );
 };
 
@@ -168,6 +239,8 @@ const AdminPanel = () => {
         </div>
 
         <PushNotificationCard />
+
+        <RuleEditor />
 
         <div className="flex gap-2 mb-6 overflow-x-auto">
           {['pending', 'approved', 'admin', 'rejected', 'all'].map(f => (
