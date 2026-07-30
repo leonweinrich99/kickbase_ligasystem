@@ -4,6 +4,7 @@ import {
   signInWithPopup,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   updateProfile,
   signOut as firebaseSignOut
 } from 'firebase/auth';
@@ -150,6 +151,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const resetPassword = async (email) => {
+    setAuthError(null);
+    try {
+      await sendPasswordResetEmail(auth, email);
+    } catch (e) {
+      setAuthError(mapAuthError(e));
+      throw e;
+    }
+  };
+
   const signOut = () => firebaseSignOut(auth);
 
   const value = {
@@ -163,6 +174,7 @@ export const AuthProvider = ({ children }) => {
     signInWithGoogle,
     signInWithEmail,
     signUpWithEmail,
+    resetPassword,
     signOut
   };
 

@@ -10,7 +10,7 @@ const GoogleIcon = () => (
 );
 
 const Login = () => {
-  const { signInWithGoogle, signInWithEmail, signUpWithEmail, authError, isFirebaseConfigured } = useAuth();
+  const { signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword, authError, isFirebaseConfigured } = useAuth();
   const tour = useTour();
   const [mode, setMode] = useState('signin'); // 'signin' | 'signup'
   const [email, setEmail] = useState('');
@@ -19,6 +19,24 @@ const Login = () => {
   const [submitting, setSubmitting] = useState(false);
   const [localError, setLocalError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
+
+  const handlePasswordReset = async () => {
+    setLocalError(null);
+    setSuccessMsg(null);
+    if (!email) {
+      setLocalError('Bitte zuerst deine E-Mail-Adresse eingeben.');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await resetPassword(email);
+      setSuccessMsg('Wenn ein Account zu dieser E-Mail existiert, wurde eine Reset-Mail versendet.');
+    } catch {
+      // Der konkrete Fehler wird über authError aus dem Context angezeigt.
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -136,6 +154,17 @@ const Login = () => {
           >
             {submitting ? 'Bitte warten...' : mode === 'signup' ? 'Account erstellen' : 'Anmelden'}
           </button>
+
+          {mode === 'signin' && (
+            <button
+              type="button"
+              onClick={handlePasswordReset}
+              disabled={submitting}
+              className="text-xs text-[#8b92a5] hover:text-white transition-colors disabled:opacity-50"
+            >
+              Passwort vergessen?
+            </button>
+          )}
         </form>
 
         <div className="text-center mt-6">
