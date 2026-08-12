@@ -104,6 +104,8 @@ const AdminPanel = () => {
   const [filter, setFilter] = useState('pending');
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateStatus, setUpdateStatus] = useState(null);
+  const [isAdvisorUpdating, setIsAdvisorUpdating] = useState(false);
+  const [advisorUpdateStatus, setAdvisorUpdateStatus] = useState(null);
 
   const handleManualUpdate = async () => {
     const password = window.prompt("Bitte Admin-Passwort eingeben:");
@@ -127,6 +129,31 @@ const AdminPanel = () => {
       setTimeout(() => setUpdateStatus(null), 5000);
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const handleAdvisorUpdate = async () => {
+    const password = window.prompt("Bitte Admin-Passwort eingeben:");
+    if (!password) return;
+
+    setIsAdvisorUpdating(true);
+    setAdvisorUpdateStatus("Trading Advisor wird gestartet...");
+
+    try {
+      const res = await fetch(`/api/advisor-cron?secret=${encodeURIComponent(password)}`);
+      if (res.ok) {
+        setAdvisorUpdateStatus("✅ Angestoßen! Läuft ca. 2-5 Minuten im Hintergrund.");
+        setTimeout(() => setAdvisorUpdateStatus(null), 6000);
+      } else {
+        const errData = await res.json();
+        setAdvisorUpdateStatus(`❌ Fehler: ${errData.error || "Unbefugt"}`);
+        setTimeout(() => setAdvisorUpdateStatus(null), 6000);
+      }
+    } catch {
+      setAdvisorUpdateStatus("❌ Netzwerkfehler beim Update-Aufruf.");
+      setTimeout(() => setAdvisorUpdateStatus(null), 6000);
+    } finally {
+      setIsAdvisorUpdating(false);
     }
   };
 
@@ -269,6 +296,42 @@ const AdminPanel = () => {
             {updateStatus ? updateStatus : isUpdating ? 'Läuft...' : 'Kickbase-Daten jetzt aktualisieren'}
           </button>
           <p className="text-[10px] text-[#8b92a5] text-center mt-3">Stößt den GitHub-Actions-Workflow zum Abruf der Ligadaten manuell an.</p>
+        </div>
+
+        {/* Trading Advisor: Budget-Schätzungen + Marktwert-Prognosen, basierend auf
+            https://github.com/LennardFe/Kickbase-Trading-Advisor, angepasst auf unsere 3 Ligen. */}
+        <div className="mt-6">
+          <Link
+            to="/admin/advisor"
+            className="w-full flex items-center gap-3 bg-[#171717] border border-cyan-500/30 rounded-2xl px-5 py-4 hover:border-cyan-500 transition-all active:scale-[0.98] mb-3"
+          >
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-cyan-500/10 text-cyan-400">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                <polyline points="17 6 23 6 23 12"></polyline>
+              </svg>
+            </div>
+            <div className="flex-1">
+              <div className="text-sm font-bold text-gray-100">Trading Advisor</div>
+              <div className="text-[10px] text-[#8b92a5]">Budget-Schätzungen & Marktwert-Prognosen ansehen</div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </Link>
+          <button
+            onClick={handleAdvisorUpdate}
+            disabled={isAdvisorUpdating}
+            className="w-full flex items-center justify-center gap-2 bg-[#171717] border border-cyan-500/30 text-cyan-400 font-black uppercase tracking-widest text-xs py-4 rounded-2xl hover:bg-cyan-500/10 hover:border-cyan-500 transition-all disabled:opacity-50 shadow-lg"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            {advisorUpdateStatus ? advisorUpdateStatus : isAdvisorUpdating ? 'Läuft...' : 'Trading Advisor jetzt aktualisieren'}
+          </button>
+          <p className="text-[10px] text-[#8b92a5] text-center mt-3">Berechnet Budgets & trainiert das Marktwert-Modell neu (dauert ca. 2-5 Minuten).</p>
         </div>
 
         <RuleEditor />

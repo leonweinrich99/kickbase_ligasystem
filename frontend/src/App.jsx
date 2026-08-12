@@ -5,6 +5,7 @@ import Pokal from './Pokal';
 import PokalRules from './PokalRules';
 import SeasonView from './SeasonView';
 import AdminPanel from './AdminPanel';
+import Advisor from './Advisor';
 import Account from './Account';
 import TabBar from './TabBar';
 import ScrollToTop from './ScrollToTop';
@@ -35,6 +36,7 @@ function App() {
                   <Route path="/pokal" element={<Pokal />} />
                   <Route path="/pokal-rules" element={<PokalRules />} />
                   <Route path="/admin" element={<AdminPanel />} />
+                  <Route path="/admin/advisor" element={<Advisor />} />
                   <Route path="/account" element={<Account />} />
 
                   {/* Archiv: eingefrorener Stand der Qualifikationsrunde 25/26 (nur Lesezugriff) */}

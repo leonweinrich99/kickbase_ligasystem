@@ -7,6 +7,10 @@
     {
       "path": "/api/pokal-reminder",
       "schedule": "0 18 * * 3"
+    },
+    {
+      "path": "/api/advisor-cron",
+      "schedule": "0 21 * * *"
     }
   ]
 }
