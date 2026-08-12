@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { useTour } from './Tour';
 import accountLogo from './assets/account_logo.png';
+import PushNotificationCard from './PushNotificationCard';
 
 const MenuLink = ({ to, onClick, icon, label, color = '#8b92a5' }) => {
   const content = (
@@ -106,6 +107,8 @@ const Account = () => {
             </div>
           </div>
         )}
+
+        <PushNotificationCard />
 
         <div data-tour="account-menu" className="flex flex-col gap-3 mb-8">
           <MenuLink onClick={tour.start} icon={TutorialIcon} label="App-Tutorial ansehen" color="#eab308" />

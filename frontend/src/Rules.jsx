@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import { subscribeToRules } from './rulesConfig';
 
 const colors = {
@@ -32,7 +32,7 @@ const Icon = ({ id, className }) => {
 const RuleCard = ({ rule, number }) => {
   const [border, text] = colors[rule.color] || colors.blue;
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-50px' }} transition={{ duration: 0.5, ease: 'easeOut' }} className="group relative pl-16 sm:pl-24 mb-10">
+    <Motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-50px' }} transition={{ duration: 0.5, ease: 'easeOut' }} className="group relative pl-16 sm:pl-24 mb-10">
       <div className={`absolute left-0 top-0 w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#000000] border-2 flex items-center justify-center z-10 transition-all duration-300 ${border}`}>
         <Icon id={rule.id} className={`w-6 h-6 sm:w-8 sm:h-8 ${text}`} />
       </div>
@@ -40,7 +40,7 @@ const RuleCard = ({ rule, number }) => {
         <h3 className="text-lg sm:text-xl font-black text-gray-100 mb-3 uppercase tracking-tight">{rule.title || `Regel ${number}`}</h3>
         <div className="text-sm sm:text-base text-[#8b92a5] leading-relaxed font-medium whitespace-pre-line">{rule.text}</div>
       </div>
-    </motion.div>
+    </Motion.div>
   );
 };
 
@@ -56,14 +56,14 @@ export default function Rules({ type = 'league', backTo = '/', label = 'Regelkat
       <Link to={backTo} className="absolute top-4 right-4 sm:top-10 sm:right-0 p-2 text-[#8b92a5] hover:text-white bg-[#171717] border border-[#2e2e2e] rounded-xl transition-all hover:border-[#404040] shadow-lg z-50" title="Zurück">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
       </Link>
-      <motion.header initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="text-center mb-20 pt-10 sm:pt-0">
+      <Motion.header initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="text-center mb-20 pt-10 sm:pt-0">
         <div className={`inline-block px-3 py-1 mb-4 text-[0.85rem] font-extrabold uppercase tracking-[2.5px] border rounded-full ${accent === 'purple' ? 'text-purple-400 bg-purple-500/10 border-purple-500/20' : 'text-orange-400 bg-orange-500/10 border-orange-500/20'}`}>{rules?.season || 'Saison 26/27'}</div>
         <h1 className="text-4xl sm:text-[3.5rem] font-black tracking-tighter uppercase leading-[1.1] mb-4 bg-gradient-to-br from-white to-[#9ca3af] bg-clip-text text-transparent">KICKBASE {isCup ? 'POKAL' : 'LIGASYSTEM'}<br />{label}</h1>
-      </motion.header>
+      </Motion.header>
       <div className="space-y-16">
         {sections.map((section) => (
           <section key={section}>
-            <motion.h2 initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="text-[1.8rem] font-black text-[#f8fafc] mb-8 mt-16 first:mt-0 tracking-tight pb-3 border-b border-white/5 uppercase">{section}</motion.h2>
+            <Motion.h2 initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="text-[1.8rem] font-black text-[#f8fafc] mb-8 mt-16 first:mt-0 tracking-tight pb-3 border-b border-white/5 uppercase">{section}</Motion.h2>
             {cards.filter((rule) => rule.section === section).map((rule, index) => <RuleCard key={rule.id} rule={rule} number={index + 1} />)}
           </section>
         ))}

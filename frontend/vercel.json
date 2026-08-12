@@ -3,6 +3,10 @@
     {
       "path": "/api/cron",
       "schedule": "0 19 * * 0,1,5,6"
+    },
+    {
+      "path": "/api/pokal-reminder",
+      "schedule": "0 18 * * 3"
     }
   ]
 }
