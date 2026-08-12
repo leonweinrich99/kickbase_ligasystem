@@ -12,7 +12,9 @@ const LEAGUE_COLORS = {
   LIGA1: '#3b82f6',
   LIGA2: '#f97316',
   LIGA3: '#22c55e',
+  TEST: '#22d3ee',
 };
+const DEFAULT_LEAGUE_COLOR = '#22d3ee';
 
 const formatMoney = (val) => {
   if (val === null || val === undefined) return '–';
@@ -90,7 +92,7 @@ const Advisor = () => {
   const { isAdmin } = useAuth();
   const [data, setData] = useState(null);
   const [error, setError] = useState(false);
-  const [activeLeague, setActiveLeague] = useState('LIGA1');
+  const [activeLeague, setActiveLeague] = useState(null);
 
   useEffect(() => {
     fetch(`/advisor-data.json?t=${Date.now()}`)
@@ -98,7 +100,14 @@ const Advisor = () => {
         if (!res.ok) throw new Error('not found');
         return res.json();
       })
-      .then(setData)
+      .then((json) => {
+        setData(json);
+        // Ersten verfuegbaren Liga-Key automatisch aktiv setzen - fix auf
+        // "LIGA1" waere falsch, solange der Advisor (vorerst) nur gegen die
+        // einzelne "TEST"-Liga laeuft.
+        const firstKey = Object.keys(json.leagues || {})[0];
+        if (firstKey) setActiveLeague(firstKey);
+      })
       .catch(() => setError(true));
   }, []);
 
@@ -176,7 +185,7 @@ const Advisor = () => {
                   onClick={() => setActiveLeague(key)}
                   className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all flex items-center gap-2 ${activeLeague === key ? 'bg-white text-black' : 'bg-[#171717] border border-[#2e2e2e] text-[#8b92a5] hover:text-white'}`}
                 >
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: LEAGUE_COLORS[key] }}></span>
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: LEAGUE_COLORS[key] || DEFAULT_LEAGUE_COLOR }}></span>
                   {data.leagues[key].name}
                 </button>
               ))}
@@ -188,7 +197,7 @@ const Advisor = () => {
                 {league.budgets?.length ? (
                   <div className="mb-10">
                     {league.budgets.map((entry, index) => (
-                      <BudgetRow key={entry.manager} entry={entry} rank={index + 1} color={LEAGUE_COLORS[activeLeague]} />
+                      <BudgetRow key={entry.manager} entry={entry} rank={index + 1} color={LEAGUE_COLORS[activeLeague] || DEFAULT_LEAGUE_COLOR} />
                     ))}
                   </div>
                 ) : (

@@ -47,11 +47,22 @@ FEATURES = [
 ]
 TARGET = "mv_target_clipped"
 
+# ----------------- Liga-Auswahl -----------------
+# WICHTIG: Vorerst laeuft der Advisor bewusst nur gegen die einzelne
+# "test"-Liga, um das Feature risikofrei zu testen, bevor er auf die 3
+# echten Ligen losgelassen wird. Einfach den Block unten zurueckwechseln,
+# sobald alles wie gewuenscht funktioniert.
 LEAGUE_DEFS = [
-    {"key": "LIGA1", "name": os.getenv("KICKBASE_LEAGUE_1_NAME", "Liga 1")},
-    {"key": "LIGA2", "name": os.getenv("KICKBASE_LEAGUE_2_NAME", "Liga 2")},
-    {"key": "LIGA3", "name": os.getenv("KICKBASE_LEAGUE_3_NAME", "Liga 3")},
+    {"key": "TEST", "name": os.getenv("KICKBASE_TEST_LEAGUE_NAME", "test")},
 ]
+
+# Echte 3-Ligen-Konfiguration (nutzt dieselben Secrets/Variablen wie das
+# bestehende Node-Backend, siehe backend/kickbase.js) - fuer spaeter:
+# LEAGUE_DEFS = [
+#     {"key": "LIGA1", "name": os.getenv("KICKBASE_LEAGUE_1_NAME", "Liga 1")},
+#     {"key": "LIGA2", "name": os.getenv("KICKBASE_LEAGUE_2_NAME", "Liga 2")},
+#     {"key": "LIGA3", "name": os.getenv("KICKBASE_LEAGUE_3_NAME", "Liga 3")},
+# ]
 
 LEAGUE_START_DATE = os.getenv("ADVISOR_LEAGUE_START_DATE", "2026-08-13")
 START_BUDGET = int(os.getenv("ADVISOR_START_BUDGET", "50000000"))
