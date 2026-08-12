@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-08-12T13:58:33.381625+00:00",
+  "generatedAt": "2026-08-12T14:13:28.892666+00:00",
   "leagueStartDate": "2026-08-13",
   "startBudget": 50000000,
   "modelStats": {
     "signsCorrectPercent": 75.3,
-    "rmse": 1329379285.0,
-    "mae": 19780.0,
+    "rmse": 1331615174.0,
+    "mae": 19817.0,
     "r2": 0.91,
     "trainSamples": 88031,
     "testSamples": 29638
@@ -23,44 +23,60 @@
       ],
       "marketRecommendations": [
         {
+          "playerId": "3277",
+          "firstName": "Miro",
           "name": "Muheim",
+          "position": "ABW",
           "team": "Hamburg",
           "marketValue": 8764910.0,
           "changeYesterday": 272635.0,
-          "predictedChange": 254789.0,
+          "predictedChange": 254475.0,
           "startElfProbability": 2,
-          "hoursToExpiry": 55.28,
-          "expiringToday": false
+          "hoursToExpiry": 55.02,
+          "expiringToday": false,
+          "history": []
         },
         {
+          "playerId": "2125",
+          "firstName": "Jan-Niklas",
           "name": "Beste",
+          "position": "MF",
           "team": "Freiburg",
           "marketValue": 10018327.0,
           "changeYesterday": 275279.0,
-          "predictedChange": 218343.0,
+          "predictedChange": 218570.0,
           "startElfProbability": 1,
-          "hoursToExpiry": 31.66,
-          "expiringToday": false
+          "hoursToExpiry": 31.41,
+          "expiringToday": false,
+          "history": []
         },
         {
+          "playerId": "1920",
+          "firstName": "Serhou",
           "name": "Guirassy",
+          "position": "ST",
           "team": "Dortmund",
           "marketValue": 28297747.0,
           "changeYesterday": 111476.0,
-          "predictedChange": 109125.0,
+          "predictedChange": 108925.0,
           "startElfProbability": 2,
-          "hoursToExpiry": 39.24,
-          "expiringToday": false
+          "hoursToExpiry": 38.99,
+          "expiringToday": false,
+          "history": []
         },
         {
+          "playerId": "2395",
+          "firstName": "Julian",
           "name": "Ryerson",
+          "position": "ABW",
           "team": "Dortmund",
           "marketValue": 25617229.0,
           "changeYesterday": 20942.0,
-          "predictedChange": 13123.0,
+          "predictedChange": 13815.0,
           "startElfProbability": 1,
-          "hoursToExpiry": 43.81,
-          "expiringToday": false
+          "hoursToExpiry": 43.56,
+          "expiringToday": false,
+          "history": []
         }
       ]
     }
