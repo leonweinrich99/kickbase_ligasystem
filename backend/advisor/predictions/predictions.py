@@ -1,15 +1,17 @@
 from kickbase_api.league import get_league_players_on_market
+from kickbase_api.user import get_players_in_squad
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 import pandas as pd
 import numpy as np
 
-# Angepasste Version von features/predictions/predictions.py: join_current_squad
-# wurde entfernt, da der Bot-Account (KICKBASE_EMAIL) keinem einzelnen der 27
-# Kickbase-Manager in unserer Liga entspricht - eine "Kader-Empfehlung" fuer
-# genau diesen einen Account waere fuer alle anderen Nutzer irrefuehrend.
-# join_current_market wird stattdessen fuer JEDE der 3 Ligen einzeln
-# aufgerufen (jede Liga hat ihren eigenen Transfermarkt).
+# Angepasste Version von features/predictions/predictions.py.
+# join_current_market wird fuer JEDE Liga einzeln aufgerufen (jede Liga hat
+# ihren eigenen Transfermarkt). join_current_squad ist wieder ergaenzt
+# (fuer Testzwecke in der einzelnen "test"-Liga, siehe Warnhinweis dort in
+# run_advisor.py::build_squad_payload) - der Bot-Account entspricht sonst
+# keinem der 27 echten Kickbase-Manager, eine "Kader-Empfehlung" fuer genau
+# diesen einen Account waere fuer alle anderen Nutzer irrefuehrend.
 
 
 def live_data_predictions(today_df, model, features):
@@ -28,6 +30,34 @@ def live_data_predictions(today_df, model, features):
     ]]
 
     return today_df_results
+
+
+def join_current_squad(token, league_id, today_df_results):
+    """Join the live predictions with the players currently in the squad of
+    the account behind `token`, for ONE league. Siehe Warnhinweis in
+    run_advisor.py::build_squad_payload - nur fuer Test-Zwecke gedacht.
+    """
+
+    squad_players = get_players_in_squad(token, league_id)
+    squad_df = pd.DataFrame(squad_players.get("it", []))
+
+    if squad_df.empty:
+        return pd.DataFrame(columns=[
+            "player_id", "first_name", "last_name", "position", "team_name", "mv", "mv_change_yesterday",
+            "predicted_mv_target", "s_11_prob",
+        ])
+
+    merged_df = pd.merge(today_df_results, squad_df, left_on="player_id", right_on="i").drop(columns=["i"])
+
+    if "prob" not in merged_df.columns:
+        merged_df["prob"] = np.nan
+    merged_df = merged_df.rename(columns={"prob": "s_11_prob"})
+    merged_df = merged_df.rename(columns={"mv_change_1d": "mv_change_yesterday"})
+
+    return merged_df[[
+        "player_id", "first_name", "last_name", "position", "team_name", "mv", "mv_change_yesterday",
+        "predicted_mv_target", "s_11_prob",
+    ]]
 
 
 def join_current_market(token, league_id, today_df_results):

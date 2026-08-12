@@ -179,6 +179,9 @@ const PlayerCard = ({ entry, onClick }) => {
           {entry.onMarket && (
             <span className="text-[8px] font-black uppercase tracking-widest bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 rounded-full px-1.5 py-0.5 shrink-0">Auf dem Markt</span>
           )}
+          {entry.inSquad && (
+            <span className="text-[8px] font-black uppercase tracking-widest bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-full px-1.5 py-0.5 shrink-0">Im Kader</span>
+          )}
           {entry.expiringToday && (
             <span className="text-[8px] font-black uppercase tracking-widest bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 rounded-full px-1.5 py-0.5 shrink-0">Läuft heute ab</span>
           )}
@@ -323,6 +326,7 @@ const Advisor = () => {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [marketFilters, setMarketFilters] = useState(DEFAULT_FILTERS);
   const [dbFilters, setDbFilters] = useState(DEFAULT_FILTERS);
+  const [squadFilters, setSquadFilters] = useState(DEFAULT_FILTERS);
   const [dbVisibleCount, setDbVisibleCount] = useState(DB_PAGE_SIZE);
 
   useEffect(() => {
@@ -359,6 +363,11 @@ const Advisor = () => {
     [data]
   );
   const filteredDb = useMemo(() => applyFilters(data?.players || [], dbFilters), [data, dbFilters]);
+
+  const filteredSquad = useMemo(
+    () => applyFilters(league?.squadRecommendations || [], squadFilters),
+    [league, squadFilters]
+  );
 
   if (!isAdmin) {
     return (
@@ -469,6 +478,33 @@ const Advisor = () => {
                   </>
                 ) : (
                   <div className="text-center text-[#8b92a5] text-sm py-6 mb-10">Aktuell steht niemand auf dem Markt dieser Liga.</div>
+                )}
+
+                {/* Kader-Empfehlung: nur zu Testzwecken, nur sichtbar wenn der
+                    eingeloggte Account tatsaechlich einen Kader in dieser Liga
+                    hat (siehe backend/advisor/run_advisor.py::build_squad_payload).
+                    Bewusst KEIN Platzhalter/leere-Box, wenn nichts da ist -
+                    blendet einfach komplett aus. */}
+                {league.squadRecommendations?.length > 0 && (
+                  <>
+                    <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                      <div>
+                        <h2 className="text-[1.2rem] font-black text-[#f8fafc] tracking-tight uppercase">Kader-Empfehlungen</h2>
+                        <p className="text-[10px] text-[#8b92a5] mt-1">Marktwert-Prognose für den Kader des Test-Accounts in dieser Liga.</p>
+                      </div>
+                      <span className="text-[10px] text-[#8b92a5]">{filteredSquad.length} von {league.squadRecommendations.length} Spielern</span>
+                    </div>
+                    <FilterBar filters={squadFilters} onChange={setSquadFilters} teams={[]} />
+                    {filteredSquad.length ? (
+                      <div className="mb-10">
+                        {filteredSquad.map((entry, index) => (
+                          <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} onClick={() => setSelectedPlayer(entry)} />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center text-[#8b92a5] text-sm py-6 mb-10">Kein Spieler passt zu den aktuellen Filtern.</div>
+                    )}
+                  </>
                 )}
               </>
             )}

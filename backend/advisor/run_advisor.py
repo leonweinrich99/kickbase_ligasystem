@@ -31,7 +31,7 @@ from budgets import calc_manager_budgets
 from predictions.data_handler import fetch_player_data
 from predictions.preprocessing import preprocess_player_data, split_data
 from predictions.modeling import train_model, evaluate_model
-from predictions.predictions import live_data_predictions, join_current_market
+from predictions.predictions import live_data_predictions, join_current_market, join_current_squad
 
 # ----------------- Konfiguration -----------------
 
@@ -112,6 +112,21 @@ def build_budgets_payload(token, league_id):
     })
 
 
+def history_key(player_id):
+    """Normalisiert eine Spieler-ID zu einem konsistenten String-Key.
+
+    BUGFIX: Vorher wurde der Key in build_history_by_player() mit int(player_id)
+    gebildet, waehrend die "playerId" in den exportierten Listen einen
+    JSON-Roundtrip (to_json -> json.loads) durchlaeuft und je nach
+    urspruenglichem Kickbase-Datentyp als String ODER Zahl ankommt. Ein
+    int-Key "83716" != String-Key "83716" -> der Lookup schlug dadurch IMMER
+    fehl (leere Historie ueberall). Jetzt wird auf beiden Seiten konsequent
+    str(...) verwendet, unabhaengig vom urspruenglichen Typ.
+    """
+
+    return str(player_id) if player_id is not None else None
+
+
 def build_history_by_player(player_df, days=HISTORY_DAYS):
     """Baut je Spieler eine kompakte Marktwert-/Punkte-Historie der letzten
     `days` Tage (fuer den Marktwert-Chart auf Klick einer Spielerkarte).
@@ -132,7 +147,7 @@ def build_history_by_player(player_df, days=HISTORY_DAYS):
     history = {}
     for player_id, group in cols.groupby("player_id"):
         recent = group.tail(days)
-        history[int(player_id)] = [
+        history[history_key(player_id)] = [
             [row.date, None if pd.isna(row.mv) else round(float(row.mv)), None if pd.isna(row.p) else int(row.p)]
             for row in recent.itertuples()
         ]
@@ -170,8 +185,65 @@ def build_market_payload(token, league_id, live_predictions_df, history_by_playe
 
     if history_by_player:
         for entry in records:
-            entry["history"] = history_by_player.get(entry.get("playerId"), [])
+            entry["history"] = history_by_player.get(history_key(entry.get("playerId")), [])
             entry["onMarket"] = True
+
+    return records
+
+
+def build_squad_payload(token, league_id, live_predictions_df, history_by_player=None):
+    """Kader-Empfehlung: Marktwert-Prognose fuer die Spieler im eigenen Kader
+    des Accounts, der fuer diese Liga eingeloggt ist.
+
+    WICHTIG: Das ist NUR fuer unsere "test"-Liga sinnvoll, in der der
+    Advisor-Account selbst Manager ist! Sobald der Advisor spaeter auf die 3
+    echten Ligen umgestellt wird (siehe LEAGUE_DEFS oben), ist der
+    Advisor-Account dort NICHT einer der 27 echten Manager - eine
+    "Kader-Empfehlung" waere dann nur fuer diesen einen technischen Account
+    zutreffend und fuer alle anderen irrefuehrend. In diesem Fall bitte
+    build_squad_payload nicht mehr aufrufen bzw. die Sektion im Frontend
+    entfernen/verstecken.
+
+    Gibt bei jedem Fehler (z.B. Account hat gar keinen Kader in dieser Liga)
+    einfach eine leere Liste zurueck statt abzustuerzen - das Frontend blendet
+    die Sektion dann automatisch aus (kein Kader = keine Anzeige).
+    """
+
+    if live_predictions_df is None:
+        return []
+    try:
+        squad_df = join_current_squad(token, league_id, live_predictions_df)
+    except Exception as e:
+        print(f"Info: Kein Kader fuer diesen Account in dieser Liga gefunden ({e}).")
+        return []
+
+    if squad_df.empty:
+        return []
+
+    squad_df = squad_df.copy()
+    squad_df["mv"] = squad_df["mv"].round(0)
+    squad_df["mv_change_yesterday"] = squad_df["mv_change_yesterday"].round(0)
+    squad_df["predicted_mv_target"] = squad_df["predicted_mv_target"].round(0)
+    squad_df["position"] = squad_df["position"].map(POSITION_LABELS).fillna(squad_df["position"])
+    if "s_11_prob" in squad_df.columns:
+        squad_df["s_11_prob"] = squad_df["s_11_prob"].round(3)
+
+    records = df_records(squad_df, {
+        "player_id": "playerId",
+        "first_name": "firstName",
+        "last_name": "name",
+        "position": "position",
+        "team_name": "team",
+        "mv": "marketValue",
+        "mv_change_yesterday": "changeYesterday",
+        "predicted_mv_target": "predictedChange",
+        "s_11_prob": "startElfProbability",
+    })
+
+    if history_by_player:
+        for entry in records:
+            entry["history"] = history_by_player.get(history_key(entry.get("playerId")), [])
+            entry["inSquad"] = True
 
     return records
 
@@ -205,7 +277,7 @@ def build_all_players_payload(live_predictions_df, history_by_player=None):
 
     if history_by_player:
         for entry in records:
-            entry["history"] = history_by_player.get(entry.get("playerId"), [])
+            entry["history"] = history_by_player.get(history_key(entry.get("playerId")), [])
 
     return records
 
@@ -290,7 +362,7 @@ def main():
         if not league_id:
             print(f"Warning: Keine Liga mit Namen '{name}' in irgendeinem Account gefunden. "
                   f"Verfuegbare Ligen ueber alle Accounts: {all_known_leagues}")
-            result["leagues"][key] = {"name": name, "budgets": [], "marketRecommendations": []}
+            result["leagues"][key] = {"name": name, "budgets": [], "marketRecommendations": [], "squadRecommendations": []}
             continue
 
         print(f"Liga '{name}' gefunden (Account {owner_email}, ID {league_id}). Berechne Budgets fuer {key}...")
@@ -302,7 +374,7 @@ def main():
             print(f"Warning: Budgets fuer {key} fehlgeschlagen: {e}")
             budgets = []
 
-        result["leagues"][key] = {"name": name, "budgets": budgets, "marketRecommendations": []}
+        result["leagues"][key] = {"name": name, "budgets": budgets, "marketRecommendations": [], "squadRecommendations": []}
 
     # ----------------- 2. EIN ML-Modell fuer Marktwert-Vorhersagen (liga-uebergreifend) -----------------
     # Fuer die Spieler-/Marktwert-Historie reicht IRGENDEIN eingeloggter Account
@@ -354,6 +426,12 @@ def main():
                 result["leagues"][key]["marketRecommendations"] = build_market_payload(token, league_id, live_predictions_df, history_by_player)
             except Exception as e:
                 print(f"Warning: Markt-Empfehlungen fuer {key} fehlgeschlagen: {e}")
+
+            # Kader-Empfehlung: NUR zu Testzwecken (siehe Docstring von
+            # build_squad_payload). Liefert automatisch [] falls der Account
+            # in dieser Liga keinen Kader hat - Frontend blendet dann aus.
+            print(f"Erzeuge Kader-Empfehlung fuer {key} (falls vorhanden)...")
+            result["leagues"][key]["squadRecommendations"] = build_squad_payload(token, league_id, live_predictions_df, history_by_player)
 
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
     with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
