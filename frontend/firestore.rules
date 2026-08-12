@@ -40,9 +40,15 @@ service cloud.firestore {
         (isVerifiedInitialAdmin() && request.resource.data.status == 'approved' && request.resource.data.role == 'admin')
       );
 
-      // Normale Nutzer dürfen NICHTS an ihrem Profil ändern (kein Selbst-Freischalten
-      // im Nachhinein). Nur Admins dürfen status/role von Nutzern ändern.
-      allow update: if isAdmin();
+      // Normale Nutzer dürfen ihr eigenes Profil aktualisieren (z.B. FCM-Token für
+      // Push-Erinnerungen setzen, Kickbase-Namen zuordnen) - aber NICHT ihre
+      // eigene role/status ändern (kein Selbst-Freischalten). Nur Admins dürfen
+      // role/status von Nutzern ändern.
+      allow update: if isAdmin() || (
+        isSelf(userId) &&
+        request.resource.data.role == resource.data.role &&
+        request.resource.data.status == resource.data.status
+      );
 
       allow delete: if isAdmin();
     }

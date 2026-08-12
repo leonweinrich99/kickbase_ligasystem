@@ -4,6 +4,7 @@ import { useAuth } from './AuthContext';
 import { useTour } from './Tour';
 import accountLogo from './assets/account_logo.png';
 import PushNotificationCard from './PushNotificationCard';
+import KickbaseNameCard from './KickbaseNameCard';
 
 const MenuLink = ({ to, onClick, icon, label, color = '#8b92a5' }) => {
   const content = (
@@ -104,10 +105,14 @@ const Account = () => {
                 {isAdmin && <span className="text-[8px] font-black uppercase tracking-widest bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-full px-1.5 py-0.5">Admin</span>}
               </div>
               <div className="text-xs text-[#8b92a5] truncate">{user.email}</div>
+              {profile?.kickbaseName && (
+                <div className="text-[10px] text-[#8b5cf6] font-bold truncate mt-0.5">Kickbase: {profile.kickbaseName}</div>
+              )}
             </div>
           </div>
         )}
 
+        <KickbaseNameCard />
         <PushNotificationCard />
 
         <div data-tour="account-menu" className="flex flex-col gap-3 mb-8">

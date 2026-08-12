@@ -216,6 +216,7 @@ const AdminPanel = () => {
                       {u.id === user?.uid && <span className="text-[8px] font-black uppercase tracking-widest text-[#626978]">(Du)</span>}
                     </div>
                     <div className="text-xs text-[#8b92a5] truncate">{u.email}</div>
+                    {u.kickbaseName && <div className="text-[10px] text-[#8b5cf6] font-bold truncate mt-0.5">Kickbase: {u.kickbaseName}</div>}
                   </div>
                 </div>
 
