@@ -18,20 +18,27 @@ export const DEFAULT_RULES = {
     { id: 'relegation', section: 'Aufstieg & Abstieg', title: 'Relegation', text: 'Letzter Spieltag: Platz 3 vs Platz 7 der höheren Liga. Vergleich via Matchday Challenge (Rushmodus).', color: 'orange' },
   ],
   cup: [
-    { id: 'draw', section: 'Turniermodus & Einstellungen', title: 'Die Auslosung', text: 'Zu Beginn der Pokal-Saison gibt es eine erste Auslosung, die auf den bestehenden Qualigruppenergebnissen basiert. Dafür werden zwei Lostöpfe gebildet, aus denen die Kontrahenten für das Sechzehntelfinale gezogen werden. Für alle darauffolgenden Runden bzw. Spieltage werden die Partien immer wieder neu ausgelost.', color: 'blue' },
+    { id: 'draw', section: 'Turniermodus & Einstellungen', title: 'Die Auslosung', text: 'Zu Beginn der Pokal-Saison gibt es eine erste Auslosung, die auf den bestehenden Qualigruppenergebnissen basiert. Die Partien für das Sechzehntelfinale stehen fest; die weiteren Runden ergeben sich aus dem Turnierbaum.', color: 'blue' },
     { id: 'head-to-head', section: 'Turniermodus & Einstellungen', title: 'Head-to-Head Modus', text: 'Die Spieler treten an einem festen Spieltag direkt gegeneinander an. Das Duell im Head-to-Head entscheidet über das Weiterkommen.', color: 'purple' },
     { id: 'arena', section: 'Turniermodus & Einstellungen', title: 'Arena-Modus', text: 'Der Pokal wird im speziellen Arenamodus von Kickbase gespielt. Alle Teams haben somit dieselben Voraussetzungen.', color: 'blue' },
     { id: 'budget', section: 'Turniermodus & Einstellungen', title: 'Budget', text: 'Jeder Teilnehmer erhält ein festes Startbudget in Höhe von 250 Millionen Euro, um seinen Kader für den Pokal-Spieltag aufzustellen.', color: 'orange' },
+    { id: 'schedule', section: 'Turniermodus & Einstellungen', title: 'Pokal-Spieltage Bundesliga 26/27', text: 'Die Pokalrunden sind chronologisch diesen Bundesliga-Spieltagen zugeordnet:\n\nSechzehntelfinale: Spieltag 5 · 10.10.2026 · Köln – Gladbach\nAchtelfinale: Spieltag 8 · 31.10.2026 · Bayern – Dortmund\nViertelfinale: Spieltag 10 · 21.11.2026 · Bremen – Hamburg\nHalbfinale: Spieltag 12 · 05.12.2026 · Schalke – Dortmund\nFinale: Spieltag 14 · 19.12.2026 · Hinrunden-Finale', color: 'purple' },
     { id: 'knockout', section: 'Verlauf & Belohnung', title: 'K.O.-System', text: 'Der Gewinner jedes Duells zieht direkt in die nächste Runde ein. Der Verlierer scheidet aus dem Pokalwettbewerb aus.', color: 'green' },
     { id: 'reward', section: 'Verlauf & Belohnung', title: 'Die ultimative Belohnung', text: 'Der Pokalsieger erhält die einmalige Chance, eine Liga aufzusteigen! Er darf in der Relegation um den Aufstieg in die nächst höhere Liga spielen.', color: 'red' },
   ],
 };
 
+const mergeRuleList = (defaults, saved) => {
+  const savedById = new Map((Array.isArray(saved) ? saved : []).map((rule) => [rule.id, rule]));
+  return defaults.map((rule) => ({ ...rule, ...(savedById.get(rule.id) || {}) }))
+    .concat((Array.isArray(saved) ? saved : []).filter((rule) => !defaults.some((defaultRule) => defaultRule.id === rule.id)));
+};
+
 export const mergeRules = (value) => ({
   ...DEFAULT_RULES,
   ...value,
-  league: value?.league || DEFAULT_RULES.league,
-  cup: value?.cup || DEFAULT_RULES.cup,
+  league: mergeRuleList(DEFAULT_RULES.league, value?.league),
+  cup: mergeRuleList(DEFAULT_RULES.cup, value?.cup),
 });
 
 export const subscribeToRules = (onChange) => {

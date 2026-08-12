@@ -74,11 +74,12 @@ const MobileRoundView = ({ matches, isFirstRound, isFinal, leagueColors }) => {
 };
 
 
-const RoundColumn = ({ matches, title, markFirst = false, leagueColors }) => {
+const RoundColumn = ({ matches, title, schedule, markFirst = false, leagueColors }) => {
   return (
     <div className="flex flex-col justify-around gap-2 sm:gap-4 flex-1">
       <div className="text-[10px] sm:text-xs font-black uppercase text-center text-[#8b92a5] tracking-widest mb-2 opacity-70">
         {title}
+        {schedule && <div className="normal-case tracking-normal text-[9px] text-[#8b5cf6] mt-1 opacity-100">BL-Spieltag {schedule.matchday} · {schedule.date}</div>}
       </div>
       <div className="flex flex-col justify-around flex-1 gap-2 sm:gap-4">
         {matches.map((match, index) => (
@@ -155,6 +156,8 @@ const Pokal = () => {
       }
     }
   };
+
+  const roundSchedule = data?.meta?.roundSchedule || {};
 
   const handleRoundChange = (round) => {
     if (round === activeRound) return;
@@ -249,7 +252,8 @@ const Pokal = () => {
                 onClick={() => handleRoundChange(round)}
                 className={`px-4 py-2 rounded-lg whitespace-nowrap text-xs font-bold transition-all flex-shrink-0 ${activeRound === round ? 'bg-white text-black' : 'text-[#8b92a5] hover:text-white'}`}
               >
-                {round}
+                <span>{round}</span>
+                {roundSchedule[round] && <span className="block text-[9px] font-normal text-[#8b5cf6] mt-0.5">BL-Spieltag {roundSchedule[round].matchday} · {roundSchedule[round].date}</span>}
               </button>
             ))}
           </div>
@@ -314,10 +318,10 @@ const Pokal = () => {
           
           {/* Left Bracket */}
           <div className="flex gap-4 sm:gap-8 flex-1">
-            <RoundColumn matches={data.roundOf32Left} title="Sechzehntelfinale" markFirst leagueColors={leagueColors} />
-            <RoundColumn matches={data.roundOf16Left} title="Achtelfinale" leagueColors={leagueColors} />
-            <RoundColumn matches={data.quarterFinalsLeft} title="Viertelfinale" leagueColors={leagueColors} />
-            <RoundColumn matches={data.semiFinalsLeft} title="Halbfinale" leagueColors={leagueColors} />
+            <RoundColumn matches={data.roundOf32Left} title="Sechzehntelfinale" schedule={roundSchedule.Sechzehntelfinale} markFirst leagueColors={leagueColors} />
+            <RoundColumn matches={data.roundOf16Left} title="Achtelfinale" schedule={roundSchedule.Achtelfinale} leagueColors={leagueColors} />
+            <RoundColumn matches={data.quarterFinalsLeft} title="Viertelfinale" schedule={roundSchedule.Viertelfinale} leagueColors={leagueColors} />
+            <RoundColumn matches={data.semiFinalsLeft} title="Halbfinale" schedule={roundSchedule.Halbfinale} leagueColors={leagueColors} />
           </div>
 
           {/* Center (Final) */}
@@ -343,10 +347,10 @@ const Pokal = () => {
 
           {/* Right Bracket */}
           <div className="flex gap-4 sm:gap-8 flex-1 flex-row-reverse">
-            <RoundColumn matches={data.roundOf32Right} title="Sechzehntelfinale" leagueColors={leagueColors} />
-            <RoundColumn matches={data.roundOf16Right} title="Achtelfinale" leagueColors={leagueColors} />
-            <RoundColumn matches={data.quarterFinalsRight} title="Viertelfinale" leagueColors={leagueColors} />
-            <RoundColumn matches={data.semiFinalsRight} title="Halbfinale" leagueColors={leagueColors} />
+            <RoundColumn matches={data.roundOf32Right} title="Sechzehntelfinale" schedule={roundSchedule.Sechzehntelfinale} leagueColors={leagueColors} />
+            <RoundColumn matches={data.roundOf16Right} title="Achtelfinale" schedule={roundSchedule.Achtelfinale} leagueColors={leagueColors} />
+            <RoundColumn matches={data.quarterFinalsRight} title="Viertelfinale" schedule={roundSchedule.Viertelfinale} leagueColors={leagueColors} />
+            <RoundColumn matches={data.semiFinalsRight} title="Halbfinale" schedule={roundSchedule.Halbfinale} leagueColors={leagueColors} />
           </div>
 
         </div>
