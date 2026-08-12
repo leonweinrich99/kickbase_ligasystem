@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useAuth } from './AuthContext';
 
 // Zeigt die Auswertungen des "Kickbase Trading Advisor" an (siehe
@@ -28,6 +29,20 @@ const formatSignedMoney = (val) => {
   return `${sign}${rounded.toLocaleString('de-DE')} €`;
 };
 
+const formatCompactMoney = (val) => {
+  if (val === null || val === undefined) return '–';
+  if (Math.abs(val) >= 1_000_000) return `${(val / 1_000_000).toFixed(2).replace('.', ',')} Mio €`;
+  return `${Math.round(val / 1000)}k €`;
+};
+
+const formatShortDate = (dateStr) => {
+  if (!dateStr) return '';
+  const [, month, day] = dateStr.split('-');
+  return `${day}.${month}.`;
+};
+
+const POSITION_COLORS = { TW: '#eab308', ABW: '#3b82f6', MF: '#22c55e', ST: '#ef4444' };
+
 const StatCard = ({ label, value, accent = '#22d3ee' }) => (
   <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl p-4 flex-1 min-w-[120px]">
     <div className="text-[9px] font-black uppercase tracking-widest text-[#8b92a5] mb-1">{label}</div>
@@ -52,15 +67,35 @@ const BudgetRow = ({ entry, rank, color }) => (
   </div>
 );
 
-const MarketRow = ({ entry }) => {
+const MarketRow = ({ entry, onClick }) => {
   const rising = (entry.predictedChange || 0) >= 0;
+  const hasHistory = Array.isArray(entry.history) && entry.history.length > 1;
   return (
-    <div className="flex items-center p-3 mb-2.5 bg-[#171717] border border-[#2e2e2e] rounded-[14px] shadow-sm">
+    <button
+      onClick={hasHistory ? onClick : undefined}
+      className={`w-full flex items-center p-3 mb-2.5 bg-[#171717] border border-[#2e2e2e] rounded-[14px] shadow-sm text-left transition-all ${hasHistory ? 'hover:border-cyan-500/50 hover:bg-[#1c1c1c] active:scale-[0.99] cursor-pointer' : 'cursor-default'}`}
+    >
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="text-[15px] font-bold text-gray-100 truncate">{entry.name}</div>
+          {entry.position && (
+            <span
+              className="text-[8px] font-black uppercase tracking-widest rounded px-1.5 py-0.5 shrink-0"
+              style={{ backgroundColor: `${POSITION_COLORS[entry.position] || '#8b92a5'}26`, color: POSITION_COLORS[entry.position] || '#8b92a5' }}
+            >
+              {entry.position}
+            </span>
+          )}
+          <div className="text-[15px] font-bold text-gray-100 truncate">
+            {entry.firstName ? `${entry.firstName} ${entry.name}` : entry.name}
+          </div>
           {entry.expiringToday && (
             <span className="text-[8px] font-black uppercase tracking-widest bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 rounded-full px-1.5 py-0.5 shrink-0">Läuft heute ab</span>
+          )}
+          {hasHistory && (
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#626978" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+              <polyline points="17 6 23 6 23 12"></polyline>
+            </svg>
           )}
         </div>
         <div className="text-[10px] text-[#8b92a5] mt-0.5 flex items-center gap-2 flex-wrap">
@@ -84,6 +119,107 @@ const MarketRow = ({ entry }) => {
       <div className={`text-right ml-2 shrink-0 font-black text-[15px] ${rising ? 'text-green-400' : 'text-red-400'}`}>
         {rising ? '▲' : '▼'} {formatSignedMoney(entry.predictedChange)}
       </div>
+    </button>
+  );
+};
+
+const ChartTooltip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null;
+  const point = payload[0].payload;
+  return (
+    <div className="bg-[#0a0a0a] border border-[#2e2e2e] rounded-xl px-3 py-2 shadow-xl">
+      <div className="text-[10px] text-[#8b92a5] mb-1">{formatShortDate(label)}</div>
+      <div className="text-sm font-bold text-cyan-400">{formatMoney(point.mv)}</div>
+      {typeof point.points === 'number' && (
+        <div className="text-[10px] text-[#8b92a5] mt-0.5">{point.points} Punkte an diesem Spieltag</div>
+      )}
+    </div>
+  );
+};
+
+const PlayerHistoryModal = ({ player, onClose }) => {
+  const history = player.history || [];
+  const first = history[0];
+  const last = history[history.length - 1];
+  const totalChange = first && last ? last.mv - first.mv : null;
+  const rising = (totalChange || 0) >= 0;
+
+  return (
+    <div className="fixed inset-0 z-[90] bg-black/80 flex items-center justify-center p-4" onClick={onClose}>
+      <div
+        className="max-w-lg w-full bg-[#171717] border border-[#2e2e2e] rounded-3xl p-6 shadow-2xl relative"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-[#8b92a5] hover:text-white transition-colors"
+          aria-label="Schließen"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+
+        <div className="flex items-center gap-2 flex-wrap mb-1 pr-8">
+          {player.position && (
+            <span
+              className="text-[9px] font-black uppercase tracking-widest rounded px-1.5 py-0.5"
+              style={{ backgroundColor: `${POSITION_COLORS[player.position] || '#8b92a5'}26`, color: POSITION_COLORS[player.position] || '#8b92a5' }}
+            >
+              {player.position}
+            </span>
+          )}
+          <h2 className="text-lg font-black uppercase text-white">
+            {player.firstName ? `${player.firstName} ${player.name}` : player.name}
+          </h2>
+        </div>
+        <p className="text-xs text-[#8b92a5] mb-5">{player.team}</p>
+
+        <div className="flex gap-3 mb-5">
+          <div className="bg-[#0a0a0a] border border-[#2e2e2e] rounded-xl p-3 flex-1">
+            <div className="text-[9px] font-black uppercase tracking-widest text-[#8b92a5] mb-1">Aktueller Marktwert</div>
+            <div className="text-base font-black text-white">{formatMoney(player.marketValue)}</div>
+          </div>
+          <div className="bg-[#0a0a0a] border border-[#2e2e2e] rounded-xl p-3 flex-1">
+            <div className="text-[9px] font-black uppercase tracking-widest text-[#8b92a5] mb-1">
+              Verlauf ({history.length} Tage)
+            </div>
+            <div className={`text-base font-black ${rising ? 'text-green-400' : 'text-red-400'}`}>
+              {rising ? '▲' : '▼'} {formatSignedMoney(totalChange)}
+            </div>
+          </div>
+        </div>
+
+        <div className="h-[180px] w-full mb-2">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={history} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#2e2e2e" vertical={false} />
+              <XAxis
+                dataKey="date"
+                stroke="#4b5563"
+                fontSize={9}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={formatShortDate}
+                minTickGap={30}
+              />
+              <YAxis
+                stroke="#4b5563"
+                fontSize={9}
+                tickLine={false}
+                axisLine={false}
+                domain={['dataMin', 'dataMax']}
+                tickFormatter={formatCompactMoney}
+                width={70}
+              />
+              <Tooltip content={<ChartTooltip />} />
+              <Line type="monotone" dataKey="mv" stroke="#22d3ee" strokeWidth={2.5} dot={false} activeDot={{ r: 5, strokeWidth: 0 }} animationDuration={800} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+        <p className="text-[10px] text-[#8b92a5] text-center">Marktwert-Verlauf der letzten {history.length} Tage · Prognose für morgen: {formatSignedMoney(player.predictedChange)}</p>
+      </div>
     </div>
   );
 };
@@ -93,6 +229,7 @@ const Advisor = () => {
   const [data, setData] = useState(null);
   const [error, setError] = useState(false);
   const [activeLeague, setActiveLeague] = useState(null);
+  const [selectedPlayer, setSelectedPlayer] = useState(null);
 
   useEffect(() => {
     fetch(`/advisor-data.json?t=${Date.now()}`)
@@ -208,7 +345,7 @@ const Advisor = () => {
                 {league.marketRecommendations?.length ? (
                   <div>
                     {league.marketRecommendations.map((entry, index) => (
-                      <MarketRow key={`${entry.name}-${index}`} entry={entry} />
+                      <MarketRow key={`${entry.name}-${index}`} entry={entry} onClick={() => setSelectedPlayer(entry)} />
                     ))}
                   </div>
                 ) : (
@@ -218,6 +355,8 @@ const Advisor = () => {
             )}
           </>
         )}
+
+        {selectedPlayer && <PlayerHistoryModal player={selectedPlayer} onClose={() => setSelectedPlayer(null)} />}
       </div>
     </div>
   );

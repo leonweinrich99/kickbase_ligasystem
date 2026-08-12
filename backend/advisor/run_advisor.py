@@ -47,6 +47,10 @@ FEATURES = [
 ]
 TARGET = "mv_target_clipped"
 
+HISTORY_DAYS = 60  # Tage Marktwert-/Punkte-Verlauf, der pro Markt-Spieler exportiert wird
+
+POSITION_LABELS = {1: "TW", 2: "ABW", 3: "MF", 4: "ST"}
+
 
 def env_or_default(key, default):
     """os.getenv(key, default), aber behandelt auch einen LEEREN String als
@@ -108,7 +112,31 @@ def build_budgets_payload(token, league_id):
     })
 
 
-def build_market_payload(token, league_id, live_predictions_df):
+def build_history_by_player(player_df, days=HISTORY_DAYS):
+    """Baut je Spieler eine kompakte Marktwert-/Punkte-Historie der letzten
+    `days` Tage (fuer den Marktwert-Chart auf Klick einer Spielerkarte).
+    Wird NUR fuer Spieler in den Markt-Empfehlungen tatsaechlich verwendet,
+    daher hier bewusst noch fuer ALLE Spieler gebaut (kein grosser Aufwand
+    verglichen mit dem Modelltraining) und erst beim Zusammenbauen der
+    Markt-Payload gefiltert.
+    """
+
+    if player_df.empty:
+        return {}
+
+    cols = player_df[["player_id", "date", "mv", "p"]].copy()
+    cols["date"] = pd.to_datetime(cols["date"]).dt.date.astype(str)
+    cols = cols.rename(columns={"p": "points"}).sort_values(["player_id", "date"])
+
+    history = {}
+    for player_id, group in cols.groupby("player_id"):
+        recent = group.tail(days)[["date", "mv", "points"]]
+        history[int(player_id)] = json.loads(recent.to_json(orient="records"))
+
+    return history
+
+
+def build_market_payload(token, league_id, live_predictions_df, history_by_player=None):
     if live_predictions_df is None:
         return []
     market_df = join_current_market(token, league_id, live_predictions_df)
@@ -118,10 +146,15 @@ def build_market_payload(token, league_id, live_predictions_df):
     market_df["mv"] = market_df["mv"].round(0)
     market_df["mv_change_yesterday"] = market_df["mv_change_yesterday"].round(0)
     market_df["predicted_mv_target"] = market_df["predicted_mv_target"].round(0)
+    market_df["position"] = market_df["position"].map(POSITION_LABELS).fillna(market_df["position"])
     if "s_11_prob" in market_df.columns:
         market_df["s_11_prob"] = market_df["s_11_prob"].round(3)
-    return df_records(market_df, {
+
+    records = df_records(market_df, {
+        "player_id": "playerId",
+        "first_name": "firstName",
         "last_name": "name",
+        "position": "position",
         "team_name": "team",
         "mv": "marketValue",
         "mv_change_yesterday": "changeYesterday",
@@ -130,6 +163,12 @@ def build_market_payload(token, league_id, live_predictions_df):
         "hours_to_exp": "hoursToExpiry",
         "expiring_today": "expiringToday",
     })
+
+    if history_by_player:
+        for entry in records:
+            entry["history"] = history_by_player.get(entry.get("playerId"), [])
+
+    return records
 
 
 def get_configured_accounts():
@@ -230,6 +269,7 @@ def main():
     # (das sind oeffentliche Wettbewerbs-Daten, keine liga-spezifischen).
     primary_token = sessions[0]["token"]
     live_predictions_df = None
+    history_by_player = {}
     try:
         print("Lade Spielerdaten (Marktwert- + Performance-Historie)...")
         player_df = fetch_player_data(primary_token, COMPETITION_IDS, LAST_MV_VALUES, LAST_PFM_VALUES)
@@ -237,6 +277,8 @@ def main():
         if player_df.empty:
             print("Warning: Keine Spielerdaten erhalten, ueberspringe Marktwert-Vorhersagen.")
         else:
+            history_by_player = build_history_by_player(player_df)
+
             proc_df, today_df = preprocess_player_data(player_df)
             X_train, X_test, y_train, y_test = split_data(proc_df, FEATURES, TARGET)
 
@@ -267,7 +309,7 @@ def main():
                 continue
             try:
                 print(f"Erzeuge Markt-Empfehlungen fuer {key}...")
-                result["leagues"][key]["marketRecommendations"] = build_market_payload(token, league_id, live_predictions_df)
+                result["leagues"][key]["marketRecommendations"] = build_market_payload(token, league_id, live_predictions_df, history_by_player)
             except Exception as e:
                 print(f"Warning: Markt-Empfehlungen fuer {key} fehlgeschlagen: {e}")
 

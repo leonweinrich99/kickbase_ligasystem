@@ -38,7 +38,7 @@ def join_current_market(token, league_id, today_df_results):
 
     if market_df.empty:
         return pd.DataFrame(columns=[
-            "last_name", "team_name", "mv", "mv_change_yesterday",
+            "player_id", "first_name", "last_name", "position", "team_name", "mv", "mv_change_yesterday",
             "predicted_mv_target", "s_11_prob", "hours_to_exp", "expiring_today",
         ])
 
@@ -63,6 +63,6 @@ def join_current_market(token, league_id, today_df_results):
     bid_df = bid_df.rename(columns={"mv_change_1d": "mv_change_yesterday"})
 
     return bid_df[[
-        "last_name", "team_name", "mv", "mv_change_yesterday",
+        "player_id", "first_name", "last_name", "position", "team_name", "mv", "mv_change_yesterday",
         "predicted_mv_target", "s_11_prob", "hours_to_exp", "expiring_today",
     ]]
