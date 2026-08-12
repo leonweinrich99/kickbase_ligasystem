@@ -1,0 +1,20 @@
+{
+  "generatedAt": "2026-08-12T13:40:09.602077+00:00",
+  "leagueStartDate": "2026-08-13",
+  "startBudget": 50000000,
+  "modelStats": {
+    "signsCorrectPercent": 75.4,
+    "rmse": 1327525863.0,
+    "mae": 19770.0,
+    "r2": 0.91,
+    "trainSamples": 88031,
+    "testSamples": 29638
+  },
+  "leagues": {
+    "TEST": {
+      "name": "test",
+      "budgets": [],
+      "marketRecommendations": []
+    }
+  }
+}
