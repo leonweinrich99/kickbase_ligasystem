@@ -25,7 +25,7 @@ import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from kickbase_api.league import get_league_id
+from kickbase_api.league import get_leagues_infos
 from kickbase_api.user import login
 from budgets import calc_manager_budgets
 from predictions.data_handler import fetch_player_data
@@ -132,15 +132,66 @@ def build_market_payload(token, league_id, live_predictions_df):
     })
 
 
+def get_configured_accounts():
+    """Liest ALLE hinterlegten Kickbase-Accounts aus den Umgebungsvariablen.
+
+    Es gibt (wie im bestehenden Node-Backend, siehe backend/kickbase.js)
+    potenziell ZWEI Accounts: den primaeren (KICKBASE_EMAIL/PASS) und einen
+    zweiten (KICKBASE_EMAIL_2/PASS_2, z.B. aus der alten Qualigruppen-Saison).
+    Der Advisor muss in JEDEM davon nach der Ziel-Liga suchen, nicht nur im
+    ersten - sonst wird eine Liga, die nur im zweiten Account existiert, nie
+    gefunden.
+    """
+
+    accounts = []
+    email1 = env_or_default("KICKBASE_EMAIL", None)
+    pass1 = env_or_default("KICKBASE_PASS", None)
+    if email1 and pass1:
+        accounts.append((email1, pass1))
+
+    email2 = env_or_default("KICKBASE_EMAIL_2", None)
+    pass2 = env_or_default("KICKBASE_PASS_2", None)
+    if email2 and pass2:
+        accounts.append((email2, pass2))
+
+    return accounts
+
+
+def login_all_accounts():
+    """Loggt sich in JEDEN konfigurierten Account ein und listet dessen Ligen auf."""
+
+    sessions = []
+    for email, password in get_configured_accounts():
+        try:
+            token = login(email, password)
+            leagues = get_leagues_infos(token)
+            print(f"Account {email}: eingeloggt, Mitglied in {len(leagues)} Liga(s): {[l['name'] for l in leagues]}")
+            sessions.append({"email": email, "token": token, "leagues": leagues})
+        except Exception as e:
+            print(f"Warning: Login fuer Account {email} fehlgeschlagen: {e}")
+
+    return sessions
+
+
+def find_league_across_accounts(sessions, name_needle):
+    """Sucht eine Liga (Teilstring, case-insensitive) ueber ALLE eingeloggten Accounts hinweg."""
+
+    needle = name_needle.lower()
+    for session in sessions:
+        for league in session["leagues"]:
+            if needle in league["name"].lower():
+                return session["token"], league["id"], session["email"]
+    return None, None, None
+
+
 def main():
-    email = os.getenv("KICKBASE_EMAIL")
-    password = os.getenv("KICKBASE_PASS")
-    if not email or not password:
-        print("KICKBASE_EMAIL / KICKBASE_PASS fehlen - Abbruch.")
+    print("Logge bei Kickbase ein (alle konfigurierten Accounts)...")
+    sessions = login_all_accounts()
+    if not sessions:
+        print("Kein Account konnte sich einloggen (KICKBASE_EMAIL/PASS fehlen oder Login fehlgeschlagen) - Abbruch.")
         sys.exit(1)
 
-    print("Logge bei Kickbase ein...")
-    token = login(email, password)
+    all_known_leagues = sorted({l["name"] for s in sessions for l in s["leagues"]})
 
     result = {
         "generatedAt": datetime.now(timezone.utc).isoformat(),
@@ -152,12 +203,21 @@ def main():
 
     # ----------------- 1. Budgets pro Liga (unabhaengig vom ML-Modell) -----------------
     league_ids = {}
+    league_tokens = {}
     for league_def in LEAGUE_DEFS:
         key, name = league_def["key"], league_def["name"]
+        token, league_id, owner_email = find_league_across_accounts(sessions, name)
+
+        if not league_id:
+            print(f"Warning: Keine Liga mit Namen '{name}' in irgendeinem Account gefunden. "
+                  f"Verfuegbare Ligen ueber alle Accounts: {all_known_leagues}")
+            result["leagues"][key] = {"name": name, "budgets": [], "marketRecommendations": []}
+            continue
+
+        print(f"Liga '{name}' gefunden (Account {owner_email}, ID {league_id}). Berechne Budgets fuer {key}...")
+        league_ids[key] = league_id
+        league_tokens[key] = token
         try:
-            league_id = get_league_id(token, name)
-            league_ids[key] = league_id
-            print(f"Berechne Budgets fuer {key} ('{name}')...")
             budgets = build_budgets_payload(token, league_id)
         except Exception as e:
             print(f"Warning: Budgets fuer {key} fehlgeschlagen: {e}")
@@ -166,10 +226,13 @@ def main():
         result["leagues"][key] = {"name": name, "budgets": budgets, "marketRecommendations": []}
 
     # ----------------- 2. EIN ML-Modell fuer Marktwert-Vorhersagen (liga-uebergreifend) -----------------
+    # Fuer die Spieler-/Marktwert-Historie reicht IRGENDEIN eingeloggter Account
+    # (das sind oeffentliche Wettbewerbs-Daten, keine liga-spezifischen).
+    primary_token = sessions[0]["token"]
     live_predictions_df = None
     try:
         print("Lade Spielerdaten (Marktwert- + Performance-Historie)...")
-        player_df = fetch_player_data(token, COMPETITION_IDS, LAST_MV_VALUES, LAST_PFM_VALUES)
+        player_df = fetch_player_data(primary_token, COMPETITION_IDS, LAST_MV_VALUES, LAST_PFM_VALUES)
 
         if player_df.empty:
             print("Warning: Keine Spielerdaten erhalten, ueberspringe Marktwert-Vorhersagen.")
@@ -199,7 +262,8 @@ def main():
         for league_def in LEAGUE_DEFS:
             key = league_def["key"]
             league_id = league_ids.get(key)
-            if not league_id:
+            token = league_tokens.get(key)
+            if not league_id or not token:
                 continue
             try:
                 print(f"Erzeuge Markt-Empfehlungen fuer {key}...")
