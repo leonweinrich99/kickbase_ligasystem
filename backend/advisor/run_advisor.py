@@ -47,25 +47,37 @@ FEATURES = [
 ]
 TARGET = "mv_target_clipped"
 
+
+def env_or_default(key, default):
+    """os.getenv(key, default), aber behandelt auch einen LEEREN String als
+    "nicht gesetzt". Wichtig, weil GitHub Actions bei "${{ vars.X }}" für
+    eine nicht konfigurierte Repo-Variable einen leeren String liefert
+    (nicht einfach die Variable weglässt) - os.getenv würde in dem Fall
+    faelschlicherweise "" statt default zurueckgeben.
+    """
+    val = os.getenv(key)
+    return val if val else default
+
+
 # ----------------- Liga-Auswahl -----------------
 # WICHTIG: Vorerst laeuft der Advisor bewusst nur gegen die einzelne
 # "test"-Liga, um das Feature risikofrei zu testen, bevor er auf die 3
 # echten Ligen losgelassen wird. Einfach den Block unten zurueckwechseln,
 # sobald alles wie gewuenscht funktioniert.
 LEAGUE_DEFS = [
-    {"key": "TEST", "name": os.getenv("KICKBASE_TEST_LEAGUE_NAME", "test")},
+    {"key": "TEST", "name": env_or_default("KICKBASE_TEST_LEAGUE_NAME", "test")},
 ]
 
 # Echte 3-Ligen-Konfiguration (nutzt dieselben Secrets/Variablen wie das
 # bestehende Node-Backend, siehe backend/kickbase.js) - fuer spaeter:
 # LEAGUE_DEFS = [
-#     {"key": "LIGA1", "name": os.getenv("KICKBASE_LEAGUE_1_NAME", "Liga 1")},
-#     {"key": "LIGA2", "name": os.getenv("KICKBASE_LEAGUE_2_NAME", "Liga 2")},
-#     {"key": "LIGA3", "name": os.getenv("KICKBASE_LEAGUE_3_NAME", "Liga 3")},
+#     {"key": "LIGA1", "name": env_or_default("KICKBASE_LEAGUE_1_NAME", "Liga 1")},
+#     {"key": "LIGA2", "name": env_or_default("KICKBASE_LEAGUE_2_NAME", "Liga 2")},
+#     {"key": "LIGA3", "name": env_or_default("KICKBASE_LEAGUE_3_NAME", "Liga 3")},
 # ]
 
-LEAGUE_START_DATE = os.getenv("ADVISOR_LEAGUE_START_DATE", "2026-08-13")
-START_BUDGET = int(os.getenv("ADVISOR_START_BUDGET", "50000000"))
+LEAGUE_START_DATE = env_or_default("ADVISOR_LEAGUE_START_DATE", "2026-08-13")
+START_BUDGET = int(env_or_default("ADVISOR_START_BUDGET", "50000000"))
 
 OUTPUT_PATH = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "..", "..", "frontend", "public", "advisor-data.json"
