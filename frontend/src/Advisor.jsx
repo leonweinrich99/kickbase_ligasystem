@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useAuth } from './AuthContext';
@@ -16,6 +16,11 @@ const LEAGUE_COLORS = {
   TEST: '#22d3ee',
 };
 const DEFAULT_LEAGUE_COLOR = '#22d3ee';
+
+const POSITION_COLORS = { TW: '#eab308', ABW: '#3b82f6', MF: '#22c55e', ST: '#ef4444' };
+const POSITION_LABELS = { TW: 'Torwart', ABW: 'Abwehr', MF: 'Mittelfeld', ST: 'Sturm' };
+
+const DB_PAGE_SIZE = 25;
 
 const formatMoney = (val) => {
   if (val === null || val === undefined) return '–';
@@ -41,7 +46,90 @@ const formatShortDate = (dateStr) => {
   return `${day}.${month}.`;
 };
 
-const POSITION_COLORS = { TW: '#eab308', ABW: '#3b82f6', MF: '#22c55e', ST: '#ef4444' };
+// Historie kommt aus Platzgruenden als kompaktes Tupel-Array [datum, mv, punkte]
+// (siehe backend/advisor/run_advisor.py::build_history_by_player). Fuer
+// recharts brauchen wir benannte Objekte - alte, noch im Cache liegende
+// Objekt-Formate werden defensiv weiterhin unterstuetzt.
+const normalizeHistory = (history) => {
+  if (!Array.isArray(history)) return [];
+  return history.map((entry) => (Array.isArray(entry) ? { date: entry[0], mv: entry[1], points: entry[2] } : entry));
+};
+
+const DEFAULT_FILTERS = { search: '', position: 'ALL', team: 'ALL', sort: 'predictedDesc', risingOnly: false };
+
+function applyFilters(list, filters) {
+  let result = list;
+  if (filters.search?.trim()) {
+    const q = filters.search.trim().toLowerCase();
+    result = result.filter((p) => `${p.firstName || ''} ${p.name || ''} ${p.team || ''}`.toLowerCase().includes(q));
+  }
+  if (filters.position && filters.position !== 'ALL') {
+    result = result.filter((p) => p.position === filters.position);
+  }
+  if (filters.team && filters.team !== 'ALL') {
+    result = result.filter((p) => p.team === filters.team);
+  }
+  if (filters.risingOnly) {
+    result = result.filter((p) => (p.predictedChange || 0) > 0);
+  }
+  const sorters = {
+    predictedDesc: (a, b) => (b.predictedChange || 0) - (a.predictedChange || 0),
+    predictedAsc: (a, b) => (a.predictedChange || 0) - (b.predictedChange || 0),
+    marketValueDesc: (a, b) => (b.marketValue || 0) - (a.marketValue || 0),
+    marketValueAsc: (a, b) => (a.marketValue || 0) - (b.marketValue || 0),
+    nameAsc: (a, b) => (a.name || '').localeCompare(b.name || ''),
+  };
+  return [...result].sort(sorters[filters.sort] || sorters.predictedDesc);
+}
+
+const FilterBar = ({ filters, onChange, teams, showTeamFilter = false }) => (
+  <div className="flex flex-wrap gap-2 mb-4">
+    <input
+      type="text"
+      placeholder="Suche nach Name oder Team..."
+      value={filters.search}
+      onChange={(e) => onChange({ ...filters, search: e.target.value })}
+      className="flex-1 min-w-[180px] bg-[#171717] border border-[#2e2e2e] rounded-xl px-3 py-2 text-sm text-white placeholder-[#626978] outline-none focus:border-cyan-500"
+    />
+    <select
+      value={filters.position}
+      onChange={(e) => onChange({ ...filters, position: e.target.value })}
+      className="bg-[#171717] border border-[#2e2e2e] rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-cyan-500"
+    >
+      <option value="ALL">Alle Positionen</option>
+      {Object.entries(POSITION_LABELS).map(([code, label]) => (
+        <option key={code} value={code}>{label}</option>
+      ))}
+    </select>
+    {showTeamFilter && (
+      <select
+        value={filters.team}
+        onChange={(e) => onChange({ ...filters, team: e.target.value })}
+        className="bg-[#171717] border border-[#2e2e2e] rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-cyan-500"
+      >
+        <option value="ALL">Alle Teams</option>
+        {teams.map((t) => <option key={t} value={t}>{t}</option>)}
+      </select>
+    )}
+    <select
+      value={filters.sort}
+      onChange={(e) => onChange({ ...filters, sort: e.target.value })}
+      className="bg-[#171717] border border-[#2e2e2e] rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-cyan-500"
+    >
+      <option value="predictedDesc">Prognose: höchste zuerst</option>
+      <option value="predictedAsc">Prognose: niedrigste zuerst</option>
+      <option value="marketValueDesc">Marktwert: höchster zuerst</option>
+      <option value="marketValueAsc">Marktwert: niedrigster zuerst</option>
+      <option value="nameAsc">Name (A-Z)</option>
+    </select>
+    <button
+      onClick={() => onChange({ ...filters, risingOnly: !filters.risingOnly })}
+      className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filters.risingOnly ? 'bg-green-500/20 text-green-400 border border-green-500/40' : 'bg-[#171717] border border-[#2e2e2e] text-[#8b92a5] hover:text-white'}`}
+    >
+      Nur steigend
+    </button>
+  </div>
+);
 
 const StatCard = ({ label, value, accent = '#22d3ee' }) => (
   <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl p-4 flex-1 min-w-[120px]">
@@ -67,7 +155,7 @@ const BudgetRow = ({ entry, rank, color }) => (
   </div>
 );
 
-const MarketRow = ({ entry, onClick }) => {
+const PlayerCard = ({ entry, onClick }) => {
   const rising = (entry.predictedChange || 0) >= 0;
   const hasHistory = Array.isArray(entry.history) && entry.history.length > 1;
   return (
@@ -88,6 +176,9 @@ const MarketRow = ({ entry, onClick }) => {
           <div className="text-[15px] font-bold text-gray-100 truncate">
             {entry.firstName ? `${entry.firstName} ${entry.name}` : entry.name}
           </div>
+          {entry.onMarket && (
+            <span className="text-[8px] font-black uppercase tracking-widest bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 rounded-full px-1.5 py-0.5 shrink-0">Auf dem Markt</span>
+          )}
           {entry.expiringToday && (
             <span className="text-[8px] font-black uppercase tracking-widest bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 rounded-full px-1.5 py-0.5 shrink-0">Läuft heute ab</span>
           )}
@@ -138,7 +229,7 @@ const ChartTooltip = ({ active, payload, label }) => {
 };
 
 const PlayerHistoryModal = ({ player, onClose }) => {
-  const history = player.history || [];
+  const history = normalizeHistory(player.history);
   const first = history[0];
   const last = history[history.length - 1];
   const totalChange = first && last ? last.mv - first.mv : null;
@@ -230,6 +321,9 @@ const Advisor = () => {
   const [error, setError] = useState(false);
   const [activeLeague, setActiveLeague] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [marketFilters, setMarketFilters] = useState(DEFAULT_FILTERS);
+  const [dbFilters, setDbFilters] = useState(DEFAULT_FILTERS);
+  const [dbVisibleCount, setDbVisibleCount] = useState(DB_PAGE_SIZE);
 
   useEffect(() => {
     fetch(`/advisor-data.json?t=${Date.now()}`)
@@ -248,6 +342,24 @@ const Advisor = () => {
       .catch(() => setError(true));
   }, []);
 
+  const league = data?.leagues?.[activeLeague];
+  const generatedAt = data?.generatedAt ? new Date(data.generatedAt) : null;
+
+  const marketTeams = useMemo(
+    () => [...new Set((league?.marketRecommendations || []).map((p) => p.team).filter(Boolean))].sort(),
+    [league]
+  );
+  const filteredMarket = useMemo(
+    () => applyFilters(league?.marketRecommendations || [], marketFilters),
+    [league, marketFilters]
+  );
+
+  const dbTeams = useMemo(
+    () => [...new Set((data?.players || []).map((p) => p.team).filter(Boolean))].sort(),
+    [data]
+  );
+  const filteredDb = useMemo(() => applyFilters(data?.players || [], dbFilters), [data, dbFilters]);
+
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-[#000000] flex items-center justify-center p-4">
@@ -259,9 +371,6 @@ const Advisor = () => {
       </div>
     );
   }
-
-  const league = data?.leagues?.[activeLeague];
-  const generatedAt = data?.generatedAt ? new Date(data.generatedAt) : null;
 
   return (
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10">
@@ -341,17 +450,61 @@ const Advisor = () => {
                   <div className="text-center text-[#8b92a5] text-sm py-6 mb-10">Keine Budget-Daten für diese Liga verfügbar.</div>
                 )}
 
-                <h2 className="text-[1.2rem] font-black text-[#f8fafc] mb-4 tracking-tight uppercase">Markt-Empfehlungen</h2>
+                <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                  <h2 className="text-[1.2rem] font-black text-[#f8fafc] tracking-tight uppercase">Markt-Empfehlungen</h2>
+                  <span className="text-[10px] text-[#8b92a5]">{filteredMarket.length} von {league.marketRecommendations?.length || 0} Spielern</span>
+                </div>
                 {league.marketRecommendations?.length ? (
-                  <div>
-                    {league.marketRecommendations.map((entry, index) => (
-                      <MarketRow key={`${entry.name}-${index}`} entry={entry} onClick={() => setSelectedPlayer(entry)} />
-                    ))}
-                  </div>
+                  <>
+                    <FilterBar filters={marketFilters} onChange={setMarketFilters} teams={marketTeams} showTeamFilter />
+                    {filteredMarket.length ? (
+                      <div className="mb-10">
+                        {filteredMarket.map((entry, index) => (
+                          <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} onClick={() => setSelectedPlayer(entry)} />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center text-[#8b92a5] text-sm py-6 mb-10">Kein Spieler passt zu den aktuellen Filtern.</div>
+                    )}
+                  </>
                 ) : (
-                  <div className="text-center text-[#8b92a5] text-sm py-6">Aktuell keine Spieler auf dem Markt mit vielversprechender Marktwert-Prognose.</div>
+                  <div className="text-center text-[#8b92a5] text-sm py-6 mb-10">Aktuell steht niemand auf dem Markt dieser Liga.</div>
                 )}
               </>
+            )}
+
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-2 pt-4 border-t border-[#2e2e2e]">
+              <div>
+                <h2 className="text-[1.2rem] font-black text-[#f8fafc] tracking-tight uppercase">Alle Spieler durchsuchen</h2>
+                <p className="text-[10px] text-[#8b92a5] mt-1">Marktwert-Prognose für die komplette Bundesliga, unabhängig davon, ob gerade jemand verkauft.</p>
+              </div>
+              <span className="text-[10px] text-[#8b92a5]">{filteredDb.length} von {data.players?.length || 0} Spielern</span>
+            </div>
+            {data.players?.length ? (
+              <>
+                <FilterBar filters={dbFilters} onChange={(f) => { setDbFilters(f); setDbVisibleCount(DB_PAGE_SIZE); }} teams={dbTeams} showTeamFilter />
+                {filteredDb.length ? (
+                  <>
+                    <div>
+                      {filteredDb.slice(0, dbVisibleCount).map((entry, index) => (
+                        <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} onClick={() => setSelectedPlayer(entry)} />
+                      ))}
+                    </div>
+                    {dbVisibleCount < filteredDb.length && (
+                      <button
+                        onClick={() => setDbVisibleCount((c) => c + DB_PAGE_SIZE)}
+                        className="w-full text-center text-[10px] font-black uppercase tracking-widest text-cyan-400 border border-cyan-500/30 rounded-2xl py-3 hover:bg-cyan-500/10 transition-colors"
+                      >
+                        Weitere {Math.min(DB_PAGE_SIZE, filteredDb.length - dbVisibleCount)} von {filteredDb.length - dbVisibleCount} laden
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-center text-[#8b92a5] text-sm py-6">Kein Spieler passt zu den aktuellen Filtern.</div>
+                )}
+              </>
+            ) : (
+              <div className="text-center text-[#8b92a5] text-sm py-6">Die Spieler-Datenbank ist noch nicht verfügbar (erst ab dem nächsten Advisor-Lauf).</div>
             )}
           </>
         )}

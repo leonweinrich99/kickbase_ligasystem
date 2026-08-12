@@ -54,7 +54,10 @@ def join_current_market(token, league_id, today_df_results):
 
     bid_df["expiring_today"] = bid_df["hours_to_exp"] < diff
 
-    bid_df = bid_df[bid_df["predicted_mv_target"] > 5000]
+    # KEIN Mindest-Schwellenwert mehr (frueher > 5000) - die komplette Liste
+    # aller aktuell auf dem Markt stehenden Spieler wird zurueckgegeben,
+    # Filterung/Sortierung passiert im Frontend (mehr Empfehlungen + eigene
+    # Filteroptionen fuer die Nutzer:innen).
     bid_df = bid_df.sort_values("predicted_mv_target", ascending=False)
 
     if "prob" not in bid_df.columns:

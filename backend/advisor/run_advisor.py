@@ -115,10 +115,11 @@ def build_budgets_payload(token, league_id):
 def build_history_by_player(player_df, days=HISTORY_DAYS):
     """Baut je Spieler eine kompakte Marktwert-/Punkte-Historie der letzten
     `days` Tage (fuer den Marktwert-Chart auf Klick einer Spielerkarte).
-    Wird NUR fuer Spieler in den Markt-Empfehlungen tatsaechlich verwendet,
-    daher hier bewusst noch fuer ALLE Spieler gebaut (kein grosser Aufwand
-    verglichen mit dem Modelltraining) und erst beim Zusammenbauen der
-    Markt-Payload gefiltert.
+
+    Format bewusst als Tupel-Array [datum, marktwert, punkte] statt als
+    Liste von Objekten mit Schluesseln - spart bei hunderten Spielern x
+    mehreren Wochen Historie spuerbar JSON-Groesse (keine wiederholten
+    Feldnamen pro Eintrag).
     """
 
     if player_df.empty:
@@ -126,12 +127,15 @@ def build_history_by_player(player_df, days=HISTORY_DAYS):
 
     cols = player_df[["player_id", "date", "mv", "p"]].copy()
     cols["date"] = pd.to_datetime(cols["date"]).dt.date.astype(str)
-    cols = cols.rename(columns={"p": "points"}).sort_values(["player_id", "date"])
+    cols = cols.sort_values(["player_id", "date"])
 
     history = {}
     for player_id, group in cols.groupby("player_id"):
-        recent = group.tail(days)[["date", "mv", "points"]]
-        history[int(player_id)] = json.loads(recent.to_json(orient="records"))
+        recent = group.tail(days)
+        history[int(player_id)] = [
+            [row.date, None if pd.isna(row.mv) else round(float(row.mv)), None if pd.isna(row.p) else int(row.p)]
+            for row in recent.itertuples()
+        ]
 
     return history
 
@@ -162,6 +166,41 @@ def build_market_payload(token, league_id, live_predictions_df, history_by_playe
         "s_11_prob": "startElfProbability",
         "hours_to_exp": "hoursToExpiry",
         "expiring_today": "expiringToday",
+    })
+
+    if history_by_player:
+        for entry in records:
+            entry["history"] = history_by_player.get(entry.get("playerId"), [])
+            entry["onMarket"] = True
+
+    return records
+
+
+def build_all_players_payload(live_predictions_df, history_by_player=None):
+    """Komplette, durchsuchbare Vorhersage-Liste ALLER Spieler des Wettbewerbs
+    (nicht nur der aktuell auf einem Liga-Markt gelisteten). Damit koennen
+    Admins selbst nach beliebigen Spielern suchen/filtern, auch wenn diese
+    gerade bei niemandem auf dem Markt stehen.
+    """
+
+    if live_predictions_df is None or live_predictions_df.empty:
+        return []
+
+    df = live_predictions_df.copy()
+    df["mv"] = df["mv"].round(0)
+    df["mv_change_1d"] = df["mv_change_1d"].round(0)
+    df["predicted_mv_target"] = df["predicted_mv_target"].round(0)
+    df["position"] = df["position"].map(POSITION_LABELS).fillna(df["position"])
+
+    records = df_records(df, {
+        "player_id": "playerId",
+        "first_name": "firstName",
+        "last_name": "name",
+        "position": "position",
+        "team_name": "team",
+        "mv": "marketValue",
+        "mv_change_1d": "changeYesterday",
+        "predicted_mv_target": "predictedChange",
     })
 
     if history_by_player:
@@ -237,6 +276,7 @@ def main():
         "leagueStartDate": LEAGUE_START_DATE,
         "startBudget": START_BUDGET,
         "modelStats": None,
+        "players": [],
         "leagues": {},
     }
 
@@ -296,6 +336,8 @@ def main():
             print(f"Modell-Guete: {signs_percent:.1f}% Richtungstreffer, R2={r2:.3f}")
 
             live_predictions_df = live_data_predictions(today_df, model, FEATURES)
+            print(f"Baue durchsuchbare Spieler-Datenbank ({len(live_predictions_df)} Spieler)...")
+            result["players"] = build_all_players_payload(live_predictions_df, history_by_player)
     except Exception as e:
         print(f"Warning: Marktwert-Vorhersage-Pipeline fehlgeschlagen: {e}")
 
