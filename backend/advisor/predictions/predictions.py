@@ -39,9 +39,11 @@ def join_current_squad(token, league_id, today_df_results):
     """
 
     squad_players = get_players_in_squad(token, league_id)
-    squad_df = pd.DataFrame(squad_players.get("it", []))
+    raw_squad = squad_players.get("it", [])
+    squad_df = pd.DataFrame(raw_squad)
 
     if squad_df.empty:
+        print("Debug Kader: API lieferte 0 Spieler im Kader (squad_players['it'] ist leer).")
         return pd.DataFrame(columns=[
             "player_id", "first_name", "last_name", "position", "team_name", "mv", "mv_change_yesterday",
             "predicted_mv_target", "s_11_prob",
@@ -55,6 +57,11 @@ def join_current_squad(token, league_id, today_df_results):
     today_df_results = today_df_results.copy()
     today_df_results["player_id"] = today_df_results["player_id"].astype(str)
     squad_df["i"] = squad_df["i"].astype(str)
+
+    print(f"Debug Kader: {len(squad_df)} Spieler im Kader laut API: {list(squad_df['i'])}")
+    print(f"Debug Kader: {today_df_results['player_id'].nunique()} eindeutige Spieler in den heutigen Vorhersagen verfuegbar.")
+    overlap = set(squad_df["i"]) & set(today_df_results["player_id"])
+    print(f"Debug Kader: {len(overlap)} Kader-Spieler auch in den Vorhersagen gefunden: {overlap}")
 
     merged_df = pd.merge(today_df_results, squad_df, left_on="player_id", right_on="i").drop(columns=["i"])
 
