@@ -505,9 +505,26 @@ const Advisor = () => {
 
         {showInfo && (
           <div className="bg-[#171717] border border-[#2e2e2e] rounded-xl p-4 text-xs text-[#8b92a5] mb-6">
-            Budget-Schätzungen & Marktwert-Prognosen, basierend auf dem Open-Source-Tool{' '}
-            <a href="https://github.com/LennardFe/Kickbase-Trading-Advisor" target="_blank" rel="noreferrer" className="text-cyan-400 hover:underline">Kickbase-Trading-Advisor</a>{' '}
-            von LennardFe. Läuft täglich automatisch, alle Werte sind Schätzungen ohne Gewähr.
+            <p>
+              Budget-Schätzungen & Marktwert-Prognosen, basierend auf dem Open-Source-Tool{' '}
+              <a href="https://github.com/LennardFe/Kickbase-Trading-Advisor" target="_blank" rel="noreferrer" className="text-cyan-400 hover:underline">Kickbase-Trading-Advisor</a>{' '}
+              von LennardFe. Läuft täglich automatisch, alle Werte sind Schätzungen ohne Gewähr.
+            </p>
+            {data && (
+              <div className="flex flex-wrap gap-3 mt-4">
+                <StatCard
+                  label="Zuletzt aktualisiert"
+                  value={generatedAt ? generatedAt.toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '–'}
+                  accent="#8b92a5"
+                />
+                {data.modelStats && (
+                  <>
+                    <StatCard label="Richtungstreffer" value={`${data.modelStats.signsCorrectPercent}%`} accent="#22d3ee" />
+                    <StatCard label="Trainingsdaten" value={data.modelStats.trainSamples} accent="#8b92a5" />
+                  </>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -680,23 +697,6 @@ const Advisor = () => {
                 )}
               </>
             )}
-
-            {/* Meta-Infos (Zeitstempel, Modell-Guete) bewusst ganz unten statt
-                oben - beim Betreten der Seite interessieren zuerst die
-                eigentlichen Empfehlungen, nicht die Modell-Statistik. */}
-            <div className="flex flex-wrap gap-3 mt-10 pt-6 border-t border-[#2e2e2e]">
-              <StatCard
-                label="Zuletzt aktualisiert"
-                value={generatedAt ? generatedAt.toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '–'}
-                accent="#8b92a5"
-              />
-              {data.modelStats && (
-                <>
-                  <StatCard label="Richtungstreffer" value={`${data.modelStats.signsCorrectPercent}%`} accent="#22d3ee" />
-                  <StatCard label="Trainingsdaten" value={data.modelStats.trainSamples} accent="#8b92a5" />
-                </>
-              )}
-            </div>
           </>
         )}
 

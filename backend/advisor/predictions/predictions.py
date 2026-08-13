@@ -79,11 +79,12 @@ def join_current_squad(token, league_id, today_df_results, manager_id=None):
             "predicted_mv_target", "s_11_prob",
         ])
 
-    # Manche Kickbase-Endpoints nennen das Spieler-ID-Feld "i", andere ggf.
-    # "id"/"pid" - robust die erste vorhandene Variante nehmen, statt fest
-    # von "i" auszugehen (der Manager-Kader-Endpoint ist in der API-Doku
-    # nicht mit einem Beispiel belegt, daher unklar, ob er identisch heisst).
-    id_column = next((c for c in ["i", "id", "pid"] if c in squad_df.columns), None)
+    # Kickbase nennt das Spieler-ID-Feld je nach Endpoint unterschiedlich:
+    # "i" beim eigenen Kader/Markt, aber "pi" (=player id) beim
+    # Manager-Kader-Endpoint (per Debug-Log am 13.08.2026 bestaetigt: Spalten
+    # sind u.a. ['pi', 'pn', 'tid', 'pos', 'p', 'mv', ...]). Robust die erste
+    # vorhandene Variante nehmen.
+    id_column = next((c for c in ["i", "id", "pid", "pi"] if c in squad_df.columns), None)
     if id_column is None:
         print(f"Warning: Kein bekanntes ID-Feld im Kader gefunden (manager_id={manager_id}), "
               f"vorhandene Spalten: {list(squad_df.columns)}")
