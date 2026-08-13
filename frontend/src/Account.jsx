@@ -1,18 +1,24 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { motion as Motion } from 'framer-motion';
 import { useAuth } from './AuthContext';
 import { useTour } from './Tour';
 import accountLogo from './assets/account_logo.png';
-import { LeagueStatsCard, PokalStatusCard } from './AccountStats';
+import { LeagueStatsCard, PokalMatchCard } from './AccountStats';
 
-const MenuLink = ({ to, onClick, icon, label, color = '#8b92a5' }) => {
+const fadeUp = {
+  hidden: { opacity: 0, y: 12 },
+  show: (i = 0) => ({ opacity: 1, y: 0, transition: { duration: 0.35, delay: i * 0.05, ease: 'easeOut' } }),
+};
+
+const MenuRow = ({ to, onClick, icon, label, color = '#8b92a5' }) => {
   const content = (
-    <div className="flex items-center gap-4 bg-[#171717] border border-[#2e2e2e] rounded-2xl px-5 py-4 hover:border-[#404040] transition-all active:scale-[0.98]">
-      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${color}1A`, color }}>
+    <div className="flex items-center gap-3.5 px-5 py-4 hover:bg-[#1e1e1e] active:bg-[#242424] transition-colors">
+      <div className="w-6 h-6 flex items-center justify-center shrink-0" style={{ color }}>
         {icon}
       </div>
       <span className="text-sm font-bold text-gray-100 flex-1">{label}</span>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4b5563" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
         <polyline points="9 18 15 12 9 6"></polyline>
       </svg>
     </div>
@@ -23,6 +29,15 @@ const MenuLink = ({ to, onClick, icon, label, color = '#8b92a5' }) => {
   }
   return <Link to={to}>{content}</Link>;
 };
+
+const MenuGroup = ({ title, children, index }) => (
+  <Motion.div variants={fadeUp} initial="hidden" animate="show" custom={index} className="mb-5">
+    {title && <div className="text-[10px] font-black uppercase tracking-widest text-[#626978] mb-2 px-1">{title}</div>}
+    <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl divide-y divide-[#2a2a2a] overflow-hidden">
+      {children}
+    </div>
+  </Motion.div>
+);
 
 const RulesIcon = (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -78,84 +93,119 @@ const BellIcon = (
   </svg>
 );
 
-const LogoutIcon = (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-    <polyline points="16 17 21 12 16 7"></polyline>
-    <line x1="21" y1="12" x2="9" y2="12"></line>
+const LinkIcon = (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
   </svg>
 );
+
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 5) return 'Gute Nacht';
+  if (hour < 11) return 'Guten Morgen';
+  if (hour < 18) return 'Guten Tag';
+  return 'Guten Abend';
+};
 
 const Account = () => {
   const { user, profile, isAdmin, isFirebaseConfigured, signOut } = useAuth();
   const tour = useTour();
+  const firstName = profile?.displayName?.split(' ')[0];
 
   return (
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10">
       <div className="max-w-lg mx-auto">
-        <div className="flex items-center gap-3 sm:gap-6 mb-8">
+        <Motion.div variants={fadeUp} initial="hidden" animate="show" custom={0} className="flex items-center gap-3 sm:gap-6 mb-6">
           <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center p-0.5 sm:p-1 overflow-hidden flex-shrink-0">
             <img src={accountLogo} alt="Account Logo" className="w-full h-full object-contain" />
           </div>
           <div className="min-w-0">
             <div className="text-[9px] sm:text-[11px] font-bold tracking-wider text-[#ff5c3e] mb-1">SAISON 26/27</div>
-            <h1 className="text-[17px] sm:text-3xl font-black tracking-tight uppercase leading-[1.1]">Account</h1>
+            <h1 className="text-[19px] sm:text-3xl font-black tracking-tight leading-[1.1] truncate">
+              {getGreeting()}{firstName ? `, ${firstName}` : ''}
+            </h1>
           </div>
-        </div>
+        </Motion.div>
 
         {isFirebaseConfigured && user && (
-          <Link
-            to="/account/profile"
-            className="w-full flex items-center gap-4 bg-[#171717] border border-[#2e2e2e] rounded-2xl p-5 mb-4 hover:border-[#404040] transition-all active:scale-[0.98]"
-          >
-            <div className="w-14 h-14 rounded-full bg-[#1f1f1f] border border-[#2e2e2e] flex items-center justify-center overflow-hidden shrink-0">
-              {user.photoURL ? (
-                <img src={user.photoURL} alt={profile?.displayName || 'Avatar'} className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-xl font-black text-[#ff5c3e]">{(profile?.displayName || user.email || '?').charAt(0).toUpperCase()}</span>
-              )}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="font-bold text-gray-100 truncate flex items-center gap-2">
-                {profile?.displayName || 'Unbenannt'}
-                {isAdmin && <span className="text-[8px] font-black uppercase tracking-widest bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-full px-1.5 py-0.5">Admin</span>}
+          <Motion.div variants={fadeUp} initial="hidden" animate="show" custom={1}>
+            <Link
+              to="/account/profile"
+              className="flex items-center gap-4 bg-[#171717] border border-[#2e2e2e] rounded-2xl p-5 mb-4 hover:border-[#404040] transition-all active:scale-[0.98]"
+            >
+              <div className="w-14 h-14 rounded-full bg-[#1f1f1f] border-2 border-[#ff5c3e] flex items-center justify-center overflow-hidden shrink-0">
+                {user.photoURL ? (
+                  <img src={user.photoURL} alt={profile?.displayName || 'Avatar'} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-xl font-black text-[#ff5c3e]">{(profile?.displayName || user.email || '?').charAt(0).toUpperCase()}</span>
+                )}
               </div>
-              <div className="text-xs text-[#8b92a5] truncate">{user.email}</div>
-              {profile?.kickbaseName ? (
-                <div className="text-[10px] text-[#8b5cf6] font-bold truncate mt-0.5">Kickbase: {profile.kickbaseName}</div>
-              ) : (
-                <div className="text-[10px] text-[#ff5c3e] font-bold truncate mt-0.5">Profil vervollständigen →</div>
-              )}
-            </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-              <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-          </Link>
+              <div className="min-w-0 flex-1">
+                <div className="font-bold text-gray-100 truncate flex items-center gap-2">
+                  {profile?.displayName || 'Unbenannt'}
+                  {isAdmin && <span className="text-[8px] font-black uppercase tracking-widest bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-full px-1.5 py-0.5">Admin</span>}
+                </div>
+                <div className="text-xs text-[#8b92a5] truncate">{user.email}</div>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </Link>
+          </Motion.div>
         )}
 
-        {profile?.kickbaseId && (
-          <>
+        {profile?.kickbaseId ? (
+          <Motion.div variants={fadeUp} initial="hidden" animate="show" custom={2}>
             <LeagueStatsCard kickbaseId={profile.kickbaseId} />
-            <PokalStatusCard kickbaseName={profile.kickbaseName} />
-          </>
+            <PokalMatchCard kickbaseName={profile.kickbaseName} />
+          </Motion.div>
+        ) : (
+          <Motion.div variants={fadeUp} initial="hidden" animate="show" custom={2}>
+            <Link
+              to="/account/profile"
+              className="flex items-center gap-4 border border-dashed border-[#ff5c3e]/40 rounded-2xl p-5 mb-4 hover:border-[#ff5c3e] transition-all active:scale-[0.98]"
+            >
+              <div className="w-10 h-10 rounded-xl bg-[#ff5c3e]/10 text-[#ff5c3e] flex items-center justify-center shrink-0">
+                {LinkIcon}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-bold text-gray-100">Kickbase-Account verbinden</div>
+                <div className="text-xs text-[#8b92a5] mt-0.5">Zeigt dir deine Liga-Statistiken & Pokal-Status hier direkt an.</div>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff5c3e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </Link>
+          </Motion.div>
         )}
 
-        <div data-tour="account-menu" className="flex flex-col gap-3 mb-8 mt-4">
-          <MenuLink onClick={tour.start} icon={TutorialIcon} label="App-Tutorial ansehen" color="#eab308" />
-          <MenuLink to="/account/reminders" icon={BellIcon} label="Erinnerungen" color="#22d3ee" />
-          <MenuLink to="/rules" icon={RulesIcon} label="Regelkatalog" color="#ff5c3e" />
-          <MenuLink to="/pokal-rules" icon={TrophyIcon} label="Pokal-Regeln" color="#8b5cf6" />
-          <MenuLink to="/archiv" icon={ArchiveIcon} label="Quali-Daten (Archiv)" color="#8b92a5" />
-          {isAdmin && (
-            <>
-              <MenuLink to="/admin/advisor" icon={AdvisorIcon} label="Trading Advisor" color="#22d3ee" />
-              <MenuLink to="/admin" icon={ShieldIcon} label="Admin Panel" color="#a855f7" />
-            </>
-          )}
-        </div>
+        <MenuGroup title="Liga & Pokal" index={3}>
+          <MenuRow to="/rules" icon={RulesIcon} label="Regelkatalog" />
+          <MenuRow to="/pokal-rules" icon={TrophyIcon} label="Pokal-Regeln" />
+          <MenuRow to="/archiv" icon={ArchiveIcon} label="Quali-Daten (Archiv)" />
+        </MenuGroup>
+
+        <MenuGroup title="Persönlich" index={4}>
+          <MenuRow to="/account/reminders" icon={BellIcon} label="Erinnerungen" />
+          <MenuRow onClick={tour.start} icon={TutorialIcon} label="App-Tutorial ansehen" />
+        </MenuGroup>
+
+        {isAdmin && (
+          <MenuGroup title="Verwaltung" index={5}>
+            <MenuRow to="/admin/advisor" icon={AdvisorIcon} label="Trading Advisor" color="#22d3ee" />
+            <MenuRow to="/admin" icon={ShieldIcon} label="Admin Panel" color="#a855f7" />
+          </MenuGroup>
+        )}
 
         {isFirebaseConfigured && user && (
-          <MenuLink onClick={signOut} icon={LogoutIcon} label="Abmelden" color="#ef4444" />
+          <Motion.button
+            variants={fadeUp} initial="hidden" animate="show" custom={6}
+            onClick={signOut}
+            className="w-full text-center text-xs font-bold uppercase tracking-widest text-red-400/70 hover:text-red-400 py-3 transition-colors"
+          >
+            Abmelden
+          </Motion.button>
         )}
       </div>
     </div>

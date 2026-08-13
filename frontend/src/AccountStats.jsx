@@ -1,77 +1,79 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useLeagueEntry } from './useLeagueEntry';
 
-// Zeigt kompakte Liga-Statistiken (aufklappbar) und den Pokal-Status
-// (noch dabei? wer ist der nächste Gegner?) direkt auf der Account-Seite,
-// sobald ein Kickbase-Name zugeordnet ist.
+// Liga-Statistiken (Kennzahlen-Reihe) und Pokal-Matchkarte fuer die
+// Account-Seite. Bewusst mit einer einzigen Akzentfarbe (Marken-Orange)
+// gehalten statt bunt gemischt - fuer ein ruhigeres Gesamtbild.
 
-const ChevronIcon = ({ open }) => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8b92a5" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}>
-    <polyline points="6 9 12 15 18 9"></polyline>
+const ArrowIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="9 18 15 12 9 6"></polyline>
   </svg>
 );
 
-const StatMini = ({ label, value }) => (
-  <div className="bg-[#000] border border-[#2e2e2e] rounded-xl px-3 py-2.5">
-    <div className="text-[9px] font-black uppercase tracking-widest text-[#626978] mb-0.5">{label}</div>
-    <div className="text-sm font-black text-gray-100">{value ?? '–'}</div>
+const RankIcon = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+    <path d="M4 22h16"></path>
+    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+    <path d="M18 2H6v7c0 3.31 2.69 6 6 6s6-2.69 6-6V2z"></path>
+  </svg>
+);
+
+const PointsIcon = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+  </svg>
+);
+
+const BoltIcon = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+  </svg>
+);
+
+// Sucht den Eintrag eines Kickbase-Managers in den aktuellen Liga-Daten -
+// wird sowohl fuer die Statistik-Kachel als auch (spaeter) andere
+// Account-Elemente gebraucht, daher als eigener Hook (siehe useLeagueEntry.js).
+
+const StatItem = ({ icon, value, label }) => (
+  <div className="flex flex-col items-center text-center flex-1">
+    <div className="w-9 h-9 rounded-xl bg-[#000] flex items-center justify-center mb-1.5 text-[#ff5c3e]">{icon}</div>
+    <div className="text-base font-black text-white leading-none">{value ?? '–'}</div>
+    <div className="text-[8px] font-bold uppercase tracking-widest text-[#626978] mt-1.5">{label}</div>
   </div>
 );
 
 export const LeagueStatsCard = ({ kickbaseId }) => {
-  const [userStats, setUserStats] = useState(null);
-  const [isOpen, setIsOpen] = useState(false);
+  const entry = useLeagueEntry(kickbaseId);
 
-  useEffect(() => {
-    if (!kickbaseId) return;
-    fetch(`/data.json?t=${Date.now()}`)
-      .then((res) => res.json())
-      .then((json) => {
-        for (const league of json.leagues || []) {
-          const found = (league.users || []).find((u) => u.id === kickbaseId);
-          if (found) {
-            setUserStats({ ...found, leagueName: league.name, leagueColor: league.color });
-            return;
-          }
-        }
-        setUserStats(null);
-      })
-      .catch(() => setUserStats(null));
-  }, [kickbaseId]);
-
-  if (!kickbaseId || !userStats) return null;
+  if (!kickbaseId || !entry) return null;
 
   return (
-    <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl mb-4 overflow-hidden">
-      <button onClick={() => setIsOpen((o) => !o)} className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left hover:bg-[#1c1c1c] transition-colors">
-        <div className="flex items-center gap-3 min-w-0">
-          <span
-            className="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded shrink-0"
-            style={{ backgroundColor: `${userStats.leagueColor}33`, color: userStats.leagueColor }}
-          >
-            {userStats.leagueName}
-          </span>
-          <span className="text-sm font-bold text-gray-100 truncate">Platz {userStats.rank}</span>
-        </div>
-        <ChevronIcon open={isOpen} />
-      </button>
-      {isOpen && (
-        <div className="px-5 pb-5">
-          <div className="grid grid-cols-3 gap-2 mb-3">
-            <StatMini label="Punkte" value={userStats.points} />
-            <StatMini label="Letzter ST" value={userStats.pointsMatchday} />
-            <StatMini label="Budget" value={userStats.estimatedBudget} />
-          </div>
-          <Link
-            to={`/user/${kickbaseId}`}
-            className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[#ff5c3e] hover:text-[#ff7056] transition-colors"
-          >
-            Vollständige Statistik ansehen
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </Link>
-        </div>
-      )}
-    </div>
+    <Link
+      to={`/user/${kickbaseId}`}
+      className="block bg-[#171717] border border-[#2e2e2e] rounded-2xl p-5 mb-4 hover:border-[#404040] transition-all active:scale-[0.98]"
+    >
+      <div className="flex items-center justify-between mb-4">
+        <span
+          className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full"
+          style={{ backgroundColor: `${entry.leagueColor}26`, color: entry.leagueColor }}
+        >
+          {entry.leagueName}
+        </span>
+        <span className="text-[10px] font-bold text-[#8b92a5] flex items-center gap-1">
+          Details <ArrowIcon />
+        </span>
+      </div>
+      <div className="flex items-stretch gap-2">
+        <StatItem icon={RankIcon} value={`#${entry.rank}`} label="Platz" />
+        <StatItem icon={PointsIcon} value={entry.points} label="Punkte" />
+        <StatItem icon={BoltIcon} value={entry.pointsMatchday} label="Letzter ST" />
+      </div>
+    </Link>
   );
 };
 
@@ -121,14 +123,35 @@ function getPokalStatus(data, playerName) {
   return { status: 'upcoming', round: round.key, opponent };
 }
 
-const STATUS_CONFIG = {
-  champion: { label: 'Pokalsieger!', color: '#eab308' },
-  eliminated: { label: 'Ausgeschieden', color: '#ef4444' },
-  advanced: { label: 'Weiter dabei', color: '#22c55e' },
-  upcoming: { label: 'Noch im Rennen', color: '#8b5cf6' },
+const STATUS_THEME = {
+  advanced: { color: '#22c55e', label: 'Weiter dabei', glow: 'rgba(34,197,94,0.08)' },
+  upcoming: { color: '#8b5cf6', label: 'Bevorstehend', glow: 'rgba(139,92,246,0.08)' },
+  eliminated: { color: '#6b7280', label: 'Ausgeschieden', glow: 'transparent' },
 };
 
-export const PokalStatusCard = ({ kickbaseName }) => {
+const TrophyIconSvg = ({ color, size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+    <path d="M4 22h16"></path>
+    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+    <path d="M18 2H6v7c0 3.31 2.69 6 6 6s6-2.69 6-6V2z"></path>
+  </svg>
+);
+
+const NameAvatar = ({ name, color, muted }) => (
+  <div
+    className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center font-black text-base shrink-0"
+    style={muted
+      ? { backgroundColor: '#1f1f1f', border: '2px solid #2e2e2e', color: '#8b92a5' }
+      : { backgroundColor: `${color}1F`, border: `2px solid ${color}`, color }}
+  >
+    {name ? name.charAt(0).toUpperCase() : '?'}
+  </div>
+);
+
+export const PokalMatchCard = ({ kickbaseName }) => {
   const [pokalData, setPokalData] = useState(null);
 
   useEffect(() => {
@@ -139,38 +162,56 @@ export const PokalStatusCard = ({ kickbaseName }) => {
 
   if (!kickbaseName || !status || status.status === 'none') return null;
 
-  const config = STATUS_CONFIG[status.status];
+  // Sonderfall Pokalsieger: eigenes, groesseres Layout statt "DU vs GEGNER" -
+  // es gibt schliesslich keinen naechsten Gegner mehr.
+  if (status.status === 'champion') {
+    return (
+      <Link
+        to="/pokal"
+        className="block relative overflow-hidden bg-gradient-to-br from-yellow-500/15 via-[#171717] to-[#171717] border border-yellow-500/40 rounded-2xl p-6 mb-4 text-center hover:border-yellow-500 transition-all active:scale-[0.98]"
+      >
+        <TrophyIconSvg color="#eab308" size={32} />
+        <div className="text-base font-black uppercase text-yellow-400 mt-2">Pokalsieger!</div>
+        <div className="text-xs text-[#8b92a5] mt-1">Herzlichen Glückwunsch zum Titel 🎉</div>
+      </Link>
+    );
+  }
+
+  const theme = STATUS_THEME[status.status];
+  const opponentLabel = status.opponent || (status.status === 'eliminated' ? 'Unbekannt' : 'Steht noch nicht fest');
 
   return (
     <Link
       to="/pokal"
-      className="block bg-[#171717] border border-[#2e2e2e] rounded-2xl px-5 py-4 mb-4 hover:border-[#404040] transition-all active:scale-[0.98]"
+      className="block relative overflow-hidden bg-[#171717] border border-[#2e2e2e] rounded-2xl p-5 mb-4 hover:border-[#404040] transition-all active:scale-[0.98]"
+      style={{ backgroundImage: `radial-gradient(circle at top right, ${theme.glow}, transparent 70%)` }}
     >
-      <div className="flex items-center justify-between gap-3 mb-1">
-        <div className="flex items-center gap-2">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={config.color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-            <path d="M4 22h16"></path>
-            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
-            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
-            <path d="M18 2H6v7c0 3.31 2.69 6 6 6s6-2.69 6-6V2z"></path>
-          </svg>
-          <span className="text-sm font-bold" style={{ color: config.color }}>{config.label}</span>
-          {status.round && <span className="text-[10px] text-[#8b92a5]">· {status.round}</span>}
-        </div>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-          <polyline points="9 18 15 12 9 6"></polyline>
-        </svg>
+      <div className="flex items-center justify-between mb-4">
+        <span
+          className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full"
+          style={{ backgroundColor: `${theme.color}26`, color: theme.color }}
+        >
+          {status.round}
+        </span>
+        <span className="text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5" style={{ color: theme.color }}>
+          <TrophyIconSvg color={theme.color} size={12} />
+          {theme.label}
+        </span>
       </div>
-      {status.status === 'upcoming' && (
-        <div className="text-xs text-[#8b92a5]">
-          Nächster Gegner: <span className="text-gray-200 font-bold">{status.opponent || 'steht noch nicht fest'}</span>
+
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+          <NameAvatar name="Du" color={theme.color} />
+          <span className="text-[11px] font-bold text-gray-100">Du</span>
         </div>
-      )}
-      {status.status === 'eliminated' && status.opponent && (
-        <div className="text-xs text-[#8b92a5]">Ausgeschieden gegen <span className="text-gray-200 font-bold">{status.opponent}</span></div>
-      )}
+
+        <div className="w-7 h-7 rounded-full bg-[#000] border border-[#2e2e2e] flex items-center justify-center text-[8px] font-black text-[#8b92a5] shrink-0">VS</div>
+
+        <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+          <NameAvatar name={status.opponent} muted />
+          <span className="text-[11px] font-bold text-gray-100 truncate max-w-full">{opponentLabel}</span>
+        </div>
+      </div>
     </Link>
   );
 };

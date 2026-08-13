@@ -5,16 +5,8 @@
       "schedule": "0 19 * * 0,1,5,6"
     },
     {
-      "path": "/api/pokal-reminder",
-      "schedule": "0 18 * * 3"
-    },
-    {
       "path": "/api/advisor-cron",
       "schedule": "0 21 * * *"
-    },
-    {
-      "path": "/api/squad-reminder",
-      "schedule": "0 7 * * 5"
     }
   ]
 }

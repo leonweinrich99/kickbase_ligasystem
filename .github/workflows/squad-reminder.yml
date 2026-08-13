@@ -1,0 +1,20 @@
+name: Kader-Erinnerung
+
+# Laeuft ueber GitHub Actions statt Vercel Cron (siehe pokal-reminder.yml fuer
+# die Begruendung). Ruft einfach den bestehenden Vercel-Endpoint per HTTP auf.
+on:
+  schedule:
+    - cron: '0 7 * * 5' # Freitags 07:00 UTC (~08:00-09:00 Berlin)
+  workflow_dispatch:
+
+jobs:
+  trigger-reminder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kader-Erinnerung auslösen
+        run: |
+          curl -sf "https://www.developtimize.de/api/squad-reminder?secret=${{ secrets.CRON_SECRET }}" \
+            -H "Cache-Control: no-cache" \
+            -o response.json
+          echo "Antwort:"
+          cat response.json

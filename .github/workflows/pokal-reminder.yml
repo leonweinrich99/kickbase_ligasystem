@@ -1,0 +1,23 @@
+name: Pokal-Erinnerung
+
+# Laeuft ueber GitHub Actions statt Vercel Cron, um die (auf dem Hobby-Plan
+# begrenzten) Vercel-Cron-Slots fuer die wichtigeren Daten-/Advisor-Jobs
+# freizuhalten. Ruft einfach den bestehenden Vercel-Endpoint per HTTP auf -
+# die eigentliche Versand-Logik (Firebase Cloud Messaging) bleibt
+# unveraendert in frontend/api/pokal-reminder.js.
+on:
+  schedule:
+    - cron: '0 18 * * 3' # Mittwochs 18:00 UTC (~20:00 Berlin) - 3 Tage vor dem Pokal-Spieltag
+  workflow_dispatch:
+
+jobs:
+  trigger-reminder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pokal-Erinnerung auslösen
+        run: |
+          curl -sf "https://www.developtimize.de/api/pokal-reminder?secret=${{ secrets.CRON_SECRET }}" \
+            -H "Cache-Control: no-cache" \
+            -o response.json
+          echo "Antwort:"
+          cat response.json
