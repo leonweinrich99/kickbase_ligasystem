@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import { useAuth } from './AuthContext';
+import Toggle from './Toggle';
 import {
   enablePushNotifications,
   disablePushNotifications,
@@ -17,18 +18,6 @@ const BellIcon = (
   </svg>
 );
 
-const Toggle = ({ checked, onChange, disabled }) => (
-  <button
-    type="button"
-    role="switch"
-    aria-checked={checked}
-    disabled={disabled}
-    onClick={() => onChange(!checked)}
-    className={`relative w-11 h-6 rounded-full shrink-0 transition-colors disabled:opacity-50 ${checked ? 'bg-[#ff5c3e]' : 'bg-[#2e2e2e]'}`}
-  >
-    <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${checked ? 'translate-x-5' : 'translate-x-0'}`}></span>
-  </button>
-);
 
 const ReminderRow = ({ title, description, checked, onChange, disabled }) => (
   <div className="flex items-center justify-between gap-4 bg-[#171717] border border-[#2e2e2e] rounded-2xl px-5 py-4">

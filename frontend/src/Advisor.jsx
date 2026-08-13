@@ -328,8 +328,10 @@ const Advisor = () => {
   const [dbFilters, setDbFilters] = useState(DEFAULT_FILTERS);
   const [squadFilters, setSquadFilters] = useState(DEFAULT_FILTERS);
   const [dbVisibleCount, setDbVisibleCount] = useState(DB_PAGE_SIZE);
+  const [isAdvisorUpdating, setIsAdvisorUpdating] = useState(false);
+  const [advisorUpdateStatus, setAdvisorUpdateStatus] = useState(null);
 
-  useEffect(() => {
+  const loadData = () => {
     fetch(`/advisor-data.json?t=${Date.now()}`)
       .then((res) => {
         if (!res.ok) throw new Error('not found');
@@ -337,6 +339,7 @@ const Advisor = () => {
       })
       .then((json) => {
         setData(json);
+        setError(false);
         // Ersten verfuegbaren Liga-Key automatisch aktiv setzen - fix auf
         // "LIGA1" waere falsch, solange der Advisor (vorerst) nur gegen die
         // einzelne "TEST"-Liga laeuft.
@@ -344,7 +347,36 @@ const Advisor = () => {
         if (firstKey) setActiveLeague(firstKey);
       })
       .catch(() => setError(true));
+  };
+
+  useEffect(() => {
+    loadData();
   }, []);
+
+  const handleAdvisorUpdate = async () => {
+    const password = window.prompt("Bitte Admin-Passwort eingeben:");
+    if (!password) return;
+
+    setIsAdvisorUpdating(true);
+    setAdvisorUpdateStatus("Trading Advisor wird gestartet...");
+
+    try {
+      const res = await fetch(`/api/advisor-cron?secret=${encodeURIComponent(password)}`);
+      if (res.ok) {
+        setAdvisorUpdateStatus("✅ Angestoßen! Läuft ca. 2-5 Minuten im Hintergrund.");
+        setTimeout(() => setAdvisorUpdateStatus(null), 6000);
+      } else {
+        const errData = await res.json();
+        setAdvisorUpdateStatus(`❌ Fehler: ${errData.error || "Unbefugt"}`);
+        setTimeout(() => setAdvisorUpdateStatus(null), 6000);
+      }
+    } catch {
+      setAdvisorUpdateStatus("❌ Netzwerkfehler beim Update-Aufruf.");
+      setTimeout(() => setAdvisorUpdateStatus(null), 6000);
+    } finally {
+      setIsAdvisorUpdating(false);
+    }
+  };
 
   const league = data?.leagues?.[activeLeague];
   const generatedAt = data?.generatedAt ? new Date(data.generatedAt) : null;
@@ -390,7 +422,7 @@ const Advisor = () => {
             <h1 className="text-2xl sm:text-3xl font-black uppercase text-white">Trading Advisor</h1>
           </div>
           <Link
-            to="/admin"
+            to="/account"
             aria-label="Schließen"
             className="w-10 h-10 shrink-0 flex items-center justify-center bg-[#171717] border border-[#2e2e2e] rounded-xl text-[#8b92a5] hover:text-white hover:border-[#404040] transition-all"
           >
@@ -401,15 +433,28 @@ const Advisor = () => {
           </Link>
         </div>
 
-        <p className="text-xs text-[#8b92a5] mb-6 -mt-3">
+        <p className="text-xs text-[#8b92a5] mb-4 -mt-3">
           Budget-Schätzungen & Marktwert-Prognosen, basierend auf dem Open-Source-Tool{' '}
           <a href="https://github.com/LennardFe/Kickbase-Trading-Advisor" target="_blank" rel="noreferrer" className="text-cyan-400 hover:underline">Kickbase-Trading-Advisor</a>{' '}
           von LennardFe. Läuft täglich automatisch, alle Werte sind Schätzungen ohne Gewähr.
         </p>
 
+        <button
+          onClick={handleAdvisorUpdate}
+          disabled={isAdvisorUpdating}
+          className="w-full flex items-center justify-center gap-2 bg-[#171717] border border-cyan-500/30 text-cyan-400 font-black uppercase tracking-widest text-xs py-3.5 rounded-2xl hover:bg-cyan-500/10 hover:border-cyan-500 transition-all disabled:opacity-50 shadow-lg mb-6"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+          {advisorUpdateStatus ? advisorUpdateStatus : isAdvisorUpdating ? 'Läuft...' : 'Trading Advisor jetzt aktualisieren'}
+        </button>
+
         {error && (
           <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl p-6 text-center text-sm text-[#8b92a5] mb-6">
-            Noch keine Auswertung vorhanden. Klicke im Admin Panel auf „Trading Advisor jetzt aktualisieren", um sie einmalig zu erzeugen.
+            Noch keine Auswertung vorhanden. Klicke oben auf „Trading Advisor jetzt aktualisieren", um sie einmalig zu erzeugen.
           </div>
         )}
 

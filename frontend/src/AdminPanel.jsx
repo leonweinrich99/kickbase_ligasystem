@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { collection, onSnapshot, doc, updateDoc, query, orderBy } from 'firebase/firestore';
 import { db } from './firebase';
 import { useAuth } from './AuthContext';
 import PushNotificationCard from './PushNotificationCard';
-import { DEFAULT_RULES, loadRules, saveRules } from './rulesConfig';
 
 const StatusBadge = ({ status }) => {
   const styles = {
@@ -14,88 +13,85 @@ const StatusBadge = ({ status }) => {
   };
   const labels = { approved: 'Freigegeben', pending: 'Ausstehend', rejected: 'Abgelehnt' };
   return (
-    <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full border ${styles[status] || styles.pending}`}>
+    <span className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full border shrink-0 ${styles[status] || styles.pending}`}>
       {labels[status] || status}
     </span>
   );
 };
 
-const RuleEditor = () => {
-  const [rules, setRules] = useState(DEFAULT_RULES);
-  const [activeType, setActiveType] = useState('league');
-  const [status, setStatus] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [isOpen, setIsOpen] = useState(false);
+const MenuItem = ({ onClick, children, danger, accent }) => (
+  <button
+    onClick={onClick}
+    className={`w-full text-left px-4 py-2.5 text-xs font-bold hover:bg-[#2a2a2a] transition-colors ${danger ? 'text-red-400' : accent ? 'text-purple-400' : 'text-gray-200'}`}
+  >
+    {children}
+  </button>
+);
 
-  useEffect(() => {
-    loadRules().then(setRules).finally(() => setLoading(false));
-  }, []);
-
-  const updateRule = (type, id, field, value) => {
-    setRules((current) => ({
-      ...current,
-      [type]: current[type].map((rule) => rule.id === id ? { ...rule, [field]: value } : rule),
-    }));
-  };
-
-  const handleSave = async () => {
-    setStatus('Speichere...');
-    try {
-      await saveRules(rules);
-      setStatus('Regeln gespeichert');
-      setTimeout(() => setStatus(null), 3500);
-    } catch (error) {
-      setStatus(`Fehler: ${error.message}`);
-    }
-  };
-
-  if (loading) return <div className="text-sm text-[#8b92a5] py-6">Lade Regelwerk...</div>;
+const UserRow = ({ u, isSelf, onSetStatus, onSetRole, menuOpen, onToggleMenu, menuRef }) => {
+  const isPending = u.status === 'pending';
 
   return (
-    <section className="mb-10">
-      <button
-        onClick={() => setIsOpen((open) => !open)}
-        className="w-full bg-[#171717] border border-[#2e2e2e] rounded-2xl p-4 sm:p-5 flex items-center justify-between gap-4 text-left hover:border-[#404040] transition-colors"
-        aria-expanded={isOpen}
-      >
-        <div>
-          <div className="text-[10px] font-bold tracking-wider text-[#ff5c3e] mb-1">INHALT</div>
-          <h2 className="text-xl font-black uppercase text-white">Regelwerk</h2>
-          <p className="text-xs text-[#8b92a5] mt-2">Nur öffnen, wenn du eine Regel ändern möchtest.</p>
+    <div className="bg-[#171717] border border-[#2e2e2e] rounded-xl px-3.5 py-2.5 flex items-center gap-3">
+      <div className="w-8 h-8 rounded-full bg-[#1f1f1f] flex items-center justify-center font-black text-[#ff5c3e] text-xs shrink-0">
+        {(u.displayName || u.email || '?').charAt(0).toUpperCase()}
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="font-bold text-[13px] text-gray-100 truncate">{u.displayName || 'Unbenannt'}</span>
+          {u.role === 'admin' && <span className="text-[7px] font-black uppercase tracking-widest bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-full px-1.5 py-0.5 shrink-0">Admin</span>}
+          {isSelf && <span className="text-[8px] font-bold text-[#626978] uppercase shrink-0">(Du)</span>}
         </div>
-        <span className={`text-[#8b92a5] text-xl transition-transform ${isOpen ? 'rotate-180' : ''}`}>⌄</span>
-      </button>
-      {isOpen && <div className="mt-3 bg-[#171717] border border-[#2e2e2e] rounded-2xl p-4 sm:p-6 space-y-5">
-        <div className="flex flex-wrap gap-2">
-          {['league', 'cup'].map((type) => (
-            <button key={type} onClick={() => setActiveType(type)} className={`px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest ${activeType === type ? 'bg-[#ff5c3e] text-white' : 'bg-[#000] border border-[#2e2e2e] text-[#8b92a5]'}`}>
-              {type === 'league' ? 'Ligaregeln' : 'Pokalregeln'}
-            </button>
-          ))}
+        <div className="text-[11px] text-[#8b92a5] truncate">
+          {u.email}{u.kickbaseName ? ` · ${u.kickbaseName}` : ''}
         </div>
-        <label className="block">
-          <span className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5]">Saison</span>
-          <input value={rules.season} onChange={(event) => setRules({ ...rules, season: event.target.value })} className="mt-2 w-full bg-[#000] border border-[#2e2e2e] rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-[#ff5c3e]" />
-        </label>
-        {rules[activeType].map((rule, index) => (
-          <div key={rule.id} className="border-t border-[#2e2e2e] pt-5">
-            <div className="text-[10px] font-black uppercase tracking-widest text-[#626978] mb-3">Regel {index + 1}</div>
-            <div className="grid sm:grid-cols-2 gap-3">
-              <label><span className="field-label">Abschnitt</span><input value={rule.section} onChange={(e) => updateRule(activeType, rule.id, 'section', e.target.value)} className="field-input" /></label>
-              <label><span className="field-label">Titel</span><input value={rule.title} onChange={(e) => updateRule(activeType, rule.id, 'title', e.target.value)} className="field-input" /></label>
+      </div>
+
+      <StatusBadge status={u.status} />
+
+      {isPending ? (
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            onClick={() => onSetStatus(u.id, 'approved')}
+            aria-label="Freigeben"
+            className="w-7 h-7 flex items-center justify-center rounded-lg bg-green-500/10 text-green-400 border border-green-500/30 hover:bg-green-500/20 transition-colors"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </button>
+          <button
+            onClick={() => onSetStatus(u.id, 'rejected')}
+            aria-label="Ablehnen"
+            className="w-7 h-7 flex items-center justify-center rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-colors"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+      ) : (
+        <div className="relative shrink-0" ref={menuOpen ? menuRef : null}>
+          <button
+            onClick={() => onToggleMenu(u.id)}
+            aria-label="Weitere Optionen"
+            className="w-7 h-7 flex items-center justify-center rounded-lg text-[#8b92a5] hover:text-white hover:bg-[#1f1f1f] transition-colors"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle></svg>
+          </button>
+          {menuOpen && (
+            <div className="absolute right-0 top-full mt-1 w-44 bg-[#1f1f1f] border border-[#2e2e2e] rounded-xl shadow-2xl z-20 overflow-hidden py-1">
+              {u.status !== 'approved' && <MenuItem onClick={() => onSetStatus(u.id, 'approved')}>Freigeben</MenuItem>}
+              {u.status !== 'rejected' && <MenuItem danger onClick={() => onSetStatus(u.id, 'rejected')}>Ablehnen</MenuItem>}
+              {!isSelf && (
+                <MenuItem accent onClick={() => onSetRole(u.id, u.role === 'admin' ? 'user' : 'admin')}>
+                  {u.role === 'admin' ? 'Admin entziehen' : 'Zum Admin machen'}
+                </MenuItem>
+              )}
             </div>
-            <label className="block mt-3"><span className="field-label">Beschreibung</span><textarea rows="3" value={rule.text} onChange={(e) => updateRule(activeType, rule.id, 'text', e.target.value)} className="field-input resize-y" /></label>
-          </div>
-        ))}
-        <div className="flex items-center justify-between gap-3 pt-2">
-          <span className={`text-xs ${status?.startsWith('Fehler') ? 'text-red-400' : 'text-green-400'}`}>{status}</span>
-          <button onClick={handleSave} className="bg-[#ff5c3e] text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#ff7056] transition-colors">Regeln speichern</button>
+          )}
         </div>
-      </div>}
-    </section>
+      )}
+    </div>
   );
 };
-
 
 const AdminPanel = () => {
   const { isAdmin, user } = useAuth();
@@ -104,8 +100,8 @@ const AdminPanel = () => {
   const [filter, setFilter] = useState('pending');
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateStatus, setUpdateStatus] = useState(null);
-  const [isAdvisorUpdating, setIsAdvisorUpdating] = useState(false);
-  const [advisorUpdateStatus, setAdvisorUpdateStatus] = useState(null);
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const menuRef = useRef(null);
 
   const handleManualUpdate = async () => {
     const password = window.prompt("Bitte Admin-Passwort eingeben:");
@@ -132,31 +128,6 @@ const AdminPanel = () => {
     }
   };
 
-  const handleAdvisorUpdate = async () => {
-    const password = window.prompt("Bitte Admin-Passwort eingeben:");
-    if (!password) return;
-
-    setIsAdvisorUpdating(true);
-    setAdvisorUpdateStatus("Trading Advisor wird gestartet...");
-
-    try {
-      const res = await fetch(`/api/advisor-cron?secret=${encodeURIComponent(password)}`);
-      if (res.ok) {
-        setAdvisorUpdateStatus("✅ Angestoßen! Läuft ca. 2-5 Minuten im Hintergrund.");
-        setTimeout(() => setAdvisorUpdateStatus(null), 6000);
-      } else {
-        const errData = await res.json();
-        setAdvisorUpdateStatus(`❌ Fehler: ${errData.error || "Unbefugt"}`);
-        setTimeout(() => setAdvisorUpdateStatus(null), 6000);
-      }
-    } catch {
-      setAdvisorUpdateStatus("❌ Netzwerkfehler beim Update-Aufruf.");
-      setTimeout(() => setAdvisorUpdateStatus(null), 6000);
-    } finally {
-      setIsAdvisorUpdating(false);
-    }
-  };
-
   useEffect(() => {
     if (!isAdmin) return;
     const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
@@ -166,6 +137,18 @@ const AdminPanel = () => {
     });
     return () => unsub();
   }, [isAdmin]);
+
+  // Offenes 3-Punkte-Menü schliessen, wenn irgendwo ausserhalb geklickt wird.
+  useEffect(() => {
+    if (!openMenuId) return;
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setOpenMenuId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [openMenuId]);
 
   if (!isAdmin) {
     return (
@@ -179,8 +162,14 @@ const AdminPanel = () => {
     );
   }
 
-  const setStatus = (id, status) => updateDoc(doc(db, 'users', id), { status });
-  const setRole = (id, role) => updateDoc(doc(db, 'users', id), role === 'admin' ? { role, status: 'approved' } : { role });
+  const setStatus = (id, status) => {
+    updateDoc(doc(db, 'users', id), { status });
+    setOpenMenuId(null);
+  };
+  const setRole = (id, role) => {
+    updateDoc(doc(db, 'users', id), role === 'admin' ? { role, status: 'approved' } : { role });
+    setOpenMenuId(null);
+  };
 
   const filteredUsers = users.filter(u => filter === 'all' || (filter === 'admin' ? u.role === 'admin' : u.status === filter));
   const pendingCount = users.filter(u => u.status === 'pending').length;
@@ -220,62 +209,23 @@ const AdminPanel = () => {
           ))}
         </div>
 
-        <p className="text-xs text-[#8b92a5] mb-6 -mt-3">
-          Mit <span className="text-purple-400 font-bold">„Zum Admin machen"</span> kannst du jede Person direkt zum Admin ernennen (wird dauerhaft im System gespeichert und automatisch freigeschaltet).
-        </p>
-
         {loading ? (
           <div className="text-center text-[#8b92a5] text-sm py-10">Lade Nutzer...</div>
         ) : filteredUsers.length === 0 ? (
           <div className="text-center text-[#8b92a5] text-sm py-10">Keine Einträge in dieser Ansicht.</div>
         ) : (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
             {filteredUsers.map(u => (
-              <div key={u.id} className="bg-[#171717] border border-[#2e2e2e] rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4 min-w-0">
-                  <div className="w-10 h-10 rounded-full bg-[#1f1f1f] flex items-center justify-center font-black text-[#ff5c3e] shrink-0">
-                    {(u.displayName || u.email || '?').charAt(0).toUpperCase()}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="font-bold text-gray-100 truncate flex items-center gap-2">
-                      {u.displayName || 'Unbenannt'}
-                      {u.role === 'admin' && <span className="text-[8px] font-black uppercase tracking-widest bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-full px-1.5 py-0.5">Admin</span>}
-                      {u.id === user?.uid && <span className="text-[8px] font-black uppercase tracking-widest text-[#626978]">(Du)</span>}
-                    </div>
-                    <div className="text-xs text-[#8b92a5] truncate">{u.email}</div>
-                    {u.kickbaseName && <div className="text-[10px] text-[#8b5cf6] font-bold truncate mt-0.5">Kickbase: {u.kickbaseName}</div>}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 flex-wrap">
-                  <StatusBadge status={u.status} />
-
-                  {u.status !== 'approved' && (
-                    <button
-                      onClick={() => setStatus(u.id, 'approved')}
-                      className="text-[10px] font-black uppercase tracking-widest bg-green-500/10 text-green-400 border border-green-500/30 px-3 py-1.5 rounded-lg hover:bg-green-500/20 transition-colors"
-                    >
-                      Freigeben
-                    </button>
-                  )}
-                  {u.status !== 'rejected' && (
-                    <button
-                      onClick={() => setStatus(u.id, 'rejected')}
-                      className="text-[10px] font-black uppercase tracking-widest bg-red-500/10 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-lg hover:bg-red-500/20 transition-colors"
-                    >
-                      Ablehnen
-                    </button>
-                  )}
-                  {u.id !== user?.uid && (
-                    <button
-                      onClick={() => setRole(u.id, u.role === 'admin' ? 'user' : 'admin')}
-                      className="text-[10px] font-black uppercase tracking-widest bg-purple-500/10 text-purple-400 border border-purple-500/30 px-3 py-1.5 rounded-lg hover:bg-purple-500/20 transition-colors"
-                    >
-                      {u.role === 'admin' ? 'Admin entziehen' : 'Zum Admin machen'}
-                    </button>
-                  )}
-                </div>
-              </div>
+              <UserRow
+                key={u.id}
+                u={u}
+                isSelf={u.id === user?.uid}
+                onSetStatus={setStatus}
+                onSetRole={setRole}
+                menuOpen={openMenuId === u.id}
+                onToggleMenu={(id) => setOpenMenuId((current) => (current === id ? null : id))}
+                menuRef={menuRef}
+              />
             ))}
           </div>
         )}
@@ -297,44 +247,6 @@ const AdminPanel = () => {
           </button>
           <p className="text-[10px] text-[#8b92a5] text-center mt-3">Stößt den GitHub-Actions-Workflow zum Abruf der Ligadaten manuell an.</p>
         </div>
-
-        {/* Trading Advisor: Budget-Schätzungen + Marktwert-Prognosen, basierend auf
-            https://github.com/LennardFe/Kickbase-Trading-Advisor, angepasst auf unsere 3 Ligen. */}
-        <div className="mt-6">
-          <Link
-            to="/admin/advisor"
-            className="w-full flex items-center gap-3 bg-[#171717] border border-cyan-500/30 rounded-2xl px-5 py-4 hover:border-cyan-500 transition-all active:scale-[0.98] mb-3"
-          >
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-cyan-500/10 text-cyan-400">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-                <polyline points="17 6 23 6 23 12"></polyline>
-              </svg>
-            </div>
-            <div className="flex-1">
-              <div className="text-sm font-bold text-gray-100">Trading Advisor</div>
-              <div className="text-[10px] text-[#8b92a5]">Budget-Schätzungen & Marktwert-Prognosen ansehen</div>
-            </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-          </Link>
-          <button
-            onClick={handleAdvisorUpdate}
-            disabled={isAdvisorUpdating}
-            className="w-full flex items-center justify-center gap-2 bg-[#171717] border border-cyan-500/30 text-cyan-400 font-black uppercase tracking-widest text-xs py-4 rounded-2xl hover:bg-cyan-500/10 hover:border-cyan-500 transition-all disabled:opacity-50 shadow-lg"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="23 4 23 10 17 10"></polyline>
-              <polyline points="1 20 1 14 7 14"></polyline>
-              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-            </svg>
-            {advisorUpdateStatus ? advisorUpdateStatus : isAdvisorUpdating ? 'Läuft...' : 'Trading Advisor jetzt aktualisieren'}
-          </button>
-          <p className="text-[10px] text-[#8b92a5] text-center mt-3">Berechnet Budgets & trainiert das Marktwert-Modell neu (dauert ca. 2-5 Minuten).</p>
-        </div>
-
-        <RuleEditor />
       </div>
     </div>
   );

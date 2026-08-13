@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { useTour } from './Tour';
 import accountLogo from './assets/account_logo.png';
-import KickbaseNameModal from './KickbaseNameCard';
+import { LeagueStatsCard, PokalStatusCard } from './AccountStats';
 
 const MenuLink = ({ to, onClick, icon, label, color = '#8b92a5' }) => {
   const content = (
@@ -56,6 +56,13 @@ const ShieldIcon = (
   </svg>
 );
 
+const AdvisorIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+    <polyline points="17 6 23 6 23 12"></polyline>
+  </svg>
+);
+
 const TutorialIcon = (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="10"></circle>
@@ -82,7 +89,6 @@ const LogoutIcon = (
 const Account = () => {
   const { user, profile, isAdmin, isFirebaseConfigured, signOut } = useAuth();
   const tour = useTour();
-  const [showKickbaseModal, setShowKickbaseModal] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10">
@@ -98,9 +104,9 @@ const Account = () => {
         </div>
 
         {isFirebaseConfigured && user && (
-          <button
-            onClick={() => setShowKickbaseModal(true)}
-            className="w-full flex items-center gap-4 bg-[#171717] border border-[#2e2e2e] rounded-2xl p-5 mb-8 text-left hover:border-[#404040] transition-all active:scale-[0.98]"
+          <Link
+            to="/account/profile"
+            className="w-full flex items-center gap-4 bg-[#171717] border border-[#2e2e2e] rounded-2xl p-5 mb-4 hover:border-[#404040] transition-all active:scale-[0.98]"
           >
             <div className="w-14 h-14 rounded-full bg-[#1f1f1f] border border-[#2e2e2e] flex items-center justify-center overflow-hidden shrink-0">
               {user.photoURL ? (
@@ -118,31 +124,39 @@ const Account = () => {
               {profile?.kickbaseName ? (
                 <div className="text-[10px] text-[#8b5cf6] font-bold truncate mt-0.5">Kickbase: {profile.kickbaseName}</div>
               ) : (
-                <div className="text-[10px] text-[#ff5c3e] font-bold truncate mt-0.5">Kickbase-Name zuordnen →</div>
+                <div className="text-[10px] text-[#ff5c3e] font-bold truncate mt-0.5">Profil vervollständigen →</div>
               )}
             </div>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
               <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
-          </button>
+          </Link>
         )}
 
-        <div data-tour="account-menu" className="flex flex-col gap-3 mb-8">
+        {profile?.kickbaseId && (
+          <>
+            <LeagueStatsCard kickbaseId={profile.kickbaseId} />
+            <PokalStatusCard kickbaseName={profile.kickbaseName} />
+          </>
+        )}
+
+        <div data-tour="account-menu" className="flex flex-col gap-3 mb-8 mt-4">
           <MenuLink onClick={tour.start} icon={TutorialIcon} label="App-Tutorial ansehen" color="#eab308" />
           <MenuLink to="/account/reminders" icon={BellIcon} label="Erinnerungen" color="#22d3ee" />
           <MenuLink to="/rules" icon={RulesIcon} label="Regelkatalog" color="#ff5c3e" />
           <MenuLink to="/pokal-rules" icon={TrophyIcon} label="Pokal-Regeln" color="#8b5cf6" />
           <MenuLink to="/archiv" icon={ArchiveIcon} label="Quali-Daten (Archiv)" color="#8b92a5" />
           {isAdmin && (
-            <MenuLink to="/admin" icon={ShieldIcon} label="Admin Panel" color="#a855f7" />
+            <>
+              <MenuLink to="/admin/advisor" icon={AdvisorIcon} label="Trading Advisor" color="#22d3ee" />
+              <MenuLink to="/admin" icon={ShieldIcon} label="Admin Panel" color="#a855f7" />
+            </>
           )}
         </div>
 
         {isFirebaseConfigured && user && (
           <MenuLink onClick={signOut} icon={LogoutIcon} label="Abmelden" color="#ef4444" />
         )}
-
-        {showKickbaseModal && <KickbaseNameModal onClose={() => setShowKickbaseModal(false)} />}
       </div>
     </div>
   );
