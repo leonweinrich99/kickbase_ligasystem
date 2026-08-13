@@ -4,7 +4,7 @@ import { motion as Motion } from 'framer-motion';
 import { useAuth } from './AuthContext';
 import { useTour } from './Tour';
 import accountLogo from './assets/account_logo.png';
-import { LeagueStatsCard, PokalMatchCard } from './AccountStats';
+import { SeasonSnapshot } from './AccountStats';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
@@ -116,52 +116,41 @@ const Account = () => {
   return (
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10">
       <div className="max-w-lg mx-auto">
-        <Motion.div variants={fadeUp} initial="hidden" animate="show" custom={0} className="flex items-center gap-3 sm:gap-6 mb-6">
-          <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center p-0.5 sm:p-1 overflow-hidden flex-shrink-0">
-            <img src={accountLogo} alt="Account Logo" className="w-full h-full object-contain" />
+        <Motion.div variants={fadeUp} initial="hidden" animate="show" custom={0} className="flex items-center justify-between gap-3 mb-6">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+            <div className="w-11 h-11 sm:w-14 sm:h-14 flex items-center justify-center overflow-hidden flex-shrink-0">
+              <img src={accountLogo} alt="Account Logo" className="w-full h-full object-contain" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-[9px] sm:text-[11px] font-bold tracking-wider text-[#ff5c3e] mb-1">SAISON 26/27</div>
+              <h1 className="text-[17px] sm:text-2xl font-black tracking-tight leading-[1.1] truncate">
+                {getGreeting()}{firstName ? `, ${firstName}` : ''}
+              </h1>
+            </div>
           </div>
-          <div className="min-w-0">
-            <div className="text-[9px] sm:text-[11px] font-bold tracking-wider text-[#ff5c3e] mb-1">SAISON 26/27</div>
-            <h1 className="text-[19px] sm:text-3xl font-black tracking-tight leading-[1.1] truncate">
-              {getGreeting()}{firstName ? `, ${firstName}` : ''}
-            </h1>
-          </div>
-        </Motion.div>
 
-        {isFirebaseConfigured && user && (
-          <Motion.div variants={fadeUp} initial="hidden" animate="show" custom={1}>
-            <Link
-              to="/account/profile"
-              className="flex items-center gap-4 bg-[#171717] border border-[#2e2e2e] rounded-2xl p-5 mb-4 hover:border-[#404040] transition-all active:scale-[0.98]"
-            >
-              <div className="w-14 h-14 rounded-full bg-[#1f1f1f] border-2 border-[#ff5c3e] flex items-center justify-center overflow-hidden shrink-0">
+          {isFirebaseConfigured && user && (
+            <Link to="/account/profile" className="relative shrink-0" aria-label="Profil öffnen">
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#1f1f1f] border-2 border-[#ff5c3e] flex items-center justify-center overflow-hidden">
                 {user.photoURL ? (
                   <img src={user.photoURL} alt={profile?.displayName || 'Avatar'} className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-xl font-black text-[#ff5c3e]">{(profile?.displayName || user.email || '?').charAt(0).toUpperCase()}</span>
+                  <span className="text-base font-black text-[#ff5c3e]">{(profile?.displayName || user.email || '?').charAt(0).toUpperCase()}</span>
                 )}
               </div>
-              <div className="min-w-0 flex-1">
-                <div className="font-bold text-gray-100 truncate flex items-center gap-2">
-                  {profile?.displayName || 'Unbenannt'}
-                  {isAdmin && <span className="text-[8px] font-black uppercase tracking-widest bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-full px-1.5 py-0.5">Admin</span>}
-                </div>
-                <div className="text-xs text-[#8b92a5] truncate">{user.email}</div>
-              </div>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-                <polyline points="9 18 15 12 9 6"></polyline>
-              </svg>
+              {isAdmin && (
+                <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-purple-500 border-2 border-black flex items-center justify-center text-[7px] font-black text-white">A</span>
+              )}
             </Link>
-          </Motion.div>
-        )}
+          )}
+        </Motion.div>
 
         {profile?.kickbaseId ? (
-          <Motion.div variants={fadeUp} initial="hidden" animate="show" custom={2}>
-            <LeagueStatsCard kickbaseId={profile.kickbaseId} />
-            <PokalMatchCard kickbaseName={profile.kickbaseName} />
+          <Motion.div variants={fadeUp} initial="hidden" animate="show" custom={1}>
+            <SeasonSnapshot kickbaseId={profile.kickbaseId} kickbaseName={profile.kickbaseName} />
           </Motion.div>
         ) : (
-          <Motion.div variants={fadeUp} initial="hidden" animate="show" custom={2}>
+          <Motion.div variants={fadeUp} initial="hidden" animate="show" custom={1}>
             <Link
               to="/account/profile"
               className="flex items-center gap-4 border border-dashed border-[#ff5c3e]/40 rounded-2xl p-5 mb-4 hover:border-[#ff5c3e] transition-all active:scale-[0.98]"

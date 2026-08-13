@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 import {
   updateProfile as updateAuthProfile,
   updatePassword,
@@ -10,6 +9,7 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, auth, storage } from './firebase';
 import { useAuth } from './AuthContext';
+import { useBackNavigation } from './useBackNavigation';
 import KickbaseNameField from './KickbaseNameCard';
 
 const mapPasswordError = (error) => {
@@ -33,6 +33,7 @@ const CameraIcon = (
 
 export default function Profile() {
   const { user, profile } = useAuth();
+  const goBack = useBackNavigation('/account');
   const fileInputRef = useRef(null);
 
   const [displayName, setDisplayName] = useState(profile?.displayName || '');
@@ -111,7 +112,7 @@ export default function Profile() {
       const credential = EmailAuthProvider.credential(user.email, currentPassword);
       await reauthenticateWithCredential(auth.currentUser, credential);
       await updatePassword(auth.currentUser, newPassword);
-      setPasswordStatus('Passwort erfolgreich geändert');
+      setPasswordStatus('Passwort geändert');
       setCurrentPassword('');
       setNewPassword('');
       setTimeout(() => setPasswordStatus(null), 3000);
@@ -127,8 +128,8 @@ export default function Profile() {
       <div className="max-w-lg mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-xl sm:text-2xl font-black uppercase text-white">Profil</h1>
-          <Link
-            to="/account"
+          <button
+            onClick={goBack}
             aria-label="Schließen"
             className="w-10 h-10 shrink-0 flex items-center justify-center bg-[#171717] border border-[#2e2e2e] rounded-xl text-[#8b92a5] hover:text-white hover:border-[#404040] transition-all"
           >
@@ -136,7 +137,7 @@ export default function Profile() {
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
-          </Link>
+          </button>
         </div>
 
         {/* Profilbild */}
@@ -168,74 +169,69 @@ export default function Profile() {
           )}
         </div>
 
-        {/* Anzeigename */}
-        <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl p-5 mb-4">
-          <div className="flex items-start justify-between gap-3 mb-3">
-            <div>
-              <h2 className="text-sm font-bold text-gray-100">Name</h2>
-              <p className="text-xs text-[#8b92a5] mt-1">Dein Anzeigename in der App.</p>
+        {/* Alle Einstellungen in EINER Karte mit Trennlinien statt drei
+            separaten Kacheln - weniger visuelle Wiederholung. */}
+        <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl divide-y divide-[#2a2a2a] overflow-hidden mb-4">
+          <div className="p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-sm font-bold text-gray-100 flex-1">Name</span>
+              {nameStatus && (
+                <span className={`text-[10px] font-black uppercase tracking-widest shrink-0 ${nameStatus.startsWith('Fehler') ? 'text-red-400' : 'text-green-400'}`}>{nameStatus}</span>
+              )}
             </div>
-            {nameStatus && (
-              <span className={`text-[10px] font-black uppercase tracking-widest shrink-0 mt-1 ${nameStatus.startsWith('Fehler') ? 'text-red-400' : 'text-green-400'}`}>{nameStatus}</span>
-            )}
-          </div>
-          <div className="flex gap-2">
-            <input
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              className="flex-1 bg-[#000] border border-[#2e2e2e] rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-[#ff5c3e]"
-            />
-            <button
-              onClick={handleNameSave}
-              disabled={!nameChanged || savingName}
-              className="text-[10px] font-black uppercase tracking-widest bg-[#ff5c3e]/10 text-[#ff5c3e] border border-[#ff5c3e]/30 px-4 rounded-xl hover:bg-[#ff5c3e]/20 transition-colors disabled:opacity-40"
-            >
-              {savingName ? '...' : 'Speichern'}
-            </button>
-          </div>
-        </div>
-
-        {/* Kickbase-Name */}
-        <KickbaseNameField />
-
-        {/* Passwort */}
-        <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl p-5 mb-4">
-          <div className="flex items-start justify-between gap-3 mb-3">
-            <div>
-              <h2 className="text-sm font-bold text-gray-100">Passwort</h2>
-              <p className="text-xs text-[#8b92a5] mt-1">
-                {isPasswordProvider ? 'Ändere dein Login-Passwort.' : 'Du bist über Google angemeldet - dein Passwort wird dort verwaltet.'}
-              </p>
-            </div>
-            {passwordStatus && (
-              <span className={`text-[10px] font-black uppercase tracking-widest shrink-0 mt-1 text-right ${passwordStatus.startsWith('Fehler') ? 'text-red-400' : 'text-green-400'}`}>{passwordStatus}</span>
-            )}
-          </div>
-          {isPasswordProvider && (
-            <div className="space-y-2.5">
+            <div className="flex gap-2">
               <input
-                type="password"
-                placeholder="Aktuelles Passwort"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full bg-[#000] border border-[#2e2e2e] rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-[#ff5c3e]"
-              />
-              <input
-                type="password"
-                placeholder="Neues Passwort (mind. 6 Zeichen)"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full bg-[#000] border border-[#2e2e2e] rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-[#ff5c3e]"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                className="flex-1 bg-[#000] border border-[#2e2e2e] rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-[#ff5c3e]"
               />
               <button
-                onClick={handlePasswordChange}
-                disabled={changingPassword || !currentPassword || !newPassword}
-                className="w-full text-[10px] font-black uppercase tracking-widest bg-[#171717] border border-[#2e2e2e] text-gray-200 px-4 py-3 rounded-xl hover:border-[#404040] transition-colors disabled:opacity-40"
+                onClick={handleNameSave}
+                disabled={!nameChanged || savingName}
+                className="text-[10px] font-black uppercase tracking-widest bg-[#ff5c3e]/10 text-[#ff5c3e] border border-[#ff5c3e]/30 px-4 rounded-xl hover:bg-[#ff5c3e]/20 transition-colors disabled:opacity-40"
               >
-                {changingPassword ? 'Ändere...' : 'Passwort ändern'}
+                {savingName ? '...' : 'Speichern'}
               </button>
             </div>
-          )}
+          </div>
+
+          <KickbaseNameField />
+
+          <div className="p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-sm font-bold text-gray-100 flex-1">Passwort</span>
+              {passwordStatus && (
+                <span className={`text-[10px] font-black uppercase tracking-widest shrink-0 text-right ${passwordStatus.startsWith('Fehler') ? 'text-red-400' : 'text-green-400'}`}>{passwordStatus}</span>
+              )}
+            </div>
+            {isPasswordProvider ? (
+              <div className="space-y-2.5">
+                <input
+                  type="password"
+                  placeholder="Aktuelles Passwort"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="w-full bg-[#000] border border-[#2e2e2e] rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-[#ff5c3e]"
+                />
+                <input
+                  type="password"
+                  placeholder="Neues Passwort (mind. 6 Zeichen)"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full bg-[#000] border border-[#2e2e2e] rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-[#ff5c3e]"
+                />
+                <button
+                  onClick={handlePasswordChange}
+                  disabled={changingPassword || !currentPassword || !newPassword}
+                  className="w-full text-[10px] font-black uppercase tracking-widest bg-[#171717] border border-[#2e2e2e] text-gray-200 px-4 py-3 rounded-xl hover:border-[#404040] transition-colors disabled:opacity-40"
+                >
+                  {changingPassword ? 'Ändere...' : 'Passwort ändern'}
+                </button>
+              </div>
+            ) : (
+              <p className="text-xs text-[#8b92a5]">Du bist über Google angemeldet - dein Passwort wird dort verwaltet.</p>
+            )}
+          </div>
         </div>
       </div>
     </div>

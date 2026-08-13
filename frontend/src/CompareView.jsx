@@ -8,6 +8,7 @@ import {
   ArrowLeft, TrendingUp, TrendingDown, Target, 
   Award, Wallet, Activity, Star, Zap
 } from 'lucide-react';
+import { useBackNavigation } from './useBackNavigation';
 
 const calculatePerformanceScore = (points, avg, opt, max) => {
   if (points <= 0) return 1.0;
@@ -26,6 +27,7 @@ const parsePoints = (val) => {
 const CompareView = ({ dataBase = '', routeBase = '' }) => {
   const { id1, id2 } = useParams();
   const navigate = useNavigate();
+  const goBack = useBackNavigation(routeBase || '/');
 
   const [user1, setUser1] = useState(null);
   const [user2, setUser2] = useState(null);
@@ -204,7 +206,7 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
       <div className="min-h-screen bg-[#000000] flex flex-col justify-center items-center gap-6">
         <div className="text-gray-400 text-lg font-bold">Spieler nicht gefunden</div>
         <button 
-          onClick={() => navigate(routeBase || '/')}
+          onClick={goBack}
           className="bg-[#171717] border border-[#2e2e2e] px-6 py-3 rounded-xl text-gray-300 hover:text-white hover:border-[#ff5c3e] transition-all"
         >
           Zurück zur Übersicht

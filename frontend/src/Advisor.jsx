@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useAuth } from './AuthContext';
+import { useBackNavigation } from './useBackNavigation';
 
 // Zeigt die Auswertungen des "Kickbase Trading Advisor" an (siehe
 // backend/advisor/, generiert per GitHub Action aus
@@ -320,6 +321,7 @@ const PlayerHistoryModal = ({ player, onClose }) => {
 
 const Advisor = () => {
   const { isAdmin } = useAuth();
+  const goBack = useBackNavigation('/account');
   const [data, setData] = useState(null);
   const [error, setError] = useState(false);
   const [activeLeague, setActiveLeague] = useState(null);
@@ -421,8 +423,8 @@ const Advisor = () => {
             <div className="text-[10px] font-bold tracking-wider text-cyan-400 mb-1">ADMIN</div>
             <h1 className="text-2xl sm:text-3xl font-black uppercase text-white">Trading Advisor</h1>
           </div>
-          <Link
-            to="/account"
+          <button
+            onClick={goBack}
             aria-label="Schließen"
             className="w-10 h-10 shrink-0 flex items-center justify-center bg-[#171717] border border-[#2e2e2e] rounded-xl text-[#8b92a5] hover:text-white hover:border-[#404040] transition-all"
           >
@@ -430,7 +432,7 @@ const Advisor = () => {
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
-          </Link>
+          </button>
         </div>
 
         <p className="text-xs text-[#8b92a5] mb-4 -mt-3">

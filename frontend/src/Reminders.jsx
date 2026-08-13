@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import { useAuth } from './AuthContext';
+import { useBackNavigation } from './useBackNavigation';
 import Toggle from './Toggle';
 import {
   enablePushNotifications,
@@ -20,7 +20,7 @@ const BellIcon = (
 
 
 const ReminderRow = ({ title, description, checked, onChange, disabled }) => (
-  <div className="flex items-center justify-between gap-4 bg-[#171717] border border-[#2e2e2e] rounded-2xl px-5 py-4">
+  <div className="flex items-center justify-between gap-4 px-5 py-4">
     <div className="min-w-0">
       <div className="text-sm font-bold text-gray-100">{title}</div>
       <div className="text-xs text-[#8b92a5] mt-0.5">{description}</div>
@@ -31,6 +31,7 @@ const ReminderRow = ({ title, description, checked, onChange, disabled }) => (
 
 export default function Reminders() {
   const { user, profile } = useAuth();
+  const goBack = useBackNavigation('/account');
   const [status, setStatus] = useState(null);
   const [busy, setBusy] = useState(false);
 
@@ -48,7 +49,7 @@ export default function Reminders() {
       <div className="min-h-screen bg-[#000000] flex items-center justify-center p-4">
         <div className="text-center bg-[#171717] border border-[#2e2e2e] rounded-2xl p-8">
           <p className="text-sm text-[#8b92a5] mb-6">Erinnerungen sind aktuell nicht verfügbar.</p>
-          <Link to="/account" className="text-[#ff5c3e] text-sm font-bold uppercase tracking-widest">Zurück</Link>
+          <button onClick={goBack} className="text-[#ff5c3e] text-sm font-bold uppercase tracking-widest">Zurück</button>
         </div>
       </div>
     );
@@ -100,8 +101,8 @@ export default function Reminders() {
             </div>
             <h1 className="text-xl sm:text-2xl font-black uppercase text-white">Erinnerungen</h1>
           </div>
-          <Link
-            to="/account"
+          <button
+            onClick={goBack}
             aria-label="Schließen"
             className="w-10 h-10 shrink-0 flex items-center justify-center bg-[#171717] border border-[#2e2e2e] rounded-xl text-[#8b92a5] hover:text-white hover:border-[#404040] transition-all"
           >
@@ -109,7 +110,7 @@ export default function Reminders() {
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
-          </Link>
+          </button>
         </div>
 
         {needsHomeScreenInstall() && (
@@ -134,7 +135,7 @@ export default function Reminders() {
           </div>
         ) : (
           <>
-            <div className="flex flex-col gap-3 mb-6">
+            <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl divide-y divide-[#2a2a2a] overflow-hidden mb-6">
               <ReminderRow
                 title="Pokal-Erinnerung"
                 description="Mittwochs vor einem Pokal-Spieltag"

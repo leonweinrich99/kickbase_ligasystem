@@ -4,6 +4,7 @@ import { collection, onSnapshot, doc, updateDoc, query, orderBy } from 'firebase
 import { db } from './firebase';
 import { useAuth } from './AuthContext';
 import PushNotificationCard from './PushNotificationCard';
+import { useBackNavigation } from './useBackNavigation';
 
 const StatusBadge = ({ status }) => {
   const styles = {
@@ -95,6 +96,7 @@ const UserRow = ({ u, isSelf, onSetStatus, onSetRole, menuOpen, onToggleMenu, me
 
 const AdminPanel = () => {
   const { isAdmin, user } = useAuth();
+  const goBack = useBackNavigation('/account');
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('pending');
@@ -183,8 +185,8 @@ const AdminPanel = () => {
             <div className="text-[10px] font-bold tracking-wider text-[#ff5c3e] mb-1">ADMIN</div>
             <h1 className="text-2xl sm:text-3xl font-black uppercase text-white">Nutzerverwaltung</h1>
           </div>
-          <Link
-            to="/account"
+          <button
+            onClick={goBack}
             aria-label="Schließen"
             className="w-10 h-10 shrink-0 flex items-center justify-center bg-[#171717] border border-[#2e2e2e] rounded-xl text-[#8b92a5] hover:text-white hover:border-[#404040] transition-all"
           >
@@ -192,7 +194,7 @@ const AdminPanel = () => {
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
-          </Link>
+          </button>
         </div>
 
         <PushNotificationCard />

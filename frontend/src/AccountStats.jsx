@@ -2,15 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLeagueEntry } from './useLeagueEntry';
 
-// Liga-Statistiken (Kennzahlen-Reihe) und Pokal-Matchkarte fuer die
-// Account-Seite. Bewusst mit einer einzigen Akzentfarbe (Marken-Orange)
-// gehalten statt bunt gemischt - fuer ein ruhigeres Gesamtbild.
-
-const ArrowIcon = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="9 18 15 12 9 6"></polyline>
-  </svg>
-);
+// EIN Card-Container mit Tabs (Liga / Pokal / Spieltag) statt drei
+// gestapelter Einzelkarten - deutlich weniger "Kachel-Gefuehl", mehr Infos
+// pro Fleck. Wird auf der Account-Seite direkt unter dem Profil angezeigt.
 
 const RankIcon = (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -22,22 +16,34 @@ const RankIcon = (
     <path d="M18 2H6v7c0 3.31 2.69 6 6 6s6-2.69 6-6V2z"></path>
   </svg>
 );
-
 const PointsIcon = (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
   </svg>
 );
-
 const BoltIcon = (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
   </svg>
 );
-
-// Sucht den Eintrag eines Kickbase-Managers in den aktuellen Liga-Daten -
-// wird sowohl fuer die Statistik-Kachel als auch (spaeter) andere
-// Account-Elemente gebraucht, daher als eigener Hook (siehe useLeagueEntry.js).
+const CalendarIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+    <line x1="16" y1="2" x2="16" y2="6"></line>
+    <line x1="8" y1="2" x2="8" y2="6"></line>
+    <line x1="3" y1="10" x2="21" y2="10"></line>
+  </svg>
+);
+const TrophyIconSvg = ({ color, size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+    <path d="M4 22h16"></path>
+    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+    <path d="M18 2H6v7c0 3.31 2.69 6 6 6s6-2.69 6-6V2z"></path>
+  </svg>
+);
 
 const StatItem = ({ icon, value, label }) => (
   <div className="flex flex-col items-center text-center flex-1">
@@ -47,16 +53,14 @@ const StatItem = ({ icon, value, label }) => (
   </div>
 );
 
-export const LeagueStatsCard = ({ kickbaseId }) => {
-  const entry = useLeagueEntry(kickbaseId);
+// ---------- Liga-Tab ----------
 
-  if (!kickbaseId || !entry) return null;
+const LigaTab = ({ kickbaseId }) => {
+  const entry = useLeagueEntry(kickbaseId);
+  if (!entry) return <div className="text-xs text-[#8b92a5] text-center py-6">Lade Liga-Daten...</div>;
 
   return (
-    <Link
-      to={`/user/${kickbaseId}`}
-      className="block bg-[#171717] border border-[#2e2e2e] rounded-2xl p-5 mb-4 hover:border-[#404040] transition-all active:scale-[0.98]"
-    >
+    <div>
       <div className="flex items-center justify-between mb-4">
         <span
           className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full"
@@ -64,21 +68,22 @@ export const LeagueStatsCard = ({ kickbaseId }) => {
         >
           {entry.leagueName}
         </span>
-        <span className="text-[10px] font-bold text-[#8b92a5] flex items-center gap-1">
-          Details <ArrowIcon />
-        </span>
       </div>
-      <div className="flex items-stretch gap-2">
+      <div className="flex items-stretch gap-2 mb-4">
         <StatItem icon={RankIcon} value={`#${entry.rank}`} label="Platz" />
         <StatItem icon={PointsIcon} value={entry.points} label="Punkte" />
         <StatItem icon={BoltIcon} value={entry.pointsMatchday} label="Letzter ST" />
       </div>
-    </Link>
+      <Link to={`/user/${kickbaseId}`} className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[#ff5c3e] hover:text-[#ff7056] transition-colors">
+        Vollständige Statistik ansehen
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </Link>
+    </div>
   );
 };
 
-// Reihenfolge der Pokal-Runden, jeweils mit den beiden Bracket-Haelften, die
-// zusammengehören (siehe frontend/public/pokal-data.json / Pokal.jsx).
+// ---------- Pokal-Tab ----------
+
 const ROUND_ORDER = [
   { key: 'Sechzehntelfinale', sides: ['roundOf32Left', 'roundOf32Right'] },
   { key: 'Achtelfinale', sides: ['roundOf16Left', 'roundOf16Right'] },
@@ -91,9 +96,6 @@ const isPlaceholderName = (name) => !name || name.startsWith('Sieger') || name =
 
 function getPokalStatus(data, playerName) {
   if (!data || !playerName) return null;
-
-  // Ueber alle Runden in Reihenfolge iterieren und sich das letzte Match
-  // merken, in dem der Name auftaucht - das ist der aktuelle Stand.
   let lastFound = null;
   for (const round of ROUND_ORDER) {
     for (const sideKey of round.sides) {
@@ -105,9 +107,7 @@ function getPokalStatus(data, playerName) {
       }
     }
   }
-
   if (!lastFound) return { status: 'none' };
-
   const { round, match, slot } = lastFound;
   const opponentRaw = slot === 1 ? match.p2 : match.p1;
   const opponent = isPlaceholderName(opponentRaw) ? null : opponentRaw;
@@ -119,26 +119,14 @@ function getPokalStatus(data, playerName) {
     }
     return { status: 'eliminated', round: round.key, opponent };
   }
-
   return { status: 'upcoming', round: round.key, opponent };
 }
 
 const STATUS_THEME = {
-  advanced: { color: '#22c55e', label: 'Weiter dabei', glow: 'rgba(34,197,94,0.08)' },
-  upcoming: { color: '#8b5cf6', label: 'Bevorstehend', glow: 'rgba(139,92,246,0.08)' },
-  eliminated: { color: '#6b7280', label: 'Ausgeschieden', glow: 'transparent' },
+  advanced: { color: '#22c55e', label: 'Weiter dabei' },
+  upcoming: { color: '#8b5cf6', label: 'Bevorstehend' },
+  eliminated: { color: '#6b7280', label: 'Ausgeschieden' },
 };
-
-const TrophyIconSvg = ({ color, size = 16 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-    <path d="M4 22h16"></path>
-    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
-    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
-    <path d="M18 2H6v7c0 3.31 2.69 6 6 6s6-2.69 6-6V2z"></path>
-  </svg>
-);
 
 const NameAvatar = ({ name, color, muted }) => (
   <div
@@ -151,29 +139,43 @@ const NameAvatar = ({ name, color, muted }) => (
   </div>
 );
 
-export const PokalMatchCard = ({ kickbaseName }) => {
+// Findet den Liga-Eintrag eines Managers anhand seines Kickbase-Namens
+// (Pokal-Paarungen speichern nur Namen, keine IDs - siehe pokal-data.json).
+const findManagerByName = (leagueData, name) => {
+  if (!leagueData || !name) return null;
+  for (const league of leagueData.leagues || []) {
+    const found = (league.users || []).find((u) => u.name === name);
+    if (found) return { ...found, leagueName: league.name, leagueColor: league.color };
+  }
+  return null;
+};
+
+const PokalTab = ({ kickbaseName }) => {
   const [pokalData, setPokalData] = useState(null);
+  const [leagueData, setLeagueData] = useState(null);
 
   useEffect(() => {
     fetch(`/pokal-data.json?t=${Date.now()}`).then((res) => res.json()).then(setPokalData).catch(() => setPokalData(null));
+    fetch(`/data.json?t=${Date.now()}`).then((res) => res.json()).then(setLeagueData).catch(() => setLeagueData(null));
   }, []);
 
   const status = useMemo(() => getPokalStatus(pokalData, kickbaseName), [pokalData, kickbaseName]);
+  const roundInfo = pokalData?.meta?.roundSchedule?.[status?.round];
+  const opponentEntry = useMemo(
+    () => (status?.opponent ? findManagerByName(leagueData, status.opponent) : null),
+    [leagueData, status]
+  );
 
-  if (!kickbaseName || !status || status.status === 'none') return null;
+  if (!status) return <div className="text-xs text-[#8b92a5] text-center py-6">Lade Pokal-Daten...</div>;
+  if (status.status === 'none') return <div className="text-xs text-[#8b92a5] text-center py-6">Du nimmst aktuell nicht am Pokal teil.</div>;
 
-  // Sonderfall Pokalsieger: eigenes, groesseres Layout statt "DU vs GEGNER" -
-  // es gibt schliesslich keinen naechsten Gegner mehr.
   if (status.status === 'champion') {
     return (
-      <Link
-        to="/pokal"
-        className="block relative overflow-hidden bg-gradient-to-br from-yellow-500/15 via-[#171717] to-[#171717] border border-yellow-500/40 rounded-2xl p-6 mb-4 text-center hover:border-yellow-500 transition-all active:scale-[0.98]"
-      >
+      <div className="text-center py-2">
         <TrophyIconSvg color="#eab308" size={32} />
         <div className="text-base font-black uppercase text-yellow-400 mt-2">Pokalsieger!</div>
         <div className="text-xs text-[#8b92a5] mt-1">Herzlichen Glückwunsch zum Titel 🎉</div>
-      </Link>
+      </div>
     );
   }
 
@@ -181,16 +183,9 @@ export const PokalMatchCard = ({ kickbaseName }) => {
   const opponentLabel = status.opponent || (status.status === 'eliminated' ? 'Unbekannt' : 'Steht noch nicht fest');
 
   return (
-    <Link
-      to="/pokal"
-      className="block relative overflow-hidden bg-[#171717] border border-[#2e2e2e] rounded-2xl p-5 mb-4 hover:border-[#404040] transition-all active:scale-[0.98]"
-      style={{ backgroundImage: `radial-gradient(circle at top right, ${theme.glow}, transparent 70%)` }}
-    >
+    <div>
       <div className="flex items-center justify-between mb-4">
-        <span
-          className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full"
-          style={{ backgroundColor: `${theme.color}26`, color: theme.color }}
-        >
+        <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full" style={{ backgroundColor: `${theme.color}26`, color: theme.color }}>
           {status.round}
         </span>
         <span className="text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5" style={{ color: theme.color }}>
@@ -199,19 +194,122 @@ export const PokalMatchCard = ({ kickbaseName }) => {
         </span>
       </div>
 
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex items-center justify-between gap-2 mb-4">
         <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
           <NameAvatar name="Du" color={theme.color} />
           <span className="text-[11px] font-bold text-gray-100">Du</span>
         </div>
-
         <div className="w-7 h-7 rounded-full bg-[#000] border border-[#2e2e2e] flex items-center justify-center text-[8px] font-black text-[#8b92a5] shrink-0">VS</div>
-
         <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
           <NameAvatar name={status.opponent} muted />
           <span className="text-[11px] font-bold text-gray-100 truncate max-w-full">{opponentLabel}</span>
+          {opponentEntry && (
+            <span
+              className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full"
+              style={{ backgroundColor: `${opponentEntry.leagueColor}26`, color: opponentEntry.leagueColor }}
+            >
+              {opponentEntry.leagueName} · #{opponentEntry.rank}
+            </span>
+          )}
         </div>
       </div>
-    </Link>
+
+      {roundInfo && (
+        <div className="flex items-center gap-2 text-[11px] text-[#8b92a5] bg-[#000] border border-[#2e2e2e] rounded-xl px-3 py-2.5 mb-2">
+          <CalendarIcon size={13} />
+          <span>Bundesliga-Spieltag {roundInfo.matchday} · {roundInfo.date}</span>
+        </div>
+      )}
+      {opponentEntry && (
+        <div className="text-[11px] text-[#8b92a5]">
+          Gegner-Stats: <span className="text-gray-200 font-bold">Platz {opponentEntry.rank}</span> · <span className="text-gray-200 font-bold">{opponentEntry.points} Punkte</span>
+        </div>
+      )}
+
+      <Link to="/pokal" className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[#ff5c3e] hover:text-[#ff7056] transition-colors mt-3">
+        Zum Pokal-Baum
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </Link>
+    </div>
+  );
+};
+
+// ---------- Spieltag-Tab ----------
+
+const SpieltagTab = () => {
+  const [plan, setPlan] = useState(null);
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    fetch(`/bundesliga-spielplan.json?t=${Date.now()}`).then((res) => res.json()).then(setPlan).catch(() => setPlan(null));
+  }, []);
+
+  const next = useMemo(() => {
+    if (!plan) return null;
+    const todayKey = new Date().toISOString().slice(0, 10);
+    return plan.matchdays.find((md) => md.endDate >= todayKey) || plan.matchdays[plan.matchdays.length - 1];
+  }, [plan]);
+
+  if (!next) return <div className="text-xs text-[#8b92a5] text-center py-6">Lade Spielplan...</div>;
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-[#ff5c3e]/15 text-[#ff5c3e]">
+          Spieltag {next.number}
+        </span>
+        <span className="text-[10px] text-[#8b92a5] flex items-center gap-1.5">
+          <CalendarIcon size={12} />
+          {next.dateRange}
+        </span>
+      </div>
+      <div className="space-y-1.5">
+        {next.matches.slice(0, expanded ? undefined : 4).map((m, i) => (
+          <div key={i} className="flex items-center justify-between text-xs bg-[#000] border border-[#2e2e2e] rounded-lg px-3 py-2">
+            <span className="text-gray-200 font-medium truncate">{m.home}</span>
+            <span className="text-[#626978] text-[9px] font-black px-2 shrink-0">VS</span>
+            <span className="text-gray-200 font-medium truncate text-right">{m.away}</span>
+          </div>
+        ))}
+      </div>
+      {next.matches.length > 4 && (
+        <button onClick={() => setExpanded((e) => !e)} className="text-[10px] font-black uppercase tracking-widest text-[#ff5c3e] hover:text-[#ff7056] transition-colors mt-3">
+          {expanded ? 'Weniger anzeigen' : `Alle ${next.matches.length} Partien anzeigen`}
+        </button>
+      )}
+    </div>
+  );
+};
+
+// ---------- Hauptkomponente ----------
+
+const TABS = [
+  { key: 'liga', label: 'Liga' },
+  { key: 'pokal', label: 'Pokal' },
+  { key: 'spieltag', label: 'Spieltag' },
+];
+
+export const SeasonSnapshot = ({ kickbaseId, kickbaseName }) => {
+  const [tab, setTab] = useState('liga');
+
+  return (
+    <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl mb-4 overflow-hidden">
+      <div className="flex border-b border-[#2a2a2a]">
+        {TABS.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest transition-colors border-b-2 ${tab === t.key ? 'text-white border-[#ff5c3e]' : 'text-[#8b92a5] border-transparent hover:text-gray-300'}`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+      <div className="p-5">
+        {tab === 'liga' && <LigaTab kickbaseId={kickbaseId} />}
+        {tab === 'pokal' && <PokalTab kickbaseName={kickbaseName} />}
+        {tab === 'spieltag' && <SpieltagTab />}
+      </div>
+    </div>
   );
 };

@@ -42,13 +42,10 @@ export default function KickbaseNameField() {
   };
 
   return (
-    <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl p-5 mb-4">
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div>
-          <h2 className="text-sm font-bold text-gray-100">Kickbase-Name</h2>
-          <p className="text-xs text-[#8b92a5] mt-1">Ordne deinen echten Kickbase-Manager-Namen deinem Account zu.</p>
-        </div>
-        {status && <span className={`text-[10px] font-black uppercase tracking-widest shrink-0 mt-1 ${status.startsWith('Fehler') ? 'text-red-400' : 'text-green-400'}`}>{status}</span>}
+    <div className="p-5">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-sm font-bold text-gray-100 flex-1">Kickbase-Name</span>
+        {status && <span className={`text-[10px] font-black uppercase tracking-widest shrink-0 ${status.startsWith('Fehler') ? 'text-red-400' : 'text-green-400'}`}>{status}</span>}
       </div>
 
       <select

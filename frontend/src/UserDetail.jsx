@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
+import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, 
   ResponsiveContainer, ReferenceArea, Legend, LabelList 
 } from 'recharts';
@@ -8,6 +8,7 @@ import {
   ArrowLeft, TrendingUp, TrendingDown, Target, 
   Award, Wallet, Activity, Star, Users, Search, X, Zap
 } from 'lucide-react';
+import { useBackNavigation } from './useBackNavigation';
 
 const calculatePerformanceScore = (points, avg, opt, max) => {
   if (points <= 0) return 1.0;
@@ -26,6 +27,7 @@ const calculatePerformanceScore = (points, avg, opt, max) => {
 const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const goBack = useBackNavigation(routeBase || '/');
 
   const [userData, setUserData] = useState(null);
   const [allUsers, setAllUsers] = useState([]);
@@ -218,7 +220,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
       <div className="min-h-screen bg-[#000000] flex flex-col justify-center items-center gap-6">
         <div className="text-gray-400 text-lg font-bold">Spieler nicht gefunden</div>
         <button 
-          onClick={() => navigate(routeBase || '/')}
+          onClick={goBack}
           className="bg-[#171717] border border-[#2e2e2e] px-6 py-3 rounded-xl text-gray-300 hover:text-white hover:border-[#ff5c3e] transition-all"
         >
           Zurück zur Übersicht
@@ -288,11 +290,11 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
         {/* Top bar on mobile (Back + Compare buttons) */}
         <div className="flex items-center justify-between w-full sm:w-auto">
             <button 
-              onClick={() => navigate(routeBase || '/')}
+              onClick={goBack}
               className="group flex items-center gap-3 bg-[#171717] border border-[#2e2e2e] px-4 py-2 rounded-xl text-[#8b92a5] hover:text-white transition-all shrink-0"
             >
               <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-              <span className="text-xs font-bold uppercase tracking-wider">Dashboard</span>
+              <span className="text-xs font-bold uppercase tracking-wider">Zurück</span>
             </button>
 
             {/* Compare Buttons on mobile */}

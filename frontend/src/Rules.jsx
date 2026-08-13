@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { motion as Motion } from 'framer-motion';
 import { subscribeToRules, saveRules } from './rulesConfig';
 import { useAuth } from './AuthContext';
+import { useBackNavigation } from './useBackNavigation';
 
 const colors = {
   blue: ['border-blue-500/40 hover:border-blue-500 hover:bg-blue-500/10', 'text-blue-400'],
@@ -104,7 +104,7 @@ const RuleCard = ({ rule, number, isAdmin, isEditing, onEdit, onCancel, onSave, 
 };
 
 export default function Rules({ type = 'league', backTo = '/', label = 'Regelkatalog', accent = 'orange' }) {
-  const navigate = useNavigate();
+  const handleBack = useBackNavigation(backTo);
   const { isAdmin } = useAuth();
   const [rules, setRules] = useState(null);
   const [editingId, setEditingId] = useState(null);
@@ -114,15 +114,6 @@ export default function Rules({ type = 'league', backTo = '/', label = 'Regelkat
   const cards = rules?.[type] || [];
   const sections = [...new Set(cards.map((rule) => rule.section))];
   const isCup = type === 'cup';
-
-  // Zurueck dahin, wo man herkam (Browser-Historie) statt immer fix zur
-  // Liga/zum Pokal zu springen - relevant z.B. wenn man ueber den Account-Tab
-  // hierher navigiert ist. `backTo` bleibt nur als Fallback fuer den Fall,
-  // dass die Seite direkt per URL geoeffnet wurde (keine Historie vorhanden).
-  const handleBack = () => {
-    if (window.history.length > 1) navigate(-1);
-    else navigate(backTo);
-  };
 
   const handleSaveRule = async (ruleId, updates) => {
     setSaving(true);

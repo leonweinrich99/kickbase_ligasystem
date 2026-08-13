@@ -1,0 +1,754 @@
+{
+  "season": "2026/27",
+  "note": "Paarungen laut DFL-Rahmenterminplan (Stand der Recherche im Chat). Genaue Anstoßzeiten für Spieltag 5+ waren zum Zeitpunkt der Recherche von der DFL noch nicht final terminiert - nur das Datum ist gesichert.",
+  "matchdays": [
+    {
+      "number": 1,
+      "dateRange": "28.-30.08.2026",
+      "matches": [
+        {
+          "home": "Bayern München",
+          "away": "VfB Stuttgart"
+        },
+        {
+          "home": "RB Leipzig",
+          "away": "Gladbach"
+        },
+        {
+          "home": "Mainz",
+          "away": "Paderborn"
+        },
+        {
+          "home": "Union Berlin",
+          "away": "Frankfurt"
+        },
+        {
+          "home": "Köln",
+          "away": "Hoffenheim"
+        },
+        {
+          "home": "Elversberg",
+          "away": "Leverkusen"
+        },
+        {
+          "home": "Dortmund",
+          "away": "Hamburger SV"
+        },
+        {
+          "home": "Freiburg",
+          "away": "Werder Bremen"
+        },
+        {
+          "home": "Augsburg",
+          "away": "Schalke 04"
+        }
+      ],
+      "startDate": "2026-08-28",
+      "endDate": "2026-08-30"
+    },
+    {
+      "number": 2,
+      "dateRange": "04.-06.09.2026",
+      "matches": [
+        {
+          "home": "VfB Stuttgart",
+          "away": "Köln"
+        },
+        {
+          "home": "Hoffenheim",
+          "away": "Dortmund"
+        },
+        {
+          "home": "Leverkusen",
+          "away": "Union Berlin"
+        },
+        {
+          "home": "Gladbach",
+          "away": "Elversberg"
+        },
+        {
+          "home": "Werder Bremen",
+          "away": "RB Leipzig"
+        },
+        {
+          "home": "Paderborn",
+          "away": "Freiburg"
+        },
+        {
+          "home": "Schalke 04",
+          "away": "Bayern München"
+        },
+        {
+          "home": "Hamburger SV",
+          "away": "Mainz"
+        },
+        {
+          "home": "Frankfurt",
+          "away": "Augsburg"
+        }
+      ],
+      "startDate": "2026-09-04",
+      "endDate": "2026-09-06"
+    },
+    {
+      "number": 3,
+      "dateRange": "11.-13.09.2026",
+      "matches": [
+        {
+          "home": "Union Berlin",
+          "away": "Schalke 04"
+        },
+        {
+          "home": "Dortmund",
+          "away": "Paderborn"
+        },
+        {
+          "home": "Hoffenheim",
+          "away": "VfB Stuttgart"
+        },
+        {
+          "home": "Freiburg",
+          "away": "Gladbach"
+        },
+        {
+          "home": "Augsburg",
+          "away": "Leverkusen"
+        },
+        {
+          "home": "Mainz",
+          "away": "Frankfurt"
+        },
+        {
+          "home": "Köln",
+          "away": "Werder Bremen"
+        },
+        {
+          "home": "RB Leipzig",
+          "away": "Hamburger SV"
+        },
+        {
+          "home": "Elversberg",
+          "away": "Bayern München"
+        }
+      ],
+      "startDate": "2026-09-11",
+      "endDate": "2026-09-13"
+    },
+    {
+      "number": 4,
+      "dateRange": "18.-20.09.2026",
+      "matches": [
+        {
+          "home": "Bayern München",
+          "away": "Union Berlin"
+        },
+        {
+          "home": "Frankfurt",
+          "away": "Freiburg"
+        },
+        {
+          "home": "Gladbach",
+          "away": "Mainz"
+        },
+        {
+          "home": "Hamburger SV",
+          "away": "Köln"
+        },
+        {
+          "home": "Werder Bremen",
+          "away": "Augsburg"
+        },
+        {
+          "home": "VfB Stuttgart",
+          "away": "Dortmund"
+        },
+        {
+          "home": "Leverkusen",
+          "away": "RB Leipzig"
+        },
+        {
+          "home": "Schalke 04",
+          "away": "Elversberg"
+        },
+        {
+          "home": "Paderborn",
+          "away": "Hoffenheim"
+        }
+      ],
+      "startDate": "2026-09-18",
+      "endDate": "2026-09-20"
+    },
+    {
+      "number": 5,
+      "dateRange": "10.10.2026",
+      "matches": [
+        {
+          "home": "Dortmund",
+          "away": "Werder Bremen"
+        },
+        {
+          "home": "RB Leipzig",
+          "away": "Frankfurt"
+        },
+        {
+          "home": "Hoffenheim",
+          "away": "Hamburger SV"
+        },
+        {
+          "home": "Freiburg",
+          "away": "Schalke 04"
+        },
+        {
+          "home": "Augsburg",
+          "away": "Bayern München"
+        },
+        {
+          "home": "Mainz",
+          "away": "Leverkusen"
+        },
+        {
+          "home": "Union Berlin",
+          "away": "Elversberg"
+        },
+        {
+          "home": "Köln",
+          "away": "Gladbach"
+        },
+        {
+          "home": "Paderborn",
+          "away": "VfB Stuttgart"
+        }
+      ],
+      "startDate": "2026-10-10",
+      "endDate": "2026-10-10"
+    },
+    {
+      "number": 6,
+      "dateRange": "17.10.2026",
+      "matches": [
+        {
+          "home": "Bayern München",
+          "away": "RB Leipzig"
+        },
+        {
+          "home": "Leverkusen",
+          "away": "Freiburg"
+        },
+        {
+          "home": "Frankfurt",
+          "away": "Köln"
+        },
+        {
+          "home": "Union Berlin",
+          "away": "Dortmund"
+        },
+        {
+          "home": "Gladbach",
+          "away": "Hoffenheim"
+        },
+        {
+          "home": "Hamburger SV",
+          "away": "VfB Stuttgart"
+        },
+        {
+          "home": "Werder Bremen",
+          "away": "Paderborn"
+        },
+        {
+          "home": "Schalke 04",
+          "away": "Mainz"
+        },
+        {
+          "home": "Elversberg",
+          "away": "Augsburg"
+        }
+      ],
+      "startDate": "2026-10-17",
+      "endDate": "2026-10-17"
+    },
+    {
+      "number": 7,
+      "dateRange": "24.10.2026",
+      "matches": [
+        {
+          "home": "Dortmund",
+          "away": "Frankfurt"
+        },
+        {
+          "home": "RB Leipzig",
+          "away": "Elversberg"
+        },
+        {
+          "home": "VfB Stuttgart",
+          "away": "Gladbach"
+        },
+        {
+          "home": "Hoffenheim",
+          "away": "Leverkusen"
+        },
+        {
+          "home": "Freiburg",
+          "away": "Bayern München"
+        },
+        {
+          "home": "Augsburg",
+          "away": "Union Berlin"
+        },
+        {
+          "home": "Mainz",
+          "away": "Werder Bremen"
+        },
+        {
+          "home": "Köln",
+          "away": "Schalke 04"
+        },
+        {
+          "home": "Paderborn",
+          "away": "Hamburger SV"
+        }
+      ],
+      "startDate": "2026-10-24",
+      "endDate": "2026-10-24"
+    },
+    {
+      "number": 8,
+      "dateRange": "31.10.2026",
+      "matches": [
+        {
+          "home": "Bayern München",
+          "away": "Dortmund"
+        },
+        {
+          "home": "Leverkusen",
+          "away": "VfB Stuttgart"
+        },
+        {
+          "home": "Frankfurt",
+          "away": "Hamburger SV"
+        },
+        {
+          "home": "Augsburg",
+          "away": "Freiburg"
+        },
+        {
+          "home": "Union Berlin",
+          "away": "Köln"
+        },
+        {
+          "home": "Gladbach",
+          "away": "Paderborn"
+        },
+        {
+          "home": "Werder Bremen",
+          "away": "Hoffenheim"
+        },
+        {
+          "home": "Schalke 04",
+          "away": "RB Leipzig"
+        },
+        {
+          "home": "Elversberg",
+          "away": "Mainz"
+        }
+      ],
+      "startDate": "2026-10-31",
+      "endDate": "2026-10-31"
+    },
+    {
+      "number": 9,
+      "dateRange": "07.11.2026",
+      "matches": [
+        {
+          "home": "Dortmund",
+          "away": "Elversberg"
+        },
+        {
+          "home": "RB Leipzig",
+          "away": "Augsburg"
+        },
+        {
+          "home": "VfB Stuttgart",
+          "away": "Werder Bremen"
+        },
+        {
+          "home": "Hoffenheim",
+          "away": "Schalke 04"
+        },
+        {
+          "home": "Freiburg",
+          "away": "Union Berlin"
+        },
+        {
+          "home": "Mainz",
+          "away": "Bayern München"
+        },
+        {
+          "home": "Hamburger SV",
+          "away": "Gladbach"
+        },
+        {
+          "home": "Köln",
+          "away": "Leverkusen"
+        },
+        {
+          "home": "Paderborn",
+          "away": "Frankfurt"
+        }
+      ],
+      "startDate": "2026-11-07",
+      "endDate": "2026-11-07"
+    },
+    {
+      "number": 10,
+      "dateRange": "21.11.2026",
+      "matches": [
+        {
+          "home": "Bayern München",
+          "away": "Köln"
+        },
+        {
+          "home": "Leverkusen",
+          "away": "Paderborn"
+        },
+        {
+          "home": "Frankfurt",
+          "away": "Hoffenheim"
+        },
+        {
+          "home": "Augsburg",
+          "away": "Mainz"
+        },
+        {
+          "home": "Union Berlin",
+          "away": "RB Leipzig"
+        },
+        {
+          "home": "Gladbach",
+          "away": "Dortmund"
+        },
+        {
+          "home": "Werder Bremen",
+          "away": "Hamburger SV"
+        },
+        {
+          "home": "Schalke 04",
+          "away": "VfB Stuttgart"
+        },
+        {
+          "home": "Elversberg",
+          "away": "Freiburg"
+        }
+      ],
+      "startDate": "2026-11-21",
+      "endDate": "2026-11-21"
+    },
+    {
+      "number": 11,
+      "dateRange": "28.11.2026",
+      "matches": [
+        {
+          "home": "Dortmund",
+          "away": "Leverkusen"
+        },
+        {
+          "home": "VfB Stuttgart",
+          "away": "Frankfurt"
+        },
+        {
+          "home": "Hoffenheim",
+          "away": "Augsburg"
+        },
+        {
+          "home": "Freiburg",
+          "away": "RB Leipzig"
+        },
+        {
+          "home": "Mainz",
+          "away": "Union Berlin"
+        },
+        {
+          "home": "Hamburger SV",
+          "away": "Bayern München"
+        },
+        {
+          "home": "Köln",
+          "away": "Elversberg"
+        },
+        {
+          "home": "Werder Bremen",
+          "away": "Gladbach"
+        },
+        {
+          "home": "Paderborn",
+          "away": "Schalke 04"
+        }
+      ],
+      "startDate": "2026-11-28",
+      "endDate": "2026-11-28"
+    },
+    {
+      "number": 12,
+      "dateRange": "05.12.2026",
+      "matches": [
+        {
+          "home": "Bayern München",
+          "away": "Paderborn"
+        },
+        {
+          "home": "RB Leipzig",
+          "away": "Mainz"
+        },
+        {
+          "home": "Leverkusen",
+          "away": "Gladbach"
+        },
+        {
+          "home": "Freiburg",
+          "away": "Hoffenheim"
+        },
+        {
+          "home": "Frankfurt",
+          "away": "Werder Bremen"
+        },
+        {
+          "home": "Augsburg",
+          "away": "Köln"
+        },
+        {
+          "home": "Union Berlin",
+          "away": "Hamburger SV"
+        },
+        {
+          "home": "Schalke 04",
+          "away": "Dortmund"
+        },
+        {
+          "home": "Elversberg",
+          "away": "VfB Stuttgart"
+        }
+      ],
+      "startDate": "2026-12-05",
+      "endDate": "2026-12-05"
+    },
+    {
+      "number": 13,
+      "dateRange": "12.12.2026",
+      "matches": [
+        {
+          "home": "Dortmund",
+          "away": "Augsburg"
+        },
+        {
+          "home": "VfB Stuttgart",
+          "away": "Union Berlin"
+        },
+        {
+          "home": "Hoffenheim",
+          "away": "Bayern München"
+        },
+        {
+          "home": "Mainz",
+          "away": "Freiburg"
+        },
+        {
+          "home": "Gladbach",
+          "away": "Frankfurt"
+        },
+        {
+          "home": "Hamburger SV",
+          "away": "Schalke 04"
+        },
+        {
+          "home": "Köln",
+          "away": "RB Leipzig"
+        },
+        {
+          "home": "Werder Bremen",
+          "away": "Leverkusen"
+        },
+        {
+          "home": "Paderborn",
+          "away": "Elversberg"
+        }
+      ],
+      "startDate": "2026-12-12",
+      "endDate": "2026-12-12"
+    },
+    {
+      "number": 14,
+      "dateRange": "19.12.2026",
+      "matches": [
+        {
+          "home": "Bayern München",
+          "away": "Werder Bremen"
+        },
+        {
+          "home": "RB Leipzig",
+          "away": "Dortmund"
+        },
+        {
+          "home": "Leverkusen",
+          "away": "Frankfurt"
+        },
+        {
+          "home": "Freiburg",
+          "away": "VfB Stuttgart"
+        },
+        {
+          "home": "Augsburg",
+          "away": "Paderborn"
+        },
+        {
+          "home": "Mainz",
+          "away": "Köln"
+        },
+        {
+          "home": "Union Berlin",
+          "away": "Hoffenheim"
+        },
+        {
+          "home": "Schalke 04",
+          "away": "Gladbach"
+        },
+        {
+          "home": "Elversberg",
+          "away": "Hamburger SV"
+        }
+      ],
+      "startDate": "2026-12-19",
+      "endDate": "2026-12-19"
+    },
+    {
+      "number": 15,
+      "dateRange": "09.01.2027",
+      "matches": [
+        {
+          "home": "Dortmund",
+          "away": "Mainz"
+        },
+        {
+          "home": "VfB Stuttgart",
+          "away": "Augsburg"
+        },
+        {
+          "home": "Hoffenheim",
+          "away": "Elversberg"
+        },
+        {
+          "home": "Frankfurt",
+          "away": "Schalke 04"
+        },
+        {
+          "home": "Gladbach",
+          "away": "Bayern München"
+        },
+        {
+          "home": "Hamburger SV",
+          "away": "Leverkusen"
+        },
+        {
+          "home": "Köln",
+          "away": "Freiburg"
+        },
+        {
+          "home": "Werder Bremen",
+          "away": "Union Berlin"
+        },
+        {
+          "home": "Paderborn",
+          "away": "RB Leipzig"
+        }
+      ],
+      "startDate": "2027-01-09",
+      "endDate": "2027-01-09"
+    },
+    {
+      "number": 16,
+      "dateRange": "13.01.2027",
+      "matches": [
+        {
+          "home": "Bayern München",
+          "away": "Leverkusen"
+        },
+        {
+          "home": "RB Leipzig",
+          "away": "VfB Stuttgart"
+        },
+        {
+          "home": "Freiburg",
+          "away": "Hamburger SV"
+        },
+        {
+          "home": "Augsburg",
+          "away": "Gladbach"
+        },
+        {
+          "home": "Mainz",
+          "away": "Hoffenheim"
+        },
+        {
+          "home": "Union Berlin",
+          "away": "Paderborn"
+        },
+        {
+          "home": "Köln",
+          "away": "Dortmund"
+        },
+        {
+          "home": "Schalke 04",
+          "away": "Werder Bremen"
+        },
+        {
+          "home": "Elversberg",
+          "away": "Frankfurt"
+        }
+      ],
+      "startDate": "2027-01-13",
+      "endDate": "2027-01-13"
+    },
+    {
+      "number": 17,
+      "dateRange": "16.01.2027",
+      "matches": [
+        {
+          "home": "Dortmund",
+          "away": "Freiburg"
+        },
+        {
+          "home": "VfB Stuttgart",
+          "away": "Mainz"
+        },
+        {
+          "home": "Hoffenheim",
+          "away": "RB Leipzig"
+        },
+        {
+          "home": "Leverkusen",
+          "away": "Schalke 04"
+        },
+        {
+          "home": "Frankfurt",
+          "away": "Bayern München"
+        },
+        {
+          "home": "Gladbach",
+          "away": "Union Berlin"
+        },
+        {
+          "home": "Hamburger SV",
+          "away": "Augsburg"
+        },
+        {
+          "home": "Werder Bremen",
+          "away": "Elversberg"
+        },
+        {
+          "home": "Paderborn",
+          "away": "Köln"
+        }
+      ],
+      "startDate": "2027-01-16",
+      "endDate": "2027-01-16"
+    }
+  ]
+}
