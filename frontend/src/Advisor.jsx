@@ -399,22 +399,42 @@ const Advisor = () => {
   );
   const filteredDb = useMemo(() => applyFilters(data?.players || [], dbFilters), [data, dbFilters]);
 
+  // Robust gegen aeltere/unvollstaendige Advisor-Daten (z.B. von einem Lauf
+  // vor diesem Feature): Falls "managers" fehlt, aber "managerSquads"
+  // trotzdem Daten hat, die Manager-Liste direkt daraus ableiten - damit die
+  // Sektion IMMER sichtbar ist, sobald irgendwelche Kader-Daten bekannt sind.
+  // Noch aeltere Laeufe (vor der Multi-Manager-Umstellung) hatten stattdessen
+  // ein flaches "squadRecommendations"-Array fuer den eingeloggten Account -
+  // auch das wird hier noch unterstuetzt, statt einfach nichts anzuzeigen.
+  const effectiveManagerSquads = useMemo(() => {
+    if (league?.managerSquads && Object.keys(league.managerSquads).length) return league.managerSquads;
+    if (league?.squadRecommendations?.length) return { OWN: league.squadRecommendations };
+    return {};
+  }, [league]);
+
+  const resolvedManagers = useMemo(() => {
+    if (league?.managers?.length) return league.managers;
+    const squadIds = Object.keys(effectiveManagerSquads);
+    if (!squadIds.length) return [];
+    return squadIds.map((id) => ({ id, name: id === 'OWN' ? 'Eigener Account' : `Manager ${id}` }));
+  }, [effectiveManagerSquads, league]);
+
   const filteredSquad = useMemo(
-    () => applyFilters(league?.managerSquads?.[selectedManagerId] || [], squadFilters),
-    [league, squadFilters, selectedManagerId]
+    () => applyFilters(effectiveManagerSquads[selectedManagerId] || [], squadFilters),
+    [effectiveManagerSquads, squadFilters, selectedManagerId]
   );
 
   // Wenn sich die aktive Liga aendert (oder Daten neu laden), automatisch
   // den ersten Manager mit einem tatsaechlich vorhandenen Kader auswaehlen.
   useEffect(() => {
-    const managerIds = Object.keys(league?.managerSquads || {});
+    const managerIds = Object.keys(effectiveManagerSquads);
     if (managerIds.length && !managerIds.includes(selectedManagerId)) {
       setSelectedManagerId(managerIds[0]);
     } else if (!managerIds.length && selectedManagerId) {
       setSelectedManagerId('');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [league]);
+  }, [effectiveManagerSquads]);
 
   if (!isAdmin) {
     return (
@@ -547,27 +567,27 @@ const Advisor = () => {
                     Empfehlungen sehen wuerde. Bewusst KEIN Platzhalter, wenn
                     fuer NIEMANDEN ein Kader vorhanden ist - blendet dann
                     komplett aus. */}
-                {league.managers?.length > 0 && (
+                {resolvedManagers.length > 0 && (
                   <>
                     <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                       <div>
                         <h2 className="text-[1.2rem] font-black text-[#f8fafc] tracking-tight uppercase">Kader-Empfehlungen</h2>
                         <p className="text-[10px] text-[#8b92a5] mt-1">Personalisiert pro Manager - jeder Nutzer sieht (später) nur seinen eigenen Kader.</p>
                       </div>
-                      <span className="text-[10px] text-[#8b92a5]">{filteredSquad.length} von {(league.managerSquads?.[selectedManagerId] || []).length} Spielern</span>
+                      <span className="text-[10px] text-[#8b92a5]">{filteredSquad.length} von {(effectiveManagerSquads[selectedManagerId] || []).length} Spielern</span>
                     </div>
                     <select
                       value={selectedManagerId}
                       onChange={(e) => setSelectedManagerId(e.target.value)}
                       className="w-full bg-[#171717] border border-[#2e2e2e] rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-cyan-500 mb-4"
                     >
-                      {league.managers.map((m) => (
-                        <option key={m.id} value={m.id} disabled={!league.managerSquads?.[m.id]?.length}>
-                          {m.name}{!league.managerSquads?.[m.id]?.length ? ' (kein Kader gefunden)' : ''}
+                      {resolvedManagers.map((m) => (
+                        <option key={m.id} value={m.id} disabled={!effectiveManagerSquads[m.id]?.length}>
+                          {m.name}{!effectiveManagerSquads[m.id]?.length ? ' (kein Kader gefunden)' : ''}
                         </option>
                       ))}
                     </select>
-                    {selectedManagerId && league.managerSquads?.[selectedManagerId]?.length > 0 ? (
+                    {selectedManagerId && effectiveManagerSquads[selectedManagerId]?.length > 0 ? (
                       <>
                         <FilterBar filters={squadFilters} onChange={setSquadFilters} teams={[]} />
                         {filteredSquad.length ? (

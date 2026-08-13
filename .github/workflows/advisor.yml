@@ -7,6 +7,14 @@ name: Kickbase Trading Advisor
 on:
   workflow_dispatch:
 
+# Verhindert, dass zwei gleichzeitig gestartete Laeufe (z.B. Doppelklick auf
+# den "Trading Advisor aktualisieren"-Button) sich beim Git-Push in die Quere
+# kommen: Ein zweiter Lauf wartet, bis der erste fertig ist, statt parallel
+# zu pushen und dabei zu scheitern (non-fast-forward).
+concurrency:
+  group: kickbase-trading-advisor
+  cancel-in-progress: false
+
 jobs:
   run-advisor:
     runs-on: ubuntu-latest
@@ -47,4 +55,5 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add frontend/public/advisor-data.json
           git commit -m "Automatisches Update: Trading-Advisor-Auswertung [skip ci]" || echo "Keine Änderungen zu commiten"
+          git pull --rebase origin main
           git push
