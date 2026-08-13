@@ -27,9 +27,14 @@ def live_data_predictions(today_df, model, features):
     today_df_results = today_df_results.sort_values("predicted_mv_target", ascending=False)
 
     today_df_results = today_df_results.dropna(subset=["mv"])
+    # Zusaetzlich zu den urspruenglichen Spalten auch die bereits berechneten
+    # Mehr-Zeitraum-Features (3-Tage-/7-Tage-Marktwerttrend) sowie zuletzt
+    # bekannte Punkte/Einsatzminuten mitgeben - fuer den "Scouting-Report"
+    # im Frontend (Spieler-Detailansicht im Trading Advisor).
     today_df_results = today_df_results[[
         "player_id", "first_name", "last_name", "position", "team_name",
-        "date", "mv_change_1d", "mv_trend_1d", "mv", "predicted_mv_target",
+        "date", "mv_change_1d", "mv_trend_1d", "mv_change_3d", "mv_trend_7d",
+        "mv", "predicted_mv_target", "p", "mp",
     ]]
 
     return today_df_results
@@ -76,7 +81,7 @@ def join_current_squad(token, league_id, today_df_results, manager_id=None):
     if squad_df.empty:
         return pd.DataFrame(columns=[
             "player_id", "first_name", "last_name", "position", "team_name", "mv", "mv_change_yesterday",
-            "predicted_mv_target", "s_11_prob",
+            "mv_change_3d", "mv_trend_7d", "p", "mp", "predicted_mv_target", "s_11_prob",
         ])
 
     # Kickbase nennt das Spieler-ID-Feld je nach Endpoint unterschiedlich:
@@ -90,7 +95,7 @@ def join_current_squad(token, league_id, today_df_results, manager_id=None):
               f"vorhandene Spalten: {list(squad_df.columns)}")
         return pd.DataFrame(columns=[
             "player_id", "first_name", "last_name", "position", "team_name", "mv", "mv_change_yesterday",
-            "predicted_mv_target", "s_11_prob",
+            "mv_change_3d", "mv_trend_7d", "p", "mp", "predicted_mv_target", "s_11_prob",
         ])
     if id_column != "i":
         squad_df = squad_df.rename(columns={id_column: "i"})
@@ -124,7 +129,7 @@ def join_current_squad(token, league_id, today_df_results, manager_id=None):
 
     return merged_df[[
         "player_id", "first_name", "last_name", "position", "team_name", "mv", "mv_change_yesterday",
-        "predicted_mv_target", "s_11_prob",
+        "mv_change_3d", "mv_trend_7d", "p", "mp", "predicted_mv_target", "s_11_prob",
     ]]
 
 
@@ -137,7 +142,7 @@ def join_current_market(token, league_id, today_df_results):
     if market_df.empty:
         return pd.DataFrame(columns=[
             "player_id", "first_name", "last_name", "position", "team_name", "mv", "mv_change_yesterday",
-            "predicted_mv_target", "s_11_prob", "hours_to_exp", "expiring_today",
+            "mv_change_3d", "mv_trend_7d", "p", "mp", "predicted_mv_target", "s_11_prob", "hours_to_exp", "expiring_today",
         ])
 
     # Gleicher Typ-Sicherheits-Fix wie in join_current_squad (siehe dort) -
@@ -171,5 +176,5 @@ def join_current_market(token, league_id, today_df_results):
 
     return bid_df[[
         "player_id", "first_name", "last_name", "position", "team_name", "mv", "mv_change_yesterday",
-        "predicted_mv_target", "s_11_prob", "hours_to_exp", "expiring_today",
+        "mv_change_3d", "mv_trend_7d", "p", "mp", "predicted_mv_target", "s_11_prob", "hours_to_exp", "expiring_today",
     ]]

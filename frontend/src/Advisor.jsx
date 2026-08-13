@@ -204,6 +204,12 @@ const PlayerCard = ({ entry, onClick }) => {
           <span>{entry.team}</span>
           <span>·</span>
           <span>{formatMoney(entry.marketValue)}</span>
+          {typeof entry.avgPoints === 'number' && (
+            <>
+              <span>·</span>
+              <span>Ø {entry.avgPoints} Pkt.{entry.appearances ? ` (${entry.appearances} Sp.)` : ''}</span>
+            </>
+          )}
           {typeof entry.startElfProbability === 'number' && (
             <>
               <span>·</span>
@@ -239,17 +245,27 @@ const ChartTooltip = ({ active, payload, label }) => {
   );
 };
 
+const formatSignedPercent = (val) => {
+  if (val === null || val === undefined) return '–';
+  const sign = val > 0 ? '+' : '';
+  return `${sign}${val.toFixed(1).replace('.', ',')}%`;
+};
+
+const MiniStat = ({ label, value, positive }) => (
+  <div className="bg-[#0a0a0a] border border-[#2e2e2e] rounded-xl p-3 flex-1 min-w-0">
+    <div className="text-[8px] font-black uppercase tracking-widest text-[#8b92a5] mb-1 truncate">{label}</div>
+    <div className={`text-sm font-black truncate ${positive === undefined ? 'text-white' : positive ? 'text-green-400' : 'text-red-400'}`}>{value}</div>
+  </div>
+);
+
 const PlayerHistoryModal = ({ player, onClose }) => {
   const history = normalizeHistory(player.history);
-  const first = history[0];
-  const last = history[history.length - 1];
-  const totalChange = first && last ? last.mv - first.mv : null;
-  const rising = (totalChange || 0) >= 0;
+  const hasScoutingFacts = player.appearances !== undefined || player.totalMinutes !== undefined || player.avgPoints !== undefined;
 
   return (
-    <div className="fixed inset-0 z-[90] bg-black/80 flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[90] bg-black/80 flex items-center justify-center p-4 overflow-y-auto" onClick={onClose}>
       <div
-        className="max-w-lg w-full bg-[#171717] border border-[#2e2e2e] rounded-3xl p-6 shadow-2xl relative"
+        className="max-w-lg w-full bg-[#171717] border border-[#2e2e2e] rounded-3xl p-6 shadow-2xl relative my-8"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -278,19 +294,28 @@ const PlayerHistoryModal = ({ player, onClose }) => {
         </div>
         <p className="text-xs text-[#8b92a5] mb-5">{player.team}</p>
 
-        <div className="flex gap-3 mb-5">
+        <div className="flex gap-3 mb-3">
           <div className="bg-[#0a0a0a] border border-[#2e2e2e] rounded-xl p-3 flex-1">
             <div className="text-[9px] font-black uppercase tracking-widest text-[#8b92a5] mb-1">Aktueller Marktwert</div>
             <div className="text-base font-black text-white">{formatMoney(player.marketValue)}</div>
           </div>
           <div className="bg-[#0a0a0a] border border-[#2e2e2e] rounded-xl p-3 flex-1">
-            <div className="text-[9px] font-black uppercase tracking-widest text-[#8b92a5] mb-1">
-              Verlauf ({history.length} Tage)
-            </div>
-            <div className={`text-base font-black ${rising ? 'text-green-400' : 'text-red-400'}`}>
-              {rising ? '▲' : '▼'} {formatSignedMoney(totalChange)}
+            <div className="text-[9px] font-black uppercase tracking-widest text-[#8b92a5] mb-1">Prognose morgen</div>
+            <div className={`text-base font-black ${(player.predictedChange || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+              {(player.predictedChange || 0) >= 0 ? '▲' : '▼'} {formatSignedMoney(player.predictedChange)}
             </div>
           </div>
+        </div>
+
+        {/* Mehrere Zeitraeume statt EINER Gesamt-Veraenderung ueber das ganze
+            Chart-Fenster - genau das hat vorher fuer Verwirrung gesorgt
+            (Chart wirkt zuletzt steigend, obwohl der Wert vor 60 Tagen noch
+            hoeher war). 1/3/7-Tage-Werte kommen direkt aus dem Vorhersage-
+            modell, nicht aus dem sichtbaren Chart-Ausschnitt berechnet. */}
+        <div className="flex gap-2 mb-5">
+          <MiniStat label="1 Tag" value={formatSignedMoney(player.changeYesterday)} positive={(player.changeYesterday || 0) >= 0} />
+          <MiniStat label="3 Tage" value={formatSignedMoney(player.changeLast3Days)} positive={(player.changeLast3Days || 0) >= 0} />
+          <MiniStat label="7 Tage" value={formatSignedPercent(player.trendLast7DaysPercent)} positive={(player.trendLast7DaysPercent || 0) >= 0} />
         </div>
 
         <div className="h-[180px] w-full mb-2">
@@ -320,7 +345,25 @@ const PlayerHistoryModal = ({ player, onClose }) => {
             </LineChart>
           </ResponsiveContainer>
         </div>
-        <p className="text-[10px] text-[#8b92a5] text-center">Marktwert-Verlauf der letzten {history.length} Tage · Prognose für morgen: {formatSignedMoney(player.predictedChange)}</p>
+        <p className="text-[10px] text-[#8b92a5] text-center mb-5">Marktwert-Verlauf der letzten {history.length} Tage</p>
+
+        {/* Scouting-Report: alles, was Kickbase zuverlaessig hergibt (Einsatz-
+            minuten, Punkte). Vereinshistorie/Transfers gibt die Kickbase-API
+            NICHT her - dafuer bräuchte man transfermarkt.de. */}
+        {hasScoutingFacts && (
+          <div className="pt-5 border-t border-[#2e2e2e]">
+            <h3 className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] mb-3">Scouting-Report (Saison)</h3>
+            <div className="grid grid-cols-2 gap-2">
+              <MiniStat label="Einsätze" value={player.appearances ?? '–'} />
+              <MiniStat label="Gesamtminuten" value={player.totalMinutes ? `${player.totalMinutes}'` : '–'} />
+              <MiniStat label="Ø Punkte / Spiel" value={player.avgPoints ?? '–'} />
+              <MiniStat
+                label="Letzter Spieltag"
+                value={player.lastMinutesPlayed ? `${player.lastMinutesPlayed}' · ${player.lastPoints ?? 0} Pkt.` : 'Nicht eingesetzt'}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

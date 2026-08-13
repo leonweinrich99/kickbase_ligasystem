@@ -163,7 +163,52 @@ def build_history_by_player(player_df, days=HISTORY_DAYS):
     return history
 
 
-def build_market_payload(token, league_id, live_predictions_df, history_by_player=None):
+def build_player_stats(player_df):
+    """Aggregierte Saison-Kennzahlen je Spieler (Einsaetze, Gesamtminuten,
+    Punkteschnitt) - Basis fuer den "Scouting-Report" im Frontend.
+
+    WICHTIG: player_df hat PRO TAG eine Zeile (Marktwert-Historie), die
+    Einsatz-/Punktedaten eines Spieltags werden dabei per merge_asof auf ALLE
+    Tage bis zum naechsten Spieltag durchgereicht - eine einzelne Leistung
+    wuerde beim simplen Zeilenzaehlen also mehrfach gezaehlt. Deshalb zuerst
+    auf (player_id, Spieltag) deduplizieren.
+    """
+
+    if player_df.empty or "mp" not in player_df.columns or "md" not in player_df.columns:
+        return {}
+
+    matches = player_df.dropna(subset=["mp", "md"]).drop_duplicates(subset=["player_id", "md"]).copy()
+    matches = matches[matches["mp"] > 0]
+    if matches.empty:
+        return {}
+
+    grouped = matches.groupby("player_id").agg(
+        appearances=("mp", "count"),
+        totalMinutes=("mp", "sum"),
+        avgPoints=("p", "mean"),
+    )
+
+    stats = {}
+    for player_id, row in grouped.iterrows():
+        stats[history_key(player_id)] = {
+            "appearances": int(row["appearances"]),
+            "totalMinutes": int(row["totalMinutes"]),
+            "avgPoints": round(float(row["avgPoints"]), 1) if pd.notna(row["avgPoints"]) else None,
+        }
+
+    return stats
+
+
+def _attach_player_stats(records, player_stats):
+    if not player_stats:
+        return
+    for entry in records:
+        stats = player_stats.get(history_key(entry.get("playerId")))
+        if stats:
+            entry.update(stats)
+
+
+def build_market_payload(token, league_id, live_predictions_df, history_by_player=None, player_stats=None):
     if live_predictions_df is None:
         return []
     market_df = join_current_market(token, league_id, live_predictions_df)
@@ -172,6 +217,8 @@ def build_market_payload(token, league_id, live_predictions_df, history_by_playe
     market_df = market_df.copy()
     market_df["mv"] = market_df["mv"].round(0)
     market_df["mv_change_yesterday"] = market_df["mv_change_yesterday"].round(0)
+    market_df["mv_change_3d"] = market_df["mv_change_3d"].round(0)
+    market_df["mv_trend_7d"] = (market_df["mv_trend_7d"] * 100).round(1)
     market_df["predicted_mv_target"] = market_df["predicted_mv_target"].round(0)
     market_df["position"] = market_df["position"].map(POSITION_LABELS).fillna(market_df["position"])
     if "s_11_prob" in market_df.columns:
@@ -185,6 +232,10 @@ def build_market_payload(token, league_id, live_predictions_df, history_by_playe
         "team_name": "team",
         "mv": "marketValue",
         "mv_change_yesterday": "changeYesterday",
+        "mv_change_3d": "changeLast3Days",
+        "mv_trend_7d": "trendLast7DaysPercent",
+        "p": "lastPoints",
+        "mp": "lastMinutesPlayed",
         "predicted_mv_target": "predictedChange",
         "s_11_prob": "startElfProbability",
         "hours_to_exp": "hoursToExpiry",
@@ -195,11 +246,12 @@ def build_market_payload(token, league_id, live_predictions_df, history_by_playe
         for entry in records:
             entry["history"] = history_by_player.get(history_key(entry.get("playerId")), [])
             entry["onMarket"] = True
+    _attach_player_stats(records, player_stats)
 
     return records
 
 
-def build_squad_records(token, league_id, live_predictions_df, history_by_player=None, manager_id=None):
+def build_squad_records(token, league_id, live_predictions_df, history_by_player=None, manager_id=None, player_stats=None):
     """Baut die Kader-Empfehlung fuer EINEN Manager (oder fuer den
     eingeloggten Account selbst, wenn manager_id=None).
 
@@ -221,6 +273,8 @@ def build_squad_records(token, league_id, live_predictions_df, history_by_player
     squad_df = squad_df.copy()
     squad_df["mv"] = squad_df["mv"].round(0)
     squad_df["mv_change_yesterday"] = squad_df["mv_change_yesterday"].round(0)
+    squad_df["mv_change_3d"] = squad_df["mv_change_3d"].round(0)
+    squad_df["mv_trend_7d"] = (squad_df["mv_trend_7d"] * 100).round(1)
     squad_df["predicted_mv_target"] = squad_df["predicted_mv_target"].round(0)
     squad_df["position"] = squad_df["position"].map(POSITION_LABELS).fillna(squad_df["position"])
     if "s_11_prob" in squad_df.columns:
@@ -234,6 +288,10 @@ def build_squad_records(token, league_id, live_predictions_df, history_by_player
         "team_name": "team",
         "mv": "marketValue",
         "mv_change_yesterday": "changeYesterday",
+        "mv_change_3d": "changeLast3Days",
+        "mv_trend_7d": "trendLast7DaysPercent",
+        "p": "lastPoints",
+        "mp": "lastMinutesPlayed",
         "predicted_mv_target": "predictedChange",
         "s_11_prob": "startElfProbability",
     })
@@ -242,11 +300,12 @@ def build_squad_records(token, league_id, live_predictions_df, history_by_player
         for entry in records:
             entry["history"] = history_by_player.get(history_key(entry.get("playerId")), [])
             entry["inSquad"] = True
+    _attach_player_stats(records, player_stats)
 
     return records
 
 
-def build_manager_squads_payload(token, league_id, live_predictions_df, history_by_player=None):
+def build_manager_squads_payload(token, league_id, live_predictions_df, history_by_player=None, player_stats=None):
     """Kader-Empfehlungen fuer ALLE Manager der Liga auf einmal.
 
     So kann JEDER Manager (ueber seine bereits im Account zugeordnete
@@ -277,7 +336,7 @@ def build_manager_squads_payload(token, league_id, live_predictions_df, history_
 
     squads_by_manager = {}
     for manager_name, manager_id in managers:
-        records = build_squad_records(token, league_id, live_predictions_df, history_by_player, manager_id=manager_id)
+        records = build_squad_records(token, league_id, live_predictions_df, history_by_player, manager_id=manager_id, player_stats=player_stats)
         if records:
             squads_by_manager[str(manager_id)] = records
 
@@ -286,7 +345,7 @@ def build_manager_squads_payload(token, league_id, live_predictions_df, history_
     return managers_list, squads_by_manager
 
 
-def build_all_players_payload(live_predictions_df, history_by_player=None):
+def build_all_players_payload(live_predictions_df, history_by_player=None, player_stats=None):
     """Komplette, durchsuchbare Vorhersage-Liste ALLER Spieler des Wettbewerbs
     (nicht nur der aktuell auf einem Liga-Markt gelisteten). Damit koennen
     Admins selbst nach beliebigen Spielern suchen/filtern, auch wenn diese
@@ -299,6 +358,8 @@ def build_all_players_payload(live_predictions_df, history_by_player=None):
     df = live_predictions_df.copy()
     df["mv"] = df["mv"].round(0)
     df["mv_change_1d"] = df["mv_change_1d"].round(0)
+    df["mv_change_3d"] = df["mv_change_3d"].round(0)
+    df["mv_trend_7d"] = (df["mv_trend_7d"] * 100).round(1)
     df["predicted_mv_target"] = df["predicted_mv_target"].round(0)
     df["position"] = df["position"].map(POSITION_LABELS).fillna(df["position"])
 
@@ -310,12 +371,17 @@ def build_all_players_payload(live_predictions_df, history_by_player=None):
         "team_name": "team",
         "mv": "marketValue",
         "mv_change_1d": "changeYesterday",
+        "mv_change_3d": "changeLast3Days",
+        "mv_trend_7d": "trendLast7DaysPercent",
+        "p": "lastPoints",
+        "mp": "lastMinutesPlayed",
         "predicted_mv_target": "predictedChange",
     })
 
     if history_by_player:
         for entry in records:
             entry["history"] = history_by_player.get(history_key(entry.get("playerId")), [])
+    _attach_player_stats(records, player_stats)
 
     return records
 
@@ -420,6 +486,7 @@ def main():
     primary_token = sessions[0]["token"]
     live_predictions_df = None
     history_by_player = {}
+    player_stats = {}
     try:
         print("Lade Spielerdaten (Marktwert- + Performance-Historie)...")
         player_df = fetch_player_data(primary_token, COMPETITION_IDS, LAST_MV_VALUES, LAST_PFM_VALUES)
@@ -428,6 +495,7 @@ def main():
             print("Warning: Keine Spielerdaten erhalten, ueberspringe Marktwert-Vorhersagen.")
         else:
             history_by_player = build_history_by_player(player_df)
+            player_stats = build_player_stats(player_df)
 
             proc_df, today_df = preprocess_player_data(player_df)
             X_train, X_test, y_train, y_test = split_data(proc_df, FEATURES, TARGET)
@@ -447,7 +515,7 @@ def main():
 
             live_predictions_df = live_data_predictions(today_df, model, FEATURES)
             print(f"Baue durchsuchbare Spieler-Datenbank ({len(live_predictions_df)} Spieler)...")
-            result["players"] = build_all_players_payload(live_predictions_df, history_by_player)
+            result["players"] = build_all_players_payload(live_predictions_df, history_by_player, player_stats)
     except Exception as e:
         print(f"Warning: Marktwert-Vorhersage-Pipeline fehlgeschlagen: {e}")
 
@@ -461,7 +529,7 @@ def main():
                 continue
             try:
                 print(f"Erzeuge Markt-Empfehlungen fuer {key}...")
-                result["leagues"][key]["marketRecommendations"] = build_market_payload(token, league_id, live_predictions_df, history_by_player)
+                result["leagues"][key]["marketRecommendations"] = build_market_payload(token, league_id, live_predictions_df, history_by_player, player_stats)
             except Exception as e:
                 print(f"Warning: Markt-Empfehlungen fuer {key} fehlgeschlagen: {e}")
 
@@ -470,7 +538,7 @@ def main():
             # build_manager_squads_payload). Kein manueller Login der
             # einzelnen Manager noetig.
             print(f"Erzeuge Kader-Empfehlungen fuer alle Manager in {key}...")
-            managers_list, squads_by_manager = build_manager_squads_payload(token, league_id, live_predictions_df, history_by_player)
+            managers_list, squads_by_manager = build_manager_squads_payload(token, league_id, live_predictions_df, history_by_player, player_stats)
             result["leagues"][key]["managers"] = managers_list
             result["leagues"][key]["managerSquads"] = squads_by_manager
 

@@ -38,6 +38,29 @@ Bitte Haken setzen (`[x]`), sobald ein Punkt erledigt UND getestet ist.
 - [ ] **Sobald bereit**: `LEAGUE_DEFS` in `run_advisor.py` von der
       "test"-Liga auf die 3 echten Ligen (`LIGA1/2/3`) umstellen (Block ist
       bereits vorbereitet, nur auskommentiert).
+- [x] **Kader-Endpoint hat anderes Feldschema**: `/managers/{id}/squad`
+      nennt die Spieler-ID `pi` statt `i` (`pn`, `tid`, `pos`, `p`, `mv`
+      statt `i`, `n`, ...) - robuste Feld-Erkennung ergänzt, jetzt getestet.
+
+## 🔍 Scouting-Report im Trading Advisor (neu, 13.08.2026)
+
+- [x] **Recherche Kickbase-API vs. transfermarkt.de**: Kickbase liefert
+      zuverlässig Position, Team, Marktwert-Verlauf, Punkte/Spieltag,
+      Einsatzminuten/Spieltag. Vereinshistorie, Geburtsdatum, Nationalität,
+      Tore/Vorlagen sind über die Kickbase-API **nicht verfügbar** (kein
+      passender Endpoint gefunden) - dafür bräuchte man transfermarkt.de
+      (Scraping, kein offizielles API, aktuell nicht umgesetzt).
+- [x] **"Graph steigt, Wert negativ"-Widerspruch behoben**: Die alte Anzeige
+      zeigte nur EINE Gesamtveränderung über das komplette Chart-Fenster
+      (z.B. 60 Tage) - das kann bei einem Einbruch mit anschließender
+      Erholung widersprüchlich wirken. Jetzt: klare 1-Tag-/3-Tage-/7-Tage-
+      Aufschlüsselung (direkt aus den Modell-Features, nicht aus dem
+      sichtbaren Chart-Ausschnitt berechnet).
+- [x] **Scouting-Report ergänzt**: Einsätze (Saison), Gesamtminuten,
+      Ø Punkte/Spiel, letzter Spieltag (Minuten + Punkte) - korrekt
+      dedupliziert (ein Spieltag zählt nur einmal, nicht pro Kalendertag).
+      Sichtbar sowohl in der Kartenübersicht (kompakt) als auch im
+      Detail-Modal (vollständig).
 
 ## 🎨 Icon-Familie (neu)
 
