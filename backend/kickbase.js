@@ -71,16 +71,24 @@ const fetchSingleLeagueData = async (email, password, leagueNameContains = "Qual
     }
 };
 
+// Liest ALLE konfigurierten Kickbase-Accounts aus den ENV-Variablen (aktuell
+// bis zu 3: der urspruengliche Account, ein zweiter (z.B. alte
+// Qualigruppen-Saison) und ein dritter, z.B. wenn Liga 1/2/3 spaeter unter
+// einem neuen Account verwaltet werden). Wird an mehreren Stellen gebraucht,
+// da nicht jede Liga zwingend im selben Account liegt.
+const getConfiguredKickbaseAccounts = () => {
+    const accounts = [];
+    for (const suffix of ['', '_2', '_3']) {
+        const email = process.env[`KICKBASE_EMAIL${suffix}`];
+        const pass = process.env[`KICKBASE_PASS${suffix}`];
+        if (email && pass) accounts.push({ email, pass });
+    }
+    return accounts;
+};
+
 const fetchRawKickbaseData = async () => {
     try {
-        const accounts = [];
-        const email1 = process.env.KICKBASE_EMAIL;
-        const pass1 = process.env.KICKBASE_PASS;
-        if (email1 && pass1) accounts.push({ email: email1, pass: pass1 });
-
-        const email2 = process.env.KICKBASE_EMAIL_2;
-        const pass2 = process.env.KICKBASE_PASS_2;
-        if (email2 && pass2) accounts.push({ email: email2, pass: pass2 });
+        const accounts = getConfiguredKickbaseAccounts();
 
         const targets = ['Qualigruppe 1', 'Qualigruppe 2'];
         const tasks = [];
@@ -229,17 +237,30 @@ const LEAGUE_DEFS = [
 ];
 
 const fetchRawIndependentLeagues = async () => {
-    const email = process.env.KICKBASE_EMAIL;
-    const password = process.env.KICKBASE_PASS;
+    const accounts = getConfiguredKickbaseAccounts();
 
-    if (!email || !password) {
-        console.error("KICKBASE_EMAIL / KICKBASE_PASS fehlen. Bitte den neuen API-Account in den ENV-Variablen hinterlegen.");
-        return [];
+    if (accounts.length === 0) {
+        console.error("Kein Kickbase-Account konfiguriert (KICKBASE_EMAIL/PASS fehlen). Bitte ENV-Variablen hinterlegen.");
+        return LEAGUE_DEFS.map(def => ({ error: 'Kein Account konfiguriert', def }));
     }
 
-    const tasks = LEAGUE_DEFS.map(def => fetchSingleLeagueData(email, password, def.name));
-    const results = await Promise.all(tasks);
-    return results.map((res, idx) => ({ ...res, def: LEAGUE_DEFS[idx] }));
+    // Jede der 3 Ligen kann grundsaetzlich in einem ANDEREN Account liegen
+    // (z.B. wenn ein neuer Account nur einen Teil der Ligen verwaltet) -
+    // deshalb pro Liga ALLE Accounts durchprobieren, bis einer sie findet,
+    // statt nur den ersten zu nutzen.
+    const tasks = LEAGUE_DEFS.map(async (def) => {
+        let lastResult = { error: 'Keine Accounts konfiguriert' };
+        for (const account of accounts) {
+            const result = await fetchSingleLeagueData(account.email, account.pass, def.name);
+            if (!result.error) {
+                return { ...result, def };
+            }
+            lastResult = result;
+        }
+        return { ...lastResult, def };
+    });
+
+    return await Promise.all(tasks);
 };
 
 const transformIndependentLeagues = (rawResults, previousData = null) => {

@@ -6,13 +6,22 @@ Zugangsdaten/Projekte, die nur der Betreiber selbst anlegen kann.
 
 ## 1. Neuer Kickbase-Account (unabhängiges Ligasystem)
 
-Es wird nur noch **ein** Kickbase-Account benötigt, der Mitglied in allen 3 Ligen ist.
+Im Normalfall reicht **ein** Kickbase-Account, der Mitglied in allen 3 Ligen ist. Falls
+die Ligen auf mehrere Accounts verteilt sind (z.B. ein neuer Account, der nur einen Teil
+der Ligen verwaltet), koennen zusaetzlich `KICKBASE_EMAIL_2`/`KICKBASE_PASS_2` und
+`KICKBASE_EMAIL_3`/`KICKBASE_PASS_3` hinterlegt werden - der Code sucht dann fuer jede
+Liga automatisch in ALLEN konfigurierten Accounts, bis er sie findet.
 
 Lokal in `backend/.env` (siehe `backend/.env.example`):
 
 ```
 KICKBASE_EMAIL=...
 KICKBASE_PASS=...
+# Optional, falls Ligen auf mehrere Accounts verteilt sind:
+KICKBASE_EMAIL_2=...
+KICKBASE_PASS_2=...
+KICKBASE_EMAIL_3=...
+KICKBASE_PASS_3=...
 KICKBASE_LEAGUE_1_NAME=Liga 1
 KICKBASE_LEAGUE_2_NAME=Liga 2
 KICKBASE_LEAGUE_3_NAME=Liga 3
@@ -23,7 +32,7 @@ davon, dass sie eindeutig zuordenbar sind - der Code sucht per "enthält").
 
 Für den automatischen GitHub-Actions-Workflow (`.github/workflows/update-data.yml`):
 - Repository Settings -> Secrets and variables -> Actions
-- Secrets: `KICKBASE_EMAIL`, `KICKBASE_PASS`
+- Secrets: `KICKBASE_EMAIL`, `KICKBASE_PASS` (optional zusätzlich `KICKBASE_EMAIL_2`/`_3` + `PASS_2`/`_3`)
 - Variables: `KICKBASE_LEAGUE_1_NAME`, `KICKBASE_LEAGUE_2_NAME`, `KICKBASE_LEAGUE_3_NAME`
 
 Danach einmal manuell fetchen zum Testen:

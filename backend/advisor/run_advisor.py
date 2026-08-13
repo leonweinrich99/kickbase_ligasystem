@@ -625,11 +625,12 @@ def get_configured_accounts():
     """Liest ALLE hinterlegten Kickbase-Accounts aus den Umgebungsvariablen.
 
     Es gibt (wie im bestehenden Node-Backend, siehe backend/kickbase.js)
-    potenziell ZWEI Accounts: den primaeren (KICKBASE_EMAIL/PASS) und einen
-    zweiten (KICKBASE_EMAIL_2/PASS_2, z.B. aus der alten Qualigruppen-Saison).
-    Der Advisor muss in JEDEM davon nach der Ziel-Liga suchen, nicht nur im
-    ersten - sonst wird eine Liga, die nur im zweiten Account existiert, nie
-    gefunden.
+    potenziell MEHRERE Accounts: den primaeren (KICKBASE_EMAIL/PASS), einen
+    zweiten (KICKBASE_EMAIL_2/PASS_2, z.B. aus der alten Qualigruppen-Saison)
+    und einen dritten (KICKBASE_EMAIL_3/PASS_3, z.B. wenn Liga 1/2/3 unter
+    einem neuen Account verwaltet werden). Der Advisor muss in JEDEM davon
+    nach der Ziel-Liga suchen, nicht nur im ersten - sonst wird eine Liga,
+    die nur in einem anderen Account existiert, nie gefunden.
     """
 
     accounts = []
@@ -642,6 +643,11 @@ def get_configured_accounts():
     pass2 = env_or_default("KICKBASE_PASS_2", None)
     if email2 and pass2:
         accounts.append((email2, pass2))
+
+    email3 = env_or_default("KICKBASE_EMAIL_3", None)
+    pass3 = env_or_default("KICKBASE_PASS_3", None)
+    if email3 and pass3:
+        accounts.append((email3, pass3))
 
     return accounts
 
