@@ -66,7 +66,16 @@ def get_league_players_on_market(token, league_id):
     data = get_json_with_token(url, token)
 
     return [
-        {"id": player.get("i"), "prob": player.get("prob"), "exp": player.get("exs")}
+        {
+            "id": player.get("i"),
+            "prob": player.get("prob"),
+            "exp": player.get("exs"),
+            # "st" = Spielerstatus (0 = fit, sonst verletzt/gesperrt/etc, siehe
+            # STATUS_LABELS in predictions.py) - vom Squad-Endpoint bekannt,
+            # Vorhandensein hier noch nicht 100% bestaetigt, daher defensiv
+            # mit .get() (liefert None, falls das Feld hier fehlt).
+            "st": player.get("st"),
+        }
         for player in data.get("it", [])
     ]
 

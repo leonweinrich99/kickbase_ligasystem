@@ -4,6 +4,32 @@ Diese Liste sammelt alle offenen Punkte aus der Feedback-Runde vom 13.08.2026,
 damit wir sie systematisch abarbeiten und den Überblick behalten koennen.
 Bitte Haken setzen (`[x]`), sobald ein Punkt erledigt UND getestet ist.
 
+## 🎯 Echte Kauf-/Verkaufsempfehlungen (neu, 13.08.2026)
+
+- [x] **Kader-Tab von der Account-Seite entfernt** - Kader-Empfehlungen gibt
+      es jetzt ausschließlich im Trading Advisor (wie gewünscht).
+- [x] **"Liga Insider" recherchiert**: ligainsider.de ist eine echte
+      Drittanbieter-Seite (Verletzungen, Noten, Manager-Tipps), aber ohne
+      offizielles API - nur Scraping möglich (rechtlich/technisch riskant,
+      nicht umgesetzt). Stattdessen Kickbases EIGENES Status-Feld genutzt.
+- [x] **Kickbase-Statusfeld entdeckt & genutzt**: Die Kader-/Markt-API liefert
+      ein Feld `st` (0 = fit, sonst verletzt/angeschlagen/gesperrt) - direkt
+      aus der offiziellen API-Doku bestätigt. Damit wissen wir zuverlässig,
+      ob ein Spieler überhaupt spielen kann.
+- [x] **Echte Kaufempfehlungen**: Kombination aus Marktwert-Prognose +
+      Spielerstatus (fit?) + Startelf-Wahrscheinlichkeit. Ein verletzter
+      Spieler wird NIE als Kauf empfohlen, egal wie gut die Prognose aussieht
+      (getestet).
+- [x] **Echte Verkaufsempfehlungen**: Verletzt/gesperrt, fallender Marktwert,
+      zuletzt nicht eingesetzt, oder selten in der Startelf → mit
+      Begründungstext direkt an der Spielerkarte.
+- [x] **Budget-Abgleich**: Im Kader-Tab wird direkt angezeigt, welches Budget
+      der ausgewählte Manager hat UND welche Kaufempfehlungen er sich davon
+      tatsächlich leisten kann (Top 5, sortiert).
+- [x] Filter "Nur Kaufempfehlungen" (Markt/Datenbank) bzw. "Nur
+      Verkaufsempfehlungen" (Kader) ergänzt, Listen automatisch nach
+      Empfehlung sortiert.
+
 ## 🐛 Bugs
 
 - [x] **Regelkatalog-Bearbeitung funktionierte nicht**: Der Stift-Button war

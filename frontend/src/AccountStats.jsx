@@ -370,10 +370,12 @@ const KaderTab = ({ kickbaseId }) => {
 
 // Spieltag-Tab ist vorerst deaktiviert (siehe Nutzer-Feedback) - Komponente
 // (SpieltagTab) bleibt im Code erhalten, um sie leicht wieder zu aktivieren.
+// Kader-Tab wurde bewusst entfernt: personalisierte Kader-Empfehlungen sind
+// jetzt exklusiv im Trading Advisor (Advisor.jsx) zu finden, nicht mehr auf
+// der Account-Seite. KaderTab-Komponente bleibt im Code erhalten.
 const TABS = [
   { key: 'liga', label: 'Liga' },
   { key: 'pokal', label: 'Pokal' },
-  { key: 'kader', label: 'Kader' },
 ];
 
 export const SeasonSnapshot = ({ kickbaseId, kickbaseName }) => {
@@ -395,8 +397,7 @@ export const SeasonSnapshot = ({ kickbaseId, kickbaseName }) => {
       <div className="p-5">
         {tab === 'liga' && <LigaTab kickbaseId={kickbaseId} />}
         {tab === 'pokal' && <PokalTab kickbaseName={kickbaseName} />}
-        {tab === 'kader' && <KaderTab kickbaseId={kickbaseId} />}
-        {/* Spieltag-Tab vorerst deaktiviert, siehe TABS oben */}
+        {/* Kader- und Spieltag-Tab bewusst deaktiviert, siehe TABS oben */}
       </div>
     </div>
   );

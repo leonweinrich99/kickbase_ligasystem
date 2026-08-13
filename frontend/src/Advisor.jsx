@@ -21,6 +21,17 @@ const DEFAULT_LEAGUE_COLOR = '#22d3ee';
 const POSITION_COLORS = { TW: '#eab308', ABW: '#3b82f6', MF: '#22c55e', ST: '#ef4444' };
 const POSITION_LABELS = { TW: 'Torwart', ABW: 'Abwehr', MF: 'Mittelfeld', ST: 'Sturm' };
 
+// Uebersetzt die vom Backend gelieferten Empfehlungs-Gruende (Codes) in
+// lesbaren deutschen Text - siehe backend/advisor/run_advisor.py::compute_recommendations.
+const REASON_LABELS = {
+  rising_value: 'Marktwert steigt',
+  likely_starter: 'Voraussichtlich Startelf',
+  injured_or_suspended: 'Verletzt/gesperrt',
+  falling_value: 'Marktwert fällt',
+  benched_last_matchday: 'Zuletzt nicht eingesetzt',
+  low_starting_probability: 'Selten in der Startelf',
+};
+
 const DB_PAGE_SIZE = 25;
 
 const SECTION_TABS = [
@@ -63,9 +74,9 @@ const normalizeHistory = (history) => {
   return history.map((entry) => (Array.isArray(entry) ? { date: entry[0], mv: entry[1], points: entry[2] } : entry));
 };
 
-const DEFAULT_FILTERS = { search: '', position: 'ALL', team: 'ALL', sort: 'predictedDesc', risingOnly: false };
+const DEFAULT_FILTERS = { search: '', position: 'ALL', team: 'ALL', sort: 'predictedDesc', risingOnly: false, recommendedOnly: false };
 
-function applyFilters(list, filters) {
+function applyFilters(list, filters, recommendationMode) {
   let result = list;
   if (filters.search?.trim()) {
     const q = filters.search.trim().toLowerCase();
@@ -80,6 +91,12 @@ function applyFilters(list, filters) {
   if (filters.risingOnly) {
     result = result.filter((p) => (p.predictedChange || 0) > 0);
   }
+  if (filters.recommendedOnly && recommendationMode === 'buy') {
+    result = result.filter((p) => p.buyRecommended);
+  }
+  if (filters.recommendedOnly && recommendationMode === 'sell') {
+    result = result.filter((p) => p.sellRecommended);
+  }
   const sorters = {
     predictedDesc: (a, b) => (b.predictedChange || 0) - (a.predictedChange || 0),
     predictedAsc: (a, b) => (a.predictedChange || 0) - (b.predictedChange || 0),
@@ -90,7 +107,7 @@ function applyFilters(list, filters) {
   return [...result].sort(sorters[filters.sort] || sorters.predictedDesc);
 }
 
-const FilterBar = ({ filters, onChange, teams, showTeamFilter = false }) => (
+const FilterBar = ({ filters, onChange, teams, showTeamFilter = false, recommendationMode }) => (
   <div className="flex flex-wrap gap-2 mb-4">
     <input
       type="text"
@@ -130,6 +147,14 @@ const FilterBar = ({ filters, onChange, teams, showTeamFilter = false }) => (
       <option value="marketValueAsc">Marktwert: niedrigster zuerst</option>
       <option value="nameAsc">Name (A-Z)</option>
     </select>
+    {recommendationMode && (
+      <button
+        onClick={() => onChange({ ...filters, recommendedOnly: !filters.recommendedOnly })}
+        className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filters.recommendedOnly ? (recommendationMode === 'sell' ? 'bg-red-500/20 text-red-400 border border-red-500/40' : 'bg-green-500/20 text-green-400 border border-green-500/40') : 'bg-[#171717] border border-[#2e2e2e] text-[#8b92a5] hover:text-white'}`}
+      >
+        {recommendationMode === 'sell' ? 'Nur Verkaufsempfehlungen' : 'Nur Kaufempfehlungen'}
+      </button>
+    )}
     <button
       onClick={() => onChange({ ...filters, risingOnly: !filters.risingOnly })}
       className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filters.risingOnly ? 'bg-green-500/20 text-green-400 border border-green-500/40' : 'bg-[#171717] border border-[#2e2e2e] text-[#8b92a5] hover:text-white'}`}
@@ -166,10 +191,17 @@ const BudgetRow = ({ entry, rank, color }) => (
 const PlayerCard = ({ entry, onClick }) => {
   const rising = (entry.predictedChange || 0) >= 0;
   const hasHistory = Array.isArray(entry.history) && entry.history.length > 1;
+  const isBuyContext = entry.onMarket;
+  const isSellContext = entry.inSquad;
+  const showBuyBadge = isBuyContext && entry.buyRecommended;
+  const showSellBadge = isSellContext && entry.sellRecommended;
+  const reasons = (isSellContext ? entry.sellReasons : entry.buyReasons) || [];
+  const isFit = entry.status === null || entry.status === undefined || entry.status === 0;
+
   return (
     <button
       onClick={hasHistory ? onClick : undefined}
-      className={`w-full flex items-center p-3 mb-2.5 bg-[#171717] border border-[#2e2e2e] rounded-[14px] shadow-sm text-left transition-all ${hasHistory ? 'hover:border-cyan-500/50 hover:bg-[#1c1c1c] active:scale-[0.99] cursor-pointer' : 'cursor-default'}`}
+      className={`w-full flex items-center p-3 mb-2.5 bg-[#171717] border rounded-[14px] shadow-sm text-left transition-all ${showSellBadge ? 'border-red-500/40' : showBuyBadge ? 'border-green-500/40' : 'border-[#2e2e2e]'} ${hasHistory ? 'hover:border-cyan-500/50 hover:bg-[#1c1c1c] active:scale-[0.99] cursor-pointer' : 'cursor-default'}`}
     >
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
@@ -184,6 +216,15 @@ const PlayerCard = ({ entry, onClick }) => {
           <div className="text-[15px] font-bold text-gray-100 truncate">
             {entry.firstName ? `${entry.firstName} ${entry.name}` : entry.name}
           </div>
+          {showBuyBadge && (
+            <span className="text-[8px] font-black uppercase tracking-widest bg-green-500/15 text-green-400 border border-green-500/40 rounded-full px-1.5 py-0.5 shrink-0">✓ Kaufempfehlung</span>
+          )}
+          {showSellBadge && (
+            <span className="text-[8px] font-black uppercase tracking-widest bg-red-500/15 text-red-400 border border-red-500/40 rounded-full px-1.5 py-0.5 shrink-0">⚠ Verkaufen</span>
+          )}
+          {entry.statusLabel && !isFit && (
+            <span className="text-[8px] font-black uppercase tracking-widest bg-orange-500/10 text-orange-400 border border-orange-500/30 rounded-full px-1.5 py-0.5 shrink-0">{entry.statusLabel}</span>
+          )}
           {entry.onMarket && (
             <span className="text-[8px] font-black uppercase tracking-widest bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 rounded-full px-1.5 py-0.5 shrink-0">Auf dem Markt</span>
           )}
@@ -223,6 +264,11 @@ const PlayerCard = ({ entry, onClick }) => {
             </>
           )}
         </div>
+        {(showBuyBadge || showSellBadge) && reasons.length > 0 && (
+          <div className={`text-[10px] mt-1 ${showSellBadge ? 'text-red-400' : 'text-green-400'}`}>
+            {reasons.map((r) => REASON_LABELS[r] || r).join(' · ')}
+          </div>
+        )}
       </div>
       <div className={`text-right ml-2 shrink-0 font-black text-[15px] ${rising ? 'text-green-400' : 'text-red-400'}`}>
         {rising ? '▲' : '▼'} {formatSignedMoney(entry.predictedChange)}
@@ -441,7 +487,7 @@ const Advisor = () => {
     [league]
   );
   const filteredMarket = useMemo(
-    () => applyFilters(league?.marketRecommendations || [], marketFilters),
+    () => applyFilters(league?.marketRecommendations || [], marketFilters, 'buy'),
     [league, marketFilters]
   );
 
@@ -449,7 +495,7 @@ const Advisor = () => {
     () => [...new Set((data?.players || []).map((p) => p.team).filter(Boolean))].sort(),
     [data]
   );
-  const filteredDb = useMemo(() => applyFilters(data?.players || [], dbFilters), [data, dbFilters]);
+  const filteredDb = useMemo(() => applyFilters(data?.players || [], dbFilters, 'buy'), [data, dbFilters]);
 
   // Robust gegen aeltere/unvollstaendige Advisor-Daten (z.B. von einem Lauf
   // vor diesem Feature): Falls "managers" fehlt, aber "managerSquads"
@@ -472,9 +518,22 @@ const Advisor = () => {
   }, [effectiveManagerSquads, league]);
 
   const filteredSquad = useMemo(
-    () => applyFilters(effectiveManagerSquads[selectedManagerId] || [], squadFilters),
+    () => applyFilters(effectiveManagerSquads[selectedManagerId] || [], squadFilters, 'sell'),
     [effectiveManagerSquads, squadFilters, selectedManagerId]
   );
+
+  // Budget des ausgewaehlten Managers + welche Kaufempfehlungen er sich damit
+  // tatsaechlich leisten koennte - beantwortet direkt "was kann ich mit
+  // meinem Geld anfangen?", ohne Markt- und Budget-Tab manuell abgleichen
+  // zu muessen.
+  const selectedManagerBudget = league?.managerBudgets?.[selectedManagerId] || null;
+  const affordableBuyRecommendations = useMemo(() => {
+    if (!selectedManagerBudget || !league?.marketRecommendations) return [];
+    const budget = selectedManagerBudget.availableBudget ?? selectedManagerBudget.budget ?? 0;
+    return league.marketRecommendations
+      .filter((p) => p.buyRecommended && (p.marketValue || 0) <= budget)
+      .slice(0, 5);
+  }, [selectedManagerBudget, league]);
 
   // Wenn sich die aktive Liga aendert (oder Daten neu laden), automatisch
   // den ersten Manager mit einem tatsaechlich vorhandenen Kader auswaehlen.
@@ -631,7 +690,7 @@ const Advisor = () => {
                 </div>
                 {league.marketRecommendations?.length ? (
                   <>
-                    <FilterBar filters={marketFilters} onChange={setMarketFilters} teams={marketTeams} showTeamFilter />
+                    <FilterBar filters={marketFilters} onChange={setMarketFilters} teams={marketTeams} showTeamFilter recommendationMode="buy" />
                     {filteredMarket.length ? (
                       <div className="mb-10">
                         {filteredMarket.map((entry, index) => (
@@ -680,9 +739,31 @@ const Advisor = () => {
                         </option>
                       ))}
                     </select>
+
+                    {selectedManagerBudget && (
+                      <div className="bg-[#0a0a0a] border border-[#2e2e2e] rounded-xl p-4 mb-4">
+                        <div className="text-[9px] font-black uppercase tracking-widest text-[#8b92a5] mb-2">Verfügbares Budget</div>
+                        <div className="text-lg font-black text-white mb-3">{formatMoney(selectedManagerBudget.availableBudget ?? selectedManagerBudget.budget)}</div>
+                        {affordableBuyRecommendations.length > 0 ? (
+                          <>
+                            <div className="text-[9px] font-black uppercase tracking-widest text-green-400 mb-2">Damit leistbare Kaufempfehlungen</div>
+                            <div className="space-y-1.5">
+                              {affordableBuyRecommendations.map((p, i) => (
+                                <div key={`${p.playerId}-${i}`} className="flex items-center justify-between text-xs bg-[#171717] border border-[#2e2e2e] rounded-lg px-3 py-2">
+                                  <span className="text-gray-200 font-bold truncate">{p.firstName ? `${p.firstName} ${p.name}` : p.name}</span>
+                                  <span className="text-[#8b92a5] shrink-0 ml-2">{formatMoney(p.marketValue)}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        ) : (
+                          <div className="text-[10px] text-[#8b92a5]">Aktuell keine passende, leistbare Kaufempfehlung auf dem Markt.</div>
+                        )}
+                      </div>
+                    )}
                     {selectedManagerId && effectiveManagerSquads[selectedManagerId]?.length > 0 ? (
                       <>
-                        <FilterBar filters={squadFilters} onChange={setSquadFilters} teams={[]} />
+                        <FilterBar filters={squadFilters} onChange={setSquadFilters} teams={[]} recommendationMode="sell" />
                         {filteredSquad.length ? (
                           <div className="mb-10">
                             {filteredSquad.map((entry, index) => (
@@ -714,7 +795,7 @@ const Advisor = () => {
                 </div>
                 {data.players?.length ? (
                   <>
-                    <FilterBar filters={dbFilters} onChange={(f) => { setDbFilters(f); setDbVisibleCount(DB_PAGE_SIZE); }} teams={dbTeams} showTeamFilter />
+                    <FilterBar filters={dbFilters} onChange={(f) => { setDbFilters(f); setDbVisibleCount(DB_PAGE_SIZE); }} teams={dbTeams} showTeamFilter recommendationMode="buy" />
                     {filteredDb.length ? (
                       <>
                         <div>

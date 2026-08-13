@@ -59,6 +59,78 @@ HISTORY_DAYS = 60  # Tage Marktwert-/Punkte-Verlauf, der pro Markt-Spieler expor
 
 POSITION_LABELS = {1: "TW", 2: "ABW", 3: "MF", 4: "ST"}
 
+# Kickbase-Spielerstatus (Feld "st" aus der Kader-/Markt-API, per offizieller
+# API-Doku-Beispiel bestaetigt: 0 = fit). Die anderen Codes folgen der in der
+# Kickbase-Community ueblichen Konvention - werden defensiv mit Fallback
+# "Status {code}" behandelt, falls ein unbekannter Code auftaucht.
+STATUS_LABELS = {
+    0: "Fit",
+    1: "Verletzt",
+    2: "Angeschlagen",
+    4: "Aufbautraining",
+    8: "Rote Karte",
+    16: "Gelb-Rote Karte",
+    32: "Gelbsperre",
+}
+
+# Schwellenwerte fuer die Kauf-/Verkaufsempfehlung - bewusst als Konstanten,
+# damit man sie leicht nachjustieren kann, ohne die Logik zu durchsuchen.
+BUY_MIN_PREDICTED_CHANGE = 5000       # Mindest-Prognose fuer eine Kaufempfehlung
+SELL_MAX_PREDICTED_CHANGE = -3000     # Ab hier gilt die Prognose als "fallend"
+LOW_START_PROBABILITY = 0.3           # Darunter: Verkaufsgrund "selten Startelf"
+HIGH_START_PROBABILITY = 0.6          # Darueber: Kaufgrund "wahrscheinlich Startelf"
+
+
+def status_label(code):
+    """Wandelt den numerischen Kickbase-Spielerstatus in einen lesbaren Text."""
+
+    if code is None or (isinstance(code, float) and pd.isna(code)):
+        return None
+    code = int(code)
+    return STATUS_LABELS.get(code, f"Status {code}" if code else "Fit")
+
+
+def compute_recommendations(entry):
+    """Ergaenzt einen Spieler-Datensatz um buy-/sellRecommended + strukturierte
+    Gruende (als Codes, nicht als fertige Texte - das Frontend uebersetzt sie
+    lesbar, inkl. deutscher Zahlenformatierung).
+
+    Wird sowohl fuer Markt- als auch fuer Kader-Spieler aufgerufen: bei
+    Marktspielern ist v.a. buyRecommended relevant, bei Kader-Spielern v.a.
+    sellRecommended - beide Felder werden trotzdem immer berechnet, das
+    Frontend zeigt je nach Kontext nur das relevante Badge an.
+    """
+
+    predicted = entry.get("predictedChange") or 0
+    status = entry.get("status")
+    prob = entry.get("startElfProbability")
+    last_minutes = entry.get("lastMinutesPlayed")
+    is_fit = status is None or status == 0
+
+    buy_reasons = []
+    if predicted >= BUY_MIN_PREDICTED_CHANGE:
+        buy_reasons.append("rising_value")
+    if prob is not None and prob >= HIGH_START_PROBABILITY:
+        buy_reasons.append("likely_starter")
+    entry["buyRecommended"] = bool(
+        predicted >= BUY_MIN_PREDICTED_CHANGE and is_fit and (prob is None or prob >= LOW_START_PROBABILITY)
+    )
+    entry["buyReasons"] = buy_reasons
+
+    sell_reasons = []
+    if not is_fit:
+        sell_reasons.append("injured_or_suspended")
+    if predicted <= SELL_MAX_PREDICTED_CHANGE:
+        sell_reasons.append("falling_value")
+    if last_minutes == 0:
+        sell_reasons.append("benched_last_matchday")
+    if prob is not None and prob < LOW_START_PROBABILITY:
+        sell_reasons.append("low_starting_probability")
+    entry["sellRecommended"] = bool(sell_reasons)
+    entry["sellReasons"] = sell_reasons
+
+    return entry
+
 
 def env_or_default(key, default):
     """os.getenv(key, default), aber behandelt auch einen LEEREN String als
@@ -118,6 +190,30 @@ def build_budgets_payload(token, league_id):
         "Team Value": "teamValue",
         "Available Budget": "availableBudget",
     })
+
+
+def build_manager_budgets_by_id(token, league_id, budgets_records):
+    """Wandelt die (nach Namen indizierten) Budget-Eintraege zusaetzlich in
+    ein nach Kickbase-Manager-ID indiziertes Dict um, damit das Frontend das
+    Budget eines Managers direkt per ID nachschlagen kann - z.B. um im
+    Kader-Tab des Trading Advisors automatisch "Dein verfuegbares Budget"
+    neben dem ausgewaehlten Kader anzuzeigen, ohne Name<->ID selbst
+    zuordnen zu muessen.
+    """
+
+    try:
+        managers = get_managers(token, league_id)
+    except Exception as e:
+        print(f"Warning: Manager-Liste fuer Budget-Zuordnung fehlgeschlagen: {e}")
+        return {}
+
+    name_to_id = {name: str(manager_id) for name, manager_id in managers}
+    by_id = {}
+    for record in budgets_records:
+        manager_id = name_to_id.get(record.get("manager"))
+        if manager_id:
+            by_id[manager_id] = record
+    return by_id
 
 
 def history_key(player_id):
@@ -238,6 +334,7 @@ def build_market_payload(token, league_id, live_predictions_df, history_by_playe
         "mp": "lastMinutesPlayed",
         "predicted_mv_target": "predictedChange",
         "s_11_prob": "startElfProbability",
+        "status": "status",
         "hours_to_exp": "hoursToExpiry",
         "expiring_today": "expiringToday",
     })
@@ -247,6 +344,13 @@ def build_market_payload(token, league_id, live_predictions_df, history_by_playe
             entry["history"] = history_by_player.get(history_key(entry.get("playerId")), [])
             entry["onMarket"] = True
     _attach_player_stats(records, player_stats)
+    for entry in records:
+        entry["statusLabel"] = status_label(entry.get("status"))
+        compute_recommendations(entry)
+    # Kaufempfehlungen zuerst, danach nach Prognose sortiert - so stehen die
+    # wirklich interessanten Spieler oben, nicht nur die mit der technisch
+    # hoechsten (aber z.B. wegen Verletzung irrelevanten) Prognose.
+    records.sort(key=lambda e: (not e.get("buyRecommended"), -(e.get("predictedChange") or 0)))
 
     return records
 
@@ -294,6 +398,7 @@ def build_squad_records(token, league_id, live_predictions_df, history_by_player
         "mp": "lastMinutesPlayed",
         "predicted_mv_target": "predictedChange",
         "s_11_prob": "startElfProbability",
+        "status": "status",
     })
 
     if history_by_player:
@@ -301,6 +406,12 @@ def build_squad_records(token, league_id, live_predictions_df, history_by_player
             entry["history"] = history_by_player.get(history_key(entry.get("playerId")), [])
             entry["inSquad"] = True
     _attach_player_stats(records, player_stats)
+    for entry in records:
+        entry["statusLabel"] = status_label(entry.get("status"))
+        compute_recommendations(entry)
+    # Verkaufsempfehlungen zuerst - genau das will man beim Blick auf den
+    # eigenen Kader zuerst sehen ("wen sollte ich loswerden?").
+    records.sort(key=lambda e: (not e.get("sellRecommended"), e.get("predictedChange") or 0))
 
     return records
 
@@ -382,6 +493,11 @@ def build_all_players_payload(live_predictions_df, history_by_player=None, playe
         for entry in records:
             entry["history"] = history_by_player.get(history_key(entry.get("playerId")), [])
     _attach_player_stats(records, player_stats)
+    for entry in records:
+        # Status/Startelf-Wahrscheinlichkeit sind nur fuer Markt-/Kader-Spieler
+        # bekannt (ligaspezifisch) - hier ohne, buyRecommended basiert dann
+        # nur auf der Marktwert-Prognose.
+        compute_recommendations(entry)
 
     return records
 
@@ -466,7 +582,7 @@ def main():
         if not league_id:
             print(f"Warning: Keine Liga mit Namen '{name}' in irgendeinem Account gefunden. "
                   f"Verfuegbare Ligen ueber alle Accounts: {all_known_leagues}")
-            result["leagues"][key] = {"name": name, "budgets": [], "marketRecommendations": [], "managers": [], "managerSquads": {}}
+            result["leagues"][key] = {"name": name, "budgets": [], "managerBudgets": {}, "marketRecommendations": [], "managers": [], "managerSquads": {}}
             continue
 
         print(f"Liga '{name}' gefunden (Account {owner_email}, ID {league_id}). Berechne Budgets fuer {key}...")
@@ -474,11 +590,13 @@ def main():
         league_tokens[key] = token
         try:
             budgets = build_budgets_payload(token, league_id)
+            manager_budgets = build_manager_budgets_by_id(token, league_id, budgets)
         except Exception as e:
             print(f"Warning: Budgets fuer {key} fehlgeschlagen: {e}")
             budgets = []
+            manager_budgets = {}
 
-        result["leagues"][key] = {"name": name, "budgets": budgets, "marketRecommendations": [], "managers": [], "managerSquads": {}}
+        result["leagues"][key] = {"name": name, "budgets": budgets, "managerBudgets": manager_budgets, "marketRecommendations": [], "managers": [], "managerSquads": {}}
 
     # ----------------- 2. EIN ML-Modell fuer Marktwert-Vorhersagen (liga-uebergreifend) -----------------
     # Fuer die Spieler-/Marktwert-Historie reicht IRGENDEIN eingeloggter Account

@@ -81,7 +81,7 @@ def join_current_squad(token, league_id, today_df_results, manager_id=None):
     if squad_df.empty:
         return pd.DataFrame(columns=[
             "player_id", "first_name", "last_name", "position", "team_name", "mv", "mv_change_yesterday",
-            "mv_change_3d", "mv_trend_7d", "p", "mp", "predicted_mv_target", "s_11_prob",
+            "mv_change_3d", "mv_trend_7d", "p", "mp", "predicted_mv_target", "s_11_prob", "status", "season_appearances",
         ])
 
     # Kickbase nennt das Spieler-ID-Feld je nach Endpoint unterschiedlich:
@@ -95,7 +95,7 @@ def join_current_squad(token, league_id, today_df_results, manager_id=None):
               f"vorhandene Spalten: {list(squad_df.columns)}")
         return pd.DataFrame(columns=[
             "player_id", "first_name", "last_name", "position", "team_name", "mv", "mv_change_yesterday",
-            "mv_change_3d", "mv_trend_7d", "p", "mp", "predicted_mv_target", "s_11_prob",
+            "mv_change_3d", "mv_trend_7d", "p", "mp", "predicted_mv_target", "s_11_prob", "status", "season_appearances",
         ])
     if id_column != "i":
         squad_df = squad_df.rename(columns={id_column: "i"})
@@ -115,21 +115,29 @@ def join_current_squad(token, league_id, today_df_results, manager_id=None):
     # gleichnamigen Nicht-Key-Spalten haengt pandas STILLSCHWEIGEND "_x"/"_y"
     # an ("mv" existiert danach nicht mehr!) - das fuehrte zum Fehler
     # "['mv'] not in index" beim finalen Spalten-Select. Fix: aus squad_df nur
-    # die Join-Spalte ("i") und ggf. "prob" behalten, alles andere kommt
-    # ohnehin aus den (aktuelleren) Live-Vorhersagen.
-    squad_columns_to_keep = [c for c in ["i", "prob"] if c in squad_df.columns]
+    # die Join-Spalte ("i") und die WIRKLICH benoetigten Zusatzfelder
+    # behalten, alles andere (v.a. "mv") kommt ohnehin aus den (aktuelleren)
+    # Live-Vorhersagen.
+    # "st" = Spielerstatus (0 = fit, siehe STATUS_LABELS in run_advisor.py),
+    # "ap" = Saison-Einsaetze laut Kickbase selbst (Cross-Check zu unserer
+    # eigenen Berechnung in build_player_stats).
+    squad_columns_to_keep = [c for c in ["i", "prob", "st", "ap"] if c in squad_df.columns]
     squad_df = squad_df[squad_columns_to_keep]
 
     merged_df = pd.merge(today_df_results, squad_df, left_on="player_id", right_on="i").drop(columns=["i"])
 
     if "prob" not in merged_df.columns:
         merged_df["prob"] = np.nan
-    merged_df = merged_df.rename(columns={"prob": "s_11_prob"})
+    if "st" not in merged_df.columns:
+        merged_df["st"] = np.nan
+    if "ap" not in merged_df.columns:
+        merged_df["ap"] = np.nan
+    merged_df = merged_df.rename(columns={"prob": "s_11_prob", "st": "status", "ap": "season_appearances"})
     merged_df = merged_df.rename(columns={"mv_change_1d": "mv_change_yesterday"})
 
     return merged_df[[
         "player_id", "first_name", "last_name", "position", "team_name", "mv", "mv_change_yesterday",
-        "mv_change_3d", "mv_trend_7d", "p", "mp", "predicted_mv_target", "s_11_prob",
+        "mv_change_3d", "mv_trend_7d", "p", "mp", "predicted_mv_target", "s_11_prob", "status", "season_appearances",
     ]]
 
 
@@ -142,7 +150,7 @@ def join_current_market(token, league_id, today_df_results):
     if market_df.empty:
         return pd.DataFrame(columns=[
             "player_id", "first_name", "last_name", "position", "team_name", "mv", "mv_change_yesterday",
-            "mv_change_3d", "mv_trend_7d", "p", "mp", "predicted_mv_target", "s_11_prob", "hours_to_exp", "expiring_today",
+            "mv_change_3d", "mv_trend_7d", "p", "mp", "predicted_mv_target", "s_11_prob", "status", "hours_to_exp", "expiring_today",
         ])
 
     # Gleicher Typ-Sicherheits-Fix wie in join_current_squad (siehe dort) -
@@ -171,10 +179,12 @@ def join_current_market(token, league_id, today_df_results):
 
     if "prob" not in bid_df.columns:
         bid_df["prob"] = np.nan
-    bid_df = bid_df.rename(columns={"prob": "s_11_prob"})
+    if "st" not in bid_df.columns:
+        bid_df["st"] = np.nan
+    bid_df = bid_df.rename(columns={"prob": "s_11_prob", "st": "status"})
     bid_df = bid_df.rename(columns={"mv_change_1d": "mv_change_yesterday"})
 
     return bid_df[[
         "player_id", "first_name", "last_name", "position", "team_name", "mv", "mv_change_yesterday",
-        "mv_change_3d", "mv_trend_7d", "p", "mp", "predicted_mv_target", "s_11_prob", "hours_to_exp", "expiring_today",
+        "mv_change_3d", "mv_trend_7d", "p", "mp", "predicted_mv_target", "s_11_prob", "status", "hours_to_exp", "expiring_today",
     ]]
