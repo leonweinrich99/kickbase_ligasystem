@@ -341,6 +341,7 @@ const Advisor = () => {
   const [isAdvisorUpdating, setIsAdvisorUpdating] = useState(false);
   const [advisorUpdateStatus, setAdvisorUpdateStatus] = useState(null);
   const [sectionTab, setSectionTab] = useState('budgets');
+  const [showInfo, setShowInfo] = useState(false);
 
   const loadData = () => {
     fetch(`/advisor-data.json?t=${Date.now()}`)
@@ -459,45 +460,60 @@ const Advisor = () => {
   return (
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10">
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-4">
           <div>
             <div className="text-[10px] font-bold tracking-wider text-cyan-400 mb-1">ADMIN</div>
             <h1 className="text-2xl sm:text-3xl font-black uppercase text-white">Trading Advisor</h1>
           </div>
-          <button
-            onClick={goBack}
-            aria-label="Schließen"
-            className="w-10 h-10 shrink-0 flex items-center justify-center bg-[#171717] border border-[#2e2e2e] rounded-xl text-[#8b92a5] hover:text-white hover:border-[#404040] transition-all"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setShowInfo((v) => !v)}
+              aria-label="Info"
+              className={`w-9 h-9 flex items-center justify-center rounded-full border transition-all font-black text-xs ${showInfo ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400' : 'bg-[#171717] border-[#2e2e2e] text-[#8b92a5] hover:text-white hover:border-[#404040]'}`}
+            >
+              i
+            </button>
+            <button
+              onClick={handleAdvisorUpdate}
+              disabled={isAdvisorUpdating}
+              aria-label="Trading Advisor aktualisieren"
+              title="Trading Advisor aktualisieren"
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-[#171717] border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500 transition-all disabled:opacity-50"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={isAdvisorUpdating ? 'animate-spin' : ''}>
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <polyline points="1 20 1 14 7 14"></polyline>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+              </svg>
+            </button>
+            <button
+              onClick={goBack}
+              aria-label="Schließen"
+              className="w-9 h-9 flex items-center justify-center bg-[#171717] border border-[#2e2e2e] rounded-full text-[#8b92a5] hover:text-white hover:border-[#404040] transition-all"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
         </div>
 
-        <p className="text-xs text-[#8b92a5] mb-4 -mt-3">
-          Budget-Schätzungen & Marktwert-Prognosen, basierend auf dem Open-Source-Tool{' '}
-          <a href="https://github.com/LennardFe/Kickbase-Trading-Advisor" target="_blank" rel="noreferrer" className="text-cyan-400 hover:underline">Kickbase-Trading-Advisor</a>{' '}
-          von LennardFe. Läuft täglich automatisch, alle Werte sind Schätzungen ohne Gewähr.
-        </p>
+        {advisorUpdateStatus && (
+          <p className="text-xs text-cyan-400 mb-4">{advisorUpdateStatus}</p>
+        )}
 
-        <button
-          onClick={handleAdvisorUpdate}
-          disabled={isAdvisorUpdating}
-          className="w-full flex items-center justify-center gap-2 bg-[#171717] border border-cyan-500/30 text-cyan-400 font-black uppercase tracking-widest text-xs py-3.5 rounded-2xl hover:bg-cyan-500/10 hover:border-cyan-500 transition-all disabled:opacity-50 shadow-lg mb-6"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="23 4 23 10 17 10"></polyline>
-            <polyline points="1 20 1 14 7 14"></polyline>
-            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-          </svg>
-          {advisorUpdateStatus ? advisorUpdateStatus : isAdvisorUpdating ? 'Läuft...' : 'Trading Advisor jetzt aktualisieren'}
-        </button>
+        {showInfo && (
+          <div className="bg-[#171717] border border-[#2e2e2e] rounded-xl p-4 text-xs text-[#8b92a5] mb-6">
+            Budget-Schätzungen & Marktwert-Prognosen, basierend auf dem Open-Source-Tool{' '}
+            <a href="https://github.com/LennardFe/Kickbase-Trading-Advisor" target="_blank" rel="noreferrer" className="text-cyan-400 hover:underline">Kickbase-Trading-Advisor</a>{' '}
+            von LennardFe. Läuft täglich automatisch, alle Werte sind Schätzungen ohne Gewähr.
+          </div>
+        )}
 
         {error && (
           <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl p-6 text-center text-sm text-[#8b92a5] mb-6">
-            Noch keine Auswertung vorhanden. Klicke oben auf „Trading Advisor jetzt aktualisieren", um sie einmalig zu erzeugen.
+            Noch keine Auswertung vorhanden. Klicke oben auf das Aktualisieren-Symbol, um sie einmalig zu erzeugen.
           </div>
         )}
 
@@ -507,20 +523,6 @@ const Advisor = () => {
 
         {data && (
           <>
-            <div className="flex flex-wrap gap-3 mb-6">
-              <StatCard
-                label="Zuletzt aktualisiert"
-                value={generatedAt ? generatedAt.toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '–'}
-                accent="#8b92a5"
-              />
-              {data.modelStats && (
-                <>
-                  <StatCard label="Richtungstreffer" value={`${data.modelStats.signsCorrectPercent}%`} accent="#22d3ee" />
-                  <StatCard label="Trainingsdaten" value={data.modelStats.trainSamples} accent="#8b92a5" />
-                </>
-              )}
-            </div>
-
             <div className="flex gap-2 mb-6 overflow-x-auto">
               {Object.keys(data.leagues || {}).map((key) => (
                 <button
@@ -678,6 +680,23 @@ const Advisor = () => {
                 )}
               </>
             )}
+
+            {/* Meta-Infos (Zeitstempel, Modell-Guete) bewusst ganz unten statt
+                oben - beim Betreten der Seite interessieren zuerst die
+                eigentlichen Empfehlungen, nicht die Modell-Statistik. */}
+            <div className="flex flex-wrap gap-3 mt-10 pt-6 border-t border-[#2e2e2e]">
+              <StatCard
+                label="Zuletzt aktualisiert"
+                value={generatedAt ? generatedAt.toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '–'}
+                accent="#8b92a5"
+              />
+              {data.modelStats && (
+                <>
+                  <StatCard label="Richtungstreffer" value={`${data.modelStats.signsCorrectPercent}%`} accent="#22d3ee" />
+                  <StatCard label="Trainingsdaten" value={data.modelStats.trainSamples} accent="#8b92a5" />
+                </>
+              )}
+            </div>
           </>
         )}
 
