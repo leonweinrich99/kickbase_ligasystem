@@ -60,24 +60,19 @@ def get_league_activities(token, league_id, league_start_date):
 
 
 def get_league_players_on_market(token, league_id):
-    """Get all players currently available on the market in the league."""
+    """Get all players currently available on the market in the league.
+
+    Gibt die komplette Rohantwort pro Spieler zurueck (nicht nur einzelne
+    Felder) - so stehen in predictions.py alle von Kickbase gelieferten
+    Zusatzinfos zur Verfuegung (Status, Gesamtpunkte, Team-of-the-week-Flag,
+    Spielerbild, etc.), ohne dass hier jedes einzelne Feld einzeln
+    aufgezaehlt werden muss und ggf. neue Felder verpasst werden.
+    """
 
     url = f"{BASE_URL}/leagues/{league_id}/market"
     data = get_json_with_token(url, token)
 
-    return [
-        {
-            "id": player.get("i"),
-            "prob": player.get("prob"),
-            "exp": player.get("exs"),
-            # "st" = Spielerstatus (0 = fit, sonst verletzt/gesperrt/etc, siehe
-            # STATUS_LABELS in predictions.py) - vom Squad-Endpoint bekannt,
-            # Vorhandensein hier noch nicht 100% bestaetigt, daher defensiv
-            # mit .get() (liefert None, falls das Feld hier fehlt).
-            "st": player.get("st"),
-        }
-        for player in data.get("it", [])
-    ]
+    return data.get("it", [])
 
 
 def get_league_ranking(token, league_id):

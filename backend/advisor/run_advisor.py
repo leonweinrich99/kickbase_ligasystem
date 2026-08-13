@@ -90,6 +90,20 @@ def status_label(code):
     return STATUS_LABELS.get(code, f"Status {code}" if code else "Fit")
 
 
+# Kickbase liefert Spielerbilder nur als relativen Pfad (z.B.
+# "content/file/xxx.png"). Die exakte CDN-Basis-URL ist in der Community
+# nicht 100%ig verifiziert - deshalb bewusst defensiv im Frontend eingebaut
+# (mit Fallback auf Initialen-Avatar, falls das Bild nicht laedt, siehe
+# Advisor.jsx::PlayerAvatar).
+IMAGE_BASE_URL = "https://kickbase.b-cdn.net/"
+
+
+def image_url(path):
+    if not path:
+        return None
+    return f"{IMAGE_BASE_URL}{path}"
+
+
 def compute_recommendations(entry):
     """Ergaenzt einen Spieler-Datensatz um buy-/sellRecommended + strukturierte
     Gruende (als Codes, nicht als fertige Texte - das Frontend uebersetzt sie
@@ -319,6 +333,8 @@ def build_market_payload(token, league_id, live_predictions_df, history_by_playe
     market_df["position"] = market_df["position"].map(POSITION_LABELS).fillna(market_df["position"])
     if "s_11_prob" in market_df.columns:
         market_df["s_11_prob"] = market_df["s_11_prob"].round(3)
+    if "total_value_change" in market_df.columns:
+        market_df["total_value_change"] = market_df["total_value_change"].round(0)
 
     records = df_records(market_df, {
         "player_id": "playerId",
@@ -335,6 +351,11 @@ def build_market_payload(token, league_id, live_predictions_df, history_by_playe
         "predicted_mv_target": "predictedChange",
         "s_11_prob": "startElfProbability",
         "status": "status",
+        "season_points": "seasonPoints",
+        "season_appearances": "officialSeasonAppearances",
+        "total_value_change": "totalValueChange",
+        "team_of_the_week": "teamOfTheWeek",
+        "image_path": "imagePath",
         "hours_to_exp": "hoursToExpiry",
         "expiring_today": "expiringToday",
     })
@@ -346,6 +367,7 @@ def build_market_payload(token, league_id, live_predictions_df, history_by_playe
     _attach_player_stats(records, player_stats)
     for entry in records:
         entry["statusLabel"] = status_label(entry.get("status"))
+        entry["imageUrl"] = image_url(entry.get("imagePath"))
         compute_recommendations(entry)
     # Kaufempfehlungen zuerst, danach nach Prognose sortiert - so stehen die
     # wirklich interessanten Spieler oben, nicht nur die mit der technisch
@@ -383,6 +405,8 @@ def build_squad_records(token, league_id, live_predictions_df, history_by_player
     squad_df["position"] = squad_df["position"].map(POSITION_LABELS).fillna(squad_df["position"])
     if "s_11_prob" in squad_df.columns:
         squad_df["s_11_prob"] = squad_df["s_11_prob"].round(3)
+    if "total_value_change" in squad_df.columns:
+        squad_df["total_value_change"] = squad_df["total_value_change"].round(0)
 
     records = df_records(squad_df, {
         "player_id": "playerId",
@@ -399,6 +423,11 @@ def build_squad_records(token, league_id, live_predictions_df, history_by_player
         "predicted_mv_target": "predictedChange",
         "s_11_prob": "startElfProbability",
         "status": "status",
+        "season_points": "seasonPoints",
+        "season_appearances": "officialSeasonAppearances",
+        "total_value_change": "totalValueChange",
+        "team_of_the_week": "teamOfTheWeek",
+        "image_path": "imagePath",
     })
 
     if history_by_player:
@@ -408,6 +437,7 @@ def build_squad_records(token, league_id, live_predictions_df, history_by_player
     _attach_player_stats(records, player_stats)
     for entry in records:
         entry["statusLabel"] = status_label(entry.get("status"))
+        entry["imageUrl"] = image_url(entry.get("imagePath"))
         compute_recommendations(entry)
     # Verkaufsempfehlungen zuerst - genau das will man beim Blick auf den
     # eigenen Kader zuerst sehen ("wen sollte ich loswerden?").

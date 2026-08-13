@@ -4,6 +4,24 @@ Diese Liste sammelt alle offenen Punkte aus der Feedback-Runde vom 13.08.2026,
 damit wir sie systematisch abarbeiten und den Überblick behalten koennen.
 Bitte Haken setzen (`[x]`), sobald ein Punkt erledigt UND getestet ist.
 
+## ⭐ Favoriten & umfangreiche Spielerdaten (neu, 13.08.2026)
+
+- [x] **Favoriten-System**: Stern-Symbol an jeder Spielerkarte, gespeichert
+      in Firestore am Nutzerprofil (`favoritePlayers`) - geräteübergreifend
+      synchron. Eigener "★ Favoriten"-Tab im Trading Advisor mit denselben
+      Filtern wie die anderen Listen.
+- [x] **Alle verfügbaren Kickbase-Felder ergänzt**: Gesamtpunkte (Saison),
+      offizielle Saison-Einsätze (Kickbase-eigen, als Cross-Check zu unserer
+      Berechnung), Gesamt-Marktwertveränderung seit Kauf/Saisonbeginn,
+      Trendrichtungs-Pfeil, "Team der Woche"-Ehrung, Spielerbild.
+- [x] **Spieler-Detail-Modal komplett neu strukturiert**: Foto + Name +
+      Status-Badges oben, Kauf-/Verkaufsempfehlung direkt sichtbar,
+      klar getrennte Abschnitte "Markt" und "Leistung (Saison)".
+- [ ] **transfermarkt.de/ligainsider.de**: Strategie im Chat vom 13.08.2026
+      dokumentiert (Scraping technisch möglich, aber rechtlich/wartungs-
+      technisch riskant) - bewusst noch nicht umgesetzt, siehe Chat-Verlauf
+      für die vollständige Abwägung.
+
 ## 🎯 Echte Kauf-/Verkaufsempfehlungen (neu, 13.08.2026)
 
 - [x] **Kader-Tab von der Account-Seite entfernt** - Kader-Empfehlungen gibt

@@ -61,6 +61,81 @@ def _extract_squad_list(squad_players, debug_label=""):
     return []
 
 
+# Kickbase liefert bei Kader- UND Markt-Eintraegen denselben reichen
+# "Spielerkarten"-Feldsatz (per offizieller API-Doku-Beispiel bestaetigt,
+# siehe kickbase_api/league.py). Diese Zusatzfelder werden - wo vorhanden -
+# immer mitgenommen:
+#   st    = Spielerstatus (0 = fit, siehe STATUS_LABELS in run_advisor.py)
+#   ap    = Saison-Einsaetze laut Kickbase selbst
+#   mvgl  = Gesamt-Marktwertveraenderung (seit Kauf/Saisonbeginn)
+#   mvt   = Marktwert-Trendrichtung (Kickbase-interner Code)
+#   iotm  = "In team of the matchday" - Team-der-Woche-Ehrung (bool)
+#   pim   = Pfad zum Spielerbild (relativ, Basis-URL im Frontend ergaenzt)
+CONTEXT_EXTRA_FIELDS = ["st", "ap", "mvgl", "mvt", "iotm", "pim"]
+
+
+def _prepare_context_df(raw_list, debug_label=""):
+    """Baut aus einer rohen Kickbase-Spieler-Liste (Kader- ODER Markt-Antwort)
+    ein DataFrame mit normalisierter ID-Spalte ("i") und umbenannten
+    kollisionstraechtigen Feldern - wird von join_current_squad und
+    join_current_market gemeinsam genutzt, da beide Endpoints denselben
+    Feldsatz liefern.
+    """
+
+    df = pd.DataFrame(raw_list)
+    if df.empty:
+        return df
+
+    # Kickbase nennt das Spieler-ID-Feld je nach Endpoint unterschiedlich:
+    # "i" beim eigenen Kader/Markt, aber "pi" (=player id) beim
+    # Manager-Kader-Endpoint (per Debug-Log am 13.08.2026 bestaetigt).
+    id_column = next((c for c in ["i", "id", "pid", "pi"] if c in df.columns), None)
+    if id_column is None:
+        print(f"Warning: Kein bekanntes ID-Feld gefunden {debug_label}, vorhandene Spalten: {list(df.columns)}")
+        return pd.DataFrame()
+    if id_column != "i":
+        df = df.rename(columns={id_column: "i"})
+
+    # "p"/"mv" kollidieren mit gleichnamigen Feldern aus den Live-Vorhersagen
+    # (today_df_results) - beim Merge zweier Dataframes mit gleichnamigen
+    # Nicht-Key-Spalten haengt pandas STILLSCHWEIGEND "_x"/"_y" an, wodurch
+    # die urspruengliche Spalte verschwindet (das war der Bug hinter
+    # "['mv'] not in index"). "p" (Kader-/Markt-eigene Gesamtpunkte) wird
+    # umbenannt statt verworfen, "mv" (ggf. veralteter Snapshot) wird
+    # verworfen - unsere eigene, aktuellere "mv" aus den Live-Vorhersagen
+    # ist ohnehin verlaesslicher.
+    if "p" in df.columns:
+        df = df.rename(columns={"p": "season_points"})
+
+    keep = ["i"] + [c for c in CONTEXT_EXTRA_FIELDS if c in df.columns]
+    if "season_points" in df.columns:
+        keep.append("season_points")
+    for market_only_field in ["prob", "exs"]:
+        if market_only_field in df.columns:
+            keep.append(market_only_field)
+
+    return df[keep]
+
+
+_BASE_RESULT_COLUMNS = [
+    "player_id", "first_name", "last_name", "position", "team_name", "mv", "mv_change_yesterday",
+    "mv_change_3d", "mv_trend_7d", "p", "mp", "predicted_mv_target", "s_11_prob", "status",
+    "season_appearances", "season_points", "total_value_change", "trend_direction",
+    "team_of_the_week", "image_path",
+]
+
+_CONTEXT_RENAME_MAP = {
+    "mv_change_1d": "mv_change_yesterday",
+    "prob": "s_11_prob",
+    "st": "status",
+    "ap": "season_appearances",
+    "mvgl": "total_value_change",
+    "mvt": "trend_direction",
+    "iotm": "team_of_the_week",
+    "pim": "image_path",
+}
+
+
 def join_current_squad(token, league_id, today_df_results, manager_id=None):
     """Join the live predictions with the players currently in a squad.
 
@@ -76,29 +151,10 @@ def join_current_squad(token, league_id, today_df_results, manager_id=None):
     else:
         squad_players = get_players_in_squad(token, league_id)
     raw_squad = _extract_squad_list(squad_players, debug_label=f"(manager_id={manager_id})")
-    squad_df = pd.DataFrame(raw_squad)
 
+    squad_df = _prepare_context_df(raw_squad, debug_label=f"(Kader, manager_id={manager_id})")
     if squad_df.empty:
-        return pd.DataFrame(columns=[
-            "player_id", "first_name", "last_name", "position", "team_name", "mv", "mv_change_yesterday",
-            "mv_change_3d", "mv_trend_7d", "p", "mp", "predicted_mv_target", "s_11_prob", "status", "season_appearances",
-        ])
-
-    # Kickbase nennt das Spieler-ID-Feld je nach Endpoint unterschiedlich:
-    # "i" beim eigenen Kader/Markt, aber "pi" (=player id) beim
-    # Manager-Kader-Endpoint (per Debug-Log am 13.08.2026 bestaetigt: Spalten
-    # sind u.a. ['pi', 'pn', 'tid', 'pos', 'p', 'mv', ...]). Robust die erste
-    # vorhandene Variante nehmen.
-    id_column = next((c for c in ["i", "id", "pid", "pi"] if c in squad_df.columns), None)
-    if id_column is None:
-        print(f"Warning: Kein bekanntes ID-Feld im Kader gefunden (manager_id={manager_id}), "
-              f"vorhandene Spalten: {list(squad_df.columns)}")
-        return pd.DataFrame(columns=[
-            "player_id", "first_name", "last_name", "position", "team_name", "mv", "mv_change_yesterday",
-            "mv_change_3d", "mv_trend_7d", "p", "mp", "predicted_mv_target", "s_11_prob", "status", "season_appearances",
-        ])
-    if id_column != "i":
-        squad_df = squad_df.rename(columns={id_column: "i"})
+        return pd.DataFrame(columns=_BASE_RESULT_COLUMNS)
 
     # BUGFIX: Die Kickbase-API liefert die Spieler-ID im Squad-Endpoint als
     # STRING (z.B. "i": "118"), waehrend sie an anderer Stelle in unserer
@@ -109,59 +165,39 @@ def join_current_squad(token, league_id, today_df_results, manager_id=None):
     today_df_results["player_id"] = today_df_results["player_id"].astype(str)
     squad_df["i"] = squad_df["i"].astype(str)
 
-    # BUGFIX 2: Die Squad-API liefert selbst schon ein Feld "mv" (eigener,
-    # ggf. veralteter Marktwert) UND wir haben "mv" bereits aus den
-    # Live-Vorhersagen (today_df_results). Beim Merge zweier Dataframes mit
-    # gleichnamigen Nicht-Key-Spalten haengt pandas STILLSCHWEIGEND "_x"/"_y"
-    # an ("mv" existiert danach nicht mehr!) - das fuehrte zum Fehler
-    # "['mv'] not in index" beim finalen Spalten-Select. Fix: aus squad_df nur
-    # die Join-Spalte ("i") und die WIRKLICH benoetigten Zusatzfelder
-    # behalten, alles andere (v.a. "mv") kommt ohnehin aus den (aktuelleren)
-    # Live-Vorhersagen.
-    # "st" = Spielerstatus (0 = fit, siehe STATUS_LABELS in run_advisor.py),
-    # "ap" = Saison-Einsaetze laut Kickbase selbst (Cross-Check zu unserer
-    # eigenen Berechnung in build_player_stats).
-    squad_columns_to_keep = [c for c in ["i", "prob", "st", "ap"] if c in squad_df.columns]
-    squad_df = squad_df[squad_columns_to_keep]
-
     merged_df = pd.merge(today_df_results, squad_df, left_on="player_id", right_on="i").drop(columns=["i"])
+    merged_df = merged_df.rename(columns=_CONTEXT_RENAME_MAP)
 
-    if "prob" not in merged_df.columns:
-        merged_df["prob"] = np.nan
-    if "st" not in merged_df.columns:
-        merged_df["st"] = np.nan
-    if "ap" not in merged_df.columns:
-        merged_df["ap"] = np.nan
-    merged_df = merged_df.rename(columns={"prob": "s_11_prob", "st": "status", "ap": "season_appearances"})
-    merged_df = merged_df.rename(columns={"mv_change_1d": "mv_change_yesterday"})
+    for col in _BASE_RESULT_COLUMNS:
+        if col not in merged_df.columns:
+            merged_df[col] = np.nan
 
-    return merged_df[[
-        "player_id", "first_name", "last_name", "position", "team_name", "mv", "mv_change_yesterday",
-        "mv_change_3d", "mv_trend_7d", "p", "mp", "predicted_mv_target", "s_11_prob", "status", "season_appearances",
-    ]]
+    return merged_df[_BASE_RESULT_COLUMNS]
 
 
 def join_current_market(token, league_id, today_df_results):
     """Join the live predictions with the current market data of ONE league to get bid recommendations."""
 
     players_on_market = get_league_players_on_market(token, league_id)
-    market_df = pd.DataFrame(players_on_market)
+    market_df = _prepare_context_df(players_on_market, debug_label="(Markt)")
+
+    result_columns = _BASE_RESULT_COLUMNS + ["hours_to_exp", "expiring_today"]
 
     if market_df.empty:
-        return pd.DataFrame(columns=[
-            "player_id", "first_name", "last_name", "position", "team_name", "mv", "mv_change_yesterday",
-            "mv_change_3d", "mv_trend_7d", "p", "mp", "predicted_mv_target", "s_11_prob", "status", "hours_to_exp", "expiring_today",
-        ])
+        return pd.DataFrame(columns=result_columns)
 
     # Gleicher Typ-Sicherheits-Fix wie in join_current_squad (siehe dort) -
     # verhindert stillschweigend leere Ergebnisse bei Zahl/String-Mismatch.
     today_df_results = today_df_results.copy()
     today_df_results["player_id"] = today_df_results["player_id"].astype(str)
-    market_df["id"] = market_df["id"].astype(str)
+    market_df["i"] = market_df["i"].astype(str)
 
-    bid_df = pd.merge(today_df_results, market_df, left_on="player_id", right_on="id").drop(columns=["id"])
+    bid_df = pd.merge(today_df_results, market_df, left_on="player_id", right_on="i").drop(columns=["i"])
 
-    bid_df["hours_to_exp"] = np.round((bid_df["exp"] / 3600), 2)
+    if "exs" in bid_df.columns:
+        bid_df["hours_to_exp"] = np.round((bid_df["exs"] / 3600), 2)
+    else:
+        bid_df["hours_to_exp"] = np.nan
 
     now = datetime.now(ZoneInfo("Europe/Berlin"))
     next_22 = now.replace(hour=22, minute=0, second=0, microsecond=0)
@@ -177,14 +213,10 @@ def join_current_market(token, league_id, today_df_results):
     # Filteroptionen fuer die Nutzer:innen).
     bid_df = bid_df.sort_values("predicted_mv_target", ascending=False)
 
-    if "prob" not in bid_df.columns:
-        bid_df["prob"] = np.nan
-    if "st" not in bid_df.columns:
-        bid_df["st"] = np.nan
-    bid_df = bid_df.rename(columns={"prob": "s_11_prob", "st": "status"})
-    bid_df = bid_df.rename(columns={"mv_change_1d": "mv_change_yesterday"})
+    bid_df = bid_df.rename(columns=_CONTEXT_RENAME_MAP)
 
-    return bid_df[[
-        "player_id", "first_name", "last_name", "position", "team_name", "mv", "mv_change_yesterday",
-        "mv_change_3d", "mv_trend_7d", "p", "mp", "predicted_mv_target", "s_11_prob", "status", "hours_to_exp", "expiring_today",
-    ]]
+    for col in result_columns:
+        if col not in bid_df.columns:
+            bid_df[col] = np.nan
+
+    return bid_df[result_columns]

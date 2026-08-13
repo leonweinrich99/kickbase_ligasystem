@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useAuth } from './AuthContext';
 import { useBackNavigation } from './useBackNavigation';
+import { useFavorites } from './useFavorites';
 
 // Zeigt die Auswertungen des "Kickbase Trading Advisor" an (siehe
 // backend/advisor/, generiert per GitHub Action aus
@@ -39,6 +40,7 @@ const SECTION_TABS = [
   { key: 'market', label: 'Markt' },
   { key: 'squad', label: 'Kader' },
   { key: 'database', label: 'Datenbank' },
+  { key: 'favorites', label: '★ Favoriten' },
 ];
 
 const formatMoney = (val) => {
@@ -188,7 +190,13 @@ const BudgetRow = ({ entry, rank, color }) => (
   </div>
 );
 
-const PlayerCard = ({ entry, onClick }) => {
+const StarIcon = ({ filled }) => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill={filled ? '#eab308' : 'none'} stroke={filled ? '#eab308' : '#626978'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+  </svg>
+);
+
+const PlayerCard = ({ entry, onClick, isFavorite, onToggleFavorite }) => {
   const rising = (entry.predictedChange || 0) >= 0;
   const hasHistory = Array.isArray(entry.history) && entry.history.length > 1;
   const isBuyContext = entry.onMarket;
@@ -199,10 +207,22 @@ const PlayerCard = ({ entry, onClick }) => {
   const isFit = entry.status === null || entry.status === undefined || entry.status === 0;
 
   return (
-    <button
+    <div
+      role={hasHistory ? 'button' : undefined}
+      tabIndex={hasHistory ? 0 : undefined}
       onClick={hasHistory ? onClick : undefined}
+      onKeyDown={hasHistory ? (e) => (e.key === 'Enter' || e.key === ' ') && onClick() : undefined}
       className={`w-full flex items-center p-3 mb-2.5 bg-[#171717] border rounded-[14px] shadow-sm text-left transition-all ${showSellBadge ? 'border-red-500/40' : showBuyBadge ? 'border-green-500/40' : 'border-[#2e2e2e]'} ${hasHistory ? 'hover:border-cyan-500/50 hover:bg-[#1c1c1c] active:scale-[0.99] cursor-pointer' : 'cursor-default'}`}
     >
+      {onToggleFavorite && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggleFavorite(entry.playerId); }}
+          aria-label={isFavorite ? 'Favorit entfernen' : 'Als Favorit speichern'}
+          className="mr-2.5 shrink-0 p-1 -m-1"
+        >
+          <StarIcon filled={isFavorite} />
+        </button>
+      )}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           {entry.position && (
@@ -273,7 +293,7 @@ const PlayerCard = ({ entry, onClick }) => {
       <div className={`text-right ml-2 shrink-0 font-black text-[15px] ${rising ? 'text-green-400' : 'text-red-400'}`}>
         {rising ? '▲' : '▼'} {formatSignedMoney(entry.predictedChange)}
       </div>
-    </button>
+    </div>
   );
 };
 
@@ -304,9 +324,45 @@ const MiniStat = ({ label, value, positive }) => (
   </div>
 );
 
-const PlayerHistoryModal = ({ player, onClose }) => {
+const PlayerAvatar = ({ url, name, position, size = 64 }) => {
+  const [failed, setFailed] = useState(false);
+  const showImage = url && !failed;
+  return (
+    <div
+      className="rounded-full overflow-hidden shrink-0 flex items-center justify-center font-black bg-[#0a0a0a] border-2"
+      style={{ width: size, height: size, borderColor: POSITION_COLORS[position] || '#2e2e2e', fontSize: size / 2.6, color: POSITION_COLORS[position] || '#8b92a5' }}
+    >
+      {showImage ? (
+        <img
+          src={url}
+          alt={name}
+          className="w-full h-full object-cover"
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        name ? name.charAt(0).toUpperCase() : '?'
+      )}
+    </div>
+  );
+};
+
+const TrendArrow = ({ code }) => {
+  // "mvt" (Marktwert-Trendrichtung) ist ein Kickbase-interner Code - anhand
+  // von Beobachtungen: 1 = fallend, 2 = steigend. Defensiv nur als kleiner
+  // Zusatzhinweis genutzt (nicht die Hauptquelle für Auf/Ab, das übernehmen
+  // weiterhin unsere eigenen 1/3/7-Tage-Berechnungen).
+  if (code === 2) return <span className="text-green-400">▲</span>;
+  if (code === 1) return <span className="text-red-400">▼</span>;
+  return null;
+};
+
+const PlayerHistoryModal = ({ player, onClose, isFavorite, onToggleFavorite }) => {
   const history = normalizeHistory(player.history);
   const hasScoutingFacts = player.appearances !== undefined || player.totalMinutes !== undefined || player.avgPoints !== undefined;
+  const isFit = player.status === null || player.status === undefined || player.status === 0;
+  const showBuyBadge = player.onMarket && player.buyRecommended;
+  const showSellBadge = player.inSquad && player.sellRecommended;
+  const reasons = (player.inSquad ? player.sellReasons : player.buyReasons) || [];
 
   return (
     <div className="fixed inset-0 z-[90] bg-black/80 flex items-center justify-center p-4 overflow-y-auto" onClick={onClose}>
@@ -325,25 +381,59 @@ const PlayerHistoryModal = ({ player, onClose }) => {
           </svg>
         </button>
 
-        <div className="flex items-center gap-2 flex-wrap mb-1 pr-8">
-          {player.position && (
-            <span
-              className="text-[9px] font-black uppercase tracking-widest rounded px-1.5 py-0.5"
-              style={{ backgroundColor: `${POSITION_COLORS[player.position] || '#8b92a5'}26`, color: POSITION_COLORS[player.position] || '#8b92a5' }}
+        <div className="flex items-center gap-4 mb-5 pr-8">
+          <PlayerAvatar url={player.imageUrl} name={player.name} position={player.position} />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap mb-1">
+              {player.position && (
+                <span
+                  className="text-[9px] font-black uppercase tracking-widest rounded px-1.5 py-0.5"
+                  style={{ backgroundColor: `${POSITION_COLORS[player.position] || '#8b92a5'}26`, color: POSITION_COLORS[player.position] || '#8b92a5' }}
+                >
+                  {player.position}
+                </span>
+              )}
+              {player.teamOfTheWeek && (
+                <span className="text-[9px] font-black uppercase tracking-widest rounded px-1.5 py-0.5 bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">★ Team der Woche</span>
+              )}
+              {!isFit && player.statusLabel && (
+                <span className="text-[9px] font-black uppercase tracking-widest rounded px-1.5 py-0.5 bg-orange-500/10 text-orange-400 border border-orange-500/30">{player.statusLabel}</span>
+              )}
+            </div>
+            <h2 className="text-lg font-black uppercase text-white leading-tight truncate">
+              {player.firstName ? `${player.firstName} ${player.name}` : player.name}
+            </h2>
+            <p className="text-xs text-[#8b92a5] truncate">{player.team}</p>
+          </div>
+          {onToggleFavorite && (
+            <button
+              onClick={() => onToggleFavorite(player.playerId)}
+              aria-label={isFavorite ? 'Favorit entfernen' : 'Als Favorit speichern'}
+              className="shrink-0 p-1"
             >
-              {player.position}
-            </span>
+              <StarIcon filled={isFavorite} />
+            </button>
           )}
-          <h2 className="text-lg font-black uppercase text-white">
-            {player.firstName ? `${player.firstName} ${player.name}` : player.name}
-          </h2>
         </div>
-        <p className="text-xs text-[#8b92a5] mb-5">{player.team}</p>
 
+        {(showBuyBadge || showSellBadge) && (
+          <div className={`rounded-xl p-3 mb-4 border ${showSellBadge ? 'bg-red-500/10 border-red-500/30' : 'bg-green-500/10 border-green-500/30'}`}>
+            <div className={`text-xs font-black uppercase tracking-widest mb-1 ${showSellBadge ? 'text-red-400' : 'text-green-400'}`}>
+              {showSellBadge ? '⚠ Verkaufen empfohlen' : '✓ Kaufempfehlung'}
+            </div>
+            {reasons.length > 0 && (
+              <div className={`text-[11px] ${showSellBadge ? 'text-red-300' : 'text-green-300'}`}>
+                {reasons.map((r) => REASON_LABELS[r] || r).join(' · ')}
+              </div>
+            )}
+          </div>
+        )}
+
+        <h3 className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] mb-2">Markt</h3>
         <div className="flex gap-3 mb-3">
           <div className="bg-[#0a0a0a] border border-[#2e2e2e] rounded-xl p-3 flex-1">
             <div className="text-[9px] font-black uppercase tracking-widest text-[#8b92a5] mb-1">Aktueller Marktwert</div>
-            <div className="text-base font-black text-white">{formatMoney(player.marketValue)}</div>
+            <div className="text-base font-black text-white flex items-center gap-1.5">{formatMoney(player.marketValue)} <TrendArrow code={player.trendDirection} /></div>
           </div>
           <div className="bg-[#0a0a0a] border border-[#2e2e2e] rounded-xl p-3 flex-1">
             <div className="text-[9px] font-black uppercase tracking-widest text-[#8b92a5] mb-1">Prognose morgen</div>
@@ -358,11 +448,16 @@ const PlayerHistoryModal = ({ player, onClose }) => {
             (Chart wirkt zuletzt steigend, obwohl der Wert vor 60 Tagen noch
             hoeher war). 1/3/7-Tage-Werte kommen direkt aus dem Vorhersage-
             modell, nicht aus dem sichtbaren Chart-Ausschnitt berechnet. */}
-        <div className="flex gap-2 mb-5">
+        <div className="flex gap-2 mb-3">
           <MiniStat label="1 Tag" value={formatSignedMoney(player.changeYesterday)} positive={(player.changeYesterday || 0) >= 0} />
           <MiniStat label="3 Tage" value={formatSignedMoney(player.changeLast3Days)} positive={(player.changeLast3Days || 0) >= 0} />
           <MiniStat label="7 Tage" value={formatSignedPercent(player.trendLast7DaysPercent)} positive={(player.trendLast7DaysPercent || 0) >= 0} />
         </div>
+        {typeof player.totalValueChange === 'number' && (
+          <div className="text-[10px] text-[#8b92a5] mb-5">
+            Gesamtveränderung (seit Kauf/Saisonbeginn): <span className={player.totalValueChange >= 0 ? 'text-green-400 font-bold' : 'text-red-400 font-bold'}>{formatSignedMoney(player.totalValueChange)}</span>
+          </div>
+        )}
 
         <div className="h-[180px] w-full mb-2">
           <ResponsiveContainer width="100%" height="100%">
@@ -393,21 +488,31 @@ const PlayerHistoryModal = ({ player, onClose }) => {
         </div>
         <p className="text-[10px] text-[#8b92a5] text-center mb-5">Marktwert-Verlauf der letzten {history.length} Tage</p>
 
-        {/* Scouting-Report: alles, was Kickbase zuverlaessig hergibt (Einsatz-
-            minuten, Punkte). Vereinshistorie/Transfers gibt die Kickbase-API
-            NICHT her - dafuer bräuchte man transfermarkt.de. */}
-        {hasScoutingFacts && (
+        {/* Leistung: alles, was Kickbase zuverlaessig hergibt (Einsatzminuten,
+            Punkte, offizielle Saison-Statistik). Vereinshistorie/Transfers/
+            Tore & Vorlagen gibt die Kickbase-API NICHT her - dafuer bräuchte
+            man transfermarkt.de/ligainsider.de (siehe Doku). */}
+        {(hasScoutingFacts || player.seasonPoints !== undefined) && (
           <div className="pt-5 border-t border-[#2e2e2e]">
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] mb-3">Scouting-Report (Saison)</h3>
+            <h3 className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] mb-3">Leistung (Saison)</h3>
             <div className="grid grid-cols-2 gap-2">
-              <MiniStat label="Einsätze" value={player.appearances ?? '–'} />
+              <MiniStat label="Gesamtpunkte" value={player.seasonPoints ?? '–'} />
+              <MiniStat label="Einsätze" value={player.officialSeasonAppearances ?? player.appearances ?? '–'} />
               <MiniStat label="Gesamtminuten" value={player.totalMinutes ? `${player.totalMinutes}'` : '–'} />
               <MiniStat label="Ø Punkte / Spiel" value={player.avgPoints ?? '–'} />
+            </div>
+            <div className="mt-2">
               <MiniStat
                 label="Letzter Spieltag"
                 value={player.lastMinutesPlayed ? `${player.lastMinutesPlayed}' · ${player.lastPoints ?? 0} Pkt.` : 'Nicht eingesetzt'}
               />
             </div>
+          </div>
+        )}
+
+        {typeof player.startElfProbability === 'number' && (
+          <div className="mt-3 text-[11px] text-[#8b92a5]">
+            Startelf-Wahrscheinlichkeit: <span className="text-gray-200 font-bold">{Math.round(player.startElfProbability * 100)}%</span>
           </div>
         )}
       </div>
@@ -418,6 +523,7 @@ const PlayerHistoryModal = ({ player, onClose }) => {
 const Advisor = () => {
   const { isAdmin } = useAuth();
   const goBack = useBackNavigation('/account');
+  const { isFavorite, toggleFavorite, favoritePlayers } = useFavorites();
   const [data, setData] = useState(null);
   const [error, setError] = useState(false);
   const [activeLeague, setActiveLeague] = useState(null);
@@ -425,6 +531,7 @@ const Advisor = () => {
   const [marketFilters, setMarketFilters] = useState(DEFAULT_FILTERS);
   const [dbFilters, setDbFilters] = useState(DEFAULT_FILTERS);
   const [squadFilters, setSquadFilters] = useState(DEFAULT_FILTERS);
+  const [favoritesFilters, setFavoritesFilters] = useState(DEFAULT_FILTERS);
   const [selectedManagerId, setSelectedManagerId] = useState('');
   const [dbVisibleCount, setDbVisibleCount] = useState(DB_PAGE_SIZE);
   const [isAdvisorUpdating, setIsAdvisorUpdating] = useState(false);
@@ -496,6 +603,17 @@ const Advisor = () => {
     [data]
   );
   const filteredDb = useMemo(() => applyFilters(data?.players || [], dbFilters, 'buy'), [data, dbFilters]);
+
+  // Favoriten: aus der kompletten Spieler-Datenbank gefiltert, damit auch
+  // Spieler auftauchen, die aktuell weder auf dem Markt noch im Kader sind.
+  const favoritePlayersList = useMemo(
+    () => (data?.players || []).filter((p) => favoritePlayers.includes(String(p.playerId))),
+    [data, favoritePlayers]
+  );
+  const filteredFavorites = useMemo(
+    () => applyFilters(favoritePlayersList, favoritesFilters, 'buy'),
+    [favoritePlayersList, favoritesFilters]
+  );
 
   // Robust gegen aeltere/unvollstaendige Advisor-Daten (z.B. von einem Lauf
   // vor diesem Feature): Falls "managers" fehlt, aber "managerSquads"
@@ -694,7 +812,7 @@ const Advisor = () => {
                     {filteredMarket.length ? (
                       <div className="mb-10">
                         {filteredMarket.map((entry, index) => (
-                          <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} onClick={() => setSelectedPlayer(entry)} />
+                          <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} onClick={() => setSelectedPlayer(entry)} isFavorite={isFavorite(entry.playerId)} onToggleFavorite={toggleFavorite} />
                         ))}
                       </div>
                     ) : (
@@ -767,7 +885,7 @@ const Advisor = () => {
                         {filteredSquad.length ? (
                           <div className="mb-10">
                             {filteredSquad.map((entry, index) => (
-                              <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} onClick={() => setSelectedPlayer(entry)} />
+                              <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} onClick={() => setSelectedPlayer(entry)} isFavorite={isFavorite(entry.playerId)} onToggleFavorite={toggleFavorite} />
                             ))}
                           </div>
                         ) : (
@@ -800,7 +918,7 @@ const Advisor = () => {
                       <>
                         <div>
                           {filteredDb.slice(0, dbVisibleCount).map((entry, index) => (
-                            <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} onClick={() => setSelectedPlayer(entry)} />
+                            <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} onClick={() => setSelectedPlayer(entry)} isFavorite={isFavorite(entry.playerId)} onToggleFavorite={toggleFavorite} />
                           ))}
                         </div>
                         {dbVisibleCount < filteredDb.length && (
@@ -821,10 +939,47 @@ const Advisor = () => {
                 )}
               </>
             )}
+
+            {sectionTab === 'favorites' && (
+              <>
+                <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                  <div>
+                    <h2 className="text-[1.2rem] font-black text-[#f8fafc] tracking-tight uppercase">★ Favoriten</h2>
+                    <p className="text-[10px] text-[#8b92a5] mt-1">Deine gemerkten Spieler, geräteübergreifend gespeichert.</p>
+                  </div>
+                  <span className="text-[10px] text-[#8b92a5]">{filteredFavorites.length} von {favoritePlayersList.length} Spielern</span>
+                </div>
+                {favoritePlayersList.length ? (
+                  <>
+                    <FilterBar filters={favoritesFilters} onChange={setFavoritesFilters} teams={dbTeams} showTeamFilter recommendationMode="buy" />
+                    {filteredFavorites.length ? (
+                      <div className="mb-10">
+                        {filteredFavorites.map((entry, index) => (
+                          <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} onClick={() => setSelectedPlayer(entry)} isFavorite={isFavorite(entry.playerId)} onToggleFavorite={toggleFavorite} />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center text-[#8b92a5] text-sm py-6 mb-10">Kein Favorit passt zu den aktuellen Filtern.</div>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-center text-[#8b92a5] text-sm py-10">
+                    Noch keine Favoriten gespeichert. Klicke auf den ★-Stern bei einer Spielerkarte, um sie hier zu sammeln.
+                  </div>
+                )}
+              </>
+            )}
           </>
         )}
 
-        {selectedPlayer && <PlayerHistoryModal player={selectedPlayer} onClose={() => setSelectedPlayer(null)} />}
+        {selectedPlayer && (
+          <PlayerHistoryModal
+            player={selectedPlayer}
+            onClose={() => setSelectedPlayer(null)}
+            isFavorite={isFavorite(selectedPlayer.playerId)}
+            onToggleFavorite={toggleFavorite}
+          />
+        )}
       </div>
     </div>
   );
