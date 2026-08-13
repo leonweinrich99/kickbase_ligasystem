@@ -365,156 +365,167 @@ const PlayerHistoryModal = ({ player, onClose, isFavorite, onToggleFavorite }) =
   const reasons = (player.inSquad ? player.sellReasons : player.buyReasons) || [];
 
   return (
-    <div className="fixed inset-0 z-[90] bg-black/80 flex items-center justify-center p-4 overflow-y-auto" onClick={onClose}>
+    <div className="fixed inset-0 z-[90] bg-black/80 flex items-center justify-center p-4" onClick={onClose}>
+      {/* WICHTIG: max-h + flex-col + eigener Scroll-Body statt den ganzen
+          Hintergrund scrollen zu lassen - "items-center" auf einem
+          scrollenden Flex-Container schneidet bei zu hohem Inhalt sonst den
+          oberen Teil ab, ohne dass man dorthin scrollen kann (bekannter
+          CSS-Flexbox-Bug bei zentrierten, ueberlaufenden Elementen). Der
+          Header (Foto/Name/Schliessen) bleibt fix sichtbar, nur der Rest
+          scrollt in einem eigenen Bereich. */}
       <div
-        className="max-w-lg w-full bg-[#171717] border border-[#2e2e2e] rounded-3xl p-6 shadow-2xl relative my-8"
+        className="max-w-lg w-full max-h-[85vh] bg-[#171717] border border-[#2e2e2e] rounded-3xl shadow-2xl relative flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-[#8b92a5] hover:text-white transition-colors"
-          aria-label="Schließen"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
+        <div className="p-6 pb-4 shrink-0">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-[#8b92a5] hover:text-white transition-colors"
+            aria-label="Schließen"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
 
-        <div className="flex items-center gap-4 mb-5 pr-8">
-          <PlayerAvatar url={player.imageUrl} name={player.name} position={player.position} />
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 flex-wrap mb-1">
-              {player.position && (
-                <span
-                  className="text-[9px] font-black uppercase tracking-widest rounded px-1.5 py-0.5"
-                  style={{ backgroundColor: `${POSITION_COLORS[player.position] || '#8b92a5'}26`, color: POSITION_COLORS[player.position] || '#8b92a5' }}
-                >
-                  {player.position}
-                </span>
-              )}
-              {player.teamOfTheWeek && (
-                <span className="text-[9px] font-black uppercase tracking-widest rounded px-1.5 py-0.5 bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">★ Team der Woche</span>
-              )}
-              {!isFit && player.statusLabel && (
-                <span className="text-[9px] font-black uppercase tracking-widest rounded px-1.5 py-0.5 bg-orange-500/10 text-orange-400 border border-orange-500/30">{player.statusLabel}</span>
-              )}
-            </div>
-            <h2 className="text-lg font-black uppercase text-white leading-tight truncate">
-              {player.firstName ? `${player.firstName} ${player.name}` : player.name}
-            </h2>
-            <p className="text-xs text-[#8b92a5] truncate">{player.team}</p>
-          </div>
-          {onToggleFavorite && (
-            <button
-              onClick={() => onToggleFavorite(player.playerId)}
-              aria-label={isFavorite ? 'Favorit entfernen' : 'Als Favorit speichern'}
-              className="shrink-0 p-1"
-            >
-              <StarIcon filled={isFavorite} />
-            </button>
-          )}
-        </div>
-
-        {(showBuyBadge || showSellBadge) && (
-          <div className={`rounded-xl p-3 mb-4 border ${showSellBadge ? 'bg-red-500/10 border-red-500/30' : 'bg-green-500/10 border-green-500/30'}`}>
-            <div className={`text-xs font-black uppercase tracking-widest mb-1 ${showSellBadge ? 'text-red-400' : 'text-green-400'}`}>
-              {showSellBadge ? '⚠ Verkaufen empfohlen' : '✓ Kaufempfehlung'}
-            </div>
-            {reasons.length > 0 && (
-              <div className={`text-[11px] ${showSellBadge ? 'text-red-300' : 'text-green-300'}`}>
-                {reasons.map((r) => REASON_LABELS[r] || r).join(' · ')}
+          <div className="flex items-center gap-4 pr-8">
+            <PlayerAvatar url={player.imageUrl} name={player.name} position={player.position} />
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                {player.position && (
+                  <span
+                    className="text-[9px] font-black uppercase tracking-widest rounded px-1.5 py-0.5"
+                    style={{ backgroundColor: `${POSITION_COLORS[player.position] || '#8b92a5'}26`, color: POSITION_COLORS[player.position] || '#8b92a5' }}
+                  >
+                    {player.position}
+                  </span>
+                )}
+                {player.teamOfTheWeek && (
+                  <span className="text-[9px] font-black uppercase tracking-widest rounded px-1.5 py-0.5 bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">★ Team der Woche</span>
+                )}
+                {!isFit && player.statusLabel && (
+                  <span className="text-[9px] font-black uppercase tracking-widest rounded px-1.5 py-0.5 bg-orange-500/10 text-orange-400 border border-orange-500/30">{player.statusLabel}</span>
+                )}
               </div>
+              <h2 className="text-lg font-black uppercase text-white leading-tight truncate">
+                {player.firstName ? `${player.firstName} ${player.name}` : player.name}
+              </h2>
+              <p className="text-xs text-[#8b92a5] truncate">{player.team}</p>
+            </div>
+            {onToggleFavorite && (
+              <button
+                onClick={() => onToggleFavorite(player.playerId)}
+                aria-label={isFavorite ? 'Favorit entfernen' : 'Als Favorit speichern'}
+                className="shrink-0 p-1"
+              >
+                <StarIcon filled={isFavorite} />
+              </button>
             )}
           </div>
-        )}
-
-        <h3 className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] mb-2">Markt</h3>
-        <div className="flex gap-3 mb-3">
-          <div className="bg-[#0a0a0a] border border-[#2e2e2e] rounded-xl p-3 flex-1">
-            <div className="text-[9px] font-black uppercase tracking-widest text-[#8b92a5] mb-1">Aktueller Marktwert</div>
-            <div className="text-base font-black text-white flex items-center gap-1.5">{formatMoney(player.marketValue)} <TrendArrow code={player.trendDirection} /></div>
-          </div>
-          <div className="bg-[#0a0a0a] border border-[#2e2e2e] rounded-xl p-3 flex-1">
-            <div className="text-[9px] font-black uppercase tracking-widest text-[#8b92a5] mb-1">Prognose morgen</div>
-            <div className={`text-base font-black ${(player.predictedChange || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {(player.predictedChange || 0) >= 0 ? '▲' : '▼'} {formatSignedMoney(player.predictedChange)}
-            </div>
-          </div>
         </div>
 
-        {/* Mehrere Zeitraeume statt EINER Gesamt-Veraenderung ueber das ganze
-            Chart-Fenster - genau das hat vorher fuer Verwirrung gesorgt
-            (Chart wirkt zuletzt steigend, obwohl der Wert vor 60 Tagen noch
-            hoeher war). 1/3/7-Tage-Werte kommen direkt aus dem Vorhersage-
-            modell, nicht aus dem sichtbaren Chart-Ausschnitt berechnet. */}
-        <div className="flex gap-2 mb-3">
-          <MiniStat label="1 Tag" value={formatSignedMoney(player.changeYesterday)} positive={(player.changeYesterday || 0) >= 0} />
-          <MiniStat label="3 Tage" value={formatSignedMoney(player.changeLast3Days)} positive={(player.changeLast3Days || 0) >= 0} />
-          <MiniStat label="7 Tage" value={formatSignedPercent(player.trendLast7DaysPercent)} positive={(player.trendLast7DaysPercent || 0) >= 0} />
-        </div>
-        {typeof player.totalValueChange === 'number' && (
-          <div className="text-[10px] text-[#8b92a5] mb-5">
-            Gesamtveränderung (seit Kauf/Saisonbeginn): <span className={player.totalValueChange >= 0 ? 'text-green-400 font-bold' : 'text-red-400 font-bold'}>{formatSignedMoney(player.totalValueChange)}</span>
-          </div>
-        )}
-
-        <div className="h-[180px] w-full mb-2">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={history} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#2e2e2e" vertical={false} />
-              <XAxis
-                dataKey="date"
-                stroke="#4b5563"
-                fontSize={9}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={formatShortDate}
-                minTickGap={30}
-              />
-              <YAxis
-                stroke="#4b5563"
-                fontSize={9}
-                tickLine={false}
-                axisLine={false}
-                domain={['dataMin', 'dataMax']}
-                tickFormatter={formatCompactMoney}
-                width={70}
-              />
-              <Tooltip content={<ChartTooltip />} />
-              <Line type="monotone" dataKey="mv" stroke="#22d3ee" strokeWidth={2.5} dot={false} activeDot={{ r: 5, strokeWidth: 0 }} animationDuration={800} />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-        <p className="text-[10px] text-[#8b92a5] text-center mb-5">Marktwert-Verlauf der letzten {history.length} Tage</p>
-
-        {/* Leistung: alles, was Kickbase zuverlaessig hergibt (Einsatzminuten,
-            Punkte, offizielle Saison-Statistik). Vereinshistorie/Transfers/
-            Tore & Vorlagen gibt die Kickbase-API NICHT her - dafuer bräuchte
-            man transfermarkt.de/ligainsider.de (siehe Doku). */}
-        {(hasScoutingFacts || player.seasonPoints !== undefined) && (
-          <div className="pt-5 border-t border-[#2e2e2e]">
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] mb-3">Leistung (Saison)</h3>
-            <div className="grid grid-cols-2 gap-2">
-              <MiniStat label="Gesamtpunkte" value={player.seasonPoints ?? '–'} />
-              <MiniStat label="Einsätze" value={player.officialSeasonAppearances ?? player.appearances ?? '–'} />
-              <MiniStat label="Gesamtminuten" value={player.totalMinutes ? `${player.totalMinutes}'` : '–'} />
-              <MiniStat label="Ø Punkte / Spiel" value={player.avgPoints ?? '–'} />
+        <div className="overflow-y-auto px-6 pb-6 min-h-0">
+          {(showBuyBadge || showSellBadge) && (
+            <div className={`rounded-xl p-3 mb-4 border ${showSellBadge ? 'bg-red-500/10 border-red-500/30' : 'bg-green-500/10 border-green-500/30'}`}>
+              <div className={`text-xs font-black uppercase tracking-widest mb-1 ${showSellBadge ? 'text-red-400' : 'text-green-400'}`}>
+                {showSellBadge ? '⚠ Verkaufen empfohlen' : '✓ Kaufempfehlung'}
+              </div>
+              {reasons.length > 0 && (
+                <div className={`text-[11px] ${showSellBadge ? 'text-red-300' : 'text-green-300'}`}>
+                  {reasons.map((r) => REASON_LABELS[r] || r).join(' · ')}
+                </div>
+              )}
             </div>
-            <div className="mt-2">
-              <MiniStat
-                label="Letzter Spieltag"
-                value={player.lastMinutesPlayed ? `${player.lastMinutesPlayed}' · ${player.lastPoints ?? 0} Pkt.` : 'Nicht eingesetzt'}
-              />
+          )}
+
+          <h3 className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] mb-2">Markt</h3>
+          <div className="flex gap-3 mb-3">
+            <div className="bg-[#0a0a0a] border border-[#2e2e2e] rounded-xl p-3 flex-1">
+              <div className="text-[9px] font-black uppercase tracking-widest text-[#8b92a5] mb-1">Aktueller Marktwert</div>
+              <div className="text-base font-black text-white flex items-center gap-1.5">{formatMoney(player.marketValue)} <TrendArrow code={player.trendDirection} /></div>
+            </div>
+            <div className="bg-[#0a0a0a] border border-[#2e2e2e] rounded-xl p-3 flex-1">
+              <div className="text-[9px] font-black uppercase tracking-widest text-[#8b92a5] mb-1">Prognose morgen</div>
+              <div className={`text-base font-black ${(player.predictedChange || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {(player.predictedChange || 0) >= 0 ? '▲' : '▼'} {formatSignedMoney(player.predictedChange)}
+              </div>
             </div>
           </div>
-        )}
 
-        {typeof player.startElfProbability === 'number' && (
-          <div className="mt-3 text-[11px] text-[#8b92a5]">
-            Startelf-Wahrscheinlichkeit: <span className="text-gray-200 font-bold">{Math.round(player.startElfProbability * 100)}%</span>
+          {/* Mehrere Zeitraeume statt EINER Gesamt-Veraenderung ueber das ganze
+              Chart-Fenster - genau das hat vorher fuer Verwirrung gesorgt
+              (Chart wirkt zuletzt steigend, obwohl der Wert vor 60 Tagen noch
+              hoeher war). 1/3/7-Tage-Werte kommen direkt aus dem Vorhersage-
+              modell, nicht aus dem sichtbaren Chart-Ausschnitt berechnet. */}
+          <div className="flex gap-2 mb-3">
+            <MiniStat label="1 Tag" value={formatSignedMoney(player.changeYesterday)} positive={(player.changeYesterday || 0) >= 0} />
+            <MiniStat label="3 Tage" value={formatSignedMoney(player.changeLast3Days)} positive={(player.changeLast3Days || 0) >= 0} />
+            <MiniStat label="7 Tage" value={formatSignedPercent(player.trendLast7DaysPercent)} positive={(player.trendLast7DaysPercent || 0) >= 0} />
           </div>
-        )}
+          {typeof player.totalValueChange === 'number' && (
+            <div className="text-[10px] text-[#8b92a5] mb-5">
+              Gesamtveränderung (seit Kauf/Saisonbeginn): <span className={player.totalValueChange >= 0 ? 'text-green-400 font-bold' : 'text-red-400 font-bold'}>{formatSignedMoney(player.totalValueChange)}</span>
+            </div>
+          )}
+
+          <div className="h-[180px] w-full mb-2">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={history} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#2e2e2e" vertical={false} />
+                <XAxis
+                  dataKey="date"
+                  stroke="#4b5563"
+                  fontSize={9}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={formatShortDate}
+                  minTickGap={30}
+                />
+                <YAxis
+                  stroke="#4b5563"
+                  fontSize={9}
+                  tickLine={false}
+                  axisLine={false}
+                  domain={['dataMin', 'dataMax']}
+                  tickFormatter={formatCompactMoney}
+                  width={70}
+                />
+                <Tooltip content={<ChartTooltip />} />
+                <Line type="monotone" dataKey="mv" stroke="#22d3ee" strokeWidth={2.5} dot={false} activeDot={{ r: 5, strokeWidth: 0 }} animationDuration={800} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+          <p className="text-[10px] text-[#8b92a5] text-center mb-5">Marktwert-Verlauf der letzten {history.length} Tage</p>
+
+          {/* Leistung: alles, was Kickbase zuverlaessig hergibt (Einsatzminuten,
+              Punkte, offizielle Saison-Statistik). Vereinshistorie/Transfers/
+              Tore & Vorlagen gibt die Kickbase-API NICHT her - dafuer bräuchte
+              man transfermarkt.de/ligainsider.de (siehe Doku). */}
+          {(hasScoutingFacts || player.seasonPoints !== undefined) && (
+            <div className="pt-5 border-t border-[#2e2e2e]">
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] mb-3">Leistung (Saison)</h3>
+              <div className="grid grid-cols-2 gap-2">
+                <MiniStat label="Gesamtpunkte" value={player.seasonPoints ?? '–'} />
+                <MiniStat label="Einsätze" value={player.officialSeasonAppearances ?? player.appearances ?? '–'} />
+                <MiniStat label="Gesamtminuten" value={player.totalMinutes ? `${player.totalMinutes}'` : '–'} />
+                <MiniStat label="Ø Punkte / Spiel" value={player.avgPoints ?? '–'} />
+              </div>
+              <div className="mt-2">
+                <MiniStat
+                  label="Letzter Spieltag"
+                  value={player.lastMinutesPlayed ? `${player.lastMinutesPlayed}' · ${player.lastPoints ?? 0} Pkt.` : 'Nicht eingesetzt'}
+                />
+              </div>
+            </div>
+          )}
+
+          {typeof player.startElfProbability === 'number' && (
+            <div className="mt-3 text-[11px] text-[#8b92a5]">
+              Startelf-Wahrscheinlichkeit: <span className="text-gray-200 font-bold">{Math.round(player.startElfProbability * 100)}%</span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
