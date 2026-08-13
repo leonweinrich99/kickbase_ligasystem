@@ -35,6 +35,27 @@ def live_data_predictions(today_df, model, features):
     return today_df_results
 
 
+def _extract_squad_list(squad_players, debug_label=""):
+    """Extrahiert die Spieler-Liste robust aus der Kader-API-Antwort.
+
+    Der "eigener Kader"-Endpoint (/leagues/{id}/squad) verwendet den Schluessel
+    "it". Der "Manager-Kader"-Endpoint (/leagues/{id}/managers/{id}/squad) ist
+    in der offiziellen API-Doku nicht mit Beispiel-JSON belegt - falls er eine
+    andere Huelle nutzt, hier defensiv mehrere ueblich Kickbase-Schluessel
+    probieren, statt still eine leere Liste zurueckzugeben.
+    """
+
+    if isinstance(squad_players, list):
+        return squad_players
+    if isinstance(squad_players, dict):
+        for key in ("it", "pl", "players", "squad"):
+            value = squad_players.get(key)
+            if isinstance(value, list):
+                return value
+        print(f"Warning: Kader-Antwort {debug_label} hat unerwartete Struktur, Schluessel: {list(squad_players.keys())}")
+    return []
+
+
 def join_current_squad(token, league_id, today_df_results, manager_id=None):
     """Join the live predictions with the players currently in a squad.
 
@@ -49,7 +70,7 @@ def join_current_squad(token, league_id, today_df_results, manager_id=None):
         squad_players = get_manager_squad(token, league_id, manager_id)
     else:
         squad_players = get_players_in_squad(token, league_id)
-    raw_squad = squad_players.get("it", [])
+    raw_squad = _extract_squad_list(squad_players, debug_label=f"(manager_id={manager_id})")
     squad_df = pd.DataFrame(raw_squad)
 
     if squad_df.empty:
@@ -57,6 +78,21 @@ def join_current_squad(token, league_id, today_df_results, manager_id=None):
             "player_id", "first_name", "last_name", "position", "team_name", "mv", "mv_change_yesterday",
             "predicted_mv_target", "s_11_prob",
         ])
+
+    # Manche Kickbase-Endpoints nennen das Spieler-ID-Feld "i", andere ggf.
+    # "id"/"pid" - robust die erste vorhandene Variante nehmen, statt fest
+    # von "i" auszugehen (der Manager-Kader-Endpoint ist in der API-Doku
+    # nicht mit einem Beispiel belegt, daher unklar, ob er identisch heisst).
+    id_column = next((c for c in ["i", "id", "pid"] if c in squad_df.columns), None)
+    if id_column is None:
+        print(f"Warning: Kein bekanntes ID-Feld im Kader gefunden (manager_id={manager_id}), "
+              f"vorhandene Spalten: {list(squad_df.columns)}")
+        return pd.DataFrame(columns=[
+            "player_id", "first_name", "last_name", "position", "team_name", "mv", "mv_change_yesterday",
+            "predicted_mv_target", "s_11_prob",
+        ])
+    if id_column != "i":
+        squad_df = squad_df.rename(columns={id_column: "i"})
 
     # BUGFIX: Die Kickbase-API liefert die Spieler-ID im Squad-Endpoint als
     # STRING (z.B. "i": "118"), waehrend sie an anderer Stelle in unserer
