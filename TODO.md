@@ -6,53 +6,59 @@ Bitte Haken setzen (`[x]`), sobald ein Punkt erledigt UND getestet ist.
 
 ## 🐛 Bugs
 
-- [ ] **Regelkatalog wird nicht mehr dargestellt** (`Rules.jsx`) - Code
-      mehrfach durchgegangen (Routing, Firestore-Merge, Rendering-Logik) und
-      keinen Bug gefunden, der das erklären würde. **Brauche von dir:** Was
-      genau siehst du - leere weiße/schwarze Seite, nur die Überschrift ohne
-      Regeln, oder eine Fehlermeldung? Screenshot hilft enorm.
+- [x] **Regelkatalog-Bearbeitung funktionierte nicht**: Der Stift-Button war
+      nur bei Maus-Hover sichtbar (`opacity-0 group-hover:opacity-100`) -
+      auf Touch-Geräten/PWA gibt es aber keinen Hover-Zustand, der Button war
+      dadurch praktisch unsichtbar/unerreichbar. Jetzt dauerhaft sichtbar.
+      "Als Admin: Maus über eine Regel bewegen..."-Hinweistext entfernt.
 - [x] **Zurück-Navigation inkonsistent**: `useBackNavigation()`-Hook erstellt
-      und in `Rules.jsx`, `UserDetail.jsx`, `CompareView.jsx`,
-      `AdminPanel.jsx`, `Advisor.jsx`, `Reminders.jsx`, `Profile.jsx`
-      angewendet - überall jetzt `navigate(-1)` mit Fallback statt fixem Ziel.
-- [ ] **Trading Advisor: Kader-Empfehlung weiterhin leer** - Debug-Logging
-      ergänzt (`Debug Kader: ...`), aber ich kann die GitHub-Actions-Logs
-      nicht selbst auslesen (401 ohne Auth-Token). **Brauche von dir:** Bitte
-      den letzten Advisor-Lauf öffnen und mir die 3 Zeilen mit `Debug Kader:`
-      kopieren (oder falls keine erscheinen: die rote Fehlermeldung im
-      "Run Trading Advisor"-Schritt).
+      und überall angewendet.
+- [x] **Trading Advisor: Kader-Empfehlung war leer** - Ursache gefunden über
+      Debug-Log: Merge-Konflikt, da sowohl die Live-Vorhersagen als auch die
+      Kader-API ein Feld `mv` liefern → pandas hängt beim Merge
+      stillschweigend `_x`/`_y` an, wodurch die Spalte `mv` verschwand
+      (`"['mv'] not in index"`). Fix: Nur die Join-Spalte aus der Kader-API
+      übernehmen, alle Werte kommen aus den (aktuelleren) Vorhersagen.
+- [ ] Regelkatalog-Anzeige selbst ("wird nicht dargestellt") - laut
+      Rückmeldung funktioniert die Anzeige inzwischen, nur das Bearbeiten war
+      betroffen (siehe oben) → als gelöst betrachtet.
+
+## 🚀 Trading Advisor für alle Manager (neu)
+
+- [x] **Kader-Empfehlungen für JEDEN Manager, ohne eigenen Login**: Über den
+      Kickbase-Endpoint `/leagues/{id}/managers/{managerId}/squad` kann der
+      EINE technische Hauptaccount die Kader ALLER Manager einer Liga
+      abrufen - kein Nutzer muss eigene Kickbase-Zugangsdaten hinterlegen.
+      `run_advisor.py` berechnet jetzt für jeden Manager in der Liga
+      personalisierte Kader-Empfehlungen (`managerSquads` je Kickbase-ID).
+- [x] Account-Seite: neuer "Kader"-Tab im Season-Snapshot zeigt automatisch
+      die eigenen, personalisierten Empfehlungen (per `kickbaseId`) an.
+- [x] Admin-Seite (`/admin/advisor`): Dropdown zum Durchschalten aller
+      Manager-Kader zu Test-/Debug-Zwecken.
+- [ ] **Sobald bereit**: `LEAGUE_DEFS` in `run_advisor.py` von der
+      "test"-Liga auf die 3 echten Ligen (`LIGA1/2/3`) umstellen (Block ist
+      bereits vorbereitet, nur auskommentiert).
 
 ## 🎨 Account-Seite
 
-- [x] **Profilbild oben rechts** im Header - Avatar ersetzt jetzt die
-      separate Profil-Kachel komplett, klickbar zu `/account/profile`,
-      Admin-Badge als kleiner Punkt am Avatar.
-- [x] **Liga- & Pokal-Bereich neu gedacht**: Statt 3 gestapelter Karten jetzt
-      EINE Karte mit Tabs (Liga/Pokal/Spieltag) - deutlich weniger
-      "Kachel-Gefühl", mehr Infos an einem Ort.
-- [x] **Pokal-Matchkarte angereichert**: Datum/Uhrzeit des Matchups, Liga des
-      Gegners und aktuelle Gegner-Stats (Platz, Punkte) sind jetzt im
-      Pokal-Tab enthalten.
-- [x] **Nächster Bundesliga-Spieltag** integriert (`bundesliga-spielplan.json`
-      + Spieltag-Tab im Season-Snapshot).
+- [x] Profilbild oben rechts im Header.
+- [x] Liga- & Pokal-Bereich neu gedacht (Season-Snapshot-Karte mit Tabs).
+- [x] Pokal-Matchkarte angereichert (Datum, Gegner-Liga, Gegner-Stats).
+- [x] Nächster Bundesliga-Spieltag integriert.
 
 ## 👤 Profilseite
 
-- [x] Unnötige Unterüberschriften entfernt (Name/Kickbase-Name/Passwort
-      haben jetzt nur noch den Feldnamen, keine erklärenden Sätze mehr).
-- [x] Name, Kickbase-Name und Passwort in EINE Karte mit Trennlinien
-      zusammengefasst statt 3 separate Kacheln.
+- [x] Unnötige Unterüberschriften entfernt.
+- [x] Name, Kickbase-Name und Passwort in einer Karte zusammengefasst.
 
 ## 📱 PWA
 
-- [ ] Verhalten explizit im PWA-/Standalone-Modus testen (insbesondere die
-      neue `navigate(-1)`-Logik - sollte in der PWA genauso funktionieren wie
-      im Browser, da React-Router-Historie unabhängig vom OS-Verlauf ist,
-      aber bitte einmal live gegenchecken).
+- [x] Pencil-Button-Bug (siehe oben) war direkt PWA-bedingt (kein Hover auf
+      Touch-Geräten) - behoben.
+- [ ] Weiteres PWA-Verhalten bei Gelegenheit gegenchecken.
 
 ---
 
-**Offen für dich:** Bitte bei Gelegenheit die zwei "Brauche von dir"-Punkte
-oben beantworten (Regelkatalog-Screenshot + Advisor-Debug-Zeilen), dann kann
-ich beide finalen Bugs beheben.
+**Alles oben Erledigte ist committet & gepusht.** Offene Punkte: Umstellung
+auf die 3 echten Ligen (wenn gewünscht) und ein finaler PWA-Rundgang.
 

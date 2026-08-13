@@ -1,5 +1,6 @@
 from kickbase_api.league import get_league_players_on_market
 from kickbase_api.user import get_players_in_squad
+from kickbase_api.manager import get_manager_squad
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 import pandas as pd
@@ -7,11 +8,13 @@ import numpy as np
 
 # Angepasste Version von features/predictions/predictions.py.
 # join_current_market wird fuer JEDE Liga einzeln aufgerufen (jede Liga hat
-# ihren eigenen Transfermarkt). join_current_squad ist wieder ergaenzt
-# (fuer Testzwecke in der einzelnen "test"-Liga, siehe Warnhinweis dort in
-# run_advisor.py::build_squad_payload) - der Bot-Account entspricht sonst
-# keinem der 27 echten Kickbase-Manager, eine "Kader-Empfehlung" fuer genau
-# diesen einen Account waere fuer alle anderen Nutzer irrefuehrend.
+# ihren eigenen Transfermarkt). join_current_squad kann sowohl den Kader des
+# eingeloggten Accounts ("meinen eigenen") als auch - ueber den
+# manager_id-Parameter - den Kader JEDES ANDEREN Managers in der Liga
+# abrufen. Das erlaubt personalisierte Kader-Empfehlungen fuer ALLE
+# Kickbase-Manager, obwohl nur EIN technischer Account (der die Liga
+# verwaltet) eingeloggt ist - niemand muss dafuer seine eigenen
+# Kickbase-Zugangsdaten hinterlegen.
 
 
 def live_data_predictions(today_df, model, features):
@@ -32,18 +35,24 @@ def live_data_predictions(today_df, model, features):
     return today_df_results
 
 
-def join_current_squad(token, league_id, today_df_results):
-    """Join the live predictions with the players currently in the squad of
-    the account behind `token`, for ONE league. Siehe Warnhinweis in
-    run_advisor.py::build_squad_payload - nur fuer Test-Zwecke gedacht.
+def join_current_squad(token, league_id, today_df_results, manager_id=None):
+    """Join the live predictions with the players currently in a squad.
+
+    Ohne `manager_id`: Kader des eingeloggten Accounts selbst (Endpoint
+    `/leagues/{id}/squad`). Mit `manager_id`: Kader des angegebenen Managers
+    (Endpoint `/leagues/{id}/managers/{managerId}/squad`) - so lassen sich
+    mit einem einzigen Login personalisierte Kader-Empfehlungen fuer JEDEN
+    Manager der Liga erzeugen.
     """
 
-    squad_players = get_players_in_squad(token, league_id)
+    if manager_id is not None:
+        squad_players = get_manager_squad(token, league_id, manager_id)
+    else:
+        squad_players = get_players_in_squad(token, league_id)
     raw_squad = squad_players.get("it", [])
     squad_df = pd.DataFrame(raw_squad)
 
     if squad_df.empty:
-        print("Debug Kader: API lieferte 0 Spieler im Kader (squad_players['it'] ist leer).")
         return pd.DataFrame(columns=[
             "player_id", "first_name", "last_name", "position", "team_name", "mv", "mv_change_yesterday",
             "predicted_mv_target", "s_11_prob",
@@ -58,10 +67,16 @@ def join_current_squad(token, league_id, today_df_results):
     today_df_results["player_id"] = today_df_results["player_id"].astype(str)
     squad_df["i"] = squad_df["i"].astype(str)
 
-    print(f"Debug Kader: {len(squad_df)} Spieler im Kader laut API: {list(squad_df['i'])}")
-    print(f"Debug Kader: {today_df_results['player_id'].nunique()} eindeutige Spieler in den heutigen Vorhersagen verfuegbar.")
-    overlap = set(squad_df["i"]) & set(today_df_results["player_id"])
-    print(f"Debug Kader: {len(overlap)} Kader-Spieler auch in den Vorhersagen gefunden: {overlap}")
+    # BUGFIX 2: Die Squad-API liefert selbst schon ein Feld "mv" (eigener,
+    # ggf. veralteter Marktwert) UND wir haben "mv" bereits aus den
+    # Live-Vorhersagen (today_df_results). Beim Merge zweier Dataframes mit
+    # gleichnamigen Nicht-Key-Spalten haengt pandas STILLSCHWEIGEND "_x"/"_y"
+    # an ("mv" existiert danach nicht mehr!) - das fuehrte zum Fehler
+    # "['mv'] not in index" beim finalen Spalten-Select. Fix: aus squad_df nur
+    # die Join-Spalte ("i") und ggf. "prob" behalten, alles andere kommt
+    # ohnehin aus den (aktuelleren) Live-Vorhersagen.
+    squad_columns_to_keep = [c for c in ["i", "prob"] if c in squad_df.columns]
+    squad_df = squad_df[squad_columns_to_keep]
 
     merged_df = pd.merge(today_df_results, squad_df, left_on="player_id", right_on="i").drop(columns=["i"])
 

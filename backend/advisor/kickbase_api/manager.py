@@ -43,3 +43,14 @@ def get_manager_performance(token, league_id, manager_id, manager_name):
     latest_season = max(seasons, key=season_sort_key)
 
     return {"name": manager_name, "tp": latest_season.get("tp", 0)}
+
+
+def get_manager_squad(token, league_id, manager_id):
+    """Get the squad of a SPECIFIC manager in the league (nicht nur der
+    eigene) - erlaubt es, mit EINEM Account (z.B. unserem Haupt-/Bot-Account,
+    der lediglich Mitglied der Liga ist) die Kader ALLER Manager der Liga
+    abzurufen, ohne dass sich jeder Manager selbst einloggen muss.
+    """
+
+    url = f"{BASE_URL}/leagues/{league_id}/managers/{manager_id}/squad"
+    return get_json_with_token(url, token)

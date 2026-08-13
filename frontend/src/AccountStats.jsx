@@ -281,11 +281,95 @@ const SpieltagTab = () => {
   );
 };
 
+// ---------- Kader-Tab ----------
+
+const POSITION_COLORS = { TW: '#eab308', ABW: '#3b82f6', MF: '#22c55e', ST: '#ef4444' };
+
+const formatMoney = (val) => {
+  if (val === null || val === undefined) return '–';
+  return Math.round(val).toLocaleString('de-DE') + ' €';
+};
+
+const formatSignedMoney = (val) => {
+  if (val === null || val === undefined) return '–';
+  const rounded = Math.round(val);
+  const sign = rounded > 0 ? '+' : '';
+  return `${sign}${rounded.toLocaleString('de-DE')} €`;
+};
+
+const SquadPlayerRow = ({ entry }) => {
+  const rising = (entry.predictedChange || 0) >= 0;
+  return (
+    <div className="flex items-center gap-3 bg-[#000] border border-[#2e2e2e] rounded-xl px-3 py-2.5">
+      {entry.position && (
+        <span
+          className="text-[8px] font-black uppercase tracking-widest rounded px-1.5 py-0.5 shrink-0"
+          style={{ backgroundColor: `${POSITION_COLORS[entry.position] || '#8b92a5'}26`, color: POSITION_COLORS[entry.position] || '#8b92a5' }}
+        >
+          {entry.position}
+        </span>
+      )}
+      <div className="min-w-0 flex-1">
+        <div className="text-xs font-bold text-gray-100 truncate">{entry.firstName ? `${entry.firstName} ${entry.name}` : entry.name}</div>
+        <div className="text-[10px] text-[#8b92a5]">{entry.team} · {formatMoney(entry.marketValue)}</div>
+      </div>
+      <div className={`text-[11px] font-black shrink-0 ${rising ? 'text-green-400' : 'text-red-400'}`}>
+        {rising ? '▲' : '▼'} {formatSignedMoney(entry.predictedChange)}
+      </div>
+    </div>
+  );
+};
+
+const KaderTab = ({ kickbaseId }) => {
+  const [advisorData, setAdvisorData] = useState(null);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    fetch(`/advisor-data.json?t=${Date.now()}`)
+      .then((res) => res.json())
+      .then((json) => setAdvisorData(json))
+      .catch(() => setAdvisorData(null))
+      .finally(() => setLoaded(true));
+  }, []);
+
+  const squad = useMemo(() => {
+    if (!advisorData || !kickbaseId) return null;
+    for (const league of Object.values(advisorData.leagues || {})) {
+      const found = league.managerSquads?.[kickbaseId];
+      if (found?.length) return found;
+    }
+    return null;
+  }, [advisorData, kickbaseId]);
+
+  if (!loaded) return <div className="text-xs text-[#8b92a5] text-center py-6">Lade Kader-Empfehlungen...</div>;
+  if (!squad) {
+    return (
+      <div className="text-xs text-[#8b92a5] text-center py-6">
+        Für dich sind noch keine Kader-Empfehlungen verfügbar.
+      </div>
+    );
+  }
+
+  const sorted = [...squad].sort((a, b) => (b.predictedChange || 0) - (a.predictedChange || 0));
+
+  return (
+    <div>
+      <p className="text-[10px] text-[#8b92a5] mb-3">Marktwert-Prognose für deinen Kader (Trading Advisor).</p>
+      <div className="space-y-1.5 max-h-72 overflow-y-auto pr-0.5">
+        {sorted.map((entry, i) => (
+          <SquadPlayerRow key={`${entry.playerId}-${i}`} entry={entry} />
+        ))}
+      </div>
+    </div>
+  );
+};
+
 // ---------- Hauptkomponente ----------
 
 const TABS = [
   { key: 'liga', label: 'Liga' },
   { key: 'pokal', label: 'Pokal' },
+  { key: 'kader', label: 'Kader' },
   { key: 'spieltag', label: 'Spieltag' },
 ];
 
@@ -308,6 +392,7 @@ export const SeasonSnapshot = ({ kickbaseId, kickbaseName }) => {
       <div className="p-5">
         {tab === 'liga' && <LigaTab kickbaseId={kickbaseId} />}
         {tab === 'pokal' && <PokalTab kickbaseName={kickbaseName} />}
+        {tab === 'kader' && <KaderTab kickbaseId={kickbaseId} />}
         {tab === 'spieltag' && <SpieltagTab />}
       </div>
     </div>

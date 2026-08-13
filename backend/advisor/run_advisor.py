@@ -8,6 +8,13 @@ LennardFe fuer das Original-Tool!). Angepasst, um:
     berechnen (das ML-Modell wird nur EINMAL trainiert und fuer alle 3
     Maerkte wiederverwendet - spart Laufzeit, die Marktwert-Entwicklung
     ist liga-unabhaengig),
+  - Kader-Empfehlungen fuer ALLE Manager einer Liga zu berechnen (nicht nur
+    fuer den eingeloggten Account) - ueber die Kickbase-API
+    /leagues/{id}/managers/{managerId}/squad kann EIN technischer Account,
+    der die Liga verwaltet, die Kader ALLER Manager abrufen. Jeder Nutzer
+    sieht so personalisierte Kader-Empfehlungen fuer seinen eigenen Kader
+    (per Kickbase-Name-Zuordnung im Account, siehe Profile.jsx), OHNE
+    eigene Kickbase-Zugangsdaten hinterlegen zu muessen,
   - das Ergebnis als JSON-Datei zu speichern statt per E-Mail zu versenden
     (die App hat bereits eine eigene Push-Benachrichtigung/Admin-Oberflaeche).
 
@@ -26,6 +33,7 @@ import pandas as pd
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from kickbase_api.league import get_leagues_infos
+from kickbase_api.manager import get_managers
 from kickbase_api.user import login
 from budgets import calc_manager_budgets
 from predictions.data_handler import fetch_player_data
@@ -191,30 +199,20 @@ def build_market_payload(token, league_id, live_predictions_df, history_by_playe
     return records
 
 
-def build_squad_payload(token, league_id, live_predictions_df, history_by_player=None):
-    """Kader-Empfehlung: Marktwert-Prognose fuer die Spieler im eigenen Kader
-    des Accounts, der fuer diese Liga eingeloggt ist.
+def build_squad_records(token, league_id, live_predictions_df, history_by_player=None, manager_id=None):
+    """Baut die Kader-Empfehlung fuer EINEN Manager (oder fuer den
+    eingeloggten Account selbst, wenn manager_id=None).
 
-    WICHTIG: Das ist NUR fuer unsere "test"-Liga sinnvoll, in der der
-    Advisor-Account selbst Manager ist! Sobald der Advisor spaeter auf die 3
-    echten Ligen umgestellt wird (siehe LEAGUE_DEFS oben), ist der
-    Advisor-Account dort NICHT einer der 27 echten Manager - eine
-    "Kader-Empfehlung" waere dann nur fuer diesen einen technischen Account
-    zutreffend und fuer alle anderen irrefuehrend. In diesem Fall bitte
-    build_squad_payload nicht mehr aufrufen bzw. die Sektion im Frontend
-    entfernen/verstecken.
-
-    Gibt bei jedem Fehler (z.B. Account hat gar keinen Kader in dieser Liga)
-    einfach eine leere Liste zurueck statt abzustuerzen - das Frontend blendet
-    die Sektion dann automatisch aus (kein Kader = keine Anzeige).
+    Gibt bei jedem Fehler (z.B. Manager hat gar keinen Kader) einfach eine
+    leere Liste zurueck statt abzustuerzen.
     """
 
     if live_predictions_df is None:
         return []
     try:
-        squad_df = join_current_squad(token, league_id, live_predictions_df)
+        squad_df = join_current_squad(token, league_id, live_predictions_df, manager_id=manager_id)
     except Exception as e:
-        print(f"Info: Kein Kader fuer diesen Account in dieser Liga gefunden ({e}).")
+        print(f"Info: Kader fuer Manager {manager_id or '(eigener Account)'} nicht abrufbar ({e}).")
         return []
 
     if squad_df.empty:
@@ -246,6 +244,46 @@ def build_squad_payload(token, league_id, live_predictions_df, history_by_player
             entry["inSquad"] = True
 
     return records
+
+
+def build_manager_squads_payload(token, league_id, live_predictions_df, history_by_player=None):
+    """Kader-Empfehlungen fuer ALLE Manager der Liga auf einmal.
+
+    So kann JEDER Manager (ueber seine bereits im Account zugeordnete
+    Kickbase-ID, siehe Profile.jsx/KickbaseNameCard.jsx) personalisierte
+    Empfehlungen fuer seinen eigenen Kader sehen - OHNE dass er dafuer seine
+    eigenen Kickbase-Zugangsdaten hinterlegen muss. Es wird nur der EINE
+    technische Account gebraucht, der die Liga sowieso schon verwaltet
+    (KICKBASE_EMAIL/PASS).
+
+    Ergebnis: (managers_list, squads_by_manager)
+    - managers_list: [{"id": ..., "name": ...}, ...] - nuetzlich fuer's
+      Frontend, um z.B. einen Auswahl-Dropdown zu bauen.
+    - squads_by_manager: { "<managerId>": [ ...Kader-Spieler-Empfehlungen... ], ... }
+      managerId entspricht exakt der Kickbase-ID, die auch in
+      frontend/public/data.json (leagues[].users[].id) und damit in
+      profile.kickbaseId in Firestore verwendet wird (beide stammen aus
+      demselben /leagues/{id}/ranking-Endpoint).
+    """
+
+    if live_predictions_df is None:
+        return [], {}
+
+    try:
+        managers = get_managers(token, league_id)
+    except Exception as e:
+        print(f"Warning: Manager-Liste fuer Kader-Empfehlungen fehlgeschlagen: {e}")
+        return [], {}
+
+    squads_by_manager = {}
+    for manager_name, manager_id in managers:
+        records = build_squad_records(token, league_id, live_predictions_df, history_by_player, manager_id=manager_id)
+        if records:
+            squads_by_manager[str(manager_id)] = records
+
+    print(f"Kader-Empfehlungen fuer {len(squads_by_manager)} von {len(managers)} Managern erzeugt.")
+    managers_list = [{"id": str(manager_id), "name": manager_name} for manager_name, manager_id in managers]
+    return managers_list, squads_by_manager
 
 
 def build_all_players_payload(live_predictions_df, history_by_player=None):
@@ -362,7 +400,7 @@ def main():
         if not league_id:
             print(f"Warning: Keine Liga mit Namen '{name}' in irgendeinem Account gefunden. "
                   f"Verfuegbare Ligen ueber alle Accounts: {all_known_leagues}")
-            result["leagues"][key] = {"name": name, "budgets": [], "marketRecommendations": [], "squadRecommendations": []}
+            result["leagues"][key] = {"name": name, "budgets": [], "marketRecommendations": [], "managers": [], "managerSquads": {}}
             continue
 
         print(f"Liga '{name}' gefunden (Account {owner_email}, ID {league_id}). Berechne Budgets fuer {key}...")
@@ -374,7 +412,7 @@ def main():
             print(f"Warning: Budgets fuer {key} fehlgeschlagen: {e}")
             budgets = []
 
-        result["leagues"][key] = {"name": name, "budgets": budgets, "marketRecommendations": [], "squadRecommendations": []}
+        result["leagues"][key] = {"name": name, "budgets": budgets, "marketRecommendations": [], "managers": [], "managerSquads": {}}
 
     # ----------------- 2. EIN ML-Modell fuer Marktwert-Vorhersagen (liga-uebergreifend) -----------------
     # Fuer die Spieler-/Marktwert-Historie reicht IRGENDEIN eingeloggter Account
@@ -427,11 +465,14 @@ def main():
             except Exception as e:
                 print(f"Warning: Markt-Empfehlungen fuer {key} fehlgeschlagen: {e}")
 
-            # Kader-Empfehlung: NUR zu Testzwecken (siehe Docstring von
-            # build_squad_payload). Liefert automatisch [] falls der Account
-            # in dieser Liga keinen Kader hat - Frontend blendet dann aus.
-            print(f"Erzeuge Kader-Empfehlung fuer {key} (falls vorhanden)...")
-            result["leagues"][key]["squadRecommendations"] = build_squad_payload(token, league_id, live_predictions_df, history_by_player)
+            # Kader-Empfehlungen fuer ALLE Manager der Liga - funktioniert mit
+            # nur EINEM technischen Account (siehe Docstring von
+            # build_manager_squads_payload). Kein manueller Login der
+            # einzelnen Manager noetig.
+            print(f"Erzeuge Kader-Empfehlungen fuer alle Manager in {key}...")
+            managers_list, squads_by_manager = build_manager_squads_payload(token, league_id, live_predictions_df, history_by_player)
+            result["leagues"][key]["managers"] = managers_list
+            result["leagues"][key]["managerSquads"] = squads_by_manager
 
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
     with open(OUTPUT_PATH, "w", encoding="utf-8") as f:

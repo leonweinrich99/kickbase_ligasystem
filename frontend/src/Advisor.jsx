@@ -329,6 +329,7 @@ const Advisor = () => {
   const [marketFilters, setMarketFilters] = useState(DEFAULT_FILTERS);
   const [dbFilters, setDbFilters] = useState(DEFAULT_FILTERS);
   const [squadFilters, setSquadFilters] = useState(DEFAULT_FILTERS);
+  const [selectedManagerId, setSelectedManagerId] = useState('');
   const [dbVisibleCount, setDbVisibleCount] = useState(DB_PAGE_SIZE);
   const [isAdvisorUpdating, setIsAdvisorUpdating] = useState(false);
   const [advisorUpdateStatus, setAdvisorUpdateStatus] = useState(null);
@@ -399,9 +400,21 @@ const Advisor = () => {
   const filteredDb = useMemo(() => applyFilters(data?.players || [], dbFilters), [data, dbFilters]);
 
   const filteredSquad = useMemo(
-    () => applyFilters(league?.squadRecommendations || [], squadFilters),
-    [league, squadFilters]
+    () => applyFilters(league?.managerSquads?.[selectedManagerId] || [], squadFilters),
+    [league, squadFilters, selectedManagerId]
   );
+
+  // Wenn sich die aktive Liga aendert (oder Daten neu laden), automatisch
+  // den ersten Manager mit einem tatsaechlich vorhandenen Kader auswaehlen.
+  useEffect(() => {
+    const managerIds = Object.keys(league?.managerSquads || {});
+    if (managerIds.length && !managerIds.includes(selectedManagerId)) {
+      setSelectedManagerId(managerIds[0]);
+    } else if (!managerIds.length && selectedManagerId) {
+      setSelectedManagerId('');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [league]);
 
   if (!isAdmin) {
     return (
@@ -527,29 +540,48 @@ const Advisor = () => {
                   <div className="text-center text-[#8b92a5] text-sm py-6 mb-10">Aktuell steht niemand auf dem Markt dieser Liga.</div>
                 )}
 
-                {/* Kader-Empfehlung: nur zu Testzwecken, nur sichtbar wenn der
-                    eingeloggte Account tatsaechlich einen Kader in dieser Liga
-                    hat (siehe backend/advisor/run_advisor.py::build_squad_payload).
-                    Bewusst KEIN Platzhalter/leere-Box, wenn nichts da ist -
-                    blendet einfach komplett aus. */}
-                {league.squadRecommendations?.length > 0 && (
+                {/* Kader-Empfehlungen: fuer JEDEN Manager der Liga verfuegbar
+                    (siehe backend/advisor/run_advisor.py::build_manager_squads_payload) -
+                    Admins koennen hier zu Test-/Debug-Zwecken durchschalten,
+                    was ein beliebiger Manager an personalisierten
+                    Empfehlungen sehen wuerde. Bewusst KEIN Platzhalter, wenn
+                    fuer NIEMANDEN ein Kader vorhanden ist - blendet dann
+                    komplett aus. */}
+                {league.managers?.length > 0 && (
                   <>
                     <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                       <div>
                         <h2 className="text-[1.2rem] font-black text-[#f8fafc] tracking-tight uppercase">Kader-Empfehlungen</h2>
-                        <p className="text-[10px] text-[#8b92a5] mt-1">Marktwert-Prognose für den Kader des Test-Accounts in dieser Liga.</p>
+                        <p className="text-[10px] text-[#8b92a5] mt-1">Personalisiert pro Manager - jeder Nutzer sieht (später) nur seinen eigenen Kader.</p>
                       </div>
-                      <span className="text-[10px] text-[#8b92a5]">{filteredSquad.length} von {league.squadRecommendations.length} Spielern</span>
+                      <span className="text-[10px] text-[#8b92a5]">{filteredSquad.length} von {(league.managerSquads?.[selectedManagerId] || []).length} Spielern</span>
                     </div>
-                    <FilterBar filters={squadFilters} onChange={setSquadFilters} teams={[]} />
-                    {filteredSquad.length ? (
-                      <div className="mb-10">
-                        {filteredSquad.map((entry, index) => (
-                          <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} onClick={() => setSelectedPlayer(entry)} />
-                        ))}
-                      </div>
+                    <select
+                      value={selectedManagerId}
+                      onChange={(e) => setSelectedManagerId(e.target.value)}
+                      className="w-full bg-[#171717] border border-[#2e2e2e] rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-cyan-500 mb-4"
+                    >
+                      {league.managers.map((m) => (
+                        <option key={m.id} value={m.id} disabled={!league.managerSquads?.[m.id]?.length}>
+                          {m.name}{!league.managerSquads?.[m.id]?.length ? ' (kein Kader gefunden)' : ''}
+                        </option>
+                      ))}
+                    </select>
+                    {selectedManagerId && league.managerSquads?.[selectedManagerId]?.length > 0 ? (
+                      <>
+                        <FilterBar filters={squadFilters} onChange={setSquadFilters} teams={[]} />
+                        {filteredSquad.length ? (
+                          <div className="mb-10">
+                            {filteredSquad.map((entry, index) => (
+                              <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} onClick={() => setSelectedPlayer(entry)} />
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center text-[#8b92a5] text-sm py-6 mb-10">Kein Spieler passt zu den aktuellen Filtern.</div>
+                        )}
+                      </>
                     ) : (
-                      <div className="text-center text-[#8b92a5] text-sm py-6 mb-10">Kein Spieler passt zu den aktuellen Filtern.</div>
+                      <div className="text-center text-[#8b92a5] text-sm py-6 mb-10">Für diesen Manager konnte kein Kader abgerufen werden.</div>
                     )}
                   </>
                 )}

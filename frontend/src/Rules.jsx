@@ -83,7 +83,7 @@ const RuleCard = ({ rule, number, isAdmin, isEditing, onEdit, onCancel, onSave, 
         {isAdmin && !isEditing && (
           <button
             onClick={() => onEdit(rule.id)}
-            className="absolute top-4 right-4 p-2 rounded-lg bg-[#000] border border-[#2e2e2e] text-[#8b92a5] hover:text-white hover:border-[#404040] transition-colors opacity-0 group-hover:opacity-100"
+            className="absolute top-4 right-4 p-2 rounded-lg bg-[#000] border border-[#2e2e2e] text-[#8b92a5] hover:text-white hover:border-[#404040] active:scale-95 transition-all z-20"
             title="Regel bearbeiten"
           >
             {PencilIcon}
@@ -137,7 +137,6 @@ export default function Rules({ type = 'league', backTo = '/', label = 'Regelkat
       <Motion.header initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="text-center mb-20 pt-10 sm:pt-0">
         <div className={`inline-block px-3 py-1 mb-4 text-[0.85rem] font-extrabold uppercase tracking-[2.5px] border rounded-full ${accent === 'purple' ? 'text-purple-400 bg-purple-500/10 border-purple-500/20' : 'text-orange-400 bg-orange-500/10 border-orange-500/20'}`}>{rules?.season || 'Saison 26/27'}</div>
         <h1 className="text-4xl sm:text-[3.5rem] font-black tracking-tighter uppercase leading-[1.1] mb-4 bg-gradient-to-br from-white to-[#9ca3af] bg-clip-text text-transparent">KICKBASE {isCup ? 'POKAL' : 'LIGASYSTEM'}<br />{label}</h1>
-        {isAdmin && <p className="text-[10px] text-[#626978] uppercase tracking-widest">Als Admin: Maus über eine Regel bewegen, um sie zu bearbeiten</p>}
       </Motion.header>
       <div className="space-y-16">
         {sections.map((section) => (
