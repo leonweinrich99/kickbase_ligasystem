@@ -235,6 +235,8 @@ const PokalTab = ({ kickbaseName }) => {
 };
 
 // ---------- Spieltag-Tab ----------
+// Vorerst nicht in TABS eingebunden (siehe Nutzer-Feedback) - Komponente
+// bleibt bewusst erhalten, um sie leicht wieder zu aktivieren.
 
 const SpieltagTab = () => {
   const [plan, setPlan] = useState(null);
@@ -366,11 +368,12 @@ const KaderTab = ({ kickbaseId }) => {
 
 // ---------- Hauptkomponente ----------
 
+// Spieltag-Tab ist vorerst deaktiviert (siehe Nutzer-Feedback) - Komponente
+// (SpieltagTab) bleibt im Code erhalten, um sie leicht wieder zu aktivieren.
 const TABS = [
   { key: 'liga', label: 'Liga' },
   { key: 'pokal', label: 'Pokal' },
   { key: 'kader', label: 'Kader' },
-  { key: 'spieltag', label: 'Spieltag' },
 ];
 
 export const SeasonSnapshot = ({ kickbaseId, kickbaseName }) => {
@@ -393,7 +396,7 @@ export const SeasonSnapshot = ({ kickbaseId, kickbaseName }) => {
         {tab === 'liga' && <LigaTab kickbaseId={kickbaseId} />}
         {tab === 'pokal' && <PokalTab kickbaseName={kickbaseName} />}
         {tab === 'kader' && <KaderTab kickbaseId={kickbaseId} />}
-        {tab === 'spieltag' && <SpieltagTab />}
+        {/* Spieltag-Tab vorerst deaktiviert, siehe TABS oben */}
       </div>
     </div>
   );

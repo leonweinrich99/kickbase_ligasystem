@@ -23,6 +23,13 @@ const POSITION_LABELS = { TW: 'Torwart', ABW: 'Abwehr', MF: 'Mittelfeld', ST: 'S
 
 const DB_PAGE_SIZE = 25;
 
+const SECTION_TABS = [
+  { key: 'budgets', label: 'Budgets' },
+  { key: 'market', label: 'Markt' },
+  { key: 'squad', label: 'Kader' },
+  { key: 'database', label: 'Datenbank' },
+];
+
 const formatMoney = (val) => {
   if (val === null || val === undefined) return '–';
   return Math.round(val).toLocaleString('de-DE') + ' €';
@@ -333,6 +340,7 @@ const Advisor = () => {
   const [dbVisibleCount, setDbVisibleCount] = useState(DB_PAGE_SIZE);
   const [isAdvisorUpdating, setIsAdvisorUpdating] = useState(false);
   const [advisorUpdateStatus, setAdvisorUpdateStatus] = useState(null);
+  const [sectionTab, setSectionTab] = useState('budgets');
 
   const loadData = () => {
     fetch(`/advisor-data.json?t=${Date.now()}`)
@@ -526,7 +534,19 @@ const Advisor = () => {
               ))}
             </div>
 
-            {league && (
+            <div className="flex border-b border-[#2e2e2e] mb-6 overflow-x-auto">
+              {SECTION_TABS.map((t) => (
+                <button
+                  key={t.key}
+                  onClick={() => setSectionTab(t.key)}
+                  className={`px-4 py-3 text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-colors border-b-2 ${sectionTab === t.key ? 'text-white border-cyan-400' : 'text-[#8b92a5] border-transparent hover:text-gray-300'}`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {league && sectionTab === 'budgets' && (
               <>
                 <h2 className="text-[1.2rem] font-black text-[#f8fafc] mb-4 tracking-tight uppercase">Manager-Budgets (geschätzt)</h2>
                 {league.budgets?.length ? (
@@ -538,7 +558,11 @@ const Advisor = () => {
                 ) : (
                   <div className="text-center text-[#8b92a5] text-sm py-6 mb-10">Keine Budget-Daten für diese Liga verfügbar.</div>
                 )}
+              </>
+            )}
 
+            {league && sectionTab === 'market' && (
+              <>
                 <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                   <h2 className="text-[1.2rem] font-black text-[#f8fafc] tracking-tight uppercase">Markt-Empfehlungen</h2>
                   <span className="text-[10px] text-[#8b92a5]">{filteredMarket.length} von {league.marketRecommendations?.length || 0} Spielern</span>
@@ -559,23 +583,30 @@ const Advisor = () => {
                 ) : (
                   <div className="text-center text-[#8b92a5] text-sm py-6 mb-10">Aktuell steht niemand auf dem Markt dieser Liga.</div>
                 )}
+              </>
+            )}
 
-                {/* Kader-Empfehlungen: fuer JEDEN Manager der Liga verfuegbar
-                    (siehe backend/advisor/run_advisor.py::build_manager_squads_payload) -
-                    Admins koennen hier zu Test-/Debug-Zwecken durchschalten,
-                    was ein beliebiger Manager an personalisierten
-                    Empfehlungen sehen wuerde. Bewusst KEIN Platzhalter, wenn
-                    fuer NIEMANDEN ein Kader vorhanden ist - blendet dann
-                    komplett aus. */}
-                {resolvedManagers.length > 0 && (
+            {/* Kader-Empfehlungen: eigener Tab, damit sie nicht in einer
+                langen Seite untergehen. Fuer JEDEN Manager der Liga
+                verfuegbar (siehe backend/advisor/run_advisor.py::build_manager_squads_payload).
+                Admins koennen hier durchschalten, was ein beliebiger Manager
+                an personalisierten Empfehlungen sehen wuerde. Immer
+                sichtbar (auch mit alten/unvollstaendigen Daten, siehe
+                effectiveManagerSquads/resolvedManagers oben), zeigt sonst
+                einen klaren Hinweis statt einfach zu verschwinden. */}
+            {league && sectionTab === 'squad' && (
+              <>
+                <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                  <div>
+                    <h2 className="text-[1.2rem] font-black text-[#f8fafc] tracking-tight uppercase">Kader-Empfehlungen</h2>
+                    <p className="text-[10px] text-[#8b92a5] mt-1">Personalisiert pro Manager - jeder Nutzer sieht (später) nur seinen eigenen Kader.</p>
+                  </div>
+                  {resolvedManagers.length > 0 && (
+                    <span className="text-[10px] text-[#8b92a5]">{filteredSquad.length} von {(effectiveManagerSquads[selectedManagerId] || []).length} Spielern</span>
+                  )}
+                </div>
+                {resolvedManagers.length > 0 ? (
                   <>
-                    <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-                      <div>
-                        <h2 className="text-[1.2rem] font-black text-[#f8fafc] tracking-tight uppercase">Kader-Empfehlungen</h2>
-                        <p className="text-[10px] text-[#8b92a5] mt-1">Personalisiert pro Manager - jeder Nutzer sieht (später) nur seinen eigenen Kader.</p>
-                      </div>
-                      <span className="text-[10px] text-[#8b92a5]">{filteredSquad.length} von {(effectiveManagerSquads[selectedManagerId] || []).length} Spielern</span>
-                    </div>
                     <select
                       value={selectedManagerId}
                       onChange={(e) => setSelectedManagerId(e.target.value)}
@@ -604,42 +635,48 @@ const Advisor = () => {
                       <div className="text-center text-[#8b92a5] text-sm py-6 mb-10">Für diesen Manager konnte kein Kader abgerufen werden.</div>
                     )}
                   </>
+                ) : (
+                  <div className="text-center text-[#8b92a5] text-sm py-6 mb-10">Noch keine Kader-Daten vorhanden - bitte den Advisor einmal aktualisieren.</div>
                 )}
               </>
             )}
 
-            <div className="flex items-center justify-between mb-4 flex-wrap gap-2 pt-4 border-t border-[#2e2e2e]">
-              <div>
-                <h2 className="text-[1.2rem] font-black text-[#f8fafc] tracking-tight uppercase">Alle Spieler durchsuchen</h2>
-                <p className="text-[10px] text-[#8b92a5] mt-1">Marktwert-Prognose für die komplette Bundesliga, unabhängig davon, ob gerade jemand verkauft.</p>
-              </div>
-              <span className="text-[10px] text-[#8b92a5]">{filteredDb.length} von {data.players?.length || 0} Spielern</span>
-            </div>
-            {data.players?.length ? (
+            {sectionTab === 'database' && (
               <>
-                <FilterBar filters={dbFilters} onChange={(f) => { setDbFilters(f); setDbVisibleCount(DB_PAGE_SIZE); }} teams={dbTeams} showTeamFilter />
-                {filteredDb.length ? (
+                <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                  <div>
+                    <h2 className="text-[1.2rem] font-black text-[#f8fafc] tracking-tight uppercase">Alle Spieler durchsuchen</h2>
+                    <p className="text-[10px] text-[#8b92a5] mt-1">Marktwert-Prognose für die komplette Bundesliga, unabhängig davon, ob gerade jemand verkauft.</p>
+                  </div>
+                  <span className="text-[10px] text-[#8b92a5]">{filteredDb.length} von {data.players?.length || 0} Spielern</span>
+                </div>
+                {data.players?.length ? (
                   <>
-                    <div>
-                      {filteredDb.slice(0, dbVisibleCount).map((entry, index) => (
-                        <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} onClick={() => setSelectedPlayer(entry)} />
-                      ))}
-                    </div>
-                    {dbVisibleCount < filteredDb.length && (
-                      <button
-                        onClick={() => setDbVisibleCount((c) => c + DB_PAGE_SIZE)}
-                        className="w-full text-center text-[10px] font-black uppercase tracking-widest text-cyan-400 border border-cyan-500/30 rounded-2xl py-3 hover:bg-cyan-500/10 transition-colors"
-                      >
-                        Weitere {Math.min(DB_PAGE_SIZE, filteredDb.length - dbVisibleCount)} von {filteredDb.length - dbVisibleCount} laden
-                      </button>
+                    <FilterBar filters={dbFilters} onChange={(f) => { setDbFilters(f); setDbVisibleCount(DB_PAGE_SIZE); }} teams={dbTeams} showTeamFilter />
+                    {filteredDb.length ? (
+                      <>
+                        <div>
+                          {filteredDb.slice(0, dbVisibleCount).map((entry, index) => (
+                            <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} onClick={() => setSelectedPlayer(entry)} />
+                          ))}
+                        </div>
+                        {dbVisibleCount < filteredDb.length && (
+                          <button
+                            onClick={() => setDbVisibleCount((c) => c + DB_PAGE_SIZE)}
+                            className="w-full text-center text-[10px] font-black uppercase tracking-widest text-cyan-400 border border-cyan-500/30 rounded-2xl py-3 hover:bg-cyan-500/10 transition-colors"
+                          >
+                            Weitere {Math.min(DB_PAGE_SIZE, filteredDb.length - dbVisibleCount)} von {filteredDb.length - dbVisibleCount} laden
+                          </button>
+                        )}
+                      </>
+                    ) : (
+                      <div className="text-center text-[#8b92a5] text-sm py-6">Kein Spieler passt zu den aktuellen Filtern.</div>
                     )}
                   </>
                 ) : (
-                  <div className="text-center text-[#8b92a5] text-sm py-6">Kein Spieler passt zu den aktuellen Filtern.</div>
+                  <div className="text-center text-[#8b92a5] text-sm py-6">Die Spieler-Datenbank ist noch nicht verfügbar (erst ab dem nächsten Advisor-Lauf).</div>
                 )}
               </>
-            ) : (
-              <div className="text-center text-[#8b92a5] text-sm py-6">Die Spieler-Datenbank ist noch nicht verfügbar (erst ab dem nächsten Advisor-Lauf).</div>
             )}
           </>
         )}
