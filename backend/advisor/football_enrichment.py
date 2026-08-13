@@ -12,7 +12,7 @@ ohne Live-Pruefung moeglich war.
 import re
 import unicodedata
 
-from football_api import get_bundesliga_teams, get_team_players, get_team_injuries
+from football_api import find_bundesliga_league_id, get_bundesliga_teams, get_team_players, get_team_injuries
 
 # Rechtsformen/generische Woerter, die beim Team-Namensabgleich stoeren
 # (Kickbase nennt Teams oft kurz wie "Bayern", API-Football voller wie
@@ -76,13 +76,22 @@ def fetch_football_enrichment(api_key, player_df, season):
         return {}
 
     try:
-        api_teams = get_bundesliga_teams(api_key, season)
+        league_id, _available_seasons = find_bundesliga_league_id(api_key, season)
+    except Exception as e:
+        print(f"Warning: API-Football Liga-Suche fehlgeschlagen ({e}) - ueberspringe Anreicherung.")
+        return {}
+
+    if league_id is None:
+        print("Warning: Bundesliga-Liga-ID nicht auffindbar - ueberspringe Anreicherung.")
+        return {}
+
+    try:
+        api_teams = get_bundesliga_teams(api_key, league_id, season)
     except Exception as e:
         print(f"Warning: API-Football Team-Liste nicht abrufbar ({e}) - ueberspringe Anreicherung.")
         return {}
 
     if not api_teams:
-        print(f"Warning: API-Football lieferte keine Bundesliga-Teams fuer Saison {season}.")
         return {}
 
     # Kickbase-ID -> (player_id, first_name, last_name) je Team, um nachher
@@ -129,7 +138,7 @@ def fetch_football_enrichment(api_key, player_df, season):
             # Bundesliga-Statistik bevorzugen, falls der Spieler auch in
             # anderen Wettbewerben (Pokal, International) auftaucht.
             league_stats = next(
-                (s for s in stats_list if s.get("league", {}).get("id") == 78),
+                (s for s in stats_list if s.get("league", {}).get("id") == league_id),
                 stats_list[0] if stats_list else {},
             )
             goals = (league_stats.get("goals") or {}).get("total")

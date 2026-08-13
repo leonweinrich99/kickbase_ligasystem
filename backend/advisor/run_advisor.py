@@ -35,7 +35,6 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from kickbase_api.league import get_leagues_infos
 from kickbase_api.manager import get_managers
 from kickbase_api.user import login
-from kickbase_api.others import get_team_predictions
 from football_enrichment import fetch_football_enrichment
 from budgets import calc_manager_budgets
 from predictions.data_handler import fetch_player_data
@@ -379,66 +378,13 @@ def _attach_football_enrichment(records, football_enrichment):
             entry.update(extra)
 
 
-# Kandidaten-Schluessel fuer eine Wahrscheinlichkeit (0-1) in der
-# EXPERIMENTELLEN Kickbase-Prognose-Antwort - bewusst NICHT "p" (kollidiert
-# mit Punkten/anderen Zahlenfeldern), nur eindeutig benannte Kandidaten.
-_PROBABILITY_KEY_CANDIDATES = ("prob", "sp", "startProb", "probability", "startElfProb", "chance")
-_ID_KEY_CANDIDATES = ("i", "pi", "id")
-
-
-def fetch_predicted_start_probabilities(token, competition_id):
-    """EXPERIMENTELL: Versucht, Kickbases eigene Startelf-Prognose fuer JEDEN
-    Spieler des Wettbewerbs zu extrahieren - nicht nur fuer aktuell gelistete
-    Marktspieler (die einzige Quelle, die wir bisher fuer "prob" hatten).
-
-    Genau das fehlte bisher bei Kader-Spielern: Kickbase zeigt in der App
-    fuer JEDEN Spieler eine gruen/rot-Ampel zur Startelf-Wahrscheinlichkeit,
-    unsere bisherige Kader-Empfehlung hatte dafuer aber keine Datenquelle.
-
-    Die Antwortstruktur ist in der offiziellen API-Doku nicht mit
-    Beispiel-JSON belegt - deshalb wird hier defensiv gesucht (rekursiv nach
-    Objekten mit ID + eindeutig benannter Wahrscheinlichkeit) und bei einem
-    leeren Ergebnis die tatsaechliche Struktur geloggt, um die Extraktion
-    beim naechsten Mal zu verfeinern (gleiches Vorgehen wie beim
-    "pi"-statt-"i"-Bugfix im Kader-Endpoint).
-    """
-
-    try:
-        raw = get_team_predictions(token, competition_id)
-    except Exception as e:
-        print(f"Info: Startelf-Prognose-Endpoint nicht abrufbar ({e}) - ueberspringe.")
-        return {}
-
-    probabilities = {}
-
-    def collect(node):
-        if isinstance(node, dict):
-            id_val = next((node[k] for k in _ID_KEY_CANDIDATES if k in node), None)
-            if id_val is not None:
-                prob_val = next(
-                    (node[k] for k in _PROBABILITY_KEY_CANDIDATES
-                     if isinstance(node.get(k), (int, float)) and 0 <= node[k] <= 1),
-                    None,
-                )
-                if prob_val is not None:
-                    probabilities[history_key(id_val)] = prob_val
-            for value in node.values():
-                collect(value)
-        elif isinstance(node, list):
-            for item in node:
-                collect(item)
-
-    collect(raw)
-
-    if probabilities:
-        print(f"Startelf-Prognose (experimentell): {len(probabilities)} Spieler-Wahrscheinlichkeiten gefunden.")
-    else:
-        preview = json.dumps(raw, ensure_ascii=False)[:1500] if raw else "(leer)"
-        print(f"Debug Startelf-Prognose: Keine Wahrscheinlichkeiten erkannt. Antwort-Struktur (gekuerzt): {preview}")
-
-    return probabilities
-
-
+# Kickbases /base/predictions/teams/{competitionId}-Endpoint wurde
+# EXPERIMENTELL getestet (siehe Commit-Historie), um Startelf-Prognosen auch
+# fuer Kader-Spieler zu bekommen (bisher nur fuer Marktspieler verfuegbar).
+# Ergebnis: liefert nur Bildvorschauen der voraussichtlichen Aufstellung
+# (Trikot-/Portraetbilder je Team), KEINE strukturierten Wahrscheinlichkeiten
+# pro Spieler - daher wieder entfernt. _attach_predicted_probability bleibt
+# als Hook bestehen, falls zukuenftig eine echte Quelle dafuer gefunden wird.
 def _attach_predicted_probability(records, predicted_probabilities):
     """Fuellt startElfProbability nur auf, wenn sie noch fehlt (z.B. bei
     Kader-Spielern, fuer die es bisher keine eigene Quelle gab) - die
@@ -780,8 +726,11 @@ def main():
     player_stats = {}
     football_enrichment = {}
 
-    print("Rufe Kickbase-eigene Startelf-Prognose ab (experimentell)...")
-    predicted_probabilities = fetch_predicted_start_probabilities(primary_token, COMPETITION_IDS[0])
+    # Startelf-Prognose fuer Kader-Spieler: der einzige gefundene Kickbase-
+    # Endpoint dafuer (/base/predictions/teams) liefert nur Bildvorschauen,
+    # keine Wahrscheinlichkeiten (siehe _attach_predicted_probability) -
+    # bleibt daher vorerst leer, bis eine echte Quelle gefunden wird.
+    predicted_probabilities = {}
 
     try:
         print("Lade Spielerdaten (Marktwert- + Performance-Historie)...")
