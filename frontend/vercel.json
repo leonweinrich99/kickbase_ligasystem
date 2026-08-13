@@ -11,6 +11,10 @@
     {
       "path": "/api/advisor-cron",
       "schedule": "0 21 * * *"
+    },
+    {
+      "path": "/api/squad-reminder",
+      "schedule": "0 7 * * 5"
     }
   ]
 }

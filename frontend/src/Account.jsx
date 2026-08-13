@@ -1,10 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { useTour } from './Tour';
 import accountLogo from './assets/account_logo.png';
-import PushNotificationCard from './PushNotificationCard';
-import KickbaseNameCard from './KickbaseNameCard';
+import KickbaseNameModal from './KickbaseNameCard';
 
 const MenuLink = ({ to, onClick, icon, label, color = '#8b92a5' }) => {
   const content = (
@@ -65,6 +64,13 @@ const TutorialIcon = (
   </svg>
 );
 
+const BellIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+  </svg>
+);
+
 const LogoutIcon = (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -76,6 +82,7 @@ const LogoutIcon = (
 const Account = () => {
   const { user, profile, isAdmin, isFirebaseConfigured, signOut } = useAuth();
   const tour = useTour();
+  const [showKickbaseModal, setShowKickbaseModal] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10">
@@ -91,7 +98,10 @@ const Account = () => {
         </div>
 
         {isFirebaseConfigured && user && (
-          <div className="flex items-center gap-4 bg-[#171717] border border-[#2e2e2e] rounded-2xl p-5 mb-8">
+          <button
+            onClick={() => setShowKickbaseModal(true)}
+            className="w-full flex items-center gap-4 bg-[#171717] border border-[#2e2e2e] rounded-2xl p-5 mb-8 text-left hover:border-[#404040] transition-all active:scale-[0.98]"
+          >
             <div className="w-14 h-14 rounded-full bg-[#1f1f1f] border border-[#2e2e2e] flex items-center justify-center overflow-hidden shrink-0">
               {user.photoURL ? (
                 <img src={user.photoURL} alt={profile?.displayName || 'Avatar'} className="w-full h-full object-cover" />
@@ -99,24 +109,27 @@ const Account = () => {
                 <span className="text-xl font-black text-[#ff5c3e]">{(profile?.displayName || user.email || '?').charAt(0).toUpperCase()}</span>
               )}
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="font-bold text-gray-100 truncate flex items-center gap-2">
                 {profile?.displayName || 'Unbenannt'}
                 {isAdmin && <span className="text-[8px] font-black uppercase tracking-widest bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-full px-1.5 py-0.5">Admin</span>}
               </div>
               <div className="text-xs text-[#8b92a5] truncate">{user.email}</div>
-              {profile?.kickbaseName && (
+              {profile?.kickbaseName ? (
                 <div className="text-[10px] text-[#8b5cf6] font-bold truncate mt-0.5">Kickbase: {profile.kickbaseName}</div>
+              ) : (
+                <div className="text-[10px] text-[#ff5c3e] font-bold truncate mt-0.5">Kickbase-Name zuordnen →</div>
               )}
             </div>
-          </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
         )}
-
-        <KickbaseNameCard />
-        <PushNotificationCard />
 
         <div data-tour="account-menu" className="flex flex-col gap-3 mb-8">
           <MenuLink onClick={tour.start} icon={TutorialIcon} label="App-Tutorial ansehen" color="#eab308" />
+          <MenuLink to="/account/reminders" icon={BellIcon} label="Erinnerungen" color="#22d3ee" />
           <MenuLink to="/rules" icon={RulesIcon} label="Regelkatalog" color="#ff5c3e" />
           <MenuLink to="/pokal-rules" icon={TrophyIcon} label="Pokal-Regeln" color="#8b5cf6" />
           <MenuLink to="/archiv" icon={ArchiveIcon} label="Quali-Daten (Archiv)" color="#8b92a5" />
@@ -128,6 +141,8 @@ const Account = () => {
         {isFirebaseConfigured && user && (
           <MenuLink onClick={signOut} icon={LogoutIcon} label="Abmelden" color="#ef4444" />
         )}
+
+        {showKickbaseModal && <KickbaseNameModal onClose={() => setShowKickbaseModal(false)} />}
       </div>
     </div>
   );

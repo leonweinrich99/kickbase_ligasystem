@@ -1,16 +1,12 @@
 /* global process */
 
+// Erinnert freitagmorgens alle Nutzer mit aktivierter "Kader"-Erinnerung
+// daran, ihren Liga-Kader fuer den bevorstehenden Bundesliga-Spieltag
+// aufzustellen (die meisten Kickbase-Ligen sperren die Aufstellung ab dem
+// ersten Anpfiff des Wochenendes, i.d.R. Freitagabend).
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { getMessaging } from 'firebase-admin/messaging';
-
-const CUP_ROUNDS = [
-  { name: 'Sechzehntelfinale', matchday: 5, date: '2026-10-10' },
-  { name: 'Achtelfinale', matchday: 8, date: '2026-10-31' },
-  { name: 'Viertelfinale', matchday: 10, date: '2026-11-21' },
-  { name: 'Halbfinale', matchday: 12, date: '2026-12-05' },
-  { name: 'Finale', matchday: 14, date: '2026-12-19' },
-];
 
 function getAdminApp() {
   if (getApps().length) return getApps()[0];
@@ -19,36 +15,11 @@ function getAdminApp() {
   return initializeApp({ credential: cert(JSON.parse(raw)) });
 }
 
-function getBerlinDateKey(date = new Date()) {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'Europe/Berlin',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).formatToParts(date).reduce((result, part) => {
-    if (part.type !== 'literal') result[part.type] = part.value;
-    return result;
-  }, {});
-  return `${parts.year}-${parts.month}-${parts.day}`;
-}
-
-function daysBetween(first, second) {
-  const firstMs = Date.parse(`${first}T00:00:00Z`);
-  const secondMs = Date.parse(`${second}T00:00:00Z`);
-  return Math.round((secondMs - firstMs) / 86400000);
-}
-
 export default async function handler(req, res) {
   const authHeader = req.headers.authorization;
   const querySecret = req.query.secret;
   if (!process.env.CRON_SECRET || (authHeader !== `Bearer ${process.env.CRON_SECRET}` && querySecret !== process.env.CRON_SECRET)) {
     return res.status(401).json({ error: 'Unauthorized' });
-  }
-
-  const today = getBerlinDateKey();
-  const round = CUP_ROUNDS.find((entry) => daysBetween(today, entry.date) === 3);
-  if (!round) {
-    return res.status(200).json({ sent: 0, skipped: true, reason: 'Heute ist kein Mittwoch vor einem Pokal-Spieltag' });
   }
 
   const app = getAdminApp();
@@ -62,11 +33,11 @@ export default async function handler(req, res) {
 
     usersSnap.forEach((userSnap) => {
       const data = userSnap.data();
+      // Anders als bei der Pokal-Erinnerung ist dies eine NEUE, zusaetzliche
+      // Erinnerung -> nur senden, wenn explizit aktiviert (Standard: aus,
+      // ausser der Nutzer hat sie im Erinnerungen-Menü eingeschaltet).
+      if (data.reminderPrefs?.squad !== true) return;
       const userTokens = data.fcmTokens;
-      // reminderPrefs.pokal fehlt bei Bestandsnutzern (vor Einfuehrung der
-      // Einzel-Toggles) -> als "an" behandeln (entspricht dem bisherigen
-      // Verhalten: Push aktiviert = Pokal-Erinnerung aktiviert).
-      if (data.reminderPrefs?.pokal === false) return;
       if (!Array.isArray(userTokens)) return;
       userTokens.forEach((token) => {
         if (!tokenOwners.has(token)) tokenOwners.set(token, userSnap.ref);
@@ -74,7 +45,7 @@ export default async function handler(req, res) {
       });
     });
 
-    if (tokens.length === 0) return res.status(200).json({ sent: 0, reason: 'Keine Push-Geräte registriert' });
+    if (tokens.length === 0) return res.status(200).json({ sent: 0, reason: 'Niemand hat die Kader-Erinnerung aktiviert' });
 
     const messaging = getMessaging(app);
     const invalidTokens = [];
@@ -86,9 +57,9 @@ export default async function handler(req, res) {
       const result = await messaging.sendEachForMulticast({
         tokens: chunk,
         data: {
-          title: `Pokal-Erinnerung: ${round.name}`,
-          body: `Diesen Samstag ist Bundesliga-Spieltag ${round.matchday}. Dein Pokal-Duell steht an!`,
-          link: '/pokal',
+          title: 'Kader-Erinnerung',
+          body: 'Vergiss nicht, deinen Liga-Kader für den Spieltag aufzustellen!',
+          link: '/',
         },
       });
       sent += result.successCount;
@@ -110,9 +81,9 @@ export default async function handler(req, res) {
       await batch.commit();
     }
 
-    return res.status(200).json({ sent, failed, round: round.name, matchday: round.matchday });
+    return res.status(200).json({ sent, failed });
   } catch (error) {
-    console.error('pokal-reminder error:', error.message);
+    console.error('squad-reminder error:', error.message);
     return res.status(500).json({ error: error.message });
   }
 }

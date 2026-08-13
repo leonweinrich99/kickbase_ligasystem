@@ -7,6 +7,7 @@ import SeasonView from './SeasonView';
 import AdminPanel from './AdminPanel';
 import Advisor from './Advisor';
 import Account from './Account';
+import Reminders from './Reminders';
 import TabBar from './TabBar';
 import ScrollToTop from './ScrollToTop';
 import { AuthProvider } from './AuthContext';
@@ -38,6 +39,7 @@ function App() {
                   <Route path="/admin" element={<AdminPanel />} />
                   <Route path="/admin/advisor" element={<Advisor />} />
                   <Route path="/account" element={<Account />} />
+                  <Route path="/account/reminders" element={<Reminders />} />
 
                   {/* Archiv: eingefrorener Stand der Qualifikationsrunde 25/26 (nur Lesezugriff) */}
                   <Route
