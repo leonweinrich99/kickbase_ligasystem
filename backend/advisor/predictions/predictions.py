@@ -47,6 +47,15 @@ def join_current_squad(token, league_id, today_df_results):
             "predicted_mv_target", "s_11_prob",
         ])
 
+    # BUGFIX: Die Kickbase-API liefert die Spieler-ID im Squad-Endpoint als
+    # STRING (z.B. "i": "118"), waehrend sie an anderer Stelle in unserer
+    # Pipeline als Zahl vorliegen kann. pd.merge() matcht dann STILLSCHWEIGEND
+    # NICHTS (0 Zeilen, kein Fehler) - deshalb beide Seiten explizit auf
+    # denselben String-Typ bringen, bevor gemerged wird.
+    today_df_results = today_df_results.copy()
+    today_df_results["player_id"] = today_df_results["player_id"].astype(str)
+    squad_df["i"] = squad_df["i"].astype(str)
+
     merged_df = pd.merge(today_df_results, squad_df, left_on="player_id", right_on="i").drop(columns=["i"])
 
     if "prob" not in merged_df.columns:
@@ -71,6 +80,12 @@ def join_current_market(token, league_id, today_df_results):
             "player_id", "first_name", "last_name", "position", "team_name", "mv", "mv_change_yesterday",
             "predicted_mv_target", "s_11_prob", "hours_to_exp", "expiring_today",
         ])
+
+    # Gleicher Typ-Sicherheits-Fix wie in join_current_squad (siehe dort) -
+    # verhindert stillschweigend leere Ergebnisse bei Zahl/String-Mismatch.
+    today_df_results = today_df_results.copy()
+    today_df_results["player_id"] = today_df_results["player_id"].astype(str)
+    market_df["id"] = market_df["id"].astype(str)
 
     bid_df = pd.merge(today_df_results, market_df, left_on="player_id", right_on="id").drop(columns=["id"])
 
