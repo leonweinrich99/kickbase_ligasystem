@@ -35,6 +35,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from kickbase_api.league import get_leagues_infos
 from kickbase_api.manager import get_managers
 from kickbase_api.user import login
+from kickbase_api.others import get_team_predictions
+from football_enrichment import fetch_football_enrichment
 from budgets import calc_manager_budgets
 from predictions.data_handler import fetch_player_data
 from predictions.preprocessing import preprocess_player_data, split_data
@@ -113,13 +115,36 @@ def compute_recommendations(entry):
     Marktspielern ist v.a. buyRecommended relevant, bei Kader-Spielern v.a.
     sellRecommended - beide Felder werden trotzdem immer berechnet, das
     Frontend zeigt je nach Kontext nur das relevante Badge an.
+
+    WICHTIG (Fix 13.08.2026): Vorher fuehrte JEDER einzelne Verkaufsgrund
+    sofort zu sellRecommended=True - das erzeugte Fehlalarme, z.B. bei einem
+    gesetzten Stamm-Torwart, der nur EINMAL (z.B. Pokalrotation) nicht
+    eingesetzt wurde. Jetzt werden Gruende nach Staerke gewichtet:
+    - "starke" Gruende (Verletzung/Sperre, klar niedrige eigene
+      Startelf-Prognose) reichen allein.
+    - "schwache" Gruende (fallender Marktwert, zuletzt nicht eingesetzt)
+      brauchen entweder einen Verbuendeten oder werden bei Torwaerten (die
+      seltener rotieren als Feldspieler) besonders vorsichtig behandelt.
+    - "Zuletzt nicht eingesetzt" wird NICHT gewertet, wenn der Spieler noch
+      gar keine Spieltag-Daten in dieser Saison hat (Saisonstart-Fairness)
+      ODER wenn eine bekannte, hohe Startelf-Wahrscheinlichkeit dagegen
+      spricht (Kickbases eigene Prognose hat Vorrang vor unserer
+      rueckblickenden Einsatzminuten-Beobachtung).
+    - Eine per API-Football bestaetigte Verletzung/Sperre (unabhaengige
+      Quelle, siehe football_enrichment.py) ist IMMER ein starker Grund -
+      auch wenn Kickbases eigenes Statusfeld (noch) nicht aktualisiert ist.
     """
 
     predicted = entry.get("predictedChange") or 0
     status = entry.get("status")
     prob = entry.get("startElfProbability")
     last_minutes = entry.get("lastMinutesPlayed")
-    is_fit = status is None or status == 0
+    appearances = entry.get("appearances") or entry.get("officialSeasonAppearances") or 0
+    position = entry.get("position")
+    kickbase_fit = status is None or status == 0
+    externally_injured = bool(entry.get("isInjured"))
+    is_fit = kickbase_fit and not externally_injured
+    is_goalkeeper = position == "TW"
 
     buy_reasons = []
     if predicted >= BUY_MIN_PREDICTED_CHANGE:
@@ -131,17 +156,34 @@ def compute_recommendations(entry):
     )
     entry["buyReasons"] = buy_reasons
 
-    sell_reasons = []
-    if not is_fit:
-        sell_reasons.append("injured_or_suspended")
-    if predicted <= SELL_MAX_PREDICTED_CHANGE:
-        sell_reasons.append("falling_value")
-    if last_minutes == 0:
-        sell_reasons.append("benched_last_matchday")
+    strong_sell_reasons = []
+    weak_sell_reasons = []
+
+    if not kickbase_fit:
+        strong_sell_reasons.append("injured_or_suspended")
+    if externally_injured:
+        strong_sell_reasons.append("confirmed_injured_external")
     if prob is not None and prob < LOW_START_PROBABILITY:
-        sell_reasons.append("low_starting_probability")
-    entry["sellRecommended"] = bool(sell_reasons)
-    entry["sellReasons"] = sell_reasons
+        strong_sell_reasons.append("low_starting_probability")
+    if predicted <= SELL_MAX_PREDICTED_CHANGE:
+        weak_sell_reasons.append("falling_value")
+
+    has_season_data = appearances > 0
+    high_prob_override = prob is not None and prob >= HIGH_START_PROBABILITY
+    if last_minutes == 0 and has_season_data and not high_prob_override:
+        weak_sell_reasons.append("benched_last_matchday")
+
+    if strong_sell_reasons:
+        entry["sellRecommended"] = True
+    elif is_goalkeeper:
+        # Torhueter rotieren selten (meist nur 1 Stamm-Torwart je Team) - ein
+        # einzelner schwacher Grund (z.B. eine Pokalrotation) reicht hier
+        # NICHT aus, es braucht mindestens zwei schwache Signale gleichzeitig.
+        entry["sellRecommended"] = len(weak_sell_reasons) >= 2
+    else:
+        entry["sellRecommended"] = len(weak_sell_reasons) >= 1
+
+    entry["sellReasons"] = strong_sell_reasons + weak_sell_reasons
 
     return entry
 
@@ -176,6 +218,13 @@ LEAGUE_DEFS = [
 
 LEAGUE_START_DATE = env_or_default("ADVISOR_LEAGUE_START_DATE", "2026-08-13")
 START_BUDGET = int(env_or_default("ADVISOR_START_BUDGET", "50000000"))
+
+# API-Football (api-sports.io) - kostenlose Anreicherung um Tore/Vorlagen/
+# Verletzungen, die Kickbase selbst nicht hergibt. Optional: Ohne Key laeuft
+# der Advisor unveraendert weiter, nur ohne diese Zusatzdaten.
+API_FOOTBALL_KEY = env_or_default("API_FOOTBALL_KEY", None)
+# API-Football zaehlt Saisons nach Startjahr (Saison 2026/27 = "2026").
+API_FOOTBALL_SEASON = int(env_or_default("API_FOOTBALL_SEASON", "2026"))
 
 OUTPUT_PATH = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "..", "..", "frontend", "public", "advisor-data.json"
@@ -318,7 +367,95 @@ def _attach_player_stats(records, player_stats):
             entry.update(stats)
 
 
-def build_market_payload(token, league_id, live_predictions_df, history_by_player=None, player_stats=None):
+def _attach_football_enrichment(records, football_enrichment):
+    """Ergaenzt officialGoals/officialAssists/isInjured (aus API-Football)
+    an die bereits gebauten Datensaetze - siehe football_enrichment.py."""
+
+    if not football_enrichment:
+        return
+    for entry in records:
+        extra = football_enrichment.get(history_key(entry.get("playerId")))
+        if extra:
+            entry.update(extra)
+
+
+# Kandidaten-Schluessel fuer eine Wahrscheinlichkeit (0-1) in der
+# EXPERIMENTELLEN Kickbase-Prognose-Antwort - bewusst NICHT "p" (kollidiert
+# mit Punkten/anderen Zahlenfeldern), nur eindeutig benannte Kandidaten.
+_PROBABILITY_KEY_CANDIDATES = ("prob", "sp", "startProb", "probability", "startElfProb", "chance")
+_ID_KEY_CANDIDATES = ("i", "pi", "id")
+
+
+def fetch_predicted_start_probabilities(token, competition_id):
+    """EXPERIMENTELL: Versucht, Kickbases eigene Startelf-Prognose fuer JEDEN
+    Spieler des Wettbewerbs zu extrahieren - nicht nur fuer aktuell gelistete
+    Marktspieler (die einzige Quelle, die wir bisher fuer "prob" hatten).
+
+    Genau das fehlte bisher bei Kader-Spielern: Kickbase zeigt in der App
+    fuer JEDEN Spieler eine gruen/rot-Ampel zur Startelf-Wahrscheinlichkeit,
+    unsere bisherige Kader-Empfehlung hatte dafuer aber keine Datenquelle.
+
+    Die Antwortstruktur ist in der offiziellen API-Doku nicht mit
+    Beispiel-JSON belegt - deshalb wird hier defensiv gesucht (rekursiv nach
+    Objekten mit ID + eindeutig benannter Wahrscheinlichkeit) und bei einem
+    leeren Ergebnis die tatsaechliche Struktur geloggt, um die Extraktion
+    beim naechsten Mal zu verfeinern (gleiches Vorgehen wie beim
+    "pi"-statt-"i"-Bugfix im Kader-Endpoint).
+    """
+
+    try:
+        raw = get_team_predictions(token, competition_id)
+    except Exception as e:
+        print(f"Info: Startelf-Prognose-Endpoint nicht abrufbar ({e}) - ueberspringe.")
+        return {}
+
+    probabilities = {}
+
+    def collect(node):
+        if isinstance(node, dict):
+            id_val = next((node[k] for k in _ID_KEY_CANDIDATES if k in node), None)
+            if id_val is not None:
+                prob_val = next(
+                    (node[k] for k in _PROBABILITY_KEY_CANDIDATES
+                     if isinstance(node.get(k), (int, float)) and 0 <= node[k] <= 1),
+                    None,
+                )
+                if prob_val is not None:
+                    probabilities[history_key(id_val)] = prob_val
+            for value in node.values():
+                collect(value)
+        elif isinstance(node, list):
+            for item in node:
+                collect(item)
+
+    collect(raw)
+
+    if probabilities:
+        print(f"Startelf-Prognose (experimentell): {len(probabilities)} Spieler-Wahrscheinlichkeiten gefunden.")
+    else:
+        preview = json.dumps(raw, ensure_ascii=False)[:1500] if raw else "(leer)"
+        print(f"Debug Startelf-Prognose: Keine Wahrscheinlichkeiten erkannt. Antwort-Struktur (gekuerzt): {preview}")
+
+    return probabilities
+
+
+def _attach_predicted_probability(records, predicted_probabilities):
+    """Fuellt startElfProbability nur auf, wenn sie noch fehlt (z.B. bei
+    Kader-Spielern, fuer die es bisher keine eigene Quelle gab) - die
+    liga-spezifische Markt-Wahrscheinlichkeit hat weiterhin Vorrang, falls
+    vorhanden."""
+
+    if not predicted_probabilities:
+        return
+    for entry in records:
+        if entry.get("startElfProbability") is not None:
+            continue
+        fallback = predicted_probabilities.get(history_key(entry.get("playerId")))
+        if fallback is not None:
+            entry["startElfProbability"] = round(float(fallback), 3)
+
+
+def build_market_payload(token, league_id, live_predictions_df, history_by_player=None, player_stats=None, predicted_probabilities=None, football_enrichment=None):
     if live_predictions_df is None:
         return []
     market_df = join_current_market(token, league_id, live_predictions_df)
@@ -365,6 +502,8 @@ def build_market_payload(token, league_id, live_predictions_df, history_by_playe
             entry["history"] = history_by_player.get(history_key(entry.get("playerId")), [])
             entry["onMarket"] = True
     _attach_player_stats(records, player_stats)
+    _attach_predicted_probability(records, predicted_probabilities)
+    _attach_football_enrichment(records, football_enrichment)
     for entry in records:
         entry["statusLabel"] = status_label(entry.get("status"))
         entry["imageUrl"] = image_url(entry.get("imagePath"))
@@ -377,7 +516,7 @@ def build_market_payload(token, league_id, live_predictions_df, history_by_playe
     return records
 
 
-def build_squad_records(token, league_id, live_predictions_df, history_by_player=None, manager_id=None, player_stats=None):
+def build_squad_records(token, league_id, live_predictions_df, history_by_player=None, manager_id=None, player_stats=None, predicted_probabilities=None, football_enrichment=None):
     """Baut die Kader-Empfehlung fuer EINEN Manager (oder fuer den
     eingeloggten Account selbst, wenn manager_id=None).
 
@@ -435,6 +574,8 @@ def build_squad_records(token, league_id, live_predictions_df, history_by_player
             entry["history"] = history_by_player.get(history_key(entry.get("playerId")), [])
             entry["inSquad"] = True
     _attach_player_stats(records, player_stats)
+    _attach_predicted_probability(records, predicted_probabilities)
+    _attach_football_enrichment(records, football_enrichment)
     for entry in records:
         entry["statusLabel"] = status_label(entry.get("status"))
         entry["imageUrl"] = image_url(entry.get("imagePath"))
@@ -446,7 +587,7 @@ def build_squad_records(token, league_id, live_predictions_df, history_by_player
     return records
 
 
-def build_manager_squads_payload(token, league_id, live_predictions_df, history_by_player=None, player_stats=None):
+def build_manager_squads_payload(token, league_id, live_predictions_df, history_by_player=None, player_stats=None, predicted_probabilities=None, football_enrichment=None):
     """Kader-Empfehlungen fuer ALLE Manager der Liga auf einmal.
 
     So kann JEDER Manager (ueber seine bereits im Account zugeordnete
@@ -477,7 +618,7 @@ def build_manager_squads_payload(token, league_id, live_predictions_df, history_
 
     squads_by_manager = {}
     for manager_name, manager_id in managers:
-        records = build_squad_records(token, league_id, live_predictions_df, history_by_player, manager_id=manager_id, player_stats=player_stats)
+        records = build_squad_records(token, league_id, live_predictions_df, history_by_player, manager_id=manager_id, player_stats=player_stats, predicted_probabilities=predicted_probabilities, football_enrichment=football_enrichment)
         if records:
             squads_by_manager[str(manager_id)] = records
 
@@ -486,7 +627,7 @@ def build_manager_squads_payload(token, league_id, live_predictions_df, history_
     return managers_list, squads_by_manager
 
 
-def build_all_players_payload(live_predictions_df, history_by_player=None, player_stats=None):
+def build_all_players_payload(live_predictions_df, history_by_player=None, player_stats=None, predicted_probabilities=None, football_enrichment=None):
     """Komplette, durchsuchbare Vorhersage-Liste ALLER Spieler des Wettbewerbs
     (nicht nur der aktuell auf einem Liga-Markt gelisteten). Damit koennen
     Admins selbst nach beliebigen Spielern suchen/filtern, auch wenn diese
@@ -523,10 +664,12 @@ def build_all_players_payload(live_predictions_df, history_by_player=None, playe
         for entry in records:
             entry["history"] = history_by_player.get(history_key(entry.get("playerId")), [])
     _attach_player_stats(records, player_stats)
+    _attach_predicted_probability(records, predicted_probabilities)
+    _attach_football_enrichment(records, football_enrichment)
     for entry in records:
-        # Status/Startelf-Wahrscheinlichkeit sind nur fuer Markt-/Kader-Spieler
-        # bekannt (ligaspezifisch) - hier ohne, buyRecommended basiert dann
-        # nur auf der Marktwert-Prognose.
+        # Status ist nur fuer Markt-/Kader-Spieler bekannt (ligaspezifisch).
+        # Startelf-Wahrscheinlichkeit kommt (falls vorhanden) jetzt aus der
+        # wettbewerbsweiten Prognose (siehe fetch_predicted_start_probabilities).
         compute_recommendations(entry)
 
     return records
@@ -635,6 +778,11 @@ def main():
     live_predictions_df = None
     history_by_player = {}
     player_stats = {}
+    football_enrichment = {}
+
+    print("Rufe Kickbase-eigene Startelf-Prognose ab (experimentell)...")
+    predicted_probabilities = fetch_predicted_start_probabilities(primary_token, COMPETITION_IDS[0])
+
     try:
         print("Lade Spielerdaten (Marktwert- + Performance-Historie)...")
         player_df = fetch_player_data(primary_token, COMPETITION_IDS, LAST_MV_VALUES, LAST_PFM_VALUES)
@@ -644,6 +792,10 @@ def main():
         else:
             history_by_player = build_history_by_player(player_df)
             player_stats = build_player_stats(player_df)
+
+            if API_FOOTBALL_KEY:
+                print("Rufe API-Football-Anreicherung ab (Tore/Vorlagen/Verletzungen)...")
+                football_enrichment = fetch_football_enrichment(API_FOOTBALL_KEY, player_df, API_FOOTBALL_SEASON)
 
             proc_df, today_df = preprocess_player_data(player_df)
             X_train, X_test, y_train, y_test = split_data(proc_df, FEATURES, TARGET)
@@ -663,7 +815,7 @@ def main():
 
             live_predictions_df = live_data_predictions(today_df, model, FEATURES)
             print(f"Baue durchsuchbare Spieler-Datenbank ({len(live_predictions_df)} Spieler)...")
-            result["players"] = build_all_players_payload(live_predictions_df, history_by_player, player_stats)
+            result["players"] = build_all_players_payload(live_predictions_df, history_by_player, player_stats, predicted_probabilities, football_enrichment)
     except Exception as e:
         print(f"Warning: Marktwert-Vorhersage-Pipeline fehlgeschlagen: {e}")
 
@@ -677,7 +829,7 @@ def main():
                 continue
             try:
                 print(f"Erzeuge Markt-Empfehlungen fuer {key}...")
-                result["leagues"][key]["marketRecommendations"] = build_market_payload(token, league_id, live_predictions_df, history_by_player, player_stats)
+                result["leagues"][key]["marketRecommendations"] = build_market_payload(token, league_id, live_predictions_df, history_by_player, player_stats, predicted_probabilities, football_enrichment)
             except Exception as e:
                 print(f"Warning: Markt-Empfehlungen fuer {key} fehlgeschlagen: {e}")
 
@@ -686,7 +838,7 @@ def main():
             # build_manager_squads_payload). Kein manueller Login der
             # einzelnen Manager noetig.
             print(f"Erzeuge Kader-Empfehlungen fuer alle Manager in {key}...")
-            managers_list, squads_by_manager = build_manager_squads_payload(token, league_id, live_predictions_df, history_by_player, player_stats)
+            managers_list, squads_by_manager = build_manager_squads_payload(token, league_id, live_predictions_df, history_by_player, player_stats, predicted_probabilities, football_enrichment)
             result["leagues"][key]["managers"] = managers_list
             result["leagues"][key]["managerSquads"] = squads_by_manager
 

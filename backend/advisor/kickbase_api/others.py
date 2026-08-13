@@ -22,3 +22,19 @@ def get_achievement_reward(token, league_id, achievement_id):
     data = get_json_with_token(url, token)
 
     return data["ac"], data["er"]
+
+
+def get_team_predictions(token, competition_id):
+    """EXPERIMENTELL: Kickbases eigene Startelf-/Aufstellungsprognose fuer
+    ALLE Teams eines Wettbewerbs (nicht liga-spezifisch, gilt fuer JEDEN
+    Spieler des Wettbewerbs - im Gegensatz zur Markt-Wahrscheinlichkeit, die
+    es nur fuer aktuell gelistete Marktspieler gibt).
+
+    In der offiziellen API-Doku ohne Beispiel-Antwort dokumentiert - die
+    tatsaechliche Struktur wird zur Laufzeit geloggt (siehe
+    predictions.py::extract_predicted_lineup_probabilities), um sie
+    schrittweise zu verifizieren.
+    """
+
+    url = f"{BASE_URL}/base/predictions/teams/{competition_id}"
+    return get_json_with_token(url, token)

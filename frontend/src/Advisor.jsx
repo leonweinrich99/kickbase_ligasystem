@@ -31,6 +31,7 @@ const REASON_LABELS = {
   falling_value: 'Marktwert fällt',
   benched_last_matchday: 'Zuletzt nicht eingesetzt',
   low_starting_probability: 'Selten in der Startelf',
+  confirmed_injured_external: 'Verletzung extern bestätigt',
 };
 
 const DB_PAGE_SIZE = 25;
@@ -499,9 +500,10 @@ const PlayerHistoryModal = ({ player, onClose, isFavorite, onToggleFavorite }) =
           <p className="text-[10px] text-[#8b92a5] text-center mb-5">Marktwert-Verlauf der letzten {history.length} Tage</p>
 
           {/* Leistung: alles, was Kickbase zuverlaessig hergibt (Einsatzminuten,
-              Punkte, offizielle Saison-Statistik). Vereinshistorie/Transfers/
-              Tore & Vorlagen gibt die Kickbase-API NICHT her - dafuer bräuchte
-              man transfermarkt.de/ligainsider.de (siehe Doku). */}
+              Punkte, offizielle Saison-Statistik) + Tore/Vorlagen/Verletzungen
+              aus der externen API-Football-Anreicherung (siehe
+              backend/advisor/football_enrichment.py) - Kickbase selbst gibt
+              Tore & Vorlagen nicht her. */}
           {(hasScoutingFacts || player.seasonPoints !== undefined) && (
             <div className="pt-5 border-t border-[#2e2e2e]">
               <h3 className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] mb-3">Leistung (Saison)</h3>
@@ -510,6 +512,12 @@ const PlayerHistoryModal = ({ player, onClose, isFavorite, onToggleFavorite }) =
                 <MiniStat label="Einsätze" value={player.officialSeasonAppearances ?? player.appearances ?? '–'} />
                 <MiniStat label="Gesamtminuten" value={player.totalMinutes ? `${player.totalMinutes}'` : '–'} />
                 <MiniStat label="Ø Punkte / Spiel" value={player.avgPoints ?? '–'} />
+                {typeof player.officialGoals === 'number' && (
+                  <MiniStat label="Tore" value={player.officialGoals} />
+                )}
+                {typeof player.officialAssists === 'number' && (
+                  <MiniStat label="Vorlagen" value={player.officialAssists} />
+                )}
               </div>
               <div className="mt-2">
                 <MiniStat
@@ -517,6 +525,11 @@ const PlayerHistoryModal = ({ player, onClose, isFavorite, onToggleFavorite }) =
                   value={player.lastMinutesPlayed ? `${player.lastMinutesPlayed}' · ${player.lastPoints ?? 0} Pkt.` : 'Nicht eingesetzt'}
                 />
               </div>
+              {player.isInjured && (
+                <div className="mt-2 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-[11px] text-red-300">
+                  Extern bestätigte Verletzung/Sperre{player.injuryReason ? `: ${player.injuryReason}` : ''}
+                </div>
+              )}
             </div>
           )}
 

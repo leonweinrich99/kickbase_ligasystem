@@ -48,6 +48,7 @@ jobs:
           KICKBASE_LEAGUE_3_NAME: ${{ vars.KICKBASE_LEAGUE_3_NAME }}
           ADVISOR_LEAGUE_START_DATE: ${{ vars.ADVISOR_LEAGUE_START_DATE }}
           ADVISOR_START_BUDGET: ${{ vars.ADVISOR_START_BUDGET }}
+          API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
 
       - name: Commit and Push Advisor Data
         run: |
