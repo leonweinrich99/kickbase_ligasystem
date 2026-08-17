@@ -202,7 +202,8 @@ const PlayerCard = ({ entry, onClick, isFavorite, onToggleFavorite }) => {
   const hasHistory = Array.isArray(entry.history) && entry.history.length > 1;
   const isBuyContext = entry.onMarket;
   const isSellContext = entry.inSquad;
-  const showBuyBadge = isBuyContext && entry.buyRecommended;
+  const showPlayBadge = isBuyContext && entry.playRecommended;
+  const showTradeBadge = isBuyContext && entry.tradeRecommended;
   const showSellBadge = isSellContext && entry.sellRecommended;
   const reasons = (isSellContext ? entry.sellReasons : entry.buyReasons) || [];
   const isFit = entry.status === null || entry.status === undefined || entry.status === 0;
@@ -213,59 +214,45 @@ const PlayerCard = ({ entry, onClick, isFavorite, onToggleFavorite }) => {
       tabIndex={hasHistory ? 0 : undefined}
       onClick={hasHistory ? onClick : undefined}
       onKeyDown={hasHistory ? (e) => (e.key === 'Enter' || e.key === ' ') && onClick() : undefined}
-      className={`w-full flex items-center p-3 mb-2.5 bg-[#171717] border rounded-[14px] shadow-sm text-left transition-all ${showSellBadge ? 'border-red-500/40' : showBuyBadge ? 'border-green-500/40' : 'border-[#2e2e2e]'} ${hasHistory ? 'hover:border-cyan-500/50 hover:bg-[#1c1c1c] active:scale-[0.99] cursor-pointer' : 'cursor-default'}`}
+      className={`w-full flex items-center p-2 mb-2 bg-[#171717] border rounded-xl shadow-sm text-left transition-all ${showSellBadge ? 'border-red-500/40' : (showPlayBadge || showTradeBadge) ? 'border-green-500/40' : 'border-[#2e2e2e]'} ${hasHistory ? 'hover:border-cyan-500/50 hover:bg-[#1c1c1c] active:scale-[0.99] cursor-pointer' : 'cursor-default'}`}
     >
       {onToggleFavorite && (
         <button
           onClick={(e) => { e.stopPropagation(); onToggleFavorite(entry.playerId); }}
           aria-label={isFavorite ? 'Favorit entfernen' : 'Als Favorit speichern'}
-          className="mr-2.5 shrink-0 p-1 -m-1"
+          className="mr-2 shrink-0 p-1 -m-1"
         >
           <StarIcon filled={isFavorite} />
         </button>
       )}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-1.5 flex-wrap">
           {entry.position && (
-            <span
-              className="text-[8px] font-black uppercase tracking-widest rounded px-1.5 py-0.5 shrink-0"
-              style={{ backgroundColor: `${POSITION_COLORS[entry.position] || '#8b92a5'}26`, color: POSITION_COLORS[entry.position] || '#8b92a5' }}
-            >
+            <span className="text-[10px] font-black" style={{ color: POSITION_COLORS[entry.position] || '#8b92a5' }}>
               {entry.position}
             </span>
           )}
-          <div className="text-[15px] font-bold text-gray-100 truncate">
+          <div className="text-[14px] font-bold text-gray-100 truncate">
             {entry.firstName ? `${entry.firstName} ${entry.name}` : entry.name}
           </div>
-          {showBuyBadge && (
-            <span className="text-[8px] font-black uppercase tracking-widest bg-green-500/15 text-green-400 border border-green-500/40 rounded-full px-1.5 py-0.5 shrink-0">✓ Kaufempfehlung</span>
+          {showPlayBadge && (
+            <span className="text-[8px] font-black uppercase tracking-widest bg-green-500/15 text-green-400 border border-green-500/40 rounded px-1 shrink-0">✓ Stammelf</span>
+          )}
+          {showTradeBadge && (
+            <span className="text-[8px] font-black uppercase tracking-widest bg-cyan-500/15 text-cyan-400 border border-cyan-500/40 rounded px-1 shrink-0">📈 Trading</span>
           )}
           {showSellBadge && (
-            <span className="text-[8px] font-black uppercase tracking-widest bg-red-500/15 text-red-400 border border-red-500/40 rounded-full px-1.5 py-0.5 shrink-0">⚠ Verkaufen</span>
+            <span className="text-[8px] font-black uppercase tracking-widest bg-red-500/15 text-red-400 border border-red-500/40 rounded px-1 shrink-0">⚠ Verkaufen</span>
           )}
           {entry.statusLabel && !isFit && (
-            <span className="text-[8px] font-black uppercase tracking-widest bg-orange-500/10 text-orange-400 border border-orange-500/30 rounded-full px-1.5 py-0.5 shrink-0">{entry.statusLabel}</span>
-          )}
-          {entry.onMarket && (
-            <span className="text-[8px] font-black uppercase tracking-widest bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 rounded-full px-1.5 py-0.5 shrink-0">Auf dem Markt</span>
-          )}
-          {entry.inSquad && (
-            <span className="text-[8px] font-black uppercase tracking-widest bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-full px-1.5 py-0.5 shrink-0">Im Kader</span>
+            <span className="text-[8px] font-black uppercase tracking-widest bg-orange-500/10 text-orange-400 border border-orange-500/30 rounded px-1 shrink-0">{entry.statusLabel}</span>
           )}
           {entry.expiringToday && (
-            <span className="text-[8px] font-black uppercase tracking-widest bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 rounded-full px-1.5 py-0.5 shrink-0">Läuft heute ab</span>
-          )}
-          {hasHistory && (
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#626978" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-              <polyline points="17 6 23 6 23 12"></polyline>
-            </svg>
+            <span className="text-[8px] font-black uppercase tracking-widest bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 rounded px-1 shrink-0">Läuft heute ab</span>
           )}
         </div>
-        <div className="text-[10px] text-[#8b92a5] mt-0.5 flex items-center gap-2 flex-wrap">
-          <span>{entry.team}</span>
-          <span>·</span>
-          <span>{formatMoney(entry.marketValue)}</span>
+        <div className="text-[10px] text-[#8b92a5] mt-0.5 flex items-center gap-1.5 flex-wrap">
+          <span className="font-bold text-gray-300">{entry.team}</span>
           {typeof entry.avgPoints === 'number' && (
             <>
               <span>·</span>
@@ -275,24 +262,34 @@ const PlayerCard = ({ entry, onClick, isFavorite, onToggleFavorite }) => {
           {typeof entry.startElfProbability === 'number' && (
             <>
               <span>·</span>
-              <span>Startelf-Wahrsch.: {Math.round(entry.startElfProbability * 100)}%</span>
+              <span>Startelf: {Math.round(entry.startElfProbability * 100)}%</span>
             </>
           )}
           {typeof entry.hoursToExpiry === 'number' && (
             <>
               <span>·</span>
-              <span>Noch {entry.hoursToExpiry}h im Angebot</span>
+              <span>{entry.hoursToExpiry}h verbleibend</span>
             </>
           )}
         </div>
-        {(showBuyBadge || showSellBadge) && reasons.length > 0 && (
-          <div className={`text-[10px] mt-1 ${showSellBadge ? 'text-red-400' : 'text-green-400'}`}>
+        {(showPlayBadge || showTradeBadge || showSellBadge) && reasons.length > 0 && (
+          <div className={`text-[9px] mt-0.5 ${showSellBadge ? 'text-red-400' : 'text-green-400/80'}`}>
             {reasons.map((r) => REASON_LABELS[r] || r).join(' · ')}
           </div>
         )}
       </div>
-      <div className={`text-right ml-2 shrink-0 font-black text-[15px] ${rising ? 'text-green-400' : 'text-red-400'}`}>
-        {rising ? '▲' : '▼'} {formatSignedMoney(entry.predictedChange)}
+      <div className="text-right ml-2 shrink-0 flex flex-col justify-center items-end">
+        <div className="text-[12px] font-bold text-gray-300 leading-none mb-1">
+          {formatCompactMoney(entry.marketValue)}
+        </div>
+        <div className={`text-[13px] font-black leading-none ${rising ? 'text-green-400' : 'text-red-400'}`}>
+          {rising ? '▲' : '▼'} {formatCompactMoney(entry.predictedChange)}
+        </div>
+        {entry.maxBid > 0 && isBuyContext && (
+          <div className="text-[9px] text-[#8b92a5] mt-1 font-bold tracking-wide">
+            Max: <span className="text-white">{formatCompactMoney(entry.maxBid)}</span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -361,7 +358,8 @@ const PlayerHistoryModal = ({ player, onClose, isFavorite, onToggleFavorite }) =
   const history = normalizeHistory(player.history);
   const hasScoutingFacts = player.appearances !== undefined || player.totalMinutes !== undefined || player.avgPoints !== undefined;
   const isFit = player.status === null || player.status === undefined || player.status === 0;
-  const showBuyBadge = player.onMarket && player.buyRecommended;
+  const showPlayBadge = player.onMarket && player.playRecommended;
+  const showTradeBadge = player.onMarket && player.tradeRecommended;
   const showSellBadge = player.inSquad && player.sellRecommended;
   const reasons = (player.inSquad ? player.sellReasons : player.buyReasons) || [];
 
@@ -427,10 +425,10 @@ const PlayerHistoryModal = ({ player, onClose, isFavorite, onToggleFavorite }) =
         </div>
 
         <div className="overflow-y-auto px-6 pb-6 min-h-0">
-          {(showBuyBadge || showSellBadge) && (
+          {(showPlayBadge || showTradeBadge || showSellBadge) && (
             <div className={`rounded-xl p-3 mb-4 border ${showSellBadge ? 'bg-red-500/10 border-red-500/30' : 'bg-green-500/10 border-green-500/30'}`}>
               <div className={`text-xs font-black uppercase tracking-widest mb-1 ${showSellBadge ? 'text-red-400' : 'text-green-400'}`}>
-                {showSellBadge ? '⚠ Verkaufen empfohlen' : '✓ Kaufempfehlung'}
+                {showSellBadge ? '⚠ Verkaufen empfohlen' : (showPlayBadge && showTradeBadge ? '✓ Stammelf & Trading' : showPlayBadge ? '✓ Stammelf' : '📈 Trading-Empfehlung')}
               </div>
               {reasons.length > 0 && (
                 <div className={`text-[11px] ${showSellBadge ? 'text-red-300' : 'text-green-300'}`}>
@@ -453,6 +451,12 @@ const PlayerHistoryModal = ({ player, onClose, isFavorite, onToggleFavorite }) =
               </div>
             </div>
           </div>
+          {player.maxBid > 0 && player.onMarket && (
+             <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-xl p-3 mb-3 flex justify-between items-center">
+               <span className="text-[10px] font-black uppercase tracking-widest text-cyan-400">Sinnvolles Max-Gebot</span>
+               <span className="text-sm font-black text-white">{formatMoney(player.maxBid)}</span>
+             </div>
+          )}
 
           {/* Mehrere Zeitraeume statt EINER Gesamt-Veraenderung ueber das ganze
               Chart-Fenster - genau das hat vorher fuer Verwirrung gesorgt

@@ -146,14 +146,28 @@ def compute_recommendations(entry):
     is_goalkeeper = position == "TW"
 
     buy_reasons = []
-    if predicted >= BUY_MIN_PREDICTED_CHANGE:
+    
+    trade_recommended = predicted >= BUY_MIN_PREDICTED_CHANGE
+    play_recommended = is_fit and prob is not None and prob >= HIGH_START_PROBABILITY
+    
+    if trade_recommended:
         buy_reasons.append("rising_value")
-    if prob is not None and prob >= HIGH_START_PROBABILITY:
+    if play_recommended:
         buy_reasons.append("likely_starter")
-    entry["buyRecommended"] = bool(
-        predicted >= BUY_MIN_PREDICTED_CHANGE and is_fit and (prob is None or prob >= LOW_START_PROBABILITY)
-    )
+        
+    entry["tradeRecommended"] = trade_recommended
+    entry["playRecommended"] = play_recommended
+    entry["buyRecommended"] = trade_recommended or play_recommended
     entry["buyReasons"] = buy_reasons
+
+    # Berechnung fuer "was man ausgeben sollte, um Gewinn zu machen"
+    # z.B. aktueller Marktwert + 70% der erwarteten Wertsteigerung (30% Gewinnmarge)
+    # Nur sinnvoll bei steigenden Werten.
+    mv = entry.get("mv") or 0
+    if predicted > 0:
+        entry["maxBid"] = mv + int(predicted * 0.7)
+    else:
+        entry["maxBid"] = mv
 
     strong_sell_reasons = []
     weak_sell_reasons = []
