@@ -26,6 +26,7 @@ Admin Panel (frontend/api/advisor-cron.js).
 import json
 import os
 import sys
+import re
 from datetime import datetime, timezone
 
 import pandas as pd
@@ -216,9 +217,9 @@ def env_or_default(key, default):
 # Echte 3-Ligen-Konfiguration (nutzt dieselben Secrets/Variablen wie das
 # bestehende Node-Backend, siehe backend/kickbase.js)
 LEAGUE_DEFS = [
-    {"key": "LIGA1", "name": env_or_default("KICKBASE_LEAGUE_1_NAME", "Liga 1")},
-    {"key": "LIGA2", "name": env_or_default("KICKBASE_LEAGUE_2_NAME", "Liga 2")},
-    {"key": "LIGA3", "name": env_or_default("KICKBASE_LEAGUE_3_NAME", "Liga 3")},
+    {"key": "LIGA1", "name": env_or_default("KICKBASE_LEAGUE_1_NAME", "1. Liga")},
+    {"key": "LIGA2", "name": env_or_default("KICKBASE_LEAGUE_2_NAME", "2. Liga")},
+    {"key": "LIGA3", "name": env_or_default("KICKBASE_LEAGUE_3_NAME", "3. Liga")},
 ]
 
 LEAGUE_START_DATE = env_or_default("ADVISOR_LEAGUE_START_DATE", "2026-08-13")
@@ -676,11 +677,12 @@ def login_all_accounts():
 
 def find_league_across_accounts(sessions, name_needle):
     """Sucht eine Liga (Teilstring, case-insensitive) ueber ALLE eingeloggten Accounts hinweg."""
-
-    needle = name_needle.lower()
+    
+    needle_tokens = set(re.findall(r'[a-z0-9]+', name_needle.lower()))
     for session in sessions:
         for league in session["leagues"]:
-            if needle in league["name"].lower():
+            league_tokens = set(re.findall(r'[a-z0-9]+', league["name"].lower()))
+            if needle_tokens.issubset(league_tokens) or name_needle.lower() in league["name"].lower():
                 return session["token"], league["id"], session["email"]
     return None, None, None
 

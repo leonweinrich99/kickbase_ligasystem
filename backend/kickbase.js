@@ -32,9 +32,16 @@ const fetchSingleLeagueData = async (email, password, leagueNameContains = "Qual
 
         let targetId = null;
         const leaguesList = leaguesData?.lins || leaguesData?.leagues || (Array.isArray(leaguesData) ? leaguesData : []);
+        
+        const needleTokens = leagueNameContains.toLowerCase().match(/[a-z0-9]+/g) || [];
         for (const l of leaguesList) {
-            if ((l.n || l.name).toLowerCase().includes(leagueNameContains.toLowerCase())) {
+            const leagueName = (l.n || l.name).toLowerCase();
+            const leagueTokens = leagueName.match(/[a-z0-9]+/g) || [];
+            
+            const isMatch = needleTokens.every(token => leagueTokens.includes(token));
+            if (isMatch || leagueName.includes(leagueNameContains.toLowerCase())) {
                 targetId = l.i || l.id;
+                break;
             }
         }
 
@@ -231,9 +238,9 @@ const fetchKickbaseData = async (previousData = null) => {
 // =====================================================================================
 
 const LEAGUE_DEFS = [
-    { key: 'LIGA1', name: process.env.KICKBASE_LEAGUE_1_NAME || 'Liga 1', displayName: 'LIGA 1', color: '#3b82f6' },
-    { key: 'LIGA2', name: process.env.KICKBASE_LEAGUE_2_NAME || 'Liga 2', displayName: 'LIGA 2', color: '#f97316' },
-    { key: 'LIGA3', name: process.env.KICKBASE_LEAGUE_3_NAME || 'Liga 3', displayName: 'LIGA 3', color: '#22c55e' }
+    { key: 'LIGA1', name: process.env.KICKBASE_LEAGUE_1_NAME || '1. Liga', displayName: 'LIGA 1', color: '#3b82f6' },
+    { key: 'LIGA2', name: process.env.KICKBASE_LEAGUE_2_NAME || '2. Liga', displayName: 'LIGA 2', color: '#f97316' },
+    { key: 'LIGA3', name: process.env.KICKBASE_LEAGUE_3_NAME || '3. Liga', displayName: 'LIGA 3', color: '#22c55e' }
 ];
 
 const fetchRawIndependentLeagues = async () => {
