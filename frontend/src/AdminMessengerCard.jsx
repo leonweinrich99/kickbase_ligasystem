@@ -24,8 +24,18 @@ export default function AdminMessengerCard() {
     setStatus('Sende...');
 
     try {
-      const auth = getAuth();
-      const token = await auth.currentUser?.getIdToken();
+      if (!user) {
+        setStatus('❌ Fehler: Nicht eingeloggt.');
+        setIsSending(false);
+        return;
+      }
+      
+      const token = await user.getIdToken();
+      if (!token) {
+        setStatus('❌ Fehler: Konnte kein Auth-Token generieren.');
+        setIsSending(false);
+        return;
+      }
 
       const response = await fetch('/api/admin-broadcast', {
         method: 'POST',
