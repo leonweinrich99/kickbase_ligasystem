@@ -4,6 +4,7 @@ import { collection, onSnapshot, doc, updateDoc, query, orderBy } from 'firebase
 import { db } from './firebase';
 import { useAuth } from './AuthContext';
 import PushNotificationCard from './PushNotificationCard';
+import AdminMessengerCard from './AdminMessengerCard';
 import { useBackNavigation } from './useBackNavigation';
 
 const StatusBadge = ({ status }) => {
@@ -198,6 +199,7 @@ const AdminPanel = () => {
         </div>
 
         <PushNotificationCard />
+        <AdminMessengerCard />
 
         <div className="flex gap-2 mb-6 overflow-x-auto">
           {['pending', 'approved', 'admin', 'rejected', 'all'].map(f => (

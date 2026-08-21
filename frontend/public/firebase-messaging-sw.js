@@ -41,11 +41,18 @@ messaging.onBackgroundMessage((payload) => {
     data: { url: payload.data?.link || '/admin' }
   };
   self.registration.showNotification(title, options);
+  
+  if ('setAppBadge' in navigator) {
+    navigator.setAppBadge(1).catch(() => {});
+  }
 });
 
 // Klick auf die Benachrichtigung -> App/Tab oeffnen bzw. in den Vordergrund holen.
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+  if ('clearAppBadge' in navigator) {
+    navigator.clearAppBadge().catch(() => {});
+  }
   const targetUrl = event.notification.data?.url || '/admin';
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Rules from './Rules';
 import Pokal from './Pokal';
@@ -16,6 +16,12 @@ import AuthGate from './AuthGate';
 import { TourProvider } from './Tour';
 
 function App() {
+  useEffect(() => {
+    if ('clearAppBadge' in navigator) {
+      navigator.clearAppBadge().catch(() => {});
+    }
+  }, []);
+
   return (
     <AuthProvider>
       <Router>

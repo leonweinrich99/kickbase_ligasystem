@@ -12,8 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Kader-Erinnerung auslösen
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
-          curl -sf "https://www.developtimize.de/api/squad-reminder?secret=${{ secrets.CRON_SECRET }}" \
+          curl -sf "https://www.developtimize.de/api/squad-reminder?secret=${CRON_SECRET}" \
             -H "Cache-Control: no-cache" \
             -o response.json
           echo "Antwort:"
