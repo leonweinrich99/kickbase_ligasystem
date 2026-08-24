@@ -143,6 +143,23 @@ async function run() {
     const seenIds = new Set(existingTransfers.map(t => t.id || t.i));
     let newTransfersCount = 0;
 
+    const allPlayersPath = path.join(__dirname, '../../frontend/public/history/all_players.json');
+    let players = [];
+    if (fs.existsSync(allPlayersPath)) {
+        try {
+            players = JSON.parse(fs.readFileSync(allPlayersPath, 'utf8'));
+        } catch (e) {}
+    }
+    
+    // Erstelle ein Map für schnelles Nachschlagen: playerId -> marketValue
+    const playerMvMap = {};
+    players.forEach(p => {
+        const pid = p.i || p.id;
+        if (pid) {
+            playerMvMap[pid] = p.mv || p.marketValue || 0;
+        }
+    });
+
     for (const def of LEAGUE_DEFS) {
         for (const account of accounts) {
             console.log(`Checking ${def.displayName} with ${account.email}...`);
@@ -153,7 +170,17 @@ async function run() {
                     const tid = t.id || t.i;
                     if (!seenIds.has(tid)) {
                         seenIds.add(tid);
-                        existingTransfers.push({ ...t, _league: def.displayName });
+                        
+                        // Hänge den HEUTIGEN Marktwert an, wenn wir den Transfer zum ERSTEN MAL sehen.
+                        // Für alte Transfers in der Vergangenheit ist das der heutige Marktwert (Fallback).
+                        // Für neue Transfers ab heute ist es der exakt tagesaktuelle Marktwert!
+                        const marketValue = playerMvMap[t.playerId] || 0;
+                        
+                        existingTransfers.push({ 
+                            ...t, 
+                            _league: def.displayName,
+                            marketValueAtTimeOfTransfer: marketValue
+                        });
                         newTransfersCount++;
                     }
                 });
