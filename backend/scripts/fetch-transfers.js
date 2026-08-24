@@ -53,6 +53,7 @@ async function fetchFeedForLeague(email, password, leagueNameContains) {
             console.log(`Feed failed with status ${feedRes.status}`);
             break;
         }
+        const feedData = await feedRes.json();
         let items = [];
         if (Array.isArray(feedData)) {
             items = feedData;
