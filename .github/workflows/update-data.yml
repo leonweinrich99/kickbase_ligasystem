@@ -64,7 +64,9 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout main
           git add frontend/public/data.json frontend/public/history/
           git commit -m "Automatisches Update: Kickbase Daten & Historie [skip ci]" || echo "Keine Änderungen zu commiten"
-          git pull --rebase origin main || true
-          git push
+          git pull origin main --rebase -X ours || true
+          git push origin main
