@@ -5,6 +5,7 @@ import { useAuth } from './AuthContext';
 import { useTour } from './Tour';
 import accountLogo from './assets/account_logo.png';
 import { SeasonSnapshot } from './AccountStats';
+import ManagerRatingBadge from './ManagerRatingBadge';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
@@ -127,6 +128,7 @@ const Account = () => {
                 {getGreeting()}{firstName ? `, ${firstName}` : ''}
               </h1>
             </div>
+            {profile?.kickbaseId && <ManagerRatingBadge kickbaseId={profile.kickbaseId} />}
           </div>
 
           {isFirebaseConfigured && user && (
