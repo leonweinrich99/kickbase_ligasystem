@@ -53,15 +53,26 @@ async function fetchFeedForLeague(email, password, leagueNameContains) {
             console.log(`Feed failed with status ${feedRes.status}`);
             break;
         }
-        const feedData = await feedRes.json();
-        const items = feedData.items || feedData.i || feedData;
+        let items = [];
+        if (Array.isArray(feedData)) {
+            items = feedData;
+        } else if (feedData.items && Array.isArray(feedData.items)) {
+            items = feedData.items;
+        } else if (feedData.activities && Array.isArray(feedData.activities)) {
+            items = feedData.activities;
+        } else if (feedData.i && Array.isArray(feedData.i)) {
+            items = feedData.i;
+        } else {
+            console.log("Could not find array in feedData. Keys:", Object.keys(feedData));
+            console.log("feedData excerpt:", JSON.stringify(feedData).substring(0, 200));
+            break; // Stop paginating if we can't parse
+        }
         
         if (!items || items.length === 0) {
             console.log("No more items in feed.");
             break;
         }
         
-        // Let's log one item just to see its structure
         if (page === 0 && items.length > 0) {
             console.log("Sample feed item type:", items[0].t || items[0].type);
         }
