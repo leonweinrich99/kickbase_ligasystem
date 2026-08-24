@@ -82,7 +82,26 @@ const ManagerRatingBadge = ({ kickbaseId }) => {
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="grid grid-cols-3 gap-2 text-center pt-2">
+                <div className="bg-[#1f1f1f] rounded-xl p-2 border border-[#2a2a2a]">
+                  <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Trading</div>
+                  <div className="text-sm font-black text-white">{rating.financialScore}</div>
+                </div>
+                <div className="bg-[#1f1f1f] rounded-xl p-2 border border-[#2a2a2a]">
+                  <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">PPM</div>
+                  <div className="text-sm font-black text-white">{rating.performanceScore}</div>
+                </div>
+                <div className="bg-[#1f1f1f] rounded-xl p-2 border border-[#2a2a2a]">
+                  <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Aktivität</div>
+                  <div className="text-sm font-black text-white">{rating.rebuildScore}</div>
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-2">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-400">Abgeschlossene Trades</span>
+                  <span className="font-bold text-white">{rating.tradesCount}</span>
+                </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-gray-400">Trading-Gewinn</span>
                   <span className={`font-bold ${rating.totalProfit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
@@ -95,7 +114,7 @@ const ManagerRatingBadge = ({ kickbaseId }) => {
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-gray-400">Gesamtes Overpay</span>
-                  <span className="font-bold text-red-400">{rating.totalOverpay.toLocaleString('de-DE')} €</span>
+                  <span className="font-bold text-red-400">{rating.totalOverpay.toLocaleString('de-DE')} € <span className="text-[10px] text-gray-500 font-normal ml-1">(coming soon)</span></span>
                 </div>
               </div>
 
