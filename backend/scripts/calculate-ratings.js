@@ -20,19 +20,38 @@ function run() {
     const playerMap = new Map();
     players.forEach(p => playerMap.set(p.i || p.id, p));
 
+    // Mapping: Name -> ID
+    const nameToId = {};
+    if (data.leagues) {
+        data.leagues.forEach(l => {
+            l.users.forEach(u => {
+                const uid = u.id || u.i;
+                nameToId[u.name.toLowerCase()] = uid;
+            });
+        });
+    }
+
     // Map: userId -> { buyEvents: [...], sellEvents: [...] }
     const userTrades = {};
 
     // Transfers nach Datum aufsteigend sortieren
-    transfers.sort((a, b) => new Date(a.d || a.date || 0) - new Date(b.d || b.date || 0));
+    transfers.sort((a, b) => new Date(a.date || a.d || 0) - new Date(b.date || b.d || 0));
 
     transfers.forEach(t => {
-        const meta = t.meta || {};
-        const buyerId = meta.b ? meta.b.i : null;
-        const sellerId = meta.s ? meta.s.i : null;
-        const playerId = meta.p ? meta.p.i : null;
-        const price = meta.a || meta.pr || meta.price || 0; // price assumption
-        const date = new Date(t.d || t.date || 0);
+        let buyerId = t.buyerId;
+        let sellerId = t.sellerId;
+
+        // Wenn wir keine ID haben, suchen wir sie über den Namen
+        if (!buyerId && t.buyerName) {
+            buyerId = nameToId[t.buyerName.toLowerCase()];
+        }
+        if (!sellerId && t.sellerName) {
+            sellerId = nameToId[t.sellerName.toLowerCase()];
+        }
+
+        const playerId = t.playerId;
+        const price = t.price || 0;
+        const date = new Date(t.date || t.d || 0);
 
         if (buyerId && playerId) {
             if (!userTrades[buyerId]) userTrades[buyerId] = { buys: [], sells: [] };

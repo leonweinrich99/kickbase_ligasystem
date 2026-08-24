@@ -57,6 +57,8 @@ async function fetchFeedForLeague(email, password, leagueNameContains) {
         let items = [];
         if (Array.isArray(feedData)) {
             items = feedData;
+        } else if (feedData.af && Array.isArray(feedData.af)) {
+            items = feedData.af;
         } else if (feedData.items && Array.isArray(feedData.items)) {
             items = feedData.items;
         } else if (feedData.activities && Array.isArray(feedData.activities)) {
@@ -78,12 +80,42 @@ async function fetchFeedForLeague(email, password, leagueNameContains) {
             console.log("Sample feed item type:", items[0].t || items[0].type);
         }
 
-        const transfers = items.filter(i => {
+        // Extrahieren und normalisieren wir die Transfers direkt hier!
+        items.forEach(i => {
             const type = i.t || i.type;
-            return type === 12 || type === 2;
+            
+            // Neues v4 Format (t=15, data.trp = transfer price)
+            if (type === 15 && i.data && i.data.trp) {
+                allTransfers.push({
+                    id: i.i || i.id,
+                    date: i.d || i.date || new Date().toISOString(),
+                    buyerName: i.data.byr,
+                    sellerName: i.data.slr,
+                    playerId: i.data.pi,
+                    playerName: i.data.pn,
+                    price: i.data.trp,
+                    _rawType: 'v4_type15'
+                });
+            } 
+            // Altes Format (type 12 oder 2)
+            else if (type === 12 || type === 2) {
+                const meta = i.meta || {};
+                if (meta.p) {
+                    allTransfers.push({
+                        id: i.i || i.id,
+                        date: i.d || i.date || new Date().toISOString(),
+                        buyerId: meta.b ? meta.b.i : null,
+                        buyerName: meta.b ? meta.b.n : null,
+                        sellerId: meta.s ? meta.s.i : null,
+                        sellerName: meta.s ? meta.s.n : null,
+                        playerId: meta.p.i,
+                        playerName: meta.p.n || meta.p.fn,
+                        price: meta.a || meta.pr || meta.price || 0,
+                        _rawType: 'legacy'
+                    });
+                }
+            }
         });
-        
-        allTransfers = allTransfers.concat(transfers);
         start += 25;
     }
 
