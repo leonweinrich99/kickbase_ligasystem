@@ -25,11 +25,25 @@ const ManagerRatingBadge = ({ kickbaseId }) => {
     <>
       <button 
         onClick={() => setIsOpen(true)}
-        className="flex flex-col items-center justify-center bg-[#1f1f1f] border-2 rounded-xl p-1 px-2 ml-3 hover:scale-105 active:scale-95 transition-transform"
-        style={{ borderColor: color }}
+        className="relative flex items-center justify-center shrink-0 hover:scale-105 active:scale-95 transition-transform"
+        style={{ width: '42px', height: '46px' }}
       >
-        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Rating</span>
-        <span className="text-sm font-black leading-none" style={{ color }}>{rating.score}</span>
+        <div 
+          className="absolute inset-0" 
+          style={{ 
+            backgroundColor: color, 
+            clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
+            opacity: 0.15
+          }}
+        />
+        <div 
+          className="absolute inset-[2px] bg-[#1f1f1f] flex flex-col items-center justify-center" 
+          style={{ 
+            clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
+          }}
+        >
+          <span className="text-[14px] font-black leading-none mt-0.5" style={{ color }}>{rating.score}</span>
+        </div>
       </button>
 
       <AnimatePresence>

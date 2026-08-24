@@ -128,23 +128,25 @@ const Account = () => {
                 {getGreeting()}{firstName ? `, ${firstName}` : ''}
               </h1>
             </div>
-            {profile?.kickbaseId && <ManagerRatingBadge kickbaseId={profile.kickbaseId} />}
           </div>
 
-          {isFirebaseConfigured && user && (
-            <Link to="/account/profile" className="relative shrink-0" aria-label="Profil öffnen">
-              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#1f1f1f] border-2 border-[#ff5c3e] flex items-center justify-center overflow-hidden">
-                {user.photoURL ? (
-                  <img src={user.photoURL} alt={profile?.displayName || 'Avatar'} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-base font-black text-[#ff5c3e]">{(profile?.displayName || user.email || '?').charAt(0).toUpperCase()}</span>
+          <div className="flex items-center gap-2 sm:gap-3">
+            {profile?.kickbaseId && <ManagerRatingBadge kickbaseId={profile.kickbaseId} />}
+            {isFirebaseConfigured && user && (
+              <Link to="/account/profile" className="relative shrink-0" aria-label="Profil öffnen">
+                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#1f1f1f] border-2 border-[#ff5c3e] flex items-center justify-center overflow-hidden">
+                  {user.photoURL ? (
+                    <img src={user.photoURL} alt={profile?.displayName || 'Avatar'} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-base font-black text-[#ff5c3e]">{(profile?.displayName || user.email || '?').charAt(0).toUpperCase()}</span>
+                  )}
+                </div>
+                {isAdmin && (
+                  <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-purple-500 border-2 border-black flex items-center justify-center text-[7px] font-black text-white">A</span>
                 )}
-              </div>
-              {isAdmin && (
-                <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-purple-500 border-2 border-black flex items-center justify-center text-[7px] font-black text-white">A</span>
-              )}
-            </Link>
-          )}
+              </Link>
+            )}
+          </div>
         </Motion.div>
 
         {profile?.kickbaseId ? (
