@@ -46,7 +46,7 @@ async function fetchFeedForLeague(email, password, leagueNameContains) {
     let start = 0;
     
     for (let page = 0; page < 4; page++) {
-        const feedUrl = `https://api.kickbase.com/v4/leagues/${targetId}/feed?start=${start}`;
+        const feedUrl = `https://api.kickbase.com/v4/leagues/${targetId}/activitiesFeed?start=${start}`;
         const feedRes = await fetch(feedUrl, { headers: { Authorization: `Bearer ${token}` } });
         console.log(`Feed page ${page} status:`, feedRes.status);
         if (feedRes.status !== 200) {
