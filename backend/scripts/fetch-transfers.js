@@ -41,20 +41,37 @@ async function fetchFeedForLeague(email, password, leagueNameContains) {
 
     if (!targetId) return { error: `League not found` };
 
+    console.log(`Found league ID ${targetId} for ${leagueNameContains}, fetching feed...`);
     let allTransfers = [];
     let start = 0;
-    // Holen wir die ersten 3 Seiten (a 25 Einträge) vom Feed
+    
     for (let page = 0; page < 4; page++) {
-        const feedRes = await fetch(`https://api.kickbase.com/v4/leagues/${targetId}/feed?start=${start}`, { headers: { Authorization: `Bearer ${token}` } });
-        if (feedRes.status !== 200) break;
+        const feedUrl = `https://api.kickbase.com/v4/leagues/${targetId}/feed?start=${start}`;
+        const feedRes = await fetch(feedUrl, { headers: { Authorization: `Bearer ${token}` } });
+        console.log(`Feed page ${page} status:`, feedRes.status);
+        if (feedRes.status !== 200) {
+            console.log(`Feed failed with status ${feedRes.status}`);
+            break;
+        }
         const feedData = await feedRes.json();
         const items = feedData.items || feedData.i || feedData;
-        if (!items || items.length === 0) break;
         
-        // Transfers sind typischerweise type 2 oder 12
-        const transfers = items.filter(i => i.t === 12 || i.type === 12 || i.t === 2 || i.type === 2);
+        if (!items || items.length === 0) {
+            console.log("No more items in feed.");
+            break;
+        }
+        
+        // Let's log one item just to see its structure
+        if (page === 0 && items.length > 0) {
+            console.log("Sample feed item type:", items[0].t || items[0].type);
+        }
+
+        const transfers = items.filter(i => {
+            const type = i.t || i.type;
+            return type === 12 || type === 2;
+        });
+        
         allTransfers = allTransfers.concat(transfers);
-        
         start += 25;
     }
 
@@ -86,21 +103,22 @@ async function run() {
             console.log(`Checking ${def.displayName} with ${account.email}...`);
             const res = await fetchFeedForLeague(account.email, account.pass, def.name);
             if (!res.error && res.transfers) {
+                console.log(`Found ${res.transfers.length} transfers for ${def.displayName}`);
                 res.transfers.forEach(t => {
                     const tid = t.id || t.i;
                     if (!seenIds.has(tid)) {
                         seenIds.add(tid);
-                        // Speichere die Liga-Info dazu
                         existingTransfers.push({ ...t, _league: def.displayName });
                         newTransfersCount++;
                     }
                 });
-                break; // Erfolgreich gefunden, Account-Schleife abbrechen
+                break;
+            } else if (res.error) {
+                console.log(`Error: ${res.error}`);
             }
         }
     }
 
-    // Sortiere absteigend nach Datum (z.b. t.d oder t.date)
     existingTransfers.sort((a, b) => {
         const dateA = new Date(a.d || a.date || 0);
         const dateB = new Date(b.d || b.date || 0);
