@@ -52,14 +52,15 @@ function run() {
         const playerId = t.playerId;
         const price = t.price || 0;
         const date = new Date(t.date || t.d || 0);
+        const marketValue = t.marketValueAtTimeOfTransfer || 0;
 
         if (buyerId && playerId) {
             if (!userTrades[buyerId]) userTrades[buyerId] = { buys: [], sells: [] };
-            userTrades[buyerId].buys.push({ playerId, price, date });
+            userTrades[buyerId].buys.push({ playerId, price, date, marketValue });
         }
         if (sellerId && playerId) {
             if (!userTrades[sellerId]) userTrades[sellerId] = { buys: [], sells: [] };
-            userTrades[sellerId].sells.push({ playerId, price, date });
+            userTrades[sellerId].sells.push({ playerId, price, date, marketValue });
         }
     });
 
@@ -85,6 +86,12 @@ function run() {
                     if (!inventory[b.playerId]) inventory[b.playerId] = [];
                     inventory[b.playerId].push(b);
                     totalSpent += b.price;
+                    
+                    // Berechne Overpay beim Kauf:
+                    // Wenn der Preis höher war als der Marktwert zum Zeitpunkt des Transfers
+                    if (b.marketValue && b.price > b.marketValue) {
+                        totalOverpay += (b.price - b.marketValue);
+                    }
                 });
 
                 trades.sells.forEach(s => {

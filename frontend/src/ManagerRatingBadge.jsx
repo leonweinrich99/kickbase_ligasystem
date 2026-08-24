@@ -114,7 +114,7 @@ const ManagerRatingBadge = ({ kickbaseId }) => {
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-gray-400">Gesamtes Overpay</span>
-                  <span className="font-bold text-red-400">{rating.totalOverpay.toLocaleString('de-DE')} € <span className="text-[10px] text-gray-500 font-normal ml-1">(coming soon)</span></span>
+                  <span className="font-bold text-red-400">{rating.totalOverpay.toLocaleString('de-DE')} €</span>
                 </div>
               </div>
 
