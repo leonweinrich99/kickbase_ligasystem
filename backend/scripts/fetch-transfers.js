@@ -45,7 +45,8 @@ async function fetchFeedForLeague(email, password, leagueNameContains) {
     let allTransfers = [];
     let start = 0;
     
-    for (let page = 0; page < 4; page++) {
+    // Wir holen bis zu 200 Seiten ab (5000 Einträge), um die gesamte Saison-Historie zu bekommen!
+    for (let page = 0; page < 200; page++) {
         const feedUrl = `https://api.kickbase.com/v4/leagues/${targetId}/activitiesFeed?start=${start}`;
         const feedRes = await fetch(feedUrl, { headers: { Authorization: `Bearer ${token}` } });
         console.log(`Feed page ${page} status:`, feedRes.status);
