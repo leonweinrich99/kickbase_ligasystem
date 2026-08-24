@@ -118,6 +118,24 @@ const ManagerRatingBadge = ({ kickbaseId }) => {
                 </div>
               </div>
 
+              {/* Top & Flop */}
+              {(rating.bestTrade.profit !== 0 || rating.worstTrade.profit !== 0) && (
+                <div className="mt-2 bg-[#1f1f1f] border border-[#2a2a2a] rounded-xl p-3 space-y-2 text-xs">
+                  {rating.bestTrade.profit > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400">🏆 Top Trade: <span className="text-white font-medium">{rating.bestTrade.name}</span></span>
+                      <span className="font-bold text-green-500">+{rating.bestTrade.profit.toLocaleString('de-DE')} €</span>
+                    </div>
+                  )}
+                  {rating.worstTrade.profit < 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400">📉 Flop Trade: <span className="text-white font-medium">{rating.worstTrade.name}</span></span>
+                      <span className="font-bold text-red-500">{rating.worstTrade.profit.toLocaleString('de-DE')} €</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <button onClick={() => setIsOpen(false)} className="w-full bg-[#ff5c3e] text-white font-bold py-3.5 rounded-xl mt-2 active:scale-[0.98] transition-transform">
                 Schließen
               </button>

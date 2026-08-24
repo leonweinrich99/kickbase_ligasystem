@@ -79,6 +79,10 @@ function run() {
                 let totalEarned = 0;
 
                 let completedTrades = 0;
+                
+                // Für Top und Flop
+                let bestTrade = { name: '-', profit: 0 };
+                let worstTrade = { name: '-', profit: 0 };
 
                 // Match buys and sells (FIFO)
                 const inventory = {};
@@ -87,8 +91,6 @@ function run() {
                     inventory[b.playerId].push(b);
                     totalSpent += b.price;
                     
-                    // Berechne Overpay beim Kauf:
-                    // Wenn der Preis höher war als der Marktwert zum Zeitpunkt des Transfers
                     if (b.marketValue && b.price > b.marketValue) {
                         totalOverpay += (b.price - b.marketValue);
                     }
@@ -101,6 +103,16 @@ function run() {
                         const profit = s.price - b.price;
                         totalProfit += profit;
                         completedTrades++;
+                        
+                        // Finde Top und Flop (Spielername aus der all_players Datenbank ziehen)
+                        const pName = playerMap.has(s.playerId) ? playerMap.get(s.playerId).fn + " " + playerMap.get(s.playerId).ln : s.playerId;
+                        
+                        if (profit > bestTrade.profit) {
+                            bestTrade = { name: pName, profit: profit };
+                        }
+                        if (profit < worstTrade.profit || worstTrade.profit === 0 && profit < 0) {
+                            worstTrade = { name: pName, profit: profit };
+                        }
                     }
                 });
 
@@ -162,7 +174,9 @@ function run() {
                     totalOverpay,
                     ppm,
                     level,
-                    tradesCount: completedTrades
+                    tradesCount: completedTrades,
+                    bestTrade,
+                    worstTrade
                 };
             });
         });
