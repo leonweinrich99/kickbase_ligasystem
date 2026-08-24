@@ -97,49 +97,62 @@ function run() {
                     }
                 });
 
-                // Punkte pro Million (PPM)
-                // Da wir aktuell nicht exakt matchen können, wie viele Punkte der Spieler
-                // WÄHREND des Besitzes gemacht hat (außer wir gleichen das Datum mit Spieltagen ab),
-                // verwenden wir als Platzhalter eine Schätzung oder belassen es bei 0 bis wir die Daten haben.
+                // Durchschnittlicher Profit pro abgeschlossenen Trade
+                let avgProfit = completedTrades > 0 ? totalProfit / completedTrades : 0;
+                
+                let userPoints = parseInt(u.points.replace(/\./g, '')) || 0;
                 let ppm = 0;
-                if (totalSpent > 0) {
-                    // Einfach die Gesamtpunkte des Managers / (TotalSpent / 1.000.000)
-                    const userPoints = parseInt(u.points.replace(/\./g, '')) || 0;
+                if (totalSpent > 0 && userPoints > 0) {
                     ppm = userPoints / (totalSpent / 1000000);
                 }
-                
-                if (ppm === Infinity || isNaN(ppm)) ppm = 0;
 
-                // Score Logic (0-100)
-                // 1. Profit Score (0-40) - z.B. 10 Mio Gewinn = 40 Punkte
-                let profitScore = Math.max(0, Math.min(40, (totalProfit / 10000000) * 40));
+                // --- NEUES SCORING MODELL (Basis 50) ---
+                // Startwert ist 50. Wir addieren/subtrahieren basierend auf Leistung.
+                let baseScore = 50;
                 
-                // 2. Performance Score (PPM) (0-40) - z.B. 5 Punkte pro Mio = 40 Punkte
-                let perfScore = Math.max(0, Math.min(40, (ppm / 5) * 40));
-
-                // 3. Activity/Rebuild (0-20) - z.B. 10 Trades = 20 Punkte
-                let actScore = Math.max(0, Math.min(20, (trades.buys.length / 10) * 20));
-
-                let totalScore = Math.round(profitScore + perfScore + actScore);
+                // 1. Activity (bis zu +15 Punkte)
+                // Wer aktiv ist, sammelt Pluspunkte. (Maximal bei ca. 15 Trades)
+                let actBonus = Math.min(15, (trades.buys.length / 15) * 15);
                 
-                // Fallback, wenn keine Transfers da sind
-                if (trades.buys.length === 0 && trades.sells.length === 0) {
-                    totalScore = 50; 
+                // 2. Profit Score (-20 bis +25 Punkte)
+                // 500k Durchschnittsgewinn pro Trade = +25 Punkte
+                // 500k Durchschnittsverlust = -20 Punkte
+                let profitBonus = 0;
+                if (completedTrades > 0) {
+                    profitBonus = (avgProfit / 500000) * 25;
+                    profitBonus = Math.max(-20, Math.min(25, profitBonus));
+                }
+
+                // 3. Performance / PPM (bis zu +10 Punkte)
+                // Wenn die Saison noch nicht gestartet ist (0 Punkte), fällt dieser Bonus weg.
+                let perfBonus = 0;
+                if (userPoints > 0) {
+                    perfBonus = Math.min(10, (ppm / 3) * 10);
+                }
+                
+                let totalScore = Math.round(baseScore + actBonus + profitBonus + perfBonus);
+                totalScore = Math.max(0, Math.min(100, totalScore)); // Clamping 0-100
+
+                // Kleine kosmetische Anpassung für das erste Ranking:
+                // Wenn jemand noch keine Verkäufe hat, aber sehr viel eingekauft hat, honorieren wir das Scouting.
+                if (completedTrades === 0 && trades.buys.length > 5) {
+                    totalScore += 5;
                 }
 
                 let level = 'Bronze';
                 if (totalScore >= 90) level = 'Elite';
                 else if (totalScore >= 75) level = 'Silber';
-                else if (totalScore < 50) level = 'Scout';
+                else if (totalScore >= 60) level = 'Gold';
+                else if (totalScore < 45) level = 'Amateur';
 
                 ratings[uid] = {
                     name: u.name,
                     score: totalScore,
-                    financialScore: Math.round((profitScore / 40) * 100),
-                    performanceScore: Math.round((perfScore / 40) * 100),
-                    rebuildScore: Math.round((actScore / 20) * 100),
+                    financialScore: Math.round(50 + profitBonus * 2), // 0-100 Skala für UI
+                    performanceScore: Math.round(50 + perfBonus * 5),
+                    rebuildScore: Math.round(50 + actBonus * 3.3),
                     totalProfit,
-                    totalOverpay, // currently dummy
+                    totalOverpay,
                     ppm,
                     level,
                     tradesCount: completedTrades
