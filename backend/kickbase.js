@@ -1,5 +1,26 @@
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
+const fs = require('fs');
+const path = require('path');
+
+// Der Kickbase-Account aus KICKBASE_EMAIL/PASS muss selbst Mitglied jeder Liga sein,
+// damit wir per API überhaupt Daten abrufen können - taucht dadurch aber als
+// (fiktiver) Teilnehmer "Admin" mit 0 Punkten in jeder Liga auf. Das ist kein echter
+// Manager und darf nirgendwo in der App auftauchen (Tabelle, Ratings, Advisor, ...).
+// Konfigurierbar in backend/technical-accounts.json (gleiches Muster wie
+// pokal-excluded.json), damit sich das ohne Code-Änderung anpassen lässt.
+const TECHNICAL_ACCOUNTS_PATH = path.join(__dirname, 'technical-accounts.json');
+const loadExcludedManagerNames = () => {
+    try {
+        if (fs.existsSync(TECHNICAL_ACCOUNTS_PATH)) {
+            return JSON.parse(fs.readFileSync(TECHNICAL_ACCOUNTS_PATH, 'utf8')).excludedNames || [];
+        }
+    } catch (e) {
+        console.warn('Konnte technical-accounts.json nicht lesen:', e.message);
+    }
+    return [];
+};
+
 const fetchSingleLeagueData = async (email, password, leagueNameContains = "Qualigruppe 1") => {
     try {
         console.log(`Attempting to login to Kickbase for ${email}...`);
@@ -142,7 +163,10 @@ const transformKickbaseData = (allResults, previousData = null) => {
             });
         }
 
-        const combinedUsers = Array.from(combinedUsersMap.values()).filter(u => (u.sp || 0) > 0);
+        const excludedManagerNames = loadExcludedManagerNames();
+        const combinedUsers = Array.from(combinedUsersMap.values())
+            .filter(u => (u.sp || 0) > 0)
+            .filter(u => !excludedManagerNames.includes(u.n));
         combinedUsers.sort((a, b) => (b.sp || 0) - (a.sp || 0));
 
         const formatPoints = (sp) => (sp || 0).toLocaleString('de-DE');
@@ -287,6 +311,7 @@ const transformIndependentLeagues = (rawResults, previousData = null) => {
         let matchday = 1;
         let participantsCount = 0;
         const errors = [];
+        const excludedManagerNames = loadExcludedManagerNames();
 
         const leagues = rawResults.map(res => {
             const def = res.def;
@@ -297,7 +322,9 @@ const transformIndependentLeagues = (rawResults, previousData = null) => {
 
             if (res.matchday > matchday) matchday = res.matchday;
 
-            const users = (res.users || []).filter(u => (u.sp || 0) >= 0);
+            const users = (res.users || [])
+                .filter(u => (u.sp || 0) >= 0)
+                .filter(u => !excludedManagerNames.includes(u.n));
             users.sort((a, b) => (b.sp || 0) - (a.sp || 0));
             participantsCount += users.length;
 

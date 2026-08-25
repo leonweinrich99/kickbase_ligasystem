@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const tradeTag = (trade) => {
+  if (!trade || !trade.type) return null;
+  const labels = { realized: null, open: 'offen', orphan: 'zugelost' };
+  const parts = [];
+  if (labels[trade.type]) parts.push(labels[trade.type]);
+  if (trade.forced) parts.push('Zwangsverkauf');
+  if (parts.length === 0) return null;
+  return <span className="text-gray-500"> ({parts.join(', ')})</span>;
+};
+
 const ManagerRatingBadge = ({ kickbaseId }) => {
   const [rating, setRating] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -97,13 +107,71 @@ const ManagerRatingBadge = ({ kickbaseId }) => {
                 </div>
               </div>
 
+              {typeof rating.squadReadiness === 'number' && (
+                <div className="bg-[#1f1f1f] rounded-xl p-3 border border-[#2a2a2a]">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Kaderstatus</span>
+                    <span className="text-[10px] font-bold text-gray-300">{rating.squadTotal} Spieler · {rating.budget.toLocaleString('de-DE')} € Budget</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-[#2a2a2a] rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${Math.round(rating.squadReadiness * 100)}%`,
+                        backgroundColor: rating.squadReadiness >= 1 ? '#22c55e' : rating.squadReadiness >= 0.7 ? '#eab308' : '#ef4444'
+                      }}
+                    />
+                  </div>
+                  <div className="flex justify-between items-center mt-1.5">
+                    <span className="text-[10px] text-gray-500">
+                      {rating.squadReadiness >= 1 ? 'Startelf-fähig' : `${Math.round(rating.squadReadiness * 100)}% startelf-fähig`}
+                      {rating.budget < 0 && <span className="text-red-400 font-bold"> · Budget im Minus</span>}
+                    </span>
+                    {rating.squadRiskPenalty < -0.5 && (
+                      <span className="text-[10px] font-bold text-red-400">{rating.squadRiskPenalty.toFixed(0)} Pkt. Risiko</span>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-4 pt-2">
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-400">Abgeschlossene Trades</span>
-                  <span className="font-bold text-white">{rating.tradesCount}</span>
+                  <span className="text-gray-400">
+                    Abgeschlossene Trades
+                    {rating.forcedCompletedTrades > 0 && (
+                      <span className="text-gray-500"> ({rating.forcedCompletedTrades}x Zwangsverkauf)</span>
+                    )}
+                  </span>
+                  <span className="font-bold text-white">{rating.completedTrades ?? rating.tradesCount}</span>
                 </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-400">Trading-Gewinn</span>
+                {rating.openPositions > 0 && (
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-400">
+                      Offene Positionen (unrealisiert)
+                      {typeof rating.openPositionsAvgAgeDays === 'number' && (
+                        <span className="text-gray-500"> · Ø {rating.openPositionsAvgAgeDays < 1 ? '<1' : Math.round(rating.openPositionsAvgAgeDays)} Tag{rating.openPositionsAvgAgeDays >= 1.5 ? 'e' : ''} gehalten</span>
+                      )}
+                    </span>
+                    <span className={`font-bold ${rating.unrealizedProfit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                      {rating.openPositions}x · {rating.unrealizedProfit > 0 ? '+' : ''}{rating.unrealizedProfit.toLocaleString('de-DE')} €
+                    </span>
+                  </div>
+                )}
+                {rating.orphanSales > 0 && (
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-400">
+                      Kaderverkäufe (zugelost)
+                      {rating.forcedOrphanSales > 0 && (
+                        <span className="text-gray-500"> ({rating.forcedOrphanSales}x Zwangsverkauf)</span>
+                      )}
+                    </span>
+                    <span className={`font-bold ${rating.orphanSaleProfit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                      {rating.orphanSales}x · {rating.orphanSaleProfit > 0 ? '+' : ''}{rating.orphanSaleProfit.toLocaleString('de-DE')} €
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between items-center text-sm border-t border-[#2a2a2a] pt-3">
+                  <span className="text-gray-400">Trading-Gewinn (gesamt)</span>
                   <span className={`font-bold ${rating.totalProfit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                     {rating.totalProfit > 0 ? '+' : ''}{rating.totalProfit.toLocaleString('de-DE')} €
                   </span>
@@ -113,9 +181,23 @@ const ManagerRatingBadge = ({ kickbaseId }) => {
                   <span className="font-bold text-white">{rating.ppm.toFixed(1)} Pkt.</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-400">Gesamtes Overpay</span>
-                  <span className="font-bold text-red-400">{rating.totalOverpay.toLocaleString('de-DE')} €</span>
+                  <span className="text-gray-400">Ø Aufschlag über Marktwert</span>
+                  <span className="font-bold text-red-400">
+                    {rating.avgOverpayRatio ? `+${(rating.avgOverpayRatio * 100).toFixed(1)}%` : '–'}
+                    {' · '}{rating.totalOverpay.toLocaleString('de-DE')} €
+                  </span>
                 </div>
+                {rating.saleTimingSampleSize > 0 && (
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-400">
+                      Verkaufs-Timing
+                      <span className="text-gray-500"> · {rating.saleTimingSampleSize}x ausgewertet</span>
+                    </span>
+                    <span className={`font-bold ${rating.saleTimingProfit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                      {rating.saleTimingProfit > 0 ? '+' : ''}{Math.round(rating.saleTimingProfit).toLocaleString('de-DE')} €
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Top & Flop */}
@@ -123,13 +205,13 @@ const ManagerRatingBadge = ({ kickbaseId }) => {
                 <div className="mt-2 bg-[#1f1f1f] border border-[#2a2a2a] rounded-xl p-3 space-y-2 text-xs">
                   {rating.bestTrade.profit > 0 && (
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-400">🏆 Top Trade: <span className="text-white font-medium">{rating.bestTrade.name}</span></span>
+                      <span className="text-gray-400">🏆 Top Trade: <span className="text-white font-medium">{rating.bestTrade.name}</span>{tradeTag(rating.bestTrade)}</span>
                       <span className="font-bold text-green-500">+{rating.bestTrade.profit.toLocaleString('de-DE')} €</span>
                     </div>
                   )}
                   {rating.worstTrade.profit < 0 && (
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-400">📉 Flop Trade: <span className="text-white font-medium">{rating.worstTrade.name}</span></span>
+                      <span className="text-gray-400">📉 Flop Trade: <span className="text-white font-medium">{rating.worstTrade.name}</span>{tradeTag(rating.worstTrade)}</span>
                       <span className="font-bold text-red-500">{rating.worstTrade.profit.toLocaleString('de-DE')} €</span>
                     </div>
                   )}

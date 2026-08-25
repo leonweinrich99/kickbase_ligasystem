@@ -105,11 +105,10 @@
     {
       "id": "m13",
       "p1": "Mo6",
-      "p2": "Freilos",
-      "score1": null,
-      "score2": null,
-      "winner": 1,
-      "isBye": true
+      "p2": "tjalf",
+      "score1": 0,
+      "score2": 0,
+      "winner": null
     },
     {
       "id": "m14",
@@ -189,7 +188,7 @@
     },
     {
       "id": "m23",
-      "p1": "Mo6",
+      "p1": "Sieger SF13",
       "p2": "Sieger SF14",
       "score1": 0,
       "score2": 0,
@@ -272,9 +271,12 @@
   ],
   "meta": {
     "generatedAt": "2026-07-23T12:32:06.174Z",
-    "participants": 27,
-    "byes": 5,
+    "participants": 28,
+    "byes": 4,
     "seedSource": "Qualifikationsrunde 25/26 (Gesamtwertung)",
+    "manualEdits": [
+      "tjalf (Liga 3, kein Teil der Quali 25/26) nachträglich gegen das Freilos des schwächsten seinerzeitigen Freilos-Rangs (Mo6, Rang 5) gesetzt - m13 dadurch von Freilos zu echter Partie, m23 (Achtelfinale) entsprechend auf 'Sieger SF13' statt 'Mo6' korrigiert."
+    ],
     "roundSchedule": {
       "Sechzehntelfinale": { "matchday": 5, "date": "10.10.2026", "highlight": "Köln - Gladbach" },
       "Achtelfinale": { "matchday": 8, "date": "31.10.2026", "highlight": "Bayern - Dortmund" },

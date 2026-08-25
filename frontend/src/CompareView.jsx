@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { 
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, 
   ResponsiveContainer, ReferenceArea, Legend, LabelList 
@@ -26,7 +26,6 @@ const parsePoints = (val) => {
 
 const CompareView = ({ dataBase = '', routeBase = '' }) => {
   const { id1, id2 } = useParams();
-  const navigate = useNavigate();
   const goBack = useBackNavigation(routeBase || '/');
 
   const [user1, setUser1] = useState(null);
@@ -220,12 +219,12 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
       
       {/* Back Button */}
       <div className="mb-8">
-        <button 
-          onClick={() => navigate(`${routeBase}/user/${id1}`)}
+        <button
+          onClick={goBack}
           className="group flex items-center gap-3 bg-[#171717] border border-[#2e2e2e] px-4 py-2 rounded-xl text-[#8b92a5] hover:text-white transition-all w-fit"
         >
           <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-          <span className="text-xs font-bold uppercase tracking-wider">Zurück zur Detailseite</span>
+          <span className="text-xs font-bold uppercase tracking-wider">Zurück</span>
         </button>
       </div>
 

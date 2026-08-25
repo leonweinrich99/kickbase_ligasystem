@@ -2,6 +2,29 @@ const fs = require('fs');
 const path = require('path');
 const { LEAGUE_DEFS } = require('../kickbase');
 
+// TEMPORÄR (siehe Chat-Verlauf, Untersuchung der Transfer-Datumsfelder): dumpt
+// die rohen ersten Feed-Items EINMAL in eine Datei, damit wir nachvollziehen
+// können, wie das echte Kickbase-Datumsfeld für Type-15-Transfers wirklich heißt
+// (Verdacht: nicht "d"/"date", daher greift bei fast allen Transfers der
+// new Date()-Fallback und stempelt sie fälschlich mit der Fetch-Zeit statt dem
+// echten Transferzeitpunkt). Wird nach der Diagnose wieder entfernt.
+let _debugDumped = false;
+function debugDumpRawFeedItems(leagueNameContains, items) {
+    if (_debugDumped) return;
+    _debugDumped = true;
+    try {
+        const debugPath = path.join(__dirname, '../../frontend/public/history/_debug_feed_sample.json');
+        fs.writeFileSync(debugPath, JSON.stringify({
+            generatedAt: new Date().toISOString(),
+            league: leagueNameContains,
+            sampleItems: items.slice(0, 8)
+        }, null, 2));
+        console.log('DEBUG: Raw-Feed-Sample geschrieben nach', debugPath);
+    } catch (e) {
+        console.warn('DEBUG: Konnte Feed-Sample nicht schreiben:', e.message);
+    }
+}
+
 const getConfiguredKickbaseAccounts = () => {
     const accounts = [];
     for (const suffix of ['', '_2', '_3']) {
@@ -79,6 +102,7 @@ async function fetchFeedForLeague(email, password, leagueNameContains) {
         
         if (page === 0 && items.length > 0) {
             console.log("Sample feed item type:", items[0].t || items[0].type);
+            debugDumpRawFeedItems(leagueNameContains, items);
         }
 
         // Extrahieren und normalisieren wir die Transfers direkt hier!

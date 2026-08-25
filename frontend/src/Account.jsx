@@ -151,7 +151,7 @@ const Account = () => {
 
         {profile?.kickbaseId ? (
           <Motion.div variants={fadeUp} initial="hidden" animate="show" custom={1}>
-            <SeasonSnapshot kickbaseId={profile.kickbaseId} kickbaseName={profile.kickbaseName} />
+            <SeasonSnapshot kickbaseId={profile.kickbaseId} kickbaseName={profile.kickbaseName} photoURL={user?.photoURL} />
           </Motion.div>
         ) : (
           <Motion.div variants={fadeUp} initial="hidden" animate="show" custom={1}>
