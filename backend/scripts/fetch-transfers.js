@@ -2,26 +2,33 @@ const fs = require('fs');
 const path = require('path');
 const { LEAGUE_DEFS } = require('../kickbase');
 
-// TEMPORÄR (siehe Chat-Verlauf, Untersuchung der Transfer-Datumsfelder): dumpt
-// die rohen ersten Feed-Items EINMAL in eine Datei, damit wir nachvollziehen
-// können, wie das echte Kickbase-Datumsfeld für Type-15-Transfers wirklich heißt
-// (Verdacht: nicht "d"/"date", daher greift bei fast allen Transfers der
-// new Date()-Fallback und stempelt sie fälschlich mit der Fetch-Zeit statt dem
-// echten Transferzeitpunkt). Wird nach der Diagnose wieder entfernt.
-let _debugDumped = false;
-function debugDumpRawFeedItems(leagueNameContains, items) {
-    if (_debugDumped) return;
-    _debugDumped = true;
+// Diagnose ergab (siehe Chat-Verlauf): das echte Kickbase-Datumsfeld pro Feed-Item
+// heißt "dt" (z.B. "2026-08-25T13:44:05Z"), NICHT "d"/"date". Dadurch griff bei
+// praktisch jedem Transfer der new Date()-Fallback und stempelte ihn fälschlich
+// mit dem Zeitpunkt ab, an dem das Skript lief - nicht mit dem echten
+// Transferzeitpunkt. "d"/"date" bleiben als Fallback stehen, falls Kickbase das
+// Feld irgendwann umbenennt oder ein anderer Item-Typ es anders nennt.
+function extractDate(item) {
+    return item.dt || item.d || item.date || new Date().toISOString();
+}
+
+// Schreibt eine kleine Zusammenfassung (kein Rohdump mehr) darüber, wie weit die
+// Kickbase activitiesFeed-Historie pro Liga tatsächlich zurückreicht - wichtig, um
+// zu wissen, ob ältere (z.B. mehrere Wochen zurückliegende) Transfers überhaupt noch
+// per API abrufbar sind, oder ob Kickbase selbst nur ein rollierendes Fenster liefert.
+function loadFeedDepthSummary() {
+    const summaryPath = path.join(__dirname, '../../frontend/public/history/_feed_depth_summary.json');
     try {
-        const debugPath = path.join(__dirname, '../../frontend/public/history/_debug_feed_sample.json');
-        fs.writeFileSync(debugPath, JSON.stringify({
-            generatedAt: new Date().toISOString(),
-            league: leagueNameContains,
-            sampleItems: items.slice(0, 8)
-        }, null, 2));
-        console.log('DEBUG: Raw-Feed-Sample geschrieben nach', debugPath);
+        if (fs.existsSync(summaryPath)) return JSON.parse(fs.readFileSync(summaryPath, 'utf8'));
+    } catch (e) {}
+    return {};
+}
+function saveFeedDepthSummary(summary) {
+    const summaryPath = path.join(__dirname, '../../frontend/public/history/_feed_depth_summary.json');
+    try {
+        fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2));
     } catch (e) {
-        console.warn('DEBUG: Konnte Feed-Sample nicht schreiben:', e.message);
+        console.warn('Konnte Feed-Tiefen-Zusammenfassung nicht schreiben:', e.message);
     }
 }
 
@@ -67,7 +74,11 @@ async function fetchFeedForLeague(email, password, leagueNameContains) {
     console.log(`Found league ID ${targetId} for ${leagueNameContains}, fetching feed...`);
     let allTransfers = [];
     let start = 0;
-    
+    let oldestSeen = null;
+    let newestSeen = null;
+    let pagesFetched = 0;
+    let itemsScanned = 0;
+
     // Wir holen bis zu 200 Seiten ab (5000 Einträge), um die gesamte Saison-Historie zu bekommen!
     for (let page = 0; page < 200; page++) {
         const feedUrl = `https://api.kickbase.com/v4/leagues/${targetId}/activitiesFeed?start=${start}`;
@@ -102,8 +113,15 @@ async function fetchFeedForLeague(email, password, leagueNameContains) {
         
         if (page === 0 && items.length > 0) {
             console.log("Sample feed item type:", items[0].t || items[0].type);
-            debugDumpRawFeedItems(leagueNameContains, items);
         }
+
+        pagesFetched++;
+        itemsScanned += items.length;
+        items.forEach(i => {
+            const d = extractDate(i);
+            if (!oldestSeen || d < oldestSeen) oldestSeen = d;
+            if (!newestSeen || d > newestSeen) newestSeen = d;
+        });
 
         // Extrahieren und normalisieren wir die Transfers direkt hier!
         items.forEach(i => {
@@ -113,7 +131,7 @@ async function fetchFeedForLeague(email, password, leagueNameContains) {
             if (type === 15 && i.data && i.data.trp) {
                 allTransfers.push({
                     id: i.i || i.id,
-                    date: i.d || i.date || new Date().toISOString(),
+                    date: extractDate(i),
                     buyerName: i.data.byr,
                     sellerName: i.data.slr,
                     playerId: i.data.pi,
@@ -128,7 +146,7 @@ async function fetchFeedForLeague(email, password, leagueNameContains) {
                 if (meta.p) {
                     allTransfers.push({
                         id: i.i || i.id,
-                        date: i.d || i.date || new Date().toISOString(),
+                        date: extractDate(i),
                         buyerId: meta.b ? meta.b.i : null,
                         buyerName: meta.b ? meta.b.n : null,
                         sellerId: meta.s ? meta.s.i : null,
@@ -144,7 +162,7 @@ async function fetchFeedForLeague(email, password, leagueNameContains) {
         start += 25;
     }
 
-    return { transfers: allTransfers };
+    return { transfers: allTransfers, feedDepth: { oldestSeen, newestSeen, pagesFetched, itemsScanned } };
 }
 
 async function run() {
@@ -165,7 +183,9 @@ async function run() {
     }
 
     const seenIds = new Set(existingTransfers.map(t => t.id || t.i));
+    const transfersById = new Map(existingTransfers.map(t => [t.id || t.i, t]));
     let newTransfersCount = 0;
+    let backfilledDatesCount = 0;
 
     const allPlayersPath = path.join(__dirname, '../../frontend/public/history/all_players.json');
     let players = [];
@@ -190,6 +210,12 @@ async function run() {
             const res = await fetchFeedForLeague(account.email, account.pass, def.name);
             if (!res.error && res.transfers) {
                 console.log(`Found ${res.transfers.length} transfers for ${def.displayName}`);
+                if (res.feedDepth) {
+                    console.log(`Feed-Tiefe ${def.displayName}: ${res.feedDepth.itemsScanned} Items über ${res.feedDepth.pagesFetched} Seiten, ältester Zeitstempel: ${res.feedDepth.oldestSeen}`);
+                    const summary = loadFeedDepthSummary();
+                    summary[def.displayName] = { ...res.feedDepth, checkedAt: new Date().toISOString() };
+                    saveFeedDepthSummary(summary);
+                }
                 res.transfers.forEach(t => {
                     const tid = t.id || t.i;
                     if (!seenIds.has(tid)) {
@@ -200,12 +226,24 @@ async function run() {
                         // Für neue Transfers ab heute ist es der exakt tagesaktuelle Marktwert!
                         const marketValue = playerMvMap[t.playerId] || 0;
                         
-                        existingTransfers.push({ 
+                        const newEntry = { 
                             ...t, 
                             _league: def.displayName,
                             marketValueAtTimeOfTransfer: marketValue
-                        });
+                        };
+                        existingTransfers.push(newEntry);
+                        transfersById.set(tid, newEntry);
                         newTransfersCount++;
+                    } else {
+                        // Backfill: korrigiert das Datum bereits gespeicherter Transfers, falls
+                        // wir sie erneut im Feed sehen (z.B. weil "dt" früher falsch ausgelesen
+                        // wurde, siehe extractDate). Kickbase liefert für dieselbe ID immer
+                        // dasselbe echte "dt" - ein Update ist also niemals falsch, nur präziser.
+                        const existing = transfersById.get(tid);
+                        if (existing && t.date && existing.date !== t.date) {
+                            existing.date = t.date;
+                            backfilledDatesCount++;
+                        }
                     }
                 });
                 break;
@@ -216,13 +254,13 @@ async function run() {
     }
 
     existingTransfers.sort((a, b) => {
-        const dateA = new Date(a.d || a.date || 0);
-        const dateB = new Date(b.d || b.date || 0);
+        const dateA = new Date(a.date || 0);
+        const dateB = new Date(b.date || 0);
         return dateB - dateA;
     });
 
     fs.writeFileSync(transfersFile, JSON.stringify(existingTransfers, null, 2));
-    console.log(`Added ${newTransfersCount} new transfers. Total transfers saved: ${existingTransfers.length}`);
+    console.log(`Added ${newTransfersCount} new transfers, backfilled ${backfilledDatesCount} dates. Total transfers saved: ${existingTransfers.length}`);
 }
 
 run();
