@@ -360,7 +360,7 @@ const PlayerAvatar = ({ url, name, position, size = 64 }) => {
 };
 
 
-const PlayerImageDetail = ({ url, name, position }) => {
+const PlayerImageDetail = ({ url, name, position, teamLogo }) => {
   const [failed, setFailed] = useState(false);
   const isDummy = url && (url.includes('dummy') || url.includes('placeholder') || url.includes('default') || url.includes('silhouet'));
   const showImage = url && !isDummy && !failed;
@@ -368,22 +368,25 @@ const PlayerImageDetail = ({ url, name, position }) => {
   if (showImage) {
     return (
       <div 
-        className="w-[300px] sm:w-[380px] h-[240px] sm:h-[280px] pointer-events-none"
+        className="w-[300px] sm:w-[380px] h-[240px] sm:h-[280px] pointer-events-none relative"
         style={{
-          // Äußere Maske: Faded das Bild erst ganz weit unten weich aus, wo der Graph beginnt
           WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)',
           maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)',
-          transform: 'translateX(15%)', // Deutlich weiter an den rechten Rand schieben
+          transform: 'translateX(15%)',
         }}
       >
+        {teamLogo && (
+          <img 
+            src={teamLogo} 
+            alt="Team Logo" 
+            className="absolute top-4 right-12 sm:right-16 w-32 h-32 sm:w-40 sm:h-40 object-contain opacity-40 z-0 mix-blend-screen" 
+          />
+        )}
         <img
           src={url}
           alt={name}
-          className="w-full h-full object-cover object-top pointer-events-none"
+          className="w-full h-full object-cover object-top pointer-events-none relative z-10"
           style={{ 
-            // 270deg = direkt von rechts nach links.
-            // Die ersten 35% auf der rechten Seite bleiben ZU 100% SICHTBAR (rgba(0,0,0,1)).
-            // Nur der Bereich links (wo der Text ist) wird weggefaded.
             WebkitMaskImage: 'linear-gradient(270deg, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 35%, rgba(0,0,0,0) 85%)',
             maskImage: 'linear-gradient(270deg, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 35%, rgba(0,0,0,0) 85%)',
             marginTop: '-4%'
