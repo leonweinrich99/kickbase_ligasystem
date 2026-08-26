@@ -100,10 +100,57 @@ def status_label(code):
 IMAGE_BASE_URL = "https://kickbase.b-cdn.net/"
 
 
-def image_url(path):
-    if not path:
+
+IMAGE_CACHE_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "..", "data", "image_cache.json"
+)
+
+# Globaler State fuer den Lauf
+_IMAGE_CACHE = None
+
+def get_image_cache():
+    global _IMAGE_CACHE
+    if _IMAGE_CACHE is None:
+        _IMAGE_CACHE = {}
+        if os.path.exists(IMAGE_CACHE_PATH):
+            try:
+                with open(IMAGE_CACHE_PATH, "r", encoding="utf-8") as f:
+                    _IMAGE_CACHE = json.load(f)
+            except Exception:
+                pass
+    return _IMAGE_CACHE
+
+def save_image_cache():
+    if _IMAGE_CACHE is not None:
+        os.makedirs(os.path.dirname(IMAGE_CACHE_PATH), exist_ok=True)
+        with open(IMAGE_CACHE_PATH, "w", encoding="utf-8") as f:
+            json.dump(_IMAGE_CACHE, f, indent=2)
+
+def image_url(path, player_id=None):
+    cache = get_image_cache()
+    pid = str(player_id) if player_id else None
+    
+    is_dummy = False
+    if path:
+        lower_path = path.lower()
+        if any(x in lower_path for x in ["dummy", "placeholder", "default", "silhouet"]):
+            is_dummy = True
+
+    if path and not is_dummy:
+        # Gutes Bild! Speichern
+        if pid:
+            cache[pid] = path
+    else:
+        # Kein/Dummy-Bild. Aus Cache versuchen.
+        if pid and pid in cache:
+            path = cache[pid]
+            is_dummy = False
+
+    if not path or is_dummy:
         return None
+        
     return f"{IMAGE_BASE_URL}{path}"
+
 
 
 def compute_recommendations(entry):
@@ -465,7 +512,7 @@ def build_market_payload(token, league_id, live_predictions_df, history_by_playe
     _attach_football_enrichment(records, football_enrichment)
     for entry in records:
         entry["statusLabel"] = status_label(entry.get("status"))
-        entry["imageUrl"] = image_url(entry.get("imagePath"))
+        entry["imageUrl"] = image_url(entry.get("imagePath"), entry.get("playerId"))
         compute_recommendations(entry)
     # Kaufempfehlungen zuerst, danach nach Prognose sortiert - so stehen die
     # wirklich interessanten Spieler oben, nicht nur die mit der technisch
@@ -543,7 +590,7 @@ def build_squad_records(token, league_id, live_predictions_df, history_by_player
     _attach_football_enrichment(records, football_enrichment)
     for entry in records:
         entry["statusLabel"] = status_label(entry.get("status"))
-        entry["imageUrl"] = image_url(entry.get("imagePath"))
+        entry["imageUrl"] = image_url(entry.get("imagePath"), entry.get("playerId"))
         compute_recommendations(entry)
     # Verkaufsempfehlungen zuerst - genau das will man beim Blick auf den
     # eigenen Kader zuerst sehen ("wen sollte ich loswerden?").
@@ -841,6 +888,7 @@ def main():
     with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
         json.dump(result, f, ensure_ascii=False, indent=2)
 
+    save_image_cache()
     print(f"\nFertig. Ergebnis gespeichert unter: {os.path.abspath(OUTPUT_PATH)}")
 
 
