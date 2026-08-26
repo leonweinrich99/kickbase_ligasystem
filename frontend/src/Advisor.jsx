@@ -376,19 +376,13 @@ const PlayerHistoryModal = ({ player, onClose, isFavorite, onToggleFavorite }) =
     else if (timeRange === '1m') days = 30;
     else if (timeRange === '3m') days = 90;
     else if (timeRange === '6m') days = 180;
-    
-    // Fallback falls der Spieler kuerzer in der Liga ist
     return fullBaseHistory.slice(-days);
   }, [fullBaseHistory, timeRange]);
   
-  // Extend history with predictions
   const history = [...baseHistory];
   if (history.length > 0) {
-      // Create a copy of the last point to connect the predicted line
       const lastPoint = history[history.length - 1];
       const todayDateObj = new Date(lastPoint.date);
-      
-      // We set mv_predicted on the last point so the dashed line starts here
       lastPoint.mv_predicted = lastPoint.mv;
       
       const addPredictedPoint = (daysAhead, change) => {
@@ -416,217 +410,174 @@ const PlayerHistoryModal = ({ player, onClose, isFavorite, onToggleFavorite }) =
   const reasons = (player.inSquad ? player.sellReasons : player.buyReasons) || [];
 
   return (
-    <div className="fixed inset-0 z-[90] bg-black/80 flex items-center justify-center p-4" onClick={onClose}>
-      {/* WICHTIG: max-h + flex-col + eigener Scroll-Body statt den ganzen
-          Hintergrund scrollen zu lassen - "items-center" auf einem
-          scrollenden Flex-Container schneidet bei zu hohem Inhalt sonst den
-          oberen Teil ab, ohne dass man dorthin scrollen kann (bekannter
-          CSS-Flexbox-Bug bei zentrierten, ueberlaufenden Elementen). Der
-          Header (Foto/Name/Schliessen) bleibt fix sichtbar, nur der Rest
-          scrollt in einem eigenen Bereich. */}
+    <div className="fixed inset-0 z-[90] bg-black/80 flex items-center justify-center p-4 sm:p-0" onClick={onClose}>
       <div
-        className="max-w-lg w-full max-h-[85vh] bg-[#171717] border border-[#2e2e2e] rounded-3xl shadow-2xl relative flex flex-col"
+        className="w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-md bg-[#111111] sm:rounded-3xl shadow-2xl relative flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-6 pb-4 shrink-0">
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 text-[#8b92a5] hover:text-white transition-colors"
-            aria-label="Schließen"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
+        <button
+          onClick={onClose}
+          className="absolute top-6 right-6 text-[#8b92a5] hover:text-white transition-colors z-10"
+          aria-label="Schließen"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
 
-          <div className="flex items-center gap-4 pr-8">
-            <PlayerAvatar url={player.imageUrl} name={player.name} position={player.position} />
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 flex-wrap mb-1">
-                {player.position && (
+        <div className="overflow-y-auto min-h-0 pt-8 pb-12">
+          {/* Header - Name & Team */}
+          <div className="px-6 mb-4">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[#8b92a5] font-semibold text-sm tracking-wide">{player.team}</span>
+              {player.position && (
                   <span
-                    className="text-[9px] font-black uppercase tracking-widest rounded px-1.5 py-0.5"
+                    className="text-[10px] font-bold uppercase tracking-wider rounded px-1.5 py-0.5"
                     style={{ backgroundColor: `${POSITION_COLORS[player.position] || '#8b92a5'}26`, color: POSITION_COLORS[player.position] || '#8b92a5' }}
                   >
                     {player.position}
                   </span>
-                )}
-                {player.teamOfTheWeek && (
-                  <span className="text-[9px] font-black uppercase tracking-widest rounded px-1.5 py-0.5 bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">★ Team der Woche</span>
-                )}
-                {!isFit && player.statusLabel && (
-                  <span className="text-[9px] font-black uppercase tracking-widest rounded px-1.5 py-0.5 bg-orange-500/10 text-orange-400 border border-orange-500/30">{player.statusLabel}</span>
-                )}
-              </div>
-              <h2 className="text-lg font-black uppercase text-white leading-tight truncate">
-                {player.firstName ? `${player.firstName} ${player.name}` : player.name}
-              </h2>
-              <p className="text-xs text-[#8b92a5] truncate">{player.team}</p>
+              )}
             </div>
-            {onToggleFavorite && (
-              <button
-                onClick={() => onToggleFavorite(player.playerId)}
-                aria-label={isFavorite ? 'Favorit entfernen' : 'Als Favorit speichern'}
-                className="shrink-0 p-1"
-              >
-                <StarIcon filled={isFavorite} />
-              </button>
-            )}
+            <h2 className="text-3xl font-black text-white tracking-tight leading-tight">
+              {player.firstName ? `${player.firstName} ${player.name}` : player.name}
+            </h2>
           </div>
-        </div>
 
-        <div className="overflow-y-auto px-6 pb-6 min-h-0">
-          {(showPlayBadge || showTradeBadge || showSellBadge) && (
-            <div className={`rounded-xl p-3 mb-4 border ${showSellBadge ? 'bg-red-500/10 border-red-500/30' : 'bg-green-500/10 border-green-500/30'}`}>
-              <div className={`text-xs font-black uppercase tracking-widest mb-1 ${showSellBadge ? 'text-red-400' : 'text-green-400'}`}>
-                {showSellBadge ? '⚠ Verkaufen empfohlen' : (showPlayBadge && showTradeBadge ? '✓ Stammelf & Trading' : showPlayBadge ? '✓ Stammelf' : '📈 Trading-Empfehlung')}
-              </div>
-              {reasons.length > 0 && (
-                <div className={`text-[11px] ${showSellBadge ? 'text-red-300' : 'text-green-300'}`}>
-                  {reasons.map((r) => REASON_LABELS[r] || r).join(' · ')}
+          {/* Price & Change (Scalable Style) */}
+          <div className="px-6 mb-8">
+            <div className="text-[40px] font-black text-white leading-none tracking-tighter mb-2">
+              {formatMoney(player.marketValue)}
+            </div>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span className={`text-base font-bold ${(player.predictedChange || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                {player.predictedChange > 0 ? '+' : ''}{formatMoney(player.predictedChange)} (Prognose Morgen)
+              </span>
+              
+              {(player.predictedChange3d !== undefined || player.predictedChange7d !== undefined) && (
+                <div className="flex gap-2 items-center text-sm font-semibold">
+                  <span className="text-[#4b5563]">|</span>
+                  {player.predictedChange3d !== undefined && (
+                    <span className={(player.predictedChange3d || 0) >= 0 ? 'text-green-500/80' : 'text-red-500/80'}>
+                      {player.predictedChange3d > 0 ? '+' : ''}{formatCompactMoney(player.predictedChange3d)} (3T)
+                    </span>
+                  )}
+                  {player.predictedChange7d !== undefined && (
+                    <>
+                      <span className="text-[#4b5563]">·</span>
+                      <span className={(player.predictedChange7d || 0) >= 0 ? 'text-green-500/80' : 'text-red-500/80'}>
+                        {player.predictedChange7d > 0 ? '+' : ''}{formatCompactMoney(player.predictedChange7d)} (7T)
+                      </span>
+                    </>
+                  )}
                 </div>
               )}
             </div>
-          )}
-
-          <h3 className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] mb-2">Markt</h3>
-          <div className="flex flex-col sm:flex-row gap-3 mb-3">
-            <div className="bg-[#0a0a0a] border border-[#2e2e2e] rounded-xl p-3 flex-1">
-              <div className="text-[9px] font-black uppercase tracking-widest text-[#8b92a5] mb-1">Aktueller Marktwert</div>
-              <div className="text-base font-black text-white flex items-center gap-1.5">{formatMoney(player.marketValue)} <TrendArrow code={player.trendDirection} /></div>
-            </div>
-            <div className="bg-[#0a0a0a] border border-[#2e2e2e] rounded-xl p-3 flex-1">
-              <div className="text-[9px] font-black uppercase tracking-widest text-[#8b92a5] mb-1">Prognose (1 / 3 / 7 Tage)</div>
-              <div className="flex flex-wrap gap-x-2 gap-y-1 items-center">
-                  <div className={`text-sm font-black ${(player.predictedChange || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    {formatSignedCompactMoney(player.predictedChange)}
-                  </div>
-                  {player.predictedChange3d !== undefined && (
-                      <>
-                          <span className="text-[#4b5563]">/</span>
-                          <div className={`text-sm font-black ${(player.predictedChange3d || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                            {formatSignedCompactMoney(player.predictedChange3d)}
-                          </div>
-                      </>
-                  )}
-                  {player.predictedChange7d !== undefined && (
-                      <>
-                          <span className="text-[#4b5563]">/</span>
-                          <div className={`text-sm font-black ${(player.predictedChange7d || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                            {formatSignedCompactMoney(player.predictedChange7d)}
-                          </div>
-                      </>
-                  )}
-              </div>
-            </div>
           </div>
-          {player.maxBid > 0 && player.onMarket && (
-             <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-xl p-3 mb-3 flex justify-between items-center">
-               <span className="text-[10px] font-black uppercase tracking-widest text-cyan-400">Sinnvolles Max-Gebot</span>
-               <span className="text-sm font-black text-white">{formatMoney(player.maxBid)}</span>
-             </div>
-          )}
 
-          {/* Mehrere Zeitraeume statt EINER Gesamt-Veraenderung ueber das ganze
-              Chart-Fenster - genau das hat vorher fuer Verwirrung gesorgt
-              (Chart wirkt zuletzt steigend, obwohl der Wert vor 60 Tagen noch
-              hoeher war). 1/3/7-Tage-Werte kommen direkt aus dem Vorhersage-
-              modell, nicht aus dem sichtbaren Chart-Ausschnitt berechnet. */}
-          <div className="flex gap-2 mb-3">
-            <MiniStat label="1 Tag" value={formatSignedMoney(player.changeYesterday)} positive={(player.changeYesterday || 0) >= 0} />
-            <MiniStat label="3 Tage" value={formatSignedMoney(player.changeLast3Days)} positive={(player.changeLast3Days || 0) >= 0} />
-            <MiniStat label="7 Tage" value={formatSignedPercent(player.trendLast7DaysPercent)} positive={(player.trendLast7DaysPercent || 0) >= 0} />
+          {/* Chart (Clean without grid) */}
+          <div className="h-[220px] w-full mb-6 relative">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={history}>
+                <YAxis
+                  domain={['dataMin', 'dataMax']}
+                  hide={true}
+                />
+                <Tooltip 
+                   content={<ChartTooltip />}
+                   cursor={{ stroke: '#2e2e2e', strokeWidth: 1, strokeDasharray: '4 4' }}
+                />
+                <Line type="monotone" dataKey="mv" stroke="#ffffff" strokeWidth={2.5} dot={false} activeDot={{ r: 6, fill: "#ffffff", strokeWidth: 0 }} animationDuration={800} />
+                <Line type="monotone" dataKey="mv_predicted" stroke="#eab308" strokeDasharray="4 4" strokeWidth={2.5} dot={{ r: 4, fill: "#eab308", strokeWidth: 0 }} activeDot={{ r: 6, fill: "#eab308", strokeWidth: 0 }} animationDuration={800} />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
-          {typeof player.totalValueChange === 'number' && (
-            <div className="text-[10px] text-[#8b92a5] mb-5">
-              Gesamtveränderung (seit Kauf/Saisonbeginn): <span className={player.totalValueChange >= 0 ? 'text-green-400 font-bold' : 'text-red-400 font-bold'}>{formatSignedMoney(player.totalValueChange)}</span>
-            </div>
-          )}
 
-          <div className="flex justify-between items-center mb-2 mt-4 px-1">
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5]">Marktwert-Verlauf</h3>
-            <div className="flex gap-1 bg-[#0a0a0a] p-1 rounded-lg border border-[#2e2e2e]">
+          {/* Time Toggles */}
+          <div className="px-6 mb-10">
+            <div className="flex justify-between items-center max-w-[280px] mx-auto border-b border-[#2e2e2e] pb-2">
               {['1w', '1m', '3m', '6m', '1y'].map((range) => (
                 <button
                   key={range}
                   onClick={() => setTimeRange(range)}
-                  className={`text-[9px] font-bold px-2 py-1 rounded-md transition-colors ${timeRange === range ? 'bg-[#22d3ee] text-black' : 'text-[#8b92a5] hover:text-white'}`}
+                  className={`text-[13px] font-bold pb-2 -mb-[9px] transition-colors border-b-2 ${timeRange === range ? 'text-white border-white' : 'text-[#6b7280] border-transparent hover:text-gray-300'}`}
                 >
                   {range.toUpperCase()}
                 </button>
               ))}
             </div>
           </div>
-          <div className="h-[180px] w-full mb-2">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={history} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2e2e2e" vertical={false} />
-                <XAxis
-                  dataKey="date"
-                  stroke="#4b5563"
-                  fontSize={9}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={formatShortDate}
-                  minTickGap={30}
-                />
-                <YAxis
-                  stroke="#4b5563"
-                  fontSize={9}
-                  tickLine={false}
-                  axisLine={false}
-                  domain={['dataMin', 'dataMax']}
-                  tickFormatter={formatCompactMoney}
-                  width={70}
-                />
-                <Tooltip content={<ChartTooltip />} />
-                <Line type="monotone" dataKey="mv" stroke="#22d3ee" strokeWidth={2.5} dot={false} activeDot={{ r: 5, strokeWidth: 0 }} animationDuration={800} />
-                <Line type="monotone" dataKey="mv_predicted" stroke="#eab308" strokeDasharray="4 4" strokeWidth={2.5} dot={{ r: 3, fill: "#eab308", strokeWidth: 0 }} activeDot={{ r: 5, strokeWidth: 0 }} animationDuration={800} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-          <p className="text-[10px] text-[#8b92a5] text-center mb-5">Marktwert-Verlauf der letzten {baseHistory.length} Tage</p>
 
-          {/* Leistung: alles, was Kickbase zuverlaessig hergibt (Einsatzminuten,
-              Punkte, offizielle Saison-Statistik) + Tore/Vorlagen/Verletzungen
-              aus der externen API-Football-Anreicherung (siehe
-              backend/advisor/football_enrichment.py) - Kickbase selbst gibt
-              Tore & Vorlagen nicht her. */}
-          {(hasScoutingFacts || player.seasonPoints !== undefined) && (
-            <div className="pt-5 border-t border-[#2e2e2e]">
-              <h3 className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] mb-3">Leistung (Saison)</h3>
-              <div className="grid grid-cols-2 gap-2">
-                <MiniStat label="Gesamtpunkte" value={player.seasonPoints ?? '–'} />
-                <MiniStat label="Einsätze" value={player.officialSeasonAppearances ?? player.appearances ?? '–'} />
-                <MiniStat label="Gesamtminuten" value={player.totalMinutes ? `${player.totalMinutes}'` : '–'} />
-                <MiniStat label="Ø Punkte / Spiel" value={player.avgPoints ?? '–'} />
-                {typeof player.officialGoals === 'number' && (
-                  <MiniStat label="Tore" value={player.officialGoals} />
-                )}
-                {typeof player.officialAssists === 'number' && (
-                  <MiniStat label="Vorlagen" value={player.officialAssists} />
-                )}
-              </div>
-              <div className="mt-2">
-                <MiniStat
-                  label="Letzter Spieltag"
-                  value={player.lastMinutesPlayed ? `${player.lastMinutesPlayed}' · ${player.lastPoints ?? 0} Pkt.` : 'Nicht eingesetzt'}
-                />
-              </div>
-              {player.isInjured && (
-                <div className="mt-2 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-[11px] text-red-300">
-                  Extern bestätigte Verletzung/Sperre{player.injuryReason ? `: ${player.injuryReason}` : ''}
+          {/* Badges / Trading Recommendations */}
+          {(showPlayBadge || showTradeBadge || showSellBadge || !isFit || player.teamOfTheWeek) && (
+            <div className="px-6 mb-8 flex flex-wrap gap-2">
+              {showSellBadge && (
+                <div className="bg-red-500/10 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-lg text-xs font-bold">
+                  ⚠ Verkaufen
+                </div>
+              )}
+              {showPlayBadge && (
+                <div className="bg-green-500/10 text-green-400 border border-green-500/20 px-3 py-1.5 rounded-lg text-xs font-bold">
+                  ✓ Stammelf
+                </div>
+              )}
+              {showTradeBadge && (
+                <div className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1.5 rounded-lg text-xs font-bold">
+                  📈 Trading
+                </div>
+              )}
+              {!isFit && player.statusLabel && (
+                <div className="bg-orange-500/10 text-orange-400 border border-orange-500/20 px-3 py-1.5 rounded-lg text-xs font-bold">
+                  {player.statusLabel}
+                </div>
+              )}
+              {player.teamOfTheWeek && (
+                <div className="bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-3 py-1.5 rounded-lg text-xs font-bold">
+                  ★ S11
+                </div>
+              )}
+              {reasons.length > 0 && (
+                <div className="w-full text-[11px] text-[#8b92a5] mt-1">
+                  Grund: {reasons.map((r) => REASON_LABELS[r] || r).join(' · ')}
                 </div>
               )}
             </div>
           )}
 
-          {typeof player.startElfProbability === 'number' && (
-            <div className="mt-3 text-[11px] text-[#8b92a5]">
-              Startelf-Wahrscheinlichkeit: <span className="text-gray-200 font-bold">{Math.round(player.startElfProbability * 100)}%</span>
+          {/* Key Statistics Grid (Scalable Style) */}
+          <div className="px-6">
+            <h3 className="text-lg font-bold text-white mb-4">Kennzahlen</h3>
+            <div className="grid grid-cols-2 gap-y-6 gap-x-4">
+              <div className="flex flex-col">
+                <span className="text-[#8b92a5] text-xs font-semibold mb-1">Max-Gebot</span>
+                <span className="text-white font-medium">{player.maxBid > 0 && player.onMarket ? formatMoney(player.maxBid) : '–'}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[#8b92a5] text-xs font-semibold mb-1">Ø Punkte</span>
+                <span className="text-white font-medium">{player.avgPoints ?? '–'}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[#8b92a5] text-xs font-semibold mb-1">Saisonpunkte</span>
+                <span className="text-white font-medium">{player.seasonPoints ?? '–'}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[#8b92a5] text-xs font-semibold mb-1">Einsätze</span>
+                <span className="text-white font-medium">{player.officialSeasonAppearances ?? player.appearances ?? '–'}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[#8b92a5] text-xs font-semibold mb-1">Gesamtminuten</span>
+                <span className="text-white font-medium">{player.totalMinutes ? `${player.totalMinutes}'` : '–'}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[#8b92a5] text-xs font-semibold mb-1">Tore / Vorlagen</span>
+                <span className="text-white font-medium">
+                  {typeof player.officialGoals === 'number' ? player.officialGoals : '–'} / {typeof player.officialAssists === 'number' ? player.officialAssists : '–'}
+                </span>
+              </div>
             </div>
-          )}
+          </div>
+          
         </div>
       </div>
     </div>
