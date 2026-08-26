@@ -367,7 +367,19 @@ const TrendArrow = ({ code }) => {
 };
 
 const PlayerHistoryModal = ({ player, onClose, isFavorite, onToggleFavorite }) => {
-  const baseHistory = normalizeHistory(player.history);
+  const fullBaseHistory = normalizeHistory(player.history);
+  const [timeRange, setTimeRange] = useState('3m');
+  
+  const baseHistory = useMemo(() => {
+    let days = 365;
+    if (timeRange === '1w') days = 7;
+    else if (timeRange === '1m') days = 30;
+    else if (timeRange === '3m') days = 90;
+    else if (timeRange === '6m') days = 180;
+    
+    // Fallback falls der Spieler kuerzer in der Liga ist
+    return fullBaseHistory.slice(-days);
+  }, [fullBaseHistory, timeRange]);
   
   // Extend history with predictions
   const history = [...baseHistory];
@@ -532,6 +544,20 @@ const PlayerHistoryModal = ({ player, onClose, isFavorite, onToggleFavorite }) =
             </div>
           )}
 
+          <div className="flex justify-between items-center mb-2 mt-4 px-1">
+            <h3 className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5]">Marktwert-Verlauf</h3>
+            <div className="flex gap-1 bg-[#0a0a0a] p-1 rounded-lg border border-[#2e2e2e]">
+              {['1w', '1m', '3m', '6m', '1y'].map((range) => (
+                <button
+                  key={range}
+                  onClick={() => setTimeRange(range)}
+                  className={`text-[9px] font-bold px-2 py-1 rounded-md transition-colors ${timeRange === range ? 'bg-[#22d3ee] text-black' : 'text-[#8b92a5] hover:text-white'}`}
+                >
+                  {range.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="h-[180px] w-full mb-2">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={history} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
