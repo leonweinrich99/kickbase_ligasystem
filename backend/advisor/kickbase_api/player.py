@@ -34,7 +34,7 @@ def get_player_info(token, competition_id, player_id):
         "first_name": data.get("fn"),
         "last_name": data.get("ln"),
         "position": data.get("pos"),
-        "image_path": data.get("pim"),
+        "image_path": data.get("profileBig") or data.get("profile") or data.get("pim"),
     }
 
 
