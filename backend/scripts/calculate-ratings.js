@@ -567,10 +567,12 @@ function run() {
                 }
                 totalScore = Math.max(0, Math.min(100, totalScore));
 
+                // Stufen in normaler Medaillen-Reihenfolge (Amateur < Bronze < Silber < Gold < Elite) -
+                // vorher lag "Gold" fälschlich UNTER "Silber", was bei jedem Vergleich verwirrte.
                 let level = 'Bronze';
                 if (totalScore >= 90) level = 'Elite';
-                else if (totalScore >= 75) level = 'Silber';
-                else if (totalScore >= 60) level = 'Gold';
+                else if (totalScore >= 75) level = 'Gold';
+                else if (totalScore >= 60) level = 'Silber';
                 else if (totalScore < 45) level = 'Amateur';
 
                 ratings[uid] = {

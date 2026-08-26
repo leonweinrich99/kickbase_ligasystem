@@ -104,9 +104,10 @@ const fetchSingleLeagueData = async (email, password, leagueNameContains = "Qual
 // Qualigruppen-Saison) und ein dritter, z.B. wenn Liga 1/2/3 spaeter unter
 // einem neuen Account verwaltet werden). Wird an mehreren Stellen gebraucht,
 // da nicht jede Liga zwingend im selben Account liegt.
+// _4 ist für den separaten Pokal-Account reserviert (siehe backend/.env.example).
 const getConfiguredKickbaseAccounts = () => {
     const accounts = [];
-    for (const suffix of ['', '_2', '_3']) {
+    for (const suffix of ['', '_2', '_3', '_4']) {
         const email = process.env[`KICKBASE_EMAIL${suffix}`];
         const pass = process.env[`KICKBASE_PASS${suffix}`];
         if (email && pass) accounts.push({ email, pass });
@@ -392,6 +393,8 @@ module.exports = {
     fetchRawIndependentLeagues,
     transformIndependentLeagues,
     fetchIndependentLeaguesData,
+    fetchSingleLeagueData,
+    getConfiguredKickbaseAccounts,
     LEAGUE_DEFS
 };
 

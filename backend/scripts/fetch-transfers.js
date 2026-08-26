@@ -34,7 +34,7 @@ function saveFeedDepthSummary(summary) {
 
 const getConfiguredKickbaseAccounts = () => {
     const accounts = [];
-    for (const suffix of ['', '_2', '_3']) {
+    for (const suffix of ['', '_2', '_3', '_4']) {
         const email = process.env[`KICKBASE_EMAIL${suffix}`];
         const pass = process.env[`KICKBASE_PASS${suffix}`];
         if (email && pass) accounts.push({ email, pass });

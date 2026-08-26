@@ -656,6 +656,12 @@ def get_configured_accounts():
     if email3 and pass3:
         accounts.append((email3, pass3))
 
+    # _4 ist fuer den separaten Pokal-Account reserviert (siehe backend/.env.example)
+    email4 = env_or_default("KICKBASE_EMAIL_4", None)
+    pass4 = env_or_default("KICKBASE_PASS_4", None)
+    if email4 and pass4:
+        accounts.append((email4, pass4))
+
     return accounts
 
 

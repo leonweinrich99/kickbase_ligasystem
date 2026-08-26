@@ -1,15 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  X, TrendingUp, TrendingDown, Wallet, Zap, Activity,
+  Users, Clock, Shuffle, CheckCircle2, Trophy, ShoppingCart
+} from 'lucide-react';
 
-const tradeTag = (trade) => {
-  if (!trade || !trade.type) return null;
-  const labels = { realized: null, open: 'offen', orphan: 'zugelost' };
-  const parts = [];
-  if (labels[trade.type]) parts.push(labels[trade.type]);
-  if (trade.forced) parts.push('Zwangsverkauf');
-  if (parts.length === 0) return null;
-  return <span className="text-gray-500"> ({parts.join(', ')})</span>;
+// Einheitliche Farbwelt je Rating-Stufe (normale Medaillen-Reihenfolge:
+// Amateur < Bronze < Silber < Gold < Elite - siehe calculate-ratings.js).
+const LEVEL_THEME = {
+  Amateur: '#ef4444',
+  Bronze: '#f97316',
+  Silber: '#94a3b8',
+  Gold: '#eab308',
+  Elite: '#a855f7',
 };
+
+const fmtEUR = (val) => `${Math.round(val).toLocaleString('de-DE')} €`;
+const fmtSignedEUR = (val) => `${val > 0 ? '+' : ''}${fmtEUR(val)}`;
+
+// Ein Icon in einer farbigen Box + Titel + kurze Klartext-Beschreibung links,
+// großer farbiger Wert rechts - dasselbe Muster wie ThresholdCard/StatCard in
+// UserDetail.jsx, damit sich das Manager-Rating in die restliche App einfügt.
+const MetricRow = ({ icon: Icon, iconColor, title, description, value, valueColor }) => (
+  <div className="flex items-center gap-3 bg-[#1f1f1f] border border-[#2a2a2a] rounded-xl p-3">
+    <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${iconColor}1A`, color: iconColor }}>
+      <Icon size={17} />
+    </div>
+    <div className="flex-1 min-w-0">
+      <div className="text-sm font-bold text-white truncate">{title}</div>
+      {description && <div className="text-[11px] text-gray-500 truncate">{description}</div>}
+    </div>
+    <div className={`text-sm font-black shrink-0 text-right ${valueColor}`}>{value}</div>
+  </div>
+);
+
+const SectionLabel = ({ children }) => (
+  <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8b92a5] mb-2">{children}</div>
+);
 
 const ManagerRatingBadge = ({ kickbaseId }) => {
   const [rating, setRating] = useState(null);
@@ -26,29 +53,27 @@ const ManagerRatingBadge = ({ kickbaseId }) => {
 
   if (!rating) return null;
 
-  let color = '#3b82f6'; // Blau (Bronze)
-  if (rating.score >= 90) color = '#eab308'; // Gold (Elite)
-  else if (rating.score >= 75) color = '#a855f7'; // Lila (Silber)
-  else if (rating.score < 50) color = '#ef4444'; // Rot (Grau)
+  const color = LEVEL_THEME[rating.level] || LEVEL_THEME.Bronze;
+  const profitColor = (val) => (val >= 0 ? 'text-green-500' : 'text-red-500');
 
   return (
     <>
-      <button 
+      <button
         onClick={() => setIsOpen(true)}
         className="relative flex items-center justify-center shrink-0 hover:scale-105 active:scale-95 transition-transform"
         style={{ width: '42px', height: '46px' }}
       >
-        <div 
-          className="absolute inset-0" 
-          style={{ 
-            backgroundColor: color, 
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundColor: color,
             clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
             opacity: 0.15
           }}
         />
-        <div 
-          className="absolute inset-[2px] bg-[#1f1f1f] flex flex-col items-center justify-center" 
-          style={{ 
+        <div
+          className="absolute inset-[2px] bg-[#1f1f1f] flex flex-col items-center justify-center"
+          style={{
             clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
           }}
         >
@@ -58,16 +83,16 @@ const ManagerRatingBadge = ({ kickbaseId }) => {
 
       <AnimatePresence>
         {isOpen && (
-          <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            exit={{ opacity: 0 }} 
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-4 sm:p-0"
             onClick={() => setIsOpen(false)}
           >
-            <motion.div 
-              initial={{ y: '100%' }} 
-              animate={{ y: 0 }} 
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               onClick={e => e.stopPropagation()}
@@ -76,14 +101,15 @@ const ManagerRatingBadge = ({ kickbaseId }) => {
               <div className="flex justify-between items-start">
                 <div>
                   <h2 className="text-2xl font-black text-white">Manager Rating</h2>
-                  <p className="text-sm text-gray-400 mt-1">Trading & Performance Analytics</p>
+                  <p className="text-sm text-gray-400 mt-1">Wie gut managst du deinen Kader?</p>
                 </div>
-                <button onClick={() => setIsOpen(false)} className="w-8 h-8 bg-[#2a2a2a] rounded-full flex items-center justify-center text-gray-400">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                <button onClick={() => setIsOpen(false)} className="w-8 h-8 bg-[#2a2a2a] rounded-full flex items-center justify-center text-gray-400 shrink-0">
+                  <X size={14} strokeWidth={3} />
                 </button>
               </div>
 
-              <div className="flex items-center justify-center py-4">
+              {/* Score */}
+              <div className="flex items-center justify-center py-2">
                 <div className="relative w-32 h-32 flex items-center justify-center rounded-full border-4" style={{ borderColor: color }}>
                   <div className="text-5xl font-black" style={{ color }}>{rating.score}</div>
                   <div className="absolute -bottom-3 bg-[#171717] px-3 font-bold text-[10px] tracking-widest uppercase rounded-full border" style={{ borderColor: color, color }}>
@@ -92,133 +118,183 @@ const ManagerRatingBadge = ({ kickbaseId }) => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 text-center pt-2">
-                <div className="bg-[#1f1f1f] rounded-xl p-2 border border-[#2a2a2a]">
-                  <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Trading</div>
-                  <div className="text-sm font-black text-white">{rating.financialScore}</div>
-                </div>
-                <div className="bg-[#1f1f1f] rounded-xl p-2 border border-[#2a2a2a]">
-                  <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">PPM</div>
-                  <div className="text-sm font-black text-white">{rating.performanceScore}</div>
-                </div>
-                <div className="bg-[#1f1f1f] rounded-xl p-2 border border-[#2a2a2a]">
-                  <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Aktivität</div>
-                  <div className="text-sm font-black text-white">{rating.rebuildScore}</div>
+              {/* Teilscores mit Klartext-Erklärung statt nackter Zahl */}
+              <div>
+                <SectionLabel>Wie setzt sich der Score zusammen?</SectionLabel>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="bg-[#1f1f1f] rounded-xl p-2.5 border border-[#2a2a2a]">
+                    <Wallet size={16} className="mx-auto mb-1.5 text-[#22c55e]" />
+                    <div className="text-sm font-black text-white">{rating.financialScore}</div>
+                    <div className="text-[8px] text-gray-500 font-bold uppercase tracking-wider mt-0.5">Kauf & Verkauf</div>
+                  </div>
+                  <div className="bg-[#1f1f1f] rounded-xl p-2.5 border border-[#2a2a2a]">
+                    <Zap size={16} className="mx-auto mb-1.5 text-[#eab308]" />
+                    <div className="text-sm font-black text-white">{rating.performanceScore}</div>
+                    <div className="text-[8px] text-gray-500 font-bold uppercase tracking-wider mt-0.5">Pkt. pro Mio.</div>
+                  </div>
+                  <div className="bg-[#1f1f1f] rounded-xl p-2.5 border border-[#2a2a2a]">
+                    <Activity size={16} className="mx-auto mb-1.5 text-[#3b82f6]" />
+                    <div className="text-sm font-black text-white">{rating.rebuildScore}</div>
+                    <div className="text-[8px] text-gray-500 font-bold uppercase tracking-wider mt-0.5">Marktaktivität</div>
+                  </div>
                 </div>
               </div>
 
+              {/* Kaderstatus */}
               {typeof rating.squadReadiness === 'number' && (
-                <div className="bg-[#1f1f1f] rounded-xl p-3 border border-[#2a2a2a]">
-                  <div className="flex justify-between items-start gap-2 mb-2">
-                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider min-w-0">Kaderstatus</span>
-                    <span className="text-[10px] font-bold text-gray-300 shrink-0 text-right">{rating.squadTotal} Spieler · {rating.budget.toLocaleString('de-DE')} € Budget</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-[#2a2a2a] rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full"
-                      style={{
-                        width: `${Math.round(rating.squadReadiness * 100)}%`,
-                        backgroundColor: rating.squadReadiness >= 1 ? '#22c55e' : rating.squadReadiness >= 0.7 ? '#eab308' : '#ef4444'
-                      }}
-                    />
-                  </div>
-                  <div className="flex justify-between items-start gap-2 mt-1.5">
-                    <span className="text-[10px] text-gray-500 min-w-0">
-                      {rating.squadReadiness >= 1 ? 'Startelf-fähig' : `${Math.round(rating.squadReadiness * 100)}% startelf-fähig`}
-                      {rating.budget < 0 && <span className="text-red-400 font-bold"> · Budget im Minus</span>}
-                    </span>
-                    {rating.squadRiskPenalty < -0.5 && (
-                      <span className="text-[10px] font-bold text-red-400 shrink-0 text-right">{rating.squadRiskPenalty.toFixed(0)} Pkt. Risiko</span>
+                <div>
+                  <SectionLabel>Kaderstatus</SectionLabel>
+                  <div className="bg-[#1f1f1f] rounded-xl p-3 border border-[#2a2a2a]">
+                    <div className="flex items-center gap-3 mb-2.5">
+                      <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: '#3b82f61A', color: '#3b82f6' }}>
+                        <Users size={17} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-bold text-white">
+                          {rating.squadReadiness >= 1 ? 'Startelf-fähig' : `${Math.round(rating.squadReadiness * 100)}% startelf-fähig`}
+                        </div>
+                        <div className="text-[11px] text-gray-500">{rating.squadTotal} Spieler im Kader</div>
+                      </div>
+                      <div className="text-sm font-black text-gray-200 shrink-0 text-right">{fmtEUR(rating.budget)}</div>
+                    </div>
+                    <div className="w-full h-1.5 bg-[#2a2a2a] rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full"
+                        style={{
+                          width: `${Math.round(rating.squadReadiness * 100)}%`,
+                          backgroundColor: rating.squadReadiness >= 1 ? '#22c55e' : rating.squadReadiness >= 0.7 ? '#eab308' : '#ef4444'
+                        }}
+                      />
+                    </div>
+                    {(rating.budget < 0 || rating.squadRiskPenalty < -0.5) && (
+                      <div className="text-[11px] text-red-400 font-bold mt-2">
+                        {rating.budget < 0 ? 'Budget im Minus – ' : ''}
+                        Risiko kostet dich {Math.abs(Math.round(rating.squadRiskPenalty))} Punkte im Score
+                      </div>
                     )}
                   </div>
                 </div>
               )}
 
-              <div className="space-y-4 pt-2">
-                <div className="flex justify-between items-start gap-3 text-sm">
-                  <span className="text-gray-400 min-w-0">
-                    Abgeschlossene Trades
-                    {rating.forcedCompletedTrades > 0 && (
-                      <span className="text-gray-500"> ({rating.forcedCompletedTrades}x Zwangsverkauf)</span>
-                    )}
-                  </span>
-                  <span className="font-bold text-white shrink-0 text-right">{rating.completedTrades ?? rating.tradesCount}</span>
+              {/* Trades & Verkäufe */}
+              <div>
+                <SectionLabel>Trades & Verkäufe</SectionLabel>
+                <div className="space-y-2">
+                  <MetricRow
+                    icon={CheckCircle2}
+                    iconColor="#22c55e"
+                    title={`${rating.completedTrades ?? rating.tradesCount} abgeschlossene Trades`}
+                    description={rating.forcedCompletedTrades > 0 ? `Davon ${rating.forcedCompletedTrades}x Pflichtverkauf (250-Punkte-Regel)` : 'Gekauft und wieder verkauft'}
+                    value={fmtSignedEUR(rating.realizedProfit)}
+                    valueColor={profitColor(rating.realizedProfit)}
+                  />
+                  {rating.openPositions > 0 && (
+                    <MetricRow
+                      icon={Clock}
+                      iconColor="#3b82f6"
+                      title={`${rating.openPositions} offene Positionen`}
+                      description={`Noch nicht verkauft${typeof rating.openPositionsAvgAgeDays === 'number' ? ` · Ø ${rating.openPositionsAvgAgeDays < 1 ? '<1' : Math.round(rating.openPositionsAvgAgeDays)} Tag${rating.openPositionsAvgAgeDays >= 1.5 ? 'e' : ''} gehalten` : ''}`}
+                      value={fmtSignedEUR(rating.unrealizedProfit)}
+                      valueColor={profitColor(rating.unrealizedProfit)}
+                    />
+                  )}
+                  {rating.orphanSales > 0 && (
+                    <MetricRow
+                      icon={Shuffle}
+                      iconColor="#8b5cf6"
+                      title={`${rating.orphanSales} Kaderverkäufe`}
+                      description={rating.forcedOrphanSales > 0 ? `Zugeloste Spieler · davon ${rating.forcedOrphanSales}x Pflichtverkauf` : 'Zugeloste Spieler ohne Kaufpreis'}
+                      value={fmtSignedEUR(rating.orphanSaleProfit)}
+                      valueColor={profitColor(rating.orphanSaleProfit)}
+                    />
+                  )}
                 </div>
-                {rating.openPositions > 0 && (
-                  <div className="flex justify-between items-start gap-3 text-sm">
-                    <span className="text-gray-400 min-w-0">
-                      Offene Positionen (unrealisiert)
-                      {typeof rating.openPositionsAvgAgeDays === 'number' && (
-                        <span className="text-gray-500"> · Ø {rating.openPositionsAvgAgeDays < 1 ? '<1' : Math.round(rating.openPositionsAvgAgeDays)} Tag{rating.openPositionsAvgAgeDays >= 1.5 ? 'e' : ''} gehalten</span>
-                      )}
-                    </span>
-                    <span className={`font-bold shrink-0 text-right ${rating.unrealizedProfit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                      {rating.openPositions}x · {rating.unrealizedProfit > 0 ? '+' : ''}{rating.unrealizedProfit.toLocaleString('de-DE')} €
-                    </span>
+              </div>
+
+              {/* Gesamtbilanz - die wichtigste Zahl, deshalb visuell hervorgehoben */}
+              <div
+                className="rounded-2xl p-4 flex items-center gap-3 border-2"
+                style={{ borderColor: rating.totalProfit >= 0 ? '#22c55e' : '#ef4444', backgroundColor: rating.totalProfit >= 0 ? '#22c55e0D' : '#ef44440D' }}
+              >
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: rating.totalProfit >= 0 ? '#22c55e1A' : '#ef44441A', color: rating.totalProfit >= 0 ? '#22c55e' : '#ef4444' }}
+                >
+                  {rating.totalProfit >= 0 ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-gray-400">Gesamtbilanz</div>
+                  <div className="text-[11px] text-gray-500">Realisiert + offen + Kaderverkäufe</div>
+                </div>
+                <div className={`text-xl font-black shrink-0 ${profitColor(rating.totalProfit)}`}>{fmtSignedEUR(rating.totalProfit)}</div>
+              </div>
+
+              {/* Verkaufsgespür - bewusst von der Gesamtbilanz getrennt: das ist KEIN
+                  echtes Geld, sondern eine Was-wäre-wenn-Kennzahl (siehe Erklärtext). */}
+              {rating.saleTimingSampleSize > 0 && (
+                <div className="rounded-xl p-3 border border-dashed border-[#3a3a3a] bg-[#1a1a1a]">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 bg-[#06b6d41A] text-[#06b6d4]">
+                      <TrendingUp size={17} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-bold text-white">
+                        {rating.saleTimingProfit >= 0 ? 'Vermiedener Wertverlust' : 'Entgangener Gewinn'}
+                      </div>
+                      <div className="text-[11px] text-gray-500">
+                        Wenn du deine {rating.saleTimingSampleSize} verkauften Spieler behalten hättest, wären sie heute {rating.saleTimingProfit >= 0 ? 'weniger' : 'mehr'} wert
+                      </div>
+                    </div>
+                    <div className={`text-sm font-black shrink-0 text-right ${profitColor(rating.saleTimingProfit)}`}>{fmtSignedEUR(rating.saleTimingProfit)}</div>
                   </div>
-                )}
-                {rating.orphanSales > 0 && (
-                  <div className="flex justify-between items-start gap-3 text-sm">
-                    <span className="text-gray-400 min-w-0">
-                      Kaderverkäufe (zugelost)
-                      {rating.forcedOrphanSales > 0 && (
-                        <span className="text-gray-500"> ({rating.forcedOrphanSales}x Zwangsverkauf)</span>
-                      )}
-                    </span>
-                    <span className={`font-bold shrink-0 text-right ${rating.orphanSaleProfit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                      {rating.orphanSales}x · {rating.orphanSaleProfit > 0 ? '+' : ''}{rating.orphanSaleProfit.toLocaleString('de-DE')} €
-                    </span>
-                  </div>
-                )}
-                <div className="flex justify-between items-start gap-3 text-sm border-t border-[#2a2a2a] pt-3">
-                  <span className="text-gray-400 min-w-0">Trading-Gewinn (gesamt)</span>
-                  <span className={`font-bold shrink-0 text-right ${rating.totalProfit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    {rating.totalProfit > 0 ? '+' : ''}{rating.totalProfit.toLocaleString('de-DE')} €
-                  </span>
+                  <p className="text-[10px] text-gray-600 mt-2 pl-12">Kein Kontostand-Effekt – zeigt nur, ob der Verkaufszeitpunkt im Nachhinein clever war.</p>
                 </div>
-                <div className="flex justify-between items-start gap-3 text-sm">
-                  <span className="text-gray-400 min-w-0">Performance (Punkte pro 1M)</span>
-                  <span className="font-bold text-white shrink-0 text-right">{rating.ppm.toFixed(1)} Pkt.</span>
-                </div>
-                <div className="flex justify-between items-start gap-3 text-sm">
-                  <span className="text-gray-400 min-w-0">Ø Aufschlag über Marktwert</span>
-                  <span className="font-bold text-red-400 shrink-0 text-right">
-                    {rating.avgOverpayRatio ? `+${(rating.avgOverpayRatio * 100).toFixed(1)}%` : '–'}
-                    {' · '}{rating.totalOverpay.toLocaleString('de-DE')} €
-                  </span>
-                </div>
-                {rating.saleTimingSampleSize > 0 && (
-                  <div className="flex justify-between items-start gap-3 text-sm">
-                    <span className="text-gray-400 min-w-0">
-                      Verkaufs-Timing
-                      <span className="text-gray-500"> · {rating.saleTimingSampleSize}x ausgewertet</span>
-                    </span>
-                    <span className={`font-bold shrink-0 text-right ${rating.saleTimingProfit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                      {rating.saleTimingProfit > 0 ? '+' : ''}{Math.round(rating.saleTimingProfit).toLocaleString('de-DE')} €
-                    </span>
-                  </div>
-                )}
+              )}
+
+              {/* Kaufverhalten */}
+              <div>
+                <SectionLabel>Kaufverhalten</SectionLabel>
+                <MetricRow
+                  icon={ShoppingCart}
+                  iconColor="#f97316"
+                  title="Ø Aufschlag beim Kauf"
+                  description={rating.avgOverpayRatio ? `${fmtEUR(rating.totalOverpay)} über Marktwert bezahlt` : 'Noch keine Daten'}
+                  value={rating.avgOverpayRatio ? `+${(rating.avgOverpayRatio * 100).toFixed(1)}%` : '–'}
+                  valueColor="text-orange-400"
+                />
+                <p className="text-[10px] text-gray-500 mt-2 px-1">Underpay ist verboten – ein kleiner Aufschlag ist normal, ein großer bedeutet Bieterkrieg.</p>
               </div>
 
               {/* Top & Flop */}
               {(rating.bestTrade.profit !== 0 || rating.worstTrade.profit !== 0) && (
-                <div className="mt-2 bg-[#1f1f1f] border border-[#2a2a2a] rounded-xl p-3 space-y-2 text-xs">
-                  {rating.bestTrade.profit > 0 && (
-                    <div className="flex justify-between items-start gap-2">
-                      <span className="text-gray-400 min-w-0 break-words">🏆 Top Trade: <span className="text-white font-medium">{rating.bestTrade.name}</span>{tradeTag(rating.bestTrade)}</span>
-                      <span className="font-bold text-green-500 shrink-0 mt-0.5">+{rating.bestTrade.profit.toLocaleString('de-DE')} €</span>
-                    </div>
-                  )}
-                  {rating.worstTrade.profit < 0 && (
-                    <div className="flex justify-between items-start gap-2">
-                      <span className="text-gray-400 min-w-0 break-words">📉 Flop Trade: <span className="text-white font-medium">{rating.worstTrade.name}</span>{tradeTag(rating.worstTrade)}</span>
-                      <span className="font-bold text-red-500 shrink-0 mt-0.5">{rating.worstTrade.profit.toLocaleString('de-DE')} €</span>
-                    </div>
-                  )}
+                <div>
+                  <SectionLabel>Bester & schlechtester Trade</SectionLabel>
+                  <div className="space-y-2">
+                    {rating.bestTrade.profit > 0 && (
+                      <MetricRow
+                        icon={Trophy}
+                        iconColor="#eab308"
+                        title={rating.bestTrade.name}
+                        description={tradeTagText(rating.bestTrade) || 'Top Trade'}
+                        value={fmtSignedEUR(rating.bestTrade.profit)}
+                        valueColor="text-green-500"
+                      />
+                    )}
+                    {rating.worstTrade.profit < 0 && (
+                      <MetricRow
+                        icon={TrendingDown}
+                        iconColor="#ef4444"
+                        title={rating.worstTrade.name}
+                        description={tradeTagText(rating.worstTrade) || 'Flop Trade'}
+                        value={fmtSignedEUR(rating.worstTrade.profit)}
+                        valueColor="text-red-500"
+                      />
+                    )}
+                  </div>
                 </div>
               )}
 
-              <button onClick={() => setIsOpen(false)} className="w-full bg-[#ff5c3e] text-white font-bold py-3.5 rounded-xl mt-2 active:scale-[0.98] transition-transform">
+              <button onClick={() => setIsOpen(false)} className="w-full bg-[#ff5c3e] text-white font-bold py-3.5 rounded-xl active:scale-[0.98] transition-transform">
                 Schließen
               </button>
             </motion.div>
@@ -228,5 +304,14 @@ const ManagerRatingBadge = ({ kickbaseId }) => {
     </>
   );
 };
+
+function tradeTagText(trade) {
+  if (!trade || !trade.type) return null;
+  const labels = { realized: 'Abgeschlossener Trade', open: 'Noch offene Position', orphan: 'Zugeloster Kaderspieler' };
+  const parts = [];
+  if (labels[trade.type]) parts.push(labels[trade.type]);
+  if (trade.forced) parts.push('Pflichtverkauf');
+  return parts.join(' · ') || null;
+}
 
 export default ManagerRatingBadge;

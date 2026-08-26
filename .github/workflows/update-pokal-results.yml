@@ -1,17 +1,18 @@
-name: Update Kickbase Data
+name: Update Pokal-Arena-Ergebnisse
 
+# Wertet die Pokal-Duelle aus, sobald die Spieltagspunkte final sind. Kickbase
+# rechnet Spätspiele/Nachträge teils erst gegen Sonntagabend final ab, daher
+# läuft das erst Montagabend. Cron ist IMMER UTC - 18:00 UTC entspricht in der
+# Sommerzeit (CEST, bis Ende Oktober) 20:00 Berlin, in der Winterzeit (CET)
+# 19:00 Berlin. Falls der Zeitpunkt nicht passt, einfach unten anpassen oder
+# manuell per "workflow_dispatch" auslösen.
 on:
-  push:
-    branches: [ main ]
+  schedule:
+    - cron: '0 18 * * 1' # Montags 18:00 UTC
   workflow_dispatch:
-    inputs:
-      snapshot:
-        description: 'Snapshot erstellen'
-        required: false
-        default: 'false'
 
 jobs:
-  update-data:
+  update-pokal-arena:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -28,12 +29,9 @@ jobs:
         working-directory: ./backend
         run: npm install
 
-      - name: Fetch Kickbase Data
+      - name: Fetch Pokal-Arena Ergebnisse
         working-directory: ./backend
-        run: |
-          node scripts/fetch-data.js
-          node scripts/fetch-transfers.js
-          node scripts/calculate-ratings.js
+        run: node scripts/fetch-pokal-arena.js
         env:
           KICKBASE_EMAIL: ${{ secrets.KICKBASE_EMAIL }}
           KICKBASE_PASS: ${{ secrets.KICKBASE_PASS }}
@@ -43,20 +41,15 @@ jobs:
           KICKBASE_PASS_3: ${{ secrets.KICKBASE_PASS_3 }}
           KICKBASE_EMAIL_4: ${{ secrets.KICKBASE_EMAIL_4 }}
           KICKBASE_PASS_4: ${{ secrets.KICKBASE_PASS_4 }}
-          KICKBASE_LEAGUE_1_NAME: ${{ vars.KICKBASE_LEAGUE_1_NAME }}
-          KICKBASE_LEAGUE_2_NAME: ${{ vars.KICKBASE_LEAGUE_2_NAME }}
-          KICKBASE_LEAGUE_3_NAME: ${{ vars.KICKBASE_LEAGUE_3_NAME }}
-          SNAPSHOT: ${{ github.event.inputs.snapshot || 'false' }}
+          KICKBASE_LEAGUE_ARENA_NAME: ${{ vars.KICKBASE_LEAGUE_ARENA_NAME }}
 
-
-
-      - name: Commit and Push Data
+      - name: Commit and Push
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git fetch origin main
           git checkout main
-          git add frontend/public/data.json frontend/public/history/
-          git commit -m "Automatisches Update: Kickbase Daten & Historie [skip ci]" || echo "Keine Änderungen zu commiten"
+          git add frontend/public/pokal-data.json frontend/public/history/_arena_points_snapshot.json
+          git commit -m "Automatisches Update: Pokal-Arena-Ergebnisse [skip ci]" || echo "Keine Änderungen zu commiten"
           git pull origin main --rebase -X ours || true
           git push origin main
