@@ -222,7 +222,8 @@ const PlayerCard = ({ entry, teamLogo, onClick, isFavorite, onToggleFavorite }) 
       tabIndex={hasHistory ? 0 : undefined}
       onClick={hasHistory ? onClick : undefined}
       onKeyDown={hasHistory ? (e) => (e.key === 'Enter' || e.key === ' ') && onClick() : undefined}
-      className={`relative overflow-hidden w-full h-[76px] flex items-center py-3 pr-3 pl-[72px] sm:pl-[88px] mb-2 bg-[#171717] border rounded-xl shadow-sm text-left transition-all ${showSellBadge ? 'border-red-500/40' : (showPlayBadge || showTradeBadge) ? 'border-green-500/40' : 'border-[#2e2e2e]'} ${hasHistory ? 'hover:border-cyan-500/50 hover:bg-[#1c1c1c] active:scale-[0.99] cursor-pointer' : 'cursor-default'}`}
+      // p-3 instead of pl-[72px], the text wrapper gets margin instead
+      className={`relative overflow-hidden w-full h-[72px] flex items-center p-3 mb-2 bg-[#171717] border rounded-xl shadow-sm text-left transition-all ${showSellBadge ? 'border-red-500/40' : (showPlayBadge || showTradeBadge) ? 'border-green-500/40' : 'border-[#2e2e2e]'} ${hasHistory ? 'hover:border-cyan-500/50 hover:bg-[#1c1c1c] active:scale-[0.99] cursor-pointer' : 'cursor-default'}`}
     >
       {/* Background Hero Image + Team Logo Watermark (LEFT ALIGNED) */}
       <div className="absolute top-0 left-0 bottom-0 z-0 pointer-events-none w-1/2 flex justify-start overflow-hidden rounded-l-xl">
@@ -230,7 +231,7 @@ const PlayerCard = ({ entry, teamLogo, onClick, isFavorite, onToggleFavorite }) 
           <img 
             src={teamLogo} 
             alt={entry.team} 
-            className="absolute top-1/2 -translate-y-1/2 left-4 w-20 h-20 object-contain opacity-[0.12] mix-blend-screen" 
+            className="absolute top-1/2 -translate-y-1/2 left-4 w-16 h-16 sm:w-20 sm:h-20 object-contain opacity-[0.12] mix-blend-screen" 
           />
         )}
         {entry.imageUrl && !isDummyImage(entry.imageUrl) && (
@@ -252,55 +253,55 @@ const PlayerCard = ({ entry, teamLogo, onClick, isFavorite, onToggleFavorite }) 
         <button
           onClick={(e) => { e.stopPropagation(); onToggleFavorite(entry.playerId); }}
           aria-label={isFavorite ? 'Favorit entfernen' : 'Als Favorit speichern'}
-          className="mr-3 shrink-0 p-1 -m-1 relative z-10"
+          className="absolute left-3 top-1/2 -translate-y-1/2 p-1 z-10 opacity-70 hover:opacity-100 transition-opacity"
         >
           <StarIcon filled={isFavorite} />
         </button>
       )}
       
-      {/* Left Text Content */}
-      <div className="flex-1 min-w-0 relative z-10 drop-shadow-md">
+      {/* Left Text Content - margin keeps it clear from the face and the star */}
+      <div className="flex-1 min-w-0 relative z-10 drop-shadow-md ml-[36px] sm:ml-[48px]">
         <div className="flex items-center gap-1.5 flex-wrap">
           {entry.position && (
-            <span className="text-[10px] font-black" style={{ color: POSITION_COLORS[entry.position] || '#8b92a5' }}>
+            <span className="text-[9px] font-black" style={{ color: POSITION_COLORS[entry.position] || '#8b92a5' }}>
               {entry.position}
             </span>
           )}
-          <div className="text-[15px] font-bold text-white truncate">
+          <div className="text-[13px] sm:text-[14px] font-bold text-white truncate">
             {entry.firstName ? `${entry.firstName} ${entry.name}` : entry.name}
           </div>
         </div>
         
-        <div className="text-[10px] text-[#8b92a5] mt-1 flex items-center gap-1.5 flex-wrap">
-          <span className="font-bold text-gray-300">{entry.team}</span>
+        <div className="text-[9px] text-[#8b92a5] mt-0.5 flex items-center gap-1.5 flex-wrap">
+          <span className="font-semibold text-gray-400">{entry.team}</span>
           
           {/* Keep badges minimal */}
           {showPlayBadge && (
-            <span className="text-[8px] font-black uppercase tracking-widest bg-green-500/15 text-green-400 border border-green-500/40 rounded px-1 shrink-0 ml-1">✓ Stammelf</span>
+            <span className="text-[7px] font-bold uppercase tracking-widest bg-green-500/15 text-green-400 border border-green-500/40 rounded px-1 shrink-0 ml-1">✓ Stammelf</span>
           )}
           {showTradeBadge && (
-            <span className="text-[8px] font-black uppercase tracking-widest bg-cyan-500/15 text-cyan-400 border border-cyan-500/40 rounded px-1 shrink-0 ml-1">📈 Trading</span>
+            <span className="text-[7px] font-bold uppercase tracking-widest bg-cyan-500/15 text-cyan-400 border border-cyan-500/40 rounded px-1 shrink-0 ml-1">📈 Trading</span>
           )}
           {showSellBadge && (
-            <span className="text-[8px] font-black uppercase tracking-widest bg-red-500/15 text-red-400 border border-red-500/40 rounded px-1 shrink-0 ml-1">⚠ Verkaufen</span>
+            <span className="text-[7px] font-bold uppercase tracking-widest bg-red-500/15 text-red-400 border border-red-500/40 rounded px-1 shrink-0 ml-1">⚠ Verkaufen</span>
           )}
           {entry.statusLabel && !isFit && (
-            <span className="text-[8px] font-black uppercase tracking-widest bg-orange-500/10 text-orange-400 border border-orange-500/30 rounded px-1 shrink-0 ml-1">{entry.statusLabel}</span>
+            <span className="text-[7px] font-bold uppercase tracking-widest bg-orange-500/10 text-orange-400 border border-orange-500/30 rounded px-1 shrink-0 ml-1">{entry.statusLabel}</span>
           )}
         </div>
       </div>
       
-      {/* Right Numbers Content (Now on solid black background!) */}
+      {/* Right Numbers Content */}
       <div className="text-right ml-2 shrink-0 flex flex-col justify-center items-end relative z-10">
-        <div className="text-[14px] font-bold text-gray-100 leading-none mb-1.5">
+        <div className="text-[13px] sm:text-[14px] font-bold text-gray-100 leading-none mb-1">
           {formatCompactMoney(entry.marketValue)}
         </div>
-        <div className={`text-[13px] font-black leading-none ${rising ? 'text-green-400' : 'text-red-400'}`}>
+        <div className={`text-[11px] sm:text-[12px] font-black leading-none ${rising ? 'text-green-400' : 'text-red-400'}`}>
           {rising ? '▲' : '▼'} {formatCompactMoney(entry.predictedChange)}
         </div>
-        {entry.maxBid > 0 && isBuyContext && (
-          <div className="text-[9px] text-[#8b92a5] mt-1.5 font-bold tracking-wide">
-            Max: <span className="text-white">{formatCompactMoney(entry.maxBid)}</span>
+        {typeof entry.hoursToExpiry === 'number' && isBuyContext && (
+          <div className="text-[8px] sm:text-[9px] text-[#8b92a5] mt-1.5 font-bold tracking-wide">
+            Ablauf: <span className="text-white">{entry.hoursToExpiry < 24 ? `${entry.hoursToExpiry}h` : `${Math.round(entry.hoursToExpiry/24)}d`}</span>
           </div>
         )}
       </div>
