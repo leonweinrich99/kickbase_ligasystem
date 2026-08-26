@@ -368,23 +368,24 @@ const PlayerImageDetail = ({ url, name, position }) => {
   if (showImage) {
     return (
       <div 
-        className="w-[280px] sm:w-[350px] h-[240px] sm:h-[280px] pointer-events-none"
+        className="w-[300px] sm:w-[380px] h-[240px] sm:h-[280px] pointer-events-none"
         style={{
-          // Äußere Maske: Faded das Bild nach UNTEN hin aus, damit es nicht in den Graphen ragt!
-          WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 100%)',
-          maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 100%)',
-          transform: 'translateX(5%)', // Zieht das Gesicht schön nah an den rechten Rand
+          // Äußere Maske: Faded das Bild erst ganz weit unten weich aus, wo der Graph beginnt
+          WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)',
+          maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)',
+          transform: 'translateX(15%)', // Deutlich weiter an den rechten Rand schieben
         }}
       >
         <img
           src={url}
           alt={name}
-          // object-cover zoomt voll rein, object-top hält das Gesicht oben fest!
           className="w-full h-full object-cover object-top pointer-events-none"
           style={{ 
-            // Innere Maske: Faded das Bild nach LINKS aus (Richtung Text)
-            WebkitMaskImage: 'linear-gradient(260deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0) 90%)',
-            maskImage: 'linear-gradient(260deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0) 90%)',
+            // 270deg = direkt von rechts nach links.
+            // Die ersten 35% auf der rechten Seite bleiben ZU 100% SICHTBAR (rgba(0,0,0,1)).
+            // Nur der Bereich links (wo der Text ist) wird weggefaded.
+            WebkitMaskImage: 'linear-gradient(270deg, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 35%, rgba(0,0,0,0) 85%)',
+            maskImage: 'linear-gradient(270deg, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 35%, rgba(0,0,0,0) 85%)',
             marginTop: '-4%'
           }}
           onError={() => setFailed(true)}
