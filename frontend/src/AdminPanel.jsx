@@ -138,6 +138,7 @@ const AdminPanel = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateStatus, setUpdateStatus] = useState(null);
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [showMessenger, setShowMessenger] = useState(false);
   const menuRef = useRef(null);
 
   const handleManualUpdate = async () => {
@@ -148,7 +149,13 @@ const AdminPanel = () => {
     setUpdateStatus("Update wird gestartet...");
 
     try {
-      const res = await fetch(`/api/cron?secret=${encodeURIComponent(password)}`);
+      // Bewusst per Authorization-Header statt Query-Parameter: Ein "?secret=..."
+      // in der URL landet im Klartext im Browser-Netzwerk-Tab UND in Vercels
+      // eigenen HTTP-Zugriffslogs (die volle URLs inkl. Query-String loggen) -
+      // der Header wird dort nicht mitgeloggt.
+      const res = await fetch('/api/cron', {
+        headers: { Authorization: `Bearer ${password}` }
+      });
       if (res.ok) {
         setUpdateStatus("✅ Update erfolgreich angestoßen! Der Workflow läuft.");
         setTimeout(() => setUpdateStatus(null), 5000);
@@ -235,20 +242,50 @@ const AdminPanel = () => {
             <div className="text-[10px] font-bold tracking-wider text-[#ff5c3e] mb-1">ADMIN</div>
             <h1 className="text-2xl sm:text-3xl font-black uppercase text-white">Nutzerverwaltung</h1>
           </div>
-          <button
-            onClick={goBack}
-            aria-label="Schließen"
-            className="w-10 h-10 shrink-0 flex items-center justify-center bg-[#171717] border border-[#2e2e2e] rounded-xl text-[#8b92a5] hover:text-white hover:border-[#404040] transition-all"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setShowMessenger(true)}
+              aria-label="Messenger öffnen"
+              className="w-10 h-10 flex items-center justify-center bg-[#171717] border border-[#2e2e2e] rounded-xl text-[#8b92a5] hover:text-white hover:border-[#404040] transition-all"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+              </svg>
+            </button>
+            <button
+              onClick={goBack}
+              aria-label="Schließen"
+              className="w-10 h-10 flex items-center justify-center bg-[#171717] border border-[#2e2e2e] rounded-xl text-[#8b92a5] hover:text-white hover:border-[#404040] transition-all"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
         </div>
 
         <PushNotificationCard />
-        <AdminMessengerCard />
+
+        {showMessenger && (
+          <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setShowMessenger(false)}>
+            <div className="w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+              <div className="flex justify-end mb-2">
+                <button
+                  onClick={() => setShowMessenger(false)}
+                  aria-label="Schließen"
+                  className="w-8 h-8 flex items-center justify-center bg-[#171717] border border-[#2e2e2e] rounded-lg text-[#8b92a5] hover:text-white transition-colors"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </div>
+              <AdminMessengerCard />
+            </div>
+          </div>
+        )}
 
         <div className="flex gap-2 mb-6 overflow-x-auto">
           {['pending', 'approved', 'admin', 'unlinked', 'changeRequests', 'rejected', 'all'].map(f => (

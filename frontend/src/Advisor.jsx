@@ -597,7 +597,12 @@ const Advisor = () => {
     setAdvisorUpdateStatus("Trading Advisor wird gestartet...");
 
     try {
-      const res = await fetch(`/api/advisor-cron?secret=${encodeURIComponent(password)}`);
+      // Bewusst per Authorization-Header statt Query-Parameter (siehe AdminPanel.jsx) -
+      // sonst landet das Passwort im Klartext im Browser-Netzwerk-Tab und in
+      // Vercels HTTP-Zugriffslogs.
+      const res = await fetch('/api/advisor-cron', {
+        headers: { Authorization: `Bearer ${password}` }
+      });
       if (res.ok) {
         setAdvisorUpdateStatus("✅ Angestoßen! Läuft ca. 2-5 Minuten im Hintergrund.");
         setTimeout(() => setAdvisorUpdateStatus(null), 6000);

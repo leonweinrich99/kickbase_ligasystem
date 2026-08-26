@@ -5,10 +5,10 @@
 /* global process */
 
 export default async function handler(req, res) {
+  // Nur per Authorization-Header, kein Query-Parameter mehr (siehe cron.js).
   const authHeader = req.headers['authorization'];
-  const querySecret = req.query.secret;
 
-  if (!process.env.CRON_SECRET || (authHeader !== `Bearer ${process.env.CRON_SECRET}` && querySecret !== process.env.CRON_SECRET)) {
+  if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 

@@ -1,9 +1,11 @@
 export default async function handler(req, res) {
-  // Sicherheitscheck: Vergleicht das Secret von Vercel (Header) oder den Query-Parameter mit dem CRON_SECRET
+  // Sicherheitscheck: NUR per Authorization-Header (so wie Vercel Cron ihn
+  // automatisch mitschickt, und wie der manuelle Update-Button im Admin-Panel
+  // ihn jetzt auch sendet). Absichtlich KEIN Query-Parameter mehr - der wäre
+  // im Klartext in Vercels HTTP-Zugriffslogs und im Browser-Netzwerk-Tab sichtbar.
   const authHeader = req.headers['authorization'];
-  const querySecret = req.query.secret;
 
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}` && querySecret !== process.env.CRON_SECRET) {
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   //comment
