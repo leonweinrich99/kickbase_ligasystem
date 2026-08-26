@@ -214,7 +214,6 @@ const PlayerCard = ({ entry, teamLogo, onClick, isFavorite, onToggleFavorite }) 
   const showPlayBadge = isBuyContext && entry.playRecommended;
   const showTradeBadge = isBuyContext && entry.tradeRecommended;
   const showSellBadge = isSellContext && entry.sellRecommended;
-  const reasons = (isSellContext ? entry.sellReasons : entry.buyReasons) || [];
   const isFit = entry.status === null || entry.status === undefined || entry.status === 0;
 
   return (
@@ -223,26 +222,27 @@ const PlayerCard = ({ entry, teamLogo, onClick, isFavorite, onToggleFavorite }) 
       tabIndex={hasHistory ? 0 : undefined}
       onClick={hasHistory ? onClick : undefined}
       onKeyDown={hasHistory ? (e) => (e.key === 'Enter' || e.key === ' ') && onClick() : undefined}
-      className={`relative overflow-hidden w-full flex items-center p-3 mb-2 bg-[#171717] border rounded-xl shadow-sm text-left transition-all ${showSellBadge ? 'border-red-500/40' : (showPlayBadge || showTradeBadge) ? 'border-green-500/40' : 'border-[#2e2e2e]'} ${hasHistory ? 'hover:border-cyan-500/50 hover:bg-[#1c1c1c] active:scale-[0.99] cursor-pointer' : 'cursor-default'}`}
+      className={`relative overflow-hidden w-full h-[76px] flex items-center p-3 mb-2 bg-[#171717] border rounded-xl shadow-sm text-left transition-all ${showSellBadge ? 'border-red-500/40' : (showPlayBadge || showTradeBadge) ? 'border-green-500/40' : 'border-[#2e2e2e]'} ${hasHistory ? 'hover:border-cyan-500/50 hover:bg-[#1c1c1c] active:scale-[0.99] cursor-pointer' : 'cursor-default'}`}
     >
-      {/* Background Hero Image + Team Logo Watermark */}
-      <div className="absolute top-0 right-0 bottom-0 z-0 pointer-events-none w-[60%] sm:w-1/2 flex justify-end overflow-hidden rounded-r-xl">
+      {/* Background Hero Image + Team Logo Watermark (LEFT ALIGNED) */}
+      <div className="absolute top-0 left-0 bottom-0 z-0 pointer-events-none w-1/2 flex justify-start overflow-hidden rounded-l-xl">
         {teamLogo && (
           <img 
             src={teamLogo} 
             alt={entry.team} 
-            className="absolute top-1/2 -translate-y-1/2 right-4 w-20 h-20 sm:w-24 sm:h-24 object-contain opacity-[0.15] mix-blend-screen" 
+            className="absolute top-1/2 -translate-y-1/2 left-4 w-20 h-20 object-contain opacity-[0.12] mix-blend-screen" 
           />
         )}
         {entry.imageUrl && !isDummyImage(entry.imageUrl) && (
           <img 
             src={entry.imageUrl}
             alt=""
-            className="h-[160%] w-auto object-cover object-top pointer-events-none"
+            className="h-[150%] w-auto object-cover object-top pointer-events-none"
             style={{ 
-              transform: 'translateY(-15%) translateX(15%)',
-              WebkitMaskImage: 'linear-gradient(270deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.9) 35%, rgba(0,0,0,0) 80%)',
-              maskImage: 'linear-gradient(270deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.9) 35%, rgba(0,0,0,0) 80%)',
+              transform: 'translateY(-10%) translateX(-15%)',
+              // Fade von links nach rechts (90deg)
+              WebkitMaskImage: 'linear-gradient(90deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0) 95%)',
+              maskImage: 'linear-gradient(90deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0) 95%)',
             }}
           />
         )}
@@ -257,68 +257,49 @@ const PlayerCard = ({ entry, teamLogo, onClick, isFavorite, onToggleFavorite }) 
           <StarIcon filled={isFavorite} />
         </button>
       )}
-      <div className="flex-1 min-w-0 relative z-10">
+      
+      {/* Left Text Content */}
+      <div className="flex-1 min-w-0 relative z-10 drop-shadow-md">
         <div className="flex items-center gap-1.5 flex-wrap">
           {entry.position && (
             <span className="text-[10px] font-black" style={{ color: POSITION_COLORS[entry.position] || '#8b92a5' }}>
               {entry.position}
             </span>
           )}
-          <div className="text-[14px] font-bold text-gray-100 truncate">
+          <div className="text-[15px] font-bold text-white truncate">
             {entry.firstName ? `${entry.firstName} ${entry.name}` : entry.name}
           </div>
+        </div>
+        
+        <div className="text-[10px] text-[#8b92a5] mt-1 flex items-center gap-1.5 flex-wrap">
+          <span className="font-bold text-gray-300">{entry.team}</span>
+          
+          {/* Keep badges minimal */}
           {showPlayBadge && (
-            <span className="text-[8px] font-black uppercase tracking-widest bg-green-500/15 text-green-400 border border-green-500/40 rounded px-1 shrink-0">✓ Stammelf</span>
+            <span className="text-[8px] font-black uppercase tracking-widest bg-green-500/15 text-green-400 border border-green-500/40 rounded px-1 shrink-0 ml-1">✓ Stammelf</span>
           )}
           {showTradeBadge && (
-            <span className="text-[8px] font-black uppercase tracking-widest bg-cyan-500/15 text-cyan-400 border border-cyan-500/40 rounded px-1 shrink-0">📈 Trading</span>
+            <span className="text-[8px] font-black uppercase tracking-widest bg-cyan-500/15 text-cyan-400 border border-cyan-500/40 rounded px-1 shrink-0 ml-1">📈 Trading</span>
           )}
           {showSellBadge && (
-            <span className="text-[8px] font-black uppercase tracking-widest bg-red-500/15 text-red-400 border border-red-500/40 rounded px-1 shrink-0">⚠ Verkaufen</span>
+            <span className="text-[8px] font-black uppercase tracking-widest bg-red-500/15 text-red-400 border border-red-500/40 rounded px-1 shrink-0 ml-1">⚠ Verkaufen</span>
           )}
           {entry.statusLabel && !isFit && (
-            <span className="text-[8px] font-black uppercase tracking-widest bg-orange-500/10 text-orange-400 border border-orange-500/30 rounded px-1 shrink-0">{entry.statusLabel}</span>
-          )}
-          {entry.expiringToday && (
-            <span className="text-[8px] font-black uppercase tracking-widest bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 rounded px-1 shrink-0">Läuft heute ab</span>
+            <span className="text-[8px] font-black uppercase tracking-widest bg-orange-500/10 text-orange-400 border border-orange-500/30 rounded px-1 shrink-0 ml-1">{entry.statusLabel}</span>
           )}
         </div>
-        <div className="text-[10px] text-[#8b92a5] mt-0.5 flex items-center gap-1.5 flex-wrap">
-          <span className="font-bold text-gray-300">{entry.team}</span>
-          {typeof entry.avgPoints === 'number' && (
-            <>
-              <span>·</span>
-              <span>Ø {entry.avgPoints} Pkt.{entry.appearances ? ` (${entry.appearances} Sp.)` : ''}</span>
-            </>
-          )}
-          {typeof entry.startElfProbability === 'number' && (
-            <>
-              <span>·</span>
-              <span>Startelf: {Math.round(entry.startElfProbability * 100)}%</span>
-            </>
-          )}
-          {typeof entry.hoursToExpiry === 'number' && (
-            <>
-              <span>·</span>
-              <span>{entry.hoursToExpiry}h verbleibend</span>
-            </>
-          )}
-        </div>
-        {(showPlayBadge || showTradeBadge || showSellBadge) && reasons.length > 0 && (
-          <div className={`text-[9px] mt-0.5 ${showSellBadge ? 'text-red-400' : 'text-green-400/80'}`}>
-            {reasons.map((r) => REASON_LABELS[r] || r).join(' · ')}
-          </div>
-        )}
       </div>
+      
+      {/* Right Numbers Content (Now on solid black background!) */}
       <div className="text-right ml-2 shrink-0 flex flex-col justify-center items-end relative z-10">
-        <div className="text-[12px] font-bold text-gray-300 leading-none mb-1">
+        <div className="text-[14px] font-bold text-gray-100 leading-none mb-1.5">
           {formatCompactMoney(entry.marketValue)}
         </div>
         <div className={`text-[13px] font-black leading-none ${rising ? 'text-green-400' : 'text-red-400'}`}>
           {rising ? '▲' : '▼'} {formatCompactMoney(entry.predictedChange)}
         </div>
         {entry.maxBid > 0 && isBuyContext && (
-          <div className="text-[9px] text-[#8b92a5] mt-1 font-bold tracking-wide">
+          <div className="text-[9px] text-[#8b92a5] mt-1.5 font-bold tracking-wide">
             Max: <span className="text-white">{formatCompactMoney(entry.maxBid)}</span>
           </div>
         )}
