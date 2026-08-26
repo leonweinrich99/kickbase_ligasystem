@@ -510,7 +510,7 @@ const PlayerDetailView = ({ player, onClose, isFavorite, onToggleFavorite }) => 
           </div>
 
           {/* Chart (Clean without grid) */}
-          <div className="h-[160px] sm:h-[200px] w-full mb-6 relative">
+          <div className="h-[160px] sm:h-[200px] w-full px-4 sm:px-6 mb-6 relative">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={history} margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
                 <XAxis
@@ -529,8 +529,9 @@ const PlayerDetailView = ({ player, onClose, isFavorite, onToggleFavorite }) => 
                   axisLine={false}
                   domain={['dataMin', 'dataMax']}
                   tickFormatter={formatCompactMoney}
-                  width={40}
                   orientation="right"
+                  width={45}
+                  tickMargin={5}
                 />
                 <Tooltip 
                    content={<ChartTooltip />}
