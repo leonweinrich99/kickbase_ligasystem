@@ -222,7 +222,7 @@ const PlayerCard = ({ entry, teamLogo, onClick, isFavorite, onToggleFavorite }) 
       tabIndex={hasHistory ? 0 : undefined}
       onClick={hasHistory ? onClick : undefined}
       onKeyDown={hasHistory ? (e) => (e.key === 'Enter' || e.key === ' ') && onClick() : undefined}
-      className={`relative overflow-hidden w-full h-[76px] flex items-center p-3 mb-2 bg-[#171717] border rounded-xl shadow-sm text-left transition-all ${showSellBadge ? 'border-red-500/40' : (showPlayBadge || showTradeBadge) ? 'border-green-500/40' : 'border-[#2e2e2e]'} ${hasHistory ? 'hover:border-cyan-500/50 hover:bg-[#1c1c1c] active:scale-[0.99] cursor-pointer' : 'cursor-default'}`}
+      className={`relative overflow-hidden w-full h-[76px] flex items-center py-3 pr-3 pl-[72px] sm:pl-[88px] mb-2 bg-[#171717] border rounded-xl shadow-sm text-left transition-all ${showSellBadge ? 'border-red-500/40' : (showPlayBadge || showTradeBadge) ? 'border-green-500/40' : 'border-[#2e2e2e]'} ${hasHistory ? 'hover:border-cyan-500/50 hover:bg-[#1c1c1c] active:scale-[0.99] cursor-pointer' : 'cursor-default'}`}
     >
       {/* Background Hero Image + Team Logo Watermark (LEFT ALIGNED) */}
       <div className="absolute top-0 left-0 bottom-0 z-0 pointer-events-none w-1/2 flex justify-start overflow-hidden rounded-l-xl">
@@ -239,7 +239,7 @@ const PlayerCard = ({ entry, teamLogo, onClick, isFavorite, onToggleFavorite }) 
             alt=""
             className="h-[150%] w-auto object-cover object-top pointer-events-none"
             style={{ 
-              transform: 'translateY(-10%) translateX(-15%)',
+              transform: 'translateY(-10%) translateX(-5%)',
               // Fade von links nach rechts (90deg)
               WebkitMaskImage: 'linear-gradient(90deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0) 95%)',
               maskImage: 'linear-gradient(90deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0) 95%)',
