@@ -366,7 +366,7 @@ const TrendArrow = ({ code }) => {
   return null;
 };
 
-const PlayerHistoryModal = ({ player, onClose, isFavorite, onToggleFavorite }) => {
+const PlayerDetailView = ({ player, onClose, isFavorite, onToggleFavorite }) => {
   const fullBaseHistory = normalizeHistory(player.history);
   const [timeRange, setTimeRange] = useState('3m');
   
@@ -410,21 +410,28 @@ const PlayerHistoryModal = ({ player, onClose, isFavorite, onToggleFavorite }) =
   const reasons = (player.inSquad ? player.sellReasons : player.buyReasons) || [];
 
   return (
-    <div className="fixed inset-0 z-[90] bg-black/80 flex items-center justify-center sm:p-4" onClick={onClose}>
-      <div
-        className="w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-md bg-[#111111] sm:rounded-3xl shadow-2xl relative flex flex-col rounded-none"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="w-full bg-[#000000] min-h-screen relative flex flex-col pb-10">
+      {/* Header mit Zurueck-Button (Page-Look) */}
+      <div className="sticky top-0 z-50 bg-[#000000]/90 backdrop-blur-md px-4 sm:px-6 py-4 flex items-center justify-between border-b border-[#2e2e2e]/50">
         <button
           onClick={onClose}
-          className="absolute top-6 right-6 text-[#8b92a5] hover:text-white transition-colors z-10"
-          aria-label="Schließen"
+          className="flex items-center gap-2 text-[#8b92a5] hover:text-white transition-colors"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
           </svg>
+          <span className="font-bold text-sm">Zurück</span>
         </button>
+        {onToggleFavorite && (
+          <button
+            onClick={() => onToggleFavorite(player.playerId)}
+            aria-label={isFavorite ? 'Favorit entfernen' : 'Als Favorit speichern'}
+            className="p-1"
+          >
+            <StarIcon filled={isFavorite} />
+          </button>
+        )}
+      </div>
 
         <div className="overflow-y-auto min-h-0 pt-6 pb-8">
           {/* Header - Name & Team */}
@@ -579,7 +586,6 @@ const PlayerHistoryModal = ({ player, onClose, isFavorite, onToggleFavorite }) =
           </div>
           
         </div>
-      </div>
     </div>
   );
 };
@@ -1041,14 +1047,7 @@ const Advisor = () => {
           </>
         )}
 
-        {selectedPlayer && (
-          <PlayerHistoryModal
-            player={selectedPlayer}
-            onClose={() => setSelectedPlayer(null)}
-            isFavorite={isFavorite(selectedPlayer.playerId)}
-            onToggleFavorite={toggleFavorite}
-          />
-        )}
+
       </div>
     </div>
   );
