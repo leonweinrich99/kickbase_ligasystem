@@ -752,6 +752,19 @@ const Advisor = () => {
     );
   }
 
+  if (selectedPlayer) {
+    return (
+      <div className="bg-[#000000] min-h-screen">
+        <PlayerDetailView
+          player={selectedPlayer}
+          onClose={() => setSelectedPlayer(null)}
+          isFavorite={isFavorite(selectedPlayer.playerId)}
+          onToggleFavorite={toggleFavorite}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10">
       <div className="max-w-4xl mx-auto">
