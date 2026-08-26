@@ -260,7 +260,7 @@ const PlayerCard = ({ entry, teamLogo, onClick, isFavorite, onToggleFavorite }) 
       )}
       
       {/* Left Text Content - margin keeps it clear from the face and the star */}
-      <div className="flex-1 min-w-0 relative z-10 drop-shadow-md ml-[36px] sm:ml-[48px]">
+      <div className="flex-1 min-w-0 relative z-10 drop-shadow-md ml-[72px] sm:ml-[88px]">
         <div className="flex items-center gap-1.5 flex-wrap">
           {entry.position && (
             <span className="text-[9px] font-black" style={{ color: POSITION_COLORS[entry.position] || '#8b92a5' }}>
