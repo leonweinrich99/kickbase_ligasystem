@@ -45,8 +45,16 @@ const UserRow = ({ u, isSelf, onSetStatus, onSetRole, menuOpen, onToggleMenu, me
           {u.role === 'admin' && <span className="text-[7px] font-black uppercase tracking-widest bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-full px-1.5 py-0.5 shrink-0">Admin</span>}
           {isSelf && <span className="text-[8px] font-bold text-[#626978] uppercase shrink-0">(Du)</span>}
         </div>
-        <div className="text-[11px] text-[#8b92a5] truncate">
-          {u.email}{u.kickbaseName ? ` · ${u.kickbaseName}` : ''}
+        <div className="text-[11px] text-[#8b92a5] truncate">{u.email}</div>
+        <div className="flex items-center gap-1 mt-1">
+          {u.kickbaseId ? (
+            <span className="inline-flex items-center gap-1 text-[9px] font-bold text-green-400">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              {u.kickbaseName || 'Verknüpft'}
+            </span>
+          ) : (
+            <span className="text-[9px] font-bold text-yellow-500/80">⚠ Kickbase nicht verknüpft{u.kickbaseName ? ` (nur Name: "${u.kickbaseName}")` : ''}</span>
+          )}
         </div>
       </div>
 
@@ -174,9 +182,10 @@ const AdminPanel = () => {
     setOpenMenuId(null);
   };
 
-  const filteredUsers = users.filter(u => filter === 'all' || (filter === 'admin' ? u.role === 'admin' : u.status === filter));
+  const filteredUsers = users.filter(u => filter === 'all' || (filter === 'admin' ? u.role === 'admin' : filter === 'unlinked' ? !u.kickbaseId : u.status === filter));
   const pendingCount = users.filter(u => u.status === 'pending').length;
   const adminCount = users.filter(u => u.role === 'admin').length;
+  const unlinkedCount = users.filter(u => !u.kickbaseId).length;
 
   return (
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10">
@@ -202,13 +211,13 @@ const AdminPanel = () => {
         <AdminMessengerCard />
 
         <div className="flex gap-2 mb-6 overflow-x-auto">
-          {['pending', 'approved', 'admin', 'rejected', 'all'].map(f => (
+          {['pending', 'approved', 'admin', 'unlinked', 'rejected', 'all'].map(f => (
             <button
               key={f}
               onClick={() => setFilter(f)}
               className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${filter === f ? 'bg-[#ff5c3e] text-white' : 'bg-[#171717] border border-[#2e2e2e] text-[#8b92a5] hover:text-white'}`}
             >
-              {f === 'pending' ? `Ausstehend (${pendingCount})` : f === 'approved' ? 'Freigegeben' : f === 'admin' ? `Admins (${adminCount})` : f === 'rejected' ? 'Abgelehnt' : 'Alle'}
+              {f === 'pending' ? `Ausstehend (${pendingCount})` : f === 'approved' ? 'Freigegeben' : f === 'admin' ? `Admins (${adminCount})` : f === 'unlinked' ? `Nicht verknüpft (${unlinkedCount})` : f === 'rejected' ? 'Abgelehnt' : 'Alle'}
             </button>
           ))}
         </div>
