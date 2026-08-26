@@ -757,6 +757,20 @@ const Advisor = () => {
   const [sectionTab, setSectionTab] = useState('budgets');
   const [showInfo, setShowInfo] = useState(false);
 
+  // Vereinslogos auslesen (Kickbase API liefert die Tabelle mit den Logos als SVG)
+  const teamsData = data?.leagues ? Object.values(data.leagues)[0]?.teams || [] : [];
+  const teamLogos = {};
+  teamsData.forEach(t => {
+    if (t.tn) {
+      // Suche im Objekt nach der Eigenschaft, die den SVG-Link enthält
+      const svgKey = Object.keys(t).find(k => typeof t[k] === 'string' && t[k].endsWith('.svg'));
+      if (svgKey) {
+        teamLogos[t.tn] = `https://kickbase.b-cdn.net/${t[svgKey]}`;
+      }
+    }
+  });
+
+
   const loadData = () => {
     fetch(`/advisor-data.json?t=${Date.now()}`)
       .then((res) => {
