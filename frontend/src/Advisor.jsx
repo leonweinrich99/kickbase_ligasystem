@@ -206,7 +206,7 @@ const StarIcon = ({ filled }) => (
   </svg>
 );
 
-const PlayerCard = ({ entry, teamLogo, onClick, isFavorite, onToggleFavorite }) => {
+const PlayerCard = ({ entry, teamLogo, ownerName, onClick, isFavorite, onToggleFavorite }) => {
   const rising = (entry.predictedChange || 0) >= 0;
   const hasHistory = Array.isArray(entry.history) && entry.history.length > 1;
   const isBuyContext = entry.onMarket;
@@ -260,7 +260,7 @@ const PlayerCard = ({ entry, teamLogo, onClick, isFavorite, onToggleFavorite }) 
       )}
       
       {/* Left Text Content - margin keeps it clear from the face and the star */}
-      <div className="flex-1 min-w-0 relative z-10 drop-shadow-md ml-[72px] sm:ml-[88px]">
+      <div className="flex-1 min-w-0 relative z-10 drop-shadow-md ml-[84px] sm:ml-[100px]">
         <div className="flex items-center gap-1.5 flex-wrap">
           {entry.position && (
             <span className="text-[9px] font-black" style={{ color: POSITION_COLORS[entry.position] || '#8b92a5' }}>
@@ -302,11 +302,15 @@ const PlayerCard = ({ entry, teamLogo, onClick, isFavorite, onToggleFavorite }) 
         <div className={`text-[11px] sm:text-[12px] font-black leading-none ${rising ? 'text-green-400' : 'text-red-400'}`}>
           {rising ? '▲' : '▼'} {formatCompactMoney(entry.predictedChange)}
         </div>
-        {typeof entry.hoursToExpiry === 'number' && isBuyContext && (
+        {typeof entry.hoursToExpiry === 'number' && isBuyContext ? (
           <div className="text-[8px] sm:text-[9px] text-[#8b92a5] mt-1.5 font-bold tracking-wide">
             Ablauf: <span className="text-white">{entry.hoursToExpiry < 24 ? `${entry.hoursToExpiry}h` : `${Math.round(entry.hoursToExpiry/24)}d`}</span>
           </div>
-        )}
+        ) : ownerName ? (
+          <div className="text-[8px] sm:text-[9px] text-[#8b92a5] mt-1.5 font-bold tracking-wide">
+            Besitzer: <span className="text-white truncate max-w-[80px] inline-block align-bottom">{ownerName}</span>
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -903,6 +907,22 @@ const Advisor = () => {
     return squadIds.map((id) => ({ id, name: id === 'OWN' ? 'Eigener Account' : `Manager ${id}` }));
   }, [effectiveManagerSquads, league]);
 
+  const playerManagerMap = useMemo(() => {
+    const map = {};
+    if (!effectiveManagerSquads || !resolvedManagers) return map;
+    
+    const managerNames = {};
+    resolvedManagers.forEach(m => managerNames[m.id] = m.name);
+
+    for (const [managerId, squad] of Object.entries(effectiveManagerSquads)) {
+      const managerName = managerNames[managerId] || `Manager ${managerId}`;
+      squad.forEach(p => {
+        map[p.playerId] = managerName;
+      });
+    }
+    return map;
+  }, [effectiveManagerSquads, resolvedManagers]);
+
   const filteredSquad = useMemo(
     () => applyFilters(effectiveManagerSquads[selectedManagerId] || [], squadFilters, 'sell'),
     [effectiveManagerSquads, squadFilters, selectedManagerId]
@@ -1094,7 +1114,7 @@ const Advisor = () => {
                     {filteredMarket.length ? (
                       <div className="mb-10">
                         {filteredMarket.map((entry, index) => (
-                          <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} teamLogo={teamLogos[entry.team]} onClick={() => setSelectedPlayer(entry)} isFavorite={isFavorite(entry.playerId)} onToggleFavorite={toggleFavorite} />
+                          <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} ownerName={playerManagerMap[entry.playerId]} teamLogo={teamLogos[entry.team]} onClick={() => setSelectedPlayer(entry)} isFavorite={isFavorite(entry.playerId)} onToggleFavorite={toggleFavorite} />
                         ))}
                       </div>
                     ) : (
@@ -1167,7 +1187,7 @@ const Advisor = () => {
                         {filteredSquad.length ? (
                           <div className="mb-10">
                             {filteredSquad.map((entry, index) => (
-                              <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} teamLogo={teamLogos[entry.team]} onClick={() => setSelectedPlayer(entry)} isFavorite={isFavorite(entry.playerId)} onToggleFavorite={toggleFavorite} />
+                              <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} ownerName={playerManagerMap[entry.playerId]} teamLogo={teamLogos[entry.team]} onClick={() => setSelectedPlayer(entry)} isFavorite={isFavorite(entry.playerId)} onToggleFavorite={toggleFavorite} />
                             ))}
                           </div>
                         ) : (
@@ -1200,7 +1220,7 @@ const Advisor = () => {
                       <>
                         <div>
                           {filteredDb.slice(0, dbVisibleCount).map((entry, index) => (
-                            <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} teamLogo={teamLogos[entry.team]} onClick={() => setSelectedPlayer(entry)} isFavorite={isFavorite(entry.playerId)} onToggleFavorite={toggleFavorite} />
+                            <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} ownerName={playerManagerMap[entry.playerId]} teamLogo={teamLogos[entry.team]} onClick={() => setSelectedPlayer(entry)} isFavorite={isFavorite(entry.playerId)} onToggleFavorite={toggleFavorite} />
                           ))}
                         </div>
                         {dbVisibleCount < filteredDb.length && (
@@ -1237,7 +1257,7 @@ const Advisor = () => {
                     {filteredFavorites.length ? (
                       <div className="mb-10">
                         {filteredFavorites.map((entry, index) => (
-                          <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} teamLogo={teamLogos[entry.team]} onClick={() => setSelectedPlayer(entry)} isFavorite={isFavorite(entry.playerId)} onToggleFavorite={toggleFavorite} />
+                          <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} ownerName={playerManagerMap[entry.playerId]} teamLogo={teamLogos[entry.team]} onClick={() => setSelectedPlayer(entry)} isFavorite={isFavorite(entry.playerId)} onToggleFavorite={toggleFavorite} />
                         ))}
                       </div>
                     ) : (
