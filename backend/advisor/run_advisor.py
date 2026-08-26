@@ -703,7 +703,10 @@ def find_league_across_accounts(sessions, name_needle):
     """Sucht eine Liga (Teilstring, case-insensitive) ueber ALLE eingeloggten Accounts hinweg."""
     
     needle_tokens = set(re.findall(r'[a-z0-9]+', name_needle.lower()))
-    for session in sessions:
+    # Wir durchsuchen die Accounts in umgekehrter Reihenfolge (Account 4 zuerst).
+    # Das ist extrem nuetzlich, wenn Account 4 extra fuer den Member-Status
+    # (Pro-Features wie Marktwertverlauf und Bilder) in die Liga geholt wurde!
+    for session in reversed(sessions):
         for league in session["leagues"]:
             league_tokens = set(re.findall(r'[a-z0-9]+', league["name"].lower()))
             if needle_tokens.issubset(league_tokens) or name_needle.lower() in league["name"].lower():
