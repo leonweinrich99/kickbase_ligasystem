@@ -370,8 +370,17 @@ const PlayerImageDetail = ({ url, name, position }) => {
       <img
         src={url}
         alt={name}
-        className="w-48 h-56 sm:w-64 sm:h-72 object-contain opacity-30 pointer-events-none mix-blend-screen"
-        style={{ WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%)', maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%)' }}
+        // object-right-top zentriert das Bild nach rechts oben
+        className="w-full h-72 sm:h-96 object-contain object-right-top pointer-events-none"
+        style={{ 
+          // 240deg verläuft von oben-rechts nach unten-links.
+          // Rechts oben ist das Bild klar sichtbar (85% Deckkraft),
+          // nach unten links (wo der Text ist) wird es komplett transparent.
+          WebkitMaskImage: 'linear-gradient(240deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.7) 40%, rgba(0,0,0,0) 75%)',
+          maskImage: 'linear-gradient(240deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.7) 40%, rgba(0,0,0,0) 75%)',
+          marginRight: '-10%', // Zieht das Bild leicht über den rechten Rand für mehr Größe
+          marginTop: '-5%'
+        }}
         onError={() => setFailed(true)}
       />
     );
@@ -539,8 +548,8 @@ const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, onToggl
 
         <div className="overflow-y-auto min-h-0 pt-6 pb-8 relative">
           
-          {/* Huge faded background image */}
-          <div className="absolute top-0 right-0 z-0 pointer-events-none overflow-hidden" style={{ width: '60%', height: '300px', display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-start' }}>
+          {/* Huge hero background image with dynamic masking */}
+          <div className="absolute top-0 right-0 z-0 pointer-events-none overflow-hidden" style={{ width: '100%', height: '400px', display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-start' }}>
              <PlayerImageDetail url={player.imageUrl} name={player.name} position={player.position} />
           </div>
 
