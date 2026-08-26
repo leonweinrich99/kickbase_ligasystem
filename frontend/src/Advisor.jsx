@@ -512,11 +512,25 @@ const PlayerDetailView = ({ player, onClose, isFavorite, onToggleFavorite }) => 
           {/* Chart (Clean without grid) */}
           <div className="h-[160px] sm:h-[200px] w-full mb-6 relative">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={history}>
-                <XAxis dataKey="date" hide={true} />
+              <LineChart data={history} margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
+                <XAxis
+                  dataKey="date"
+                  stroke="#4b5563"
+                  fontSize={9}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={formatShortDate}
+                  minTickGap={30}
+                />
                 <YAxis
+                  stroke="#4b5563"
+                  fontSize={9}
+                  tickLine={false}
+                  axisLine={false}
                   domain={['dataMin', 'dataMax']}
-                  hide={true}
+                  tickFormatter={formatCompactMoney}
+                  width={40}
+                  orientation="right"
                 />
                 <Tooltip 
                    content={<ChartTooltip />}
