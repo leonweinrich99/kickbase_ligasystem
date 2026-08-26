@@ -29,6 +29,7 @@ const { fetchSingleLeagueData, getConfiguredKickbaseAccounts } = require('../kic
 const POKAL_LEAGUE_NAME = process.env.KICKBASE_LEAGUE_POKAL_NAME || 'Pokal';
 const POKAL_DATA_PATH = path.join(__dirname, '../../frontend/public/pokal-data.json');
 const SNAPSHOT_PATH = path.join(__dirname, '../../frontend/public/history/_pokal_points_snapshot.json');
+const MEMBERS_PATH = path.join(__dirname, '../../frontend/public/history/pokal-league-members.json');
 const EVALUATION_BUFFER_DAYS = 3; // Bundesliga-Spieltage laufen Fr-Mo, daher 3 Tage Puffer ab dem Rundendatum
 
 // Jeder Rundenblock: seine beiden Bracket-Hälften, der Schlüssel in
@@ -124,6 +125,16 @@ async function run() {
     const roundSchedule = pokalData.meta?.roundSchedule || {};
 
     const currentPoints = await fetchPokalLeaguePoints();
+
+    // Für den grünen Haken im Pokal-Bracket (Pokal.jsx): welche Namen sind
+    // TATSÄCHLICH schon Mitglied der Kickbase-Liga "Pokal"? Wird bei JEDEM Lauf
+    // aktualisiert, unabhängig vom Runden-Timing - das ist reine Beitritts-Info.
+    fs.writeFileSync(MEMBERS_PATH, JSON.stringify({
+        updatedAt: new Date().toISOString(),
+        leagueName: POKAL_LEAGUE_NAME,
+        members: Object.keys(currentPoints).sort()
+    }, null, 2));
+
     const snapshots = loadSnapshots(); // { "<matchday>": { name: points, capturedAt } }
     const today = new Date();
     today.setHours(0, 0, 0, 0);

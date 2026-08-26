@@ -51,7 +51,7 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git fetch origin main
           git checkout main
-          git add frontend/public/pokal-data.json frontend/public/history/_pokal_points_snapshot.json
+          git add frontend/public/pokal-data.json frontend/public/history/_pokal_points_snapshot.json frontend/public/history/pokal-league-members.json
           git commit -m "Automatisches Update: Pokal-Ergebnisse [skip ci]" || echo "Keine Änderungen zu commiten"
           git pull origin main --rebase -X ours || true
           git push origin main

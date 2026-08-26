@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Check } from 'lucide-react';
 import logo from './assets/pokal_logo.png';
 import LoadingScreen from './LoadingScreen';
 import useMinimumDelay from './useMinimumDelay';
@@ -11,7 +12,7 @@ import { shouldShowSplash, markSplashShown } from './appLoadState';
 // echter Manager und kann daher nicht mit jemandem verglichen werden.
 const isPlaceholderName = (name) => !name || name.startsWith('Sieger') || name === 'Freilos';
 
-const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}, onOpenCompare }) => {
+const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}, onOpenCompare, pokalMembers = null }) => {
   const isWinner1 = match.winner === 1;
   const isWinner2 = match.winner === 2;
   const color1 = leagueColors[match.p1];
@@ -20,6 +21,12 @@ const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}
   const id1 = !isPlaceholderName(match.p1) ? nameToId[match.p1] : null;
   const id2 = !isPlaceholderName(match.p2) ? nameToId[match.p2] : null;
   const isClickable = Boolean(id1 && id2 && id1 !== id2 && onOpenCompare);
+
+  // Grüner Haken: ist diese Person schon Mitglied der echten Kickbase-Pokal-Liga?
+  // (pokalMembers === null, solange die Liste noch lädt -> dann lieber nichts
+  // anzeigen als fälschlich "fehlt" zu suggerieren)
+  const isMember1 = pokalMembers && !isPlaceholderName(match.p1) && pokalMembers.has(match.p1);
+  const isMember2 = pokalMembers && !isPlaceholderName(match.p2) && pokalMembers.has(match.p2);
 
   return (
     <div
@@ -32,21 +39,27 @@ const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}
         className={`flex justify-between items-center p-2.5 xl:p-2 border-b border-[#2e2e2e]`}
         style={color1 ? { borderLeft: `3px solid ${color1}` } : undefined}
       >
-        <span className={`text-xs sm:text-sm font-bold truncate pr-2 ${isWinner1 ? 'text-white' : 'text-gray-300'}`}>{match.p1 || '-'}</span>
+        <span className="flex items-center gap-1 min-w-0 pr-2">
+          <span className={`text-xs sm:text-sm font-bold truncate ${isWinner1 ? 'text-white' : 'text-gray-300'}`}>{match.p1 || '-'}</span>
+          {isMember1 && <Check size={12} strokeWidth={3.5} className="text-green-500 shrink-0" />}
+        </span>
         <span className={`text-xs sm:text-sm font-black ${isWinner1 ? 'text-green-400' : 'text-gray-500'}`}>{match.score1 > 0 ? match.score1 : ''}</span>
       </div>
       <div
         className={`flex justify-between items-center p-2.5 xl:p-2`}
         style={color2 ? { borderLeft: `3px solid ${color2}` } : undefined}
       >
-        <span className={`text-xs sm:text-sm font-bold truncate pr-2 ${isWinner2 ? 'text-white' : 'text-gray-300'}`}>{match.p2 || '-'}</span>
+        <span className="flex items-center gap-1 min-w-0 pr-2">
+          <span className={`text-xs sm:text-sm font-bold truncate ${isWinner2 ? 'text-white' : 'text-gray-300'}`}>{match.p2 || '-'}</span>
+          {isMember2 && <Check size={12} strokeWidth={3.5} className="text-green-500 shrink-0" />}
+        </span>
         <span className={`text-xs sm:text-sm font-black ${isWinner2 ? 'text-green-400' : 'text-gray-500'}`}>{match.score2 > 0 ? match.score2 : ''}</span>
       </div>
     </div>
   );
 };
 
-const MobileRoundView = ({ matches, isFirstRound, isFinal, leagueColors, nameToId, onOpenCompare }) => {
+const MobileRoundView = ({ matches, isFirstRound, isFinal, leagueColors, nameToId, onOpenCompare, pokalMembers }) => {
   // Group matches into pairs
   const pairs = [];
   for (let i = 0; i < matches.length; i += 2) {
@@ -62,7 +75,7 @@ const MobileRoundView = ({ matches, isFirstRound, isFinal, leagueColors, nameToI
               {!isFirstRound && (
                 <div className="absolute right-[100%] w-[100vw] top-1/2 border-t-2 border-[#404040] pointer-events-none"></div>
               )}
-              <MatchBox match={pair[0]} isFinal={isFinal} tourTarget={idx === 0} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={onOpenCompare} />
+              <MatchBox match={pair[0]} isFinal={isFinal} tourTarget={idx === 0} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={onOpenCompare} pokalMembers={pokalMembers} />
             </div>
           )}
           {pair[1] && (
@@ -70,7 +83,7 @@ const MobileRoundView = ({ matches, isFirstRound, isFinal, leagueColors, nameToI
               {!isFirstRound && (
                 <div className="absolute right-[100%] w-[100vw] top-1/2 border-t-2 border-[#404040] pointer-events-none"></div>
               )}
-              <MatchBox match={pair[1]} isFinal={isFinal} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={onOpenCompare} />
+              <MatchBox match={pair[1]} isFinal={isFinal} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={onOpenCompare} pokalMembers={pokalMembers} />
             </div>
           )}
           
@@ -88,7 +101,7 @@ const MobileRoundView = ({ matches, isFirstRound, isFinal, leagueColors, nameToI
 };
 
 
-const RoundColumn = ({ matches, title, schedule, markFirst = false, leagueColors, nameToId, onOpenCompare }) => {
+const RoundColumn = ({ matches, title, schedule, markFirst = false, leagueColors, nameToId, onOpenCompare, pokalMembers }) => {
   return (
     <div className="flex flex-col justify-around gap-2 sm:gap-4 flex-1">
       <div className="text-[10px] sm:text-xs font-black uppercase text-center text-[#8b92a5] tracking-widest mb-2 opacity-70">
@@ -97,7 +110,7 @@ const RoundColumn = ({ matches, title, schedule, markFirst = false, leagueColors
       </div>
       <div className="flex flex-col justify-around flex-1 gap-2 sm:gap-4">
         {matches.map((match, index) => (
-          <MatchBox key={match.id} match={match} tourTarget={markFirst && index === 0} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={onOpenCompare} />
+          <MatchBox key={match.id} match={match} tourTarget={markFirst && index === 0} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={onOpenCompare} pokalMembers={pokalMembers} />
         ))}
       </div>
     </div>
@@ -127,6 +140,7 @@ const Pokal = () => {
   const [data, setData] = useState(null);
   const [leagueColors, setLeagueColors] = useState({});
   const [nameToId, setNameToId] = useState({});
+  const [pokalMembers, setPokalMembers] = useState(null);
   const navigate = useNavigate();
   const minDelayElapsed = useMinimumDelay(1800);
 
@@ -226,6 +240,13 @@ const Pokal = () => {
         setNameToId(map);
       })
       .catch((err) => console.error("Error loading manager id map:", err));
+
+    // Für den grünen Haken: wer ist schon TATSÄCHLICH Mitglied der echten
+    // Kickbase-Pokal-Liga? (siehe backend/scripts/fetch-pokal-arena.js)
+    fetch('/history/pokal-league-members.json')
+      .then((res) => res.json())
+      .then((json) => setPokalMembers(new Set(json.members || [])))
+      .catch((err) => console.error("Error loading pokal league members:", err));
   }, []);
 
   const handleOpenCompare = (id1, id2) => {
@@ -278,6 +299,13 @@ const Pokal = () => {
           </Link>
         </div>
 
+        {pokalMembers && (
+          <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-gray-500 font-bold">
+            <Check size={12} strokeWidth={3.5} className="text-green-500 shrink-0" />
+            <span>= bereits im Kickbase-Pokal beigetreten ({pokalMembers.size} von {data.meta?.participants ?? '?'})</span>
+          </div>
+        )}
+
         {/* Zweite Zeile: Runden-Umschalter (mobil), auf gleicher Höhe wie der Spieltag-Wechsler in der Liga */}
         <div className="flex xl:hidden w-full items-center gap-2 sm:gap-4">
           <div ref={tabsRef} className="flex overflow-x-auto gap-2 no-scrollbar scroll-smooth h-12 items-center flex-1 bg-[#171717] border border-[#2e2e2e] rounded-xl px-2 shadow-lg">
@@ -318,11 +346,11 @@ const Pokal = () => {
               }}
               className="w-full"
             >
-              {activeRound === 'Sechzehntelfinale' && <MobileRoundView matches={[...data.roundOf32Left, ...data.roundOf32Right]} isFirstRound={true} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} />}
-              {activeRound === 'Achtelfinale' && <MobileRoundView matches={[...data.roundOf16Left, ...data.roundOf16Right]} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} />}
-              {activeRound === 'Viertelfinale' && <MobileRoundView matches={[...data.quarterFinalsLeft, ...data.quarterFinalsRight]} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} />}
-              {activeRound === 'Halbfinale' && <MobileRoundView matches={[...data.semiFinalsLeft, ...data.semiFinalsRight]} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} />}
-              {activeRound === 'Finale' && <MobileRoundView matches={data.final} isFinal={true} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} />}
+              {activeRound === 'Sechzehntelfinale' && <MobileRoundView matches={[...data.roundOf32Left, ...data.roundOf32Right]} isFirstRound={true} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />}
+              {activeRound === 'Achtelfinale' && <MobileRoundView matches={[...data.roundOf16Left, ...data.roundOf16Right]} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />}
+              {activeRound === 'Viertelfinale' && <MobileRoundView matches={[...data.quarterFinalsLeft, ...data.quarterFinalsRight]} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />}
+              {activeRound === 'Halbfinale' && <MobileRoundView matches={[...data.semiFinalsLeft, ...data.semiFinalsRight]} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />}
+              {activeRound === 'Finale' && <MobileRoundView matches={data.final} isFinal={true} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />}
             </motion.div>
           </AnimatePresence>
         </div>
@@ -354,10 +382,10 @@ const Pokal = () => {
           
           {/* Left Bracket */}
           <div className="flex gap-4 sm:gap-8 flex-1">
-            <RoundColumn matches={data.roundOf32Left} title="Sechzehntelfinale" schedule={roundSchedule.Sechzehntelfinale} markFirst leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} />
-            <RoundColumn matches={data.roundOf16Left} title="Achtelfinale" schedule={roundSchedule.Achtelfinale} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} />
-            <RoundColumn matches={data.quarterFinalsLeft} title="Viertelfinale" schedule={roundSchedule.Viertelfinale} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} />
-            <RoundColumn matches={data.semiFinalsLeft} title="Halbfinale" schedule={roundSchedule.Halbfinale} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} />
+            <RoundColumn matches={data.roundOf32Left} title="Sechzehntelfinale" schedule={roundSchedule.Sechzehntelfinale} markFirst leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />
+            <RoundColumn matches={data.roundOf16Left} title="Achtelfinale" schedule={roundSchedule.Achtelfinale} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />
+            <RoundColumn matches={data.quarterFinalsLeft} title="Viertelfinale" schedule={roundSchedule.Viertelfinale} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />
+            <RoundColumn matches={data.semiFinalsLeft} title="Halbfinale" schedule={roundSchedule.Halbfinale} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />
           </div>
 
           {/* Center (Final) */}
@@ -366,7 +394,7 @@ const Pokal = () => {
               Finale
             </div>
             {data.final.map(match => (
-              <MatchBox key={match.id} match={match} isFinal={true} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} />
+              <MatchBox key={match.id} match={match} isFinal={true} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />
             ))}
             {/* Trophy Icon underneath final */}
             <div className="mt-12 opacity-80">
@@ -383,10 +411,10 @@ const Pokal = () => {
 
           {/* Right Bracket */}
           <div className="flex gap-4 sm:gap-8 flex-1 flex-row-reverse">
-            <RoundColumn matches={data.roundOf32Right} title="Sechzehntelfinale" schedule={roundSchedule.Sechzehntelfinale} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} />
-            <RoundColumn matches={data.roundOf16Right} title="Achtelfinale" schedule={roundSchedule.Achtelfinale} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} />
-            <RoundColumn matches={data.quarterFinalsRight} title="Viertelfinale" schedule={roundSchedule.Viertelfinale} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} />
-            <RoundColumn matches={data.semiFinalsRight} title="Halbfinale" schedule={roundSchedule.Halbfinale} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} />
+            <RoundColumn matches={data.roundOf32Right} title="Sechzehntelfinale" schedule={roundSchedule.Sechzehntelfinale} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />
+            <RoundColumn matches={data.roundOf16Right} title="Achtelfinale" schedule={roundSchedule.Achtelfinale} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />
+            <RoundColumn matches={data.quarterFinalsRight} title="Viertelfinale" schedule={roundSchedule.Viertelfinale} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />
+            <RoundColumn matches={data.semiFinalsRight} title="Halbfinale" schedule={roundSchedule.Halbfinale} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />
           </div>
 
         </div>
