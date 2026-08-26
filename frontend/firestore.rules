@@ -41,13 +41,24 @@ service cloud.firestore {
       );
 
       // Normale Nutzer dürfen ihr eigenes Profil aktualisieren (z.B. FCM-Token für
-      // Push-Erinnerungen setzen, Kickbase-Namen zuordnen) - aber NICHT ihre
-      // eigene role/status ändern (kein Selbst-Freischalten). Nur Admins dürfen
-      // role/status von Nutzern ändern.
+      // Push-Erinnerungen setzen) - aber NICHT ihre eigene role/status ändern
+      // (kein Selbst-Freischalten). Nur Admins dürfen role/status ändern.
+      //
+      // Der Kickbase-Name darf nur EINMAL frei gewählt werden (kickbaseId noch
+      // nicht gesetzt). Ist er schon gesetzt, kann ein Nutzer ihn nicht mehr
+      // selbst ändern - nur noch eine Änderung ÜBER kickbaseChangeRequest
+      // beantragen, die ein Admin bestätigen oder ablehnen muss.
       allow update: if isAdmin() || (
         isSelf(userId) &&
         request.resource.data.role == resource.data.role &&
-        request.resource.data.status == resource.data.status
+        request.resource.data.status == resource.data.status &&
+        (
+          !('kickbaseId' in resource.data) || resource.data.kickbaseId == null ||
+          (
+            request.resource.data.kickbaseId == resource.data.kickbaseId &&
+            request.resource.data.kickbaseName == resource.data.kickbaseName
+          )
+        )
       );
 
       allow delete: if isAdmin();

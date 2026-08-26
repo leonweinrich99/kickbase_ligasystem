@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { collection, onSnapshot, doc, updateDoc, query, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, deleteField, query, orderBy } from 'firebase/firestore';
 import { db } from './firebase';
 import { useAuth } from './AuthContext';
 import PushNotificationCard from './PushNotificationCard';
@@ -30,10 +30,12 @@ const MenuItem = ({ onClick, children, danger, accent }) => (
   </button>
 );
 
-const UserRow = ({ u, isSelf, onSetStatus, onSetRole, menuOpen, onToggleMenu, menuRef }) => {
+const UserRow = ({ u, isSelf, onSetStatus, onSetRole, onApproveKickbaseChange, onRejectKickbaseChange, menuOpen, onToggleMenu, menuRef }) => {
   const isPending = u.status === 'pending';
+  const changeRequest = u.kickbaseChangeRequest;
 
   return (
+    <div className="flex flex-col gap-2">
     <div className="bg-[#171717] border border-[#2e2e2e] rounded-xl px-3.5 py-2.5 flex items-center gap-3">
       <div className="w-8 h-8 rounded-full bg-[#1f1f1f] flex items-center justify-center font-black text-[#ff5c3e] text-xs shrink-0">
         {(u.displayName || u.email || '?').charAt(0).toUpperCase()}
@@ -59,6 +61,7 @@ const UserRow = ({ u, isSelf, onSetStatus, onSetRole, menuOpen, onToggleMenu, me
       </div>
 
       <StatusBadge status={u.status} />
+
 
       {isPending ? (
         <div className="flex items-center gap-1.5 shrink-0">
@@ -99,6 +102,29 @@ const UserRow = ({ u, isSelf, onSetStatus, onSetRole, menuOpen, onToggleMenu, me
           )}
         </div>
       )}
+    </div>
+
+    {changeRequest && (
+      <div className="bg-yellow-500/5 border border-yellow-500/30 rounded-xl px-3.5 py-2.5 flex items-center gap-3 flex-wrap">
+        <span className="text-[11px] text-yellow-400 font-bold flex-1 min-w-0">
+          Möchte wechseln: <span className="text-gray-300">{u.kickbaseName || '(kein Name)'}</span> → <span className="text-white">{changeRequest.requestedName}</span>
+        </span>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            onClick={() => onApproveKickbaseChange(u.id, changeRequest)}
+            className="px-2.5 py-1.5 rounded-lg bg-green-500/10 text-green-400 border border-green-500/30 hover:bg-green-500/20 transition-colors text-[10px] font-black uppercase tracking-widest"
+          >
+            Bestätigen
+          </button>
+          <button
+            onClick={() => onRejectKickbaseChange(u.id)}
+            className="px-2.5 py-1.5 rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-colors text-[10px] font-black uppercase tracking-widest"
+          >
+            Ablehnen
+          </button>
+        </div>
+      </div>
+    )}
     </div>
   );
 };
@@ -182,10 +208,24 @@ const AdminPanel = () => {
     setOpenMenuId(null);
   };
 
-  const filteredUsers = users.filter(u => filter === 'all' || (filter === 'admin' ? u.role === 'admin' : filter === 'unlinked' ? !u.kickbaseId : u.status === filter));
+  // Bestätigt eine Kickbase-Änderungsanfrage: setzt den neuen Namen/ID und
+  // löscht die Anfrage. Ablehnen löscht nur die Anfrage, der alte Name bleibt.
+  const approveKickbaseChange = (id, changeRequest) => {
+    updateDoc(doc(db, 'users', id), {
+      kickbaseId: changeRequest.requestedId,
+      kickbaseName: changeRequest.requestedName,
+      kickbaseChangeRequest: deleteField(),
+    });
+  };
+  const rejectKickbaseChange = (id) => {
+    updateDoc(doc(db, 'users', id), { kickbaseChangeRequest: deleteField() });
+  };
+
+  const filteredUsers = users.filter(u => filter === 'all' || (filter === 'admin' ? u.role === 'admin' : filter === 'unlinked' ? !u.kickbaseId : filter === 'changeRequests' ? Boolean(u.kickbaseChangeRequest) : u.status === filter));
   const pendingCount = users.filter(u => u.status === 'pending').length;
   const adminCount = users.filter(u => u.role === 'admin').length;
   const unlinkedCount = users.filter(u => !u.kickbaseId).length;
+  const changeRequestsCount = users.filter(u => u.kickbaseChangeRequest).length;
 
   return (
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10">
@@ -211,13 +251,13 @@ const AdminPanel = () => {
         <AdminMessengerCard />
 
         <div className="flex gap-2 mb-6 overflow-x-auto">
-          {['pending', 'approved', 'admin', 'unlinked', 'rejected', 'all'].map(f => (
+          {['pending', 'approved', 'admin', 'unlinked', 'changeRequests', 'rejected', 'all'].map(f => (
             <button
               key={f}
               onClick={() => setFilter(f)}
               className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${filter === f ? 'bg-[#ff5c3e] text-white' : 'bg-[#171717] border border-[#2e2e2e] text-[#8b92a5] hover:text-white'}`}
             >
-              {f === 'pending' ? `Ausstehend (${pendingCount})` : f === 'approved' ? 'Freigegeben' : f === 'admin' ? `Admins (${adminCount})` : f === 'unlinked' ? `Nicht verknüpft (${unlinkedCount})` : f === 'rejected' ? 'Abgelehnt' : 'Alle'}
+              {f === 'pending' ? `Ausstehend (${pendingCount})` : f === 'approved' ? 'Freigegeben' : f === 'admin' ? `Admins (${adminCount})` : f === 'unlinked' ? `Nicht verknüpft (${unlinkedCount})` : f === 'changeRequests' ? `Änderungsanfragen (${changeRequestsCount})` : f === 'rejected' ? 'Abgelehnt' : 'Alle'}
             </button>
           ))}
         </div>
@@ -235,6 +275,8 @@ const AdminPanel = () => {
                 isSelf={u.id === user?.uid}
                 onSetStatus={setStatus}
                 onSetRole={setRole}
+                onApproveKickbaseChange={approveKickbaseChange}
+                onRejectKickbaseChange={rejectKickbaseChange}
                 menuOpen={openMenuId === u.id}
                 onToggleMenu={(id) => setOpenMenuId((current) => (current === id ? null : id))}
                 menuRef={menuRef}
