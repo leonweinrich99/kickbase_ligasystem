@@ -676,6 +676,7 @@ def build_all_players_payload(live_predictions_df, history_by_player=None, playe
         "predicted_mv_target": "predictedChange",
         "predicted_mv_target_3d": "predictedChange3d",
         "predicted_mv_target_7d": "predictedChange7d",
+        "image_path": "imagePath",
     })
 
     if history_by_player:
