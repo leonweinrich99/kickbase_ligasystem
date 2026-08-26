@@ -511,35 +511,40 @@ const PlayerDetailView = ({ player, onClose, isFavorite, onToggleFavorite }) => 
 
         <div className="overflow-y-auto min-h-0 pt-6 pb-8">
           {/* Header - Name & Team */}
-          <div className="px-4 sm:px-6 mb-3">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-[#8b92a5] font-semibold text-sm tracking-wide">{player.team}</span>
-              {player.position && (
-                  <span
-                    className="text-[10px] font-bold uppercase tracking-wider rounded px-1.5 py-0.5"
-                    style={{ backgroundColor: `${POSITION_COLORS[player.position] || '#8b92a5'}26`, color: POSITION_COLORS[player.position] || '#8b92a5' }}
-                  >
-                    {player.position}
-                  </span>
-              )}
+          <div className="px-4 sm:px-6 mb-3 flex justify-between items-start gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[#8b92a5] font-medium text-sm tracking-wide">{player.team}</span>
+                {player.position && (
+                    <span
+                      className="text-[10px] font-semibold uppercase tracking-wider rounded px-1.5 py-0.5"
+                      style={{ backgroundColor: `${POSITION_COLORS[player.position] || '#8b92a5'}26`, color: POSITION_COLORS[player.position] || '#8b92a5' }}
+                    >
+                      {player.position}
+                    </span>
+                )}
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight leading-tight">
+                {player.firstName ? `${player.firstName} ${player.name}` : player.name}
+              </h2>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight">
-              {player.firstName ? `${player.firstName} ${player.name}` : player.name}
-            </h2>
+            <div className="shrink-0 mt-1">
+              <PlayerAvatar url={player.imageUrl} name={player.name} position={player.position} />
+            </div>
           </div>
 
           {/* Price & Change (Scalable Style) */}
           <div className="px-4 sm:px-6 mb-6">
-            <div className="text-3xl sm:text-[40px] font-black text-white leading-none tracking-tighter mb-2">
+            <div className="text-3xl sm:text-[40px] font-semibold text-white leading-none tracking-tight mb-2">
               {formatMoney(player.marketValue)}
             </div>
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-              <span className={`text-sm sm:text-base font-bold ${(player.predictedChange || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+              <span className={`text-sm sm:text-base font-medium ${(player.predictedChange || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                 {player.predictedChange > 0 ? '+' : ''}{formatMoney(player.predictedChange)} (Prognose Morgen)
               </span>
               
               {(player.predictedChange3d !== undefined || player.predictedChange7d !== undefined) && (
-                <div className="flex gap-2 items-center text-xs sm:text-sm font-semibold">
+                <div className="flex gap-2 items-center text-xs sm:text-sm font-medium">
                   <span className="text-[#4b5563]">|</span>
                   {player.predictedChange3d !== undefined && (
                     <span className={(player.predictedChange3d || 0) >= 0 ? 'text-green-500/80' : 'text-red-500/80'}>
@@ -601,7 +606,7 @@ const PlayerDetailView = ({ player, onClose, isFavorite, onToggleFavorite }) => 
                 <button
                   key={range}
                   onClick={() => setTimeRange(range)}
-                  className={`text-xs sm:text-[13px] font-bold pb-2 -mb-[9px] transition-colors border-b-2 ${timeRange === range ? 'text-white border-white' : 'text-[#6b7280] border-transparent hover:text-gray-300'}`}
+                  className={`text-xs sm:text-[13px] font-medium pb-2 -mb-[9px] transition-colors border-b-2 ${timeRange === range ? 'text-white border-white' : 'text-[#6b7280] border-transparent hover:text-gray-300'}`}
                 >
                   {range.toUpperCase()}
                 </button>
@@ -613,27 +618,27 @@ const PlayerDetailView = ({ player, onClose, isFavorite, onToggleFavorite }) => 
           {(showPlayBadge || showTradeBadge || showSellBadge || !isFit || player.teamOfTheWeek) && (
             <div className="px-4 sm:px-6 mb-6 flex flex-wrap gap-2">
               {showSellBadge && (
-                <div className="bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-1 rounded-md text-[10px] sm:text-xs font-bold">
+                <div className="bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-1 rounded-md text-[10px] sm:text-xs font-medium">
                   ⚠ Verkaufen
                 </div>
               )}
               {showPlayBadge && (
-                <div className="bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-1 rounded-md text-[10px] sm:text-xs font-bold">
+                <div className="bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-1 rounded-md text-[10px] sm:text-xs font-medium">
                   ✓ Stammelf
                 </div>
               )}
               {showTradeBadge && (
-                <div className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-1 rounded-md text-[10px] sm:text-xs font-bold">
+                <div className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-1 rounded-md text-[10px] sm:text-xs font-medium">
                   📈 Trading
                 </div>
               )}
               {!isFit && player.statusLabel && (
-                <div className="bg-orange-500/10 text-orange-400 border border-orange-500/20 px-2 py-1 rounded-md text-[10px] sm:text-xs font-bold">
+                <div className="bg-orange-500/10 text-orange-400 border border-orange-500/20 px-2 py-1 rounded-md text-[10px] sm:text-xs font-medium">
                   {player.statusLabel}
                 </div>
               )}
               {player.teamOfTheWeek && (
-                <div className="bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-2 py-1 rounded-md text-[10px] sm:text-xs font-bold">
+                <div className="bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-2 py-1 rounded-md text-[10px] sm:text-xs font-medium">
                   ★ S11
                 </div>
               )}
@@ -650,7 +655,7 @@ const PlayerDetailView = ({ player, onClose, isFavorite, onToggleFavorite }) => 
             <div className="px-4 sm:px-6 mb-8">
               <div className="bg-[#111111] border border-[#2e2e2e] rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-[10px] font-black tracking-widest text-[#22d3ee] uppercase">KI Analyse</span>
+                  <span className="text-[10px] font-bold tracking-widest text-[#22d3ee] uppercase">KI Analyse</span>
                 </div>
                 <p className="text-xs sm:text-sm text-[#8b92a5] leading-relaxed">
                   {generateAIReasoning(player)}
@@ -661,31 +666,31 @@ const PlayerDetailView = ({ player, onClose, isFavorite, onToggleFavorite }) => 
 
           {/* Key Statistics Grid (Scalable Style) */}
           <div className="px-4 sm:px-6">
-            <h3 className="text-lg font-bold text-white mb-4">Kennzahlen</h3>
+            <h3 className="text-lg font-semibold text-white mb-4">Kennzahlen</h3>
             <div className="grid grid-cols-2 gap-y-6 gap-x-4">
               <div className="flex flex-col">
-                <span className="text-[#8b92a5] text-xs font-semibold mb-1">Max-Gebot</span>
-                <span className="text-white font-medium">{player.maxBid > 0 && player.onMarket ? formatMoney(player.maxBid) : '–'}</span>
+                <span className="text-[#8b92a5] text-xs font-medium mb-1">Max-Gebot</span>
+                <span className="text-white font-semibold">{player.maxBid > 0 && player.onMarket ? formatMoney(player.maxBid) : '–'}</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-[#8b92a5] text-xs font-semibold mb-1">Ø Punkte</span>
-                <span className="text-white font-medium">{player.avgPoints ?? '–'}</span>
+                <span className="text-[#8b92a5] text-xs font-medium mb-1">Ø Punkte</span>
+                <span className="text-white font-semibold">{player.avgPoints ?? '–'}</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-[#8b92a5] text-xs font-semibold mb-1">Saisonpunkte</span>
-                <span className="text-white font-medium">{player.seasonPoints ?? '–'}</span>
+                <span className="text-[#8b92a5] text-xs font-medium mb-1">Saisonpunkte</span>
+                <span className="text-white font-semibold">{player.seasonPoints ?? '–'}</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-[#8b92a5] text-xs font-semibold mb-1">Einsätze</span>
-                <span className="text-white font-medium">{player.officialSeasonAppearances ?? player.appearances ?? '–'}</span>
+                <span className="text-[#8b92a5] text-xs font-medium mb-1">Einsätze</span>
+                <span className="text-white font-semibold">{player.officialSeasonAppearances ?? player.appearances ?? '–'}</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-[#8b92a5] text-xs font-semibold mb-1">Gesamtminuten</span>
-                <span className="text-white font-medium">{player.totalMinutes ? `${player.totalMinutes}'` : '–'}</span>
+                <span className="text-[#8b92a5] text-xs font-medium mb-1">Gesamtminuten</span>
+                <span className="text-white font-semibold">{player.totalMinutes ? `${player.totalMinutes}'` : '–'}</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-[#8b92a5] text-xs font-semibold mb-1">Tore / Vorlagen</span>
-                <span className="text-white font-medium">
+                <span className="text-[#8b92a5] text-xs font-medium mb-1">Tore / Vorlagen</span>
+                <span className="text-white font-semibold">
                   {typeof player.officialGoals === 'number' ? player.officialGoals : '–'} / {typeof player.officialAssists === 'number' ? player.officialAssists : '–'}
                 </span>
               </div>
