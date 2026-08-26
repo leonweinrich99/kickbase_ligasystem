@@ -426,9 +426,9 @@ const PlayerHistoryModal = ({ player, onClose, isFavorite, onToggleFavorite }) =
           </svg>
         </button>
 
-        <div className="overflow-y-auto min-h-0 pt-8 pb-12">
+        <div className="overflow-y-auto min-h-0 pt-6 pb-8">
           {/* Header - Name & Team */}
-          <div className="px-6 mb-4">
+          <div className="px-4 sm:px-6 mb-3">
             <div className="flex items-center gap-2 mb-1">
               <span className="text-[#8b92a5] font-semibold text-sm tracking-wide">{player.team}</span>
               {player.position && (
@@ -440,23 +440,23 @@ const PlayerHistoryModal = ({ player, onClose, isFavorite, onToggleFavorite }) =
                   </span>
               )}
             </div>
-            <h2 className="text-3xl font-black text-white tracking-tight leading-tight">
+            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight">
               {player.firstName ? `${player.firstName} ${player.name}` : player.name}
             </h2>
           </div>
 
           {/* Price & Change (Scalable Style) */}
-          <div className="px-6 mb-8">
-            <div className="text-[40px] font-black text-white leading-none tracking-tighter mb-2">
+          <div className="px-4 sm:px-6 mb-6">
+            <div className="text-3xl sm:text-[40px] font-black text-white leading-none tracking-tighter mb-2">
               {formatMoney(player.marketValue)}
             </div>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <span className={`text-base font-bold ${(player.predictedChange || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span className={`text-sm sm:text-base font-bold ${(player.predictedChange || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                 {player.predictedChange > 0 ? '+' : ''}{formatMoney(player.predictedChange)} (Prognose Morgen)
               </span>
               
               {(player.predictedChange3d !== undefined || player.predictedChange7d !== undefined) && (
-                <div className="flex gap-2 items-center text-sm font-semibold">
+                <div className="flex gap-2 items-center text-xs sm:text-sm font-semibold">
                   <span className="text-[#4b5563]">|</span>
                   {player.predictedChange3d !== undefined && (
                     <span className={(player.predictedChange3d || 0) >= 0 ? 'text-green-500/80' : 'text-red-500/80'}>
@@ -477,7 +477,7 @@ const PlayerHistoryModal = ({ player, onClose, isFavorite, onToggleFavorite }) =
           </div>
 
           {/* Chart (Clean without grid) */}
-          <div className="h-[220px] w-full mb-6 relative">
+          <div className="h-[160px] sm:h-[200px] w-full mb-6 relative">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={history}>
                 <YAxis
@@ -495,13 +495,13 @@ const PlayerHistoryModal = ({ player, onClose, isFavorite, onToggleFavorite }) =
           </div>
 
           {/* Time Toggles */}
-          <div className="px-6 mb-10">
-            <div className="flex justify-between items-center max-w-[280px] mx-auto border-b border-[#2e2e2e] pb-2">
+          <div className="px-4 sm:px-6 mb-8">
+            <div className="flex justify-between items-center max-w-[260px] mx-auto border-b border-[#2e2e2e] pb-2">
               {['1w', '1m', '3m', '6m', '1y'].map((range) => (
                 <button
                   key={range}
                   onClick={() => setTimeRange(range)}
-                  className={`text-[13px] font-bold pb-2 -mb-[9px] transition-colors border-b-2 ${timeRange === range ? 'text-white border-white' : 'text-[#6b7280] border-transparent hover:text-gray-300'}`}
+                  className={`text-xs sm:text-[13px] font-bold pb-2 -mb-[9px] transition-colors border-b-2 ${timeRange === range ? 'text-white border-white' : 'text-[#6b7280] border-transparent hover:text-gray-300'}`}
                 >
                   {range.toUpperCase()}
                 </button>
@@ -511,29 +511,29 @@ const PlayerHistoryModal = ({ player, onClose, isFavorite, onToggleFavorite }) =
 
           {/* Badges / Trading Recommendations */}
           {(showPlayBadge || showTradeBadge || showSellBadge || !isFit || player.teamOfTheWeek) && (
-            <div className="px-6 mb-8 flex flex-wrap gap-2">
+            <div className="px-4 sm:px-6 mb-6 flex flex-wrap gap-2">
               {showSellBadge && (
-                <div className="bg-red-500/10 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-lg text-xs font-bold">
+                <div className="bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-1 rounded-md text-[10px] sm:text-xs font-bold">
                   ⚠ Verkaufen
                 </div>
               )}
               {showPlayBadge && (
-                <div className="bg-green-500/10 text-green-400 border border-green-500/20 px-3 py-1.5 rounded-lg text-xs font-bold">
+                <div className="bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-1 rounded-md text-[10px] sm:text-xs font-bold">
                   ✓ Stammelf
                 </div>
               )}
               {showTradeBadge && (
-                <div className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1.5 rounded-lg text-xs font-bold">
+                <div className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-1 rounded-md text-[10px] sm:text-xs font-bold">
                   📈 Trading
                 </div>
               )}
               {!isFit && player.statusLabel && (
-                <div className="bg-orange-500/10 text-orange-400 border border-orange-500/20 px-3 py-1.5 rounded-lg text-xs font-bold">
+                <div className="bg-orange-500/10 text-orange-400 border border-orange-500/20 px-2 py-1 rounded-md text-[10px] sm:text-xs font-bold">
                   {player.statusLabel}
                 </div>
               )}
               {player.teamOfTheWeek && (
-                <div className="bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-3 py-1.5 rounded-lg text-xs font-bold">
+                <div className="bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-2 py-1 rounded-md text-[10px] sm:text-xs font-bold">
                   ★ S11
                 </div>
               )}
@@ -546,7 +546,7 @@ const PlayerHistoryModal = ({ player, onClose, isFavorite, onToggleFavorite }) =
           )}
 
           {/* Key Statistics Grid (Scalable Style) */}
-          <div className="px-6">
+          <div className="px-4 sm:px-6">
             <h3 className="text-lg font-bold text-white mb-4">Kennzahlen</h3>
             <div className="grid grid-cols-2 gap-y-6 gap-x-4">
               <div className="flex flex-col">
