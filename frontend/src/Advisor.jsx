@@ -381,18 +381,44 @@ const PlayerDetailView = ({ player, onClose, isFavorite, onToggleFavorite }) => 
   
   const history = [...baseHistory];
   if (history.length > 0) {
-      const lastPoint = history[history.length - 1];
-      const todayDateObj = new Date(lastPoint.date);
-      lastPoint.mv_predicted = lastPoint.mv;
+      // Kopiere den letzten Punkt, um das Original-Array nicht zu mutieren
+      const lastPoint = { ...history[history.length - 1] };
+      history[history.length - 1] = lastPoint;
+      
+      // Falls wir einen Live-Marktwert haben, der abweicht (z.B. nach 22 Uhr), 
+      // fuegen wir ihn als echten Punkt von "Heute" ein, damit die Linien exakt andocken.
+      let currentMv = lastPoint.mv;
+      let baseDateObj = new Date(lastPoint.date);
+      
+      if (player.marketValue && player.marketValue !== lastPoint.mv) {
+          currentMv = player.marketValue;
+          baseDateObj = new Date(); // Heute
+          const dateStr = baseDateObj.toISOString().split('T')[0];
+          
+          // Wenn der letzte Punkt im Graph NICHT von heute ist, fuegen wir heute hinzu
+          if (dateStr !== lastPoint.date) {
+              const todayPoint = {
+                  date: dateStr,
+                  mv: currentMv,
+                  mv_predicted: currentMv
+              };
+              history.push(todayPoint);
+          } else {
+              // Überschreibe den heutigen Wert, falls er schon existiert aber abweicht
+              lastPoint.mv = currentMv;
+              lastPoint.mv_predicted = currentMv;
+          }
+      } else {
+          lastPoint.mv_predicted = lastPoint.mv;
+      }
       
       const addPredictedPoint = (daysAhead, change) => {
           if (change === undefined) return;
-          const futureDate = new Date(todayDateObj);
+          const futureDate = new Date(baseDateObj);
           futureDate.setDate(futureDate.getDate() + daysAhead);
-          const dateStr = futureDate.toISOString().split('T')[0];
           history.push({
-              date: dateStr,
-              mv_predicted: (player.marketValue || lastPoint.mv) + change,
+              date: futureDate.toISOString().split('T')[0],
+              mv_predicted: currentMv + change,
               isPredicted: true
           });
       };
@@ -487,6 +513,7 @@ const PlayerDetailView = ({ player, onClose, isFavorite, onToggleFavorite }) => 
           <div className="h-[160px] sm:h-[200px] w-full mb-6 relative">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={history}>
+                <XAxis dataKey="date" hide={true} />
                 <YAxis
                   domain={['dataMin', 'dataMax']}
                   hide={true}
@@ -495,8 +522,9 @@ const PlayerDetailView = ({ player, onClose, isFavorite, onToggleFavorite }) => 
                    content={<ChartTooltip />}
                    cursor={{ stroke: '#2e2e2e', strokeWidth: 1, strokeDasharray: '4 4' }}
                 />
-                <Line type="monotone" dataKey="mv" stroke="#ffffff" strokeWidth={2.5} dot={false} activeDot={{ r: 6, fill: "#ffffff", strokeWidth: 0 }} animationDuration={800} />
-                <Line type="monotone" dataKey="mv_predicted" stroke="#eab308" strokeDasharray="4 4" strokeWidth={2.5} dot={{ r: 4, fill: "#eab308", strokeWidth: 0 }} activeDot={{ r: 6, fill: "#eab308", strokeWidth: 0 }} animationDuration={800} />
+                {/* connectNulls stellt sicher, dass die Linien perfekt aneinander andocken */}
+                <Line type="monotone" dataKey="mv" stroke="#ffffff" strokeWidth={2.5} dot={false} activeDot={{ r: 6, fill: "#ffffff", strokeWidth: 0 }} connectNulls={true} animationDuration={800} />
+                <Line type="monotone" dataKey="mv_predicted" stroke="#eab308" strokeDasharray="2 3" strokeWidth={1.5} dot={{ r: 3, fill: "#eab308", strokeWidth: 0 }} activeDot={{ r: 5, fill: "#eab308", strokeWidth: 0 }} connectNulls={true} animationDuration={800} />
               </LineChart>
             </ResponsiveContainer>
           </div>
