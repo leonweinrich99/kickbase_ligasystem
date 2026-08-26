@@ -275,19 +275,22 @@ const PlayerCard = ({ entry, teamLogo, onClick, isFavorite, onToggleFavorite }) 
         <div className="text-[9px] text-[#8b92a5] mt-0.5 flex items-center gap-1.5 flex-wrap">
           <span className="font-semibold text-gray-400">{entry.team}</span>
           
-          {/* Keep badges minimal */}
-          {showPlayBadge && (
-            <span className="text-[7px] font-bold uppercase tracking-widest bg-green-500/15 text-green-400 border border-green-500/40 rounded px-1 shrink-0 ml-1">✓ Stammelf</span>
-          )}
-          {showTradeBadge && (
-            <span className="text-[7px] font-bold uppercase tracking-widest bg-cyan-500/15 text-cyan-400 border border-cyan-500/40 rounded px-1 shrink-0 ml-1">📈 Trading</span>
-          )}
-          {showSellBadge && (
-            <span className="text-[7px] font-bold uppercase tracking-widest bg-red-500/15 text-red-400 border border-red-500/40 rounded px-1 shrink-0 ml-1">⚠ Verkaufen</span>
-          )}
-          {entry.statusLabel && !isFit && (
-            <span className="text-[7px] font-bold uppercase tracking-widest bg-orange-500/10 text-orange-400 border border-orange-500/30 rounded px-1 shrink-0 ml-1">{entry.statusLabel}</span>
-          )}
+          {/* Strictly ONE badge per player! Priority: Sell -> Play (Kader) -> Trade -> Status */}
+          {(() => {
+            if (showSellBadge) {
+              return <span className="text-[7px] font-bold uppercase tracking-widest bg-red-500/15 text-red-400 border border-red-500/40 rounded px-1 shrink-0 ml-1">⚠ Verkaufen</span>;
+            }
+            if (showPlayBadge) {
+              return <span className="text-[7px] font-bold uppercase tracking-widest bg-green-500/15 text-green-400 border border-green-500/40 rounded px-1 shrink-0 ml-1">✓ Kader-Potenzial</span>;
+            }
+            if (showTradeBadge) {
+              return <span className="text-[7px] font-bold uppercase tracking-widest bg-cyan-500/15 text-cyan-400 border border-cyan-500/40 rounded px-1 shrink-0 ml-1">📈 Trading</span>;
+            }
+            if (entry.statusLabel && !isFit) {
+              return <span className="text-[7px] font-bold uppercase tracking-widest bg-orange-500/10 text-orange-400 border border-orange-500/30 rounded px-1 shrink-0 ml-1">{entry.statusLabel}</span>;
+            }
+            return null;
+          })()}
         </div>
       </div>
       
