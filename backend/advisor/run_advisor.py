@@ -57,7 +57,7 @@ FEATURES = [
 ]
 TARGET = "mv_target_clipped"
 
-HISTORY_DAYS = 60  # Tage Marktwert-/Punkte-Verlauf, der pro Markt-Spieler exportiert wird
+HISTORY_DAYS = 365  # Tage Marktwert-/Punkte-Verlauf, der pro Markt-Spieler exportiert wird
 
 POSITION_LABELS = {1: "TW", 2: "ABW", 3: "MF", 4: "ST"}
 
