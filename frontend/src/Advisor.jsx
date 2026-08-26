@@ -336,7 +336,10 @@ const MiniStat = ({ label, value, positive }) => (
 
 const PlayerAvatar = ({ url, name, position, size = 64 }) => {
   const [failed, setFailed] = useState(false);
-  const showImage = url && !failed;
+  // Kickbase sendet oft "dummy" Bilder für Spieler ohne Foto. 
+  // Wir ignorieren diese und nutzen stattdessen unseren Initialen-Kreis.
+  const isDummy = url && (url.includes('dummy') || url.includes('placeholder') || url.includes('default') || url.includes('silhouet'));
+  const showImage = url && !isDummy && !failed;
   return (
     <div
       className="rounded-full overflow-hidden shrink-0 flex items-center justify-center font-black bg-[#0a0a0a] border-2"
