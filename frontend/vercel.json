@@ -8,5 +8,8 @@
       "path": "/api/advisor-cron",
       "schedule": "0 21 * * *"
     }
+  ],
+  "rewrites": [
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }
