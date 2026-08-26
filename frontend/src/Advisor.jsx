@@ -410,9 +410,9 @@ const PlayerHistoryModal = ({ player, onClose, isFavorite, onToggleFavorite }) =
   const reasons = (player.inSquad ? player.sellReasons : player.buyReasons) || [];
 
   return (
-    <div className="fixed inset-0 z-[90] bg-black/80 flex items-center justify-center p-4 sm:p-0" onClick={onClose}>
+    <div className="fixed inset-0 z-[90] bg-black/80 flex items-center justify-center sm:p-4" onClick={onClose}>
       <div
-        className="w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-md bg-[#111111] sm:rounded-3xl shadow-2xl relative flex flex-col"
+        className="w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-md bg-[#111111] sm:rounded-3xl shadow-2xl relative flex flex-col rounded-none"
         onClick={(e) => e.stopPropagation()}
       >
         <button
