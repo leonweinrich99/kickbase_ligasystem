@@ -366,6 +366,56 @@ const TrendArrow = ({ code }) => {
   return null;
 };
 
+
+const generateAIReasoning = (player) => {
+  if (player.predictedChange === undefined) return null;
+  const isRising = player.predictedChange >= 0;
+  const changeStr = formatMoney(Math.abs(player.predictedChange));
+  const trend = isRising ? "einen Anstieg" : "einen Wertverlust";
+  
+  let sentences = [];
+  
+  sentences.push(`Die KI prognostiziert für morgen ${trend} um ca. ${changeStr}.`);
+
+  const reasons = [];
+  if (isRising) {
+    if (player.buyReasons?.includes('rising_value')) reasons.push("das Marktmomentum stark positiv ist");
+    if (player.buyReasons?.includes('likely_starter')) reasons.push("hohe Startelf-Chancen bestehen");
+    if (player.avgPoints > 70) reasons.push("der Punkteschnitt exzellent ist");
+    if (player.teamOfTheWeek) reasons.push("die Nominierung fürs Team der Woche den Hype pusht");
+    if (!reasons.length) reasons.push("die Algorithmen subtile, positive Marktsignale in der Datenhistorie erkennen");
+    
+    // Join logic with "und"
+    let reasonText = reasons.join(", ");
+    if (reasons.length > 1) {
+        reasonText = reasons.slice(0, -1).join(", ") + " und " + reasons[reasons.length - 1];
+    }
+    sentences.push(`Dieser Trend wird gestützt, da ${reasonText}.`);
+  } else {
+    if (player.sellReasons?.includes('injured_or_suspended') || player.sellReasons?.includes('confirmed_injured_external') || (player.status && player.status !== 0)) reasons.push("der Spieler aktuell ausfällt");
+    if (player.sellReasons?.includes('falling_value')) reasons.push("bereits ein klarer Abwärtstrend messbar ist");
+    if (player.sellReasons?.includes('benched_last_matchday')) reasons.push("er zuletzt nicht zum Einsatz kam");
+    if (player.sellReasons?.includes('low_starting_probability')) reasons.push("seine Spielzeiten unsicher sind");
+    if (!reasons.length) reasons.push("die Marktdynamik für diesen Spieler aktuell spürbar abkühlt");
+    
+    let reasonText = reasons.join(", ");
+    if (reasons.length > 1) {
+        reasonText = reasons.slice(0, -1).join(", ") + " und " + reasons[reasons.length - 1];
+    }
+    sentences.push(`Die Abwertung droht, weil ${reasonText}.`);
+  }
+  
+  if (player.predictedChange3d !== undefined) {
+    if (player.predictedChange > 0 && player.predictedChange3d < 0) {
+      sentences.push("⚠️ Vorsicht: Auf 3-Tages-Sicht kippt die Prognose ins Negative.");
+    } else if (player.predictedChange < 0 && player.predictedChange3d > 0) {
+      sentences.push("💡 Lichtblick: Auf 3-Tages-Sicht rechnet das Modell bereits wieder mit einer Erholung.");
+    }
+  }
+
+  return sentences.join(" ");
+};
+
 const PlayerDetailView = ({ player, onClose, isFavorite, onToggleFavorite }) => {
   const fullBaseHistory = normalizeHistory(player.history);
   const [timeRange, setTimeRange] = useState('3m');
@@ -592,6 +642,20 @@ const PlayerDetailView = ({ player, onClose, isFavorite, onToggleFavorite }) => 
                   Grund: {reasons.map((r) => REASON_LABELS[r] || r).join(' · ')}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* KI Analyse Block */}
+          {player.predictedChange !== undefined && (
+            <div className="px-4 sm:px-6 mb-8">
+              <div className="bg-[#111111] border border-[#2e2e2e] rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-[10px] font-black tracking-widest text-[#22d3ee] uppercase">KI Analyse</span>
+                </div>
+                <p className="text-xs sm:text-sm text-[#8b92a5] leading-relaxed">
+                  {generateAIReasoning(player)}
+                </p>
+              </div>
             </div>
           )}
 
