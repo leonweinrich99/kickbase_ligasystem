@@ -31,11 +31,16 @@ def live_data_predictions(today_df, model, model_3d, model_7d, features):
 
     today_df_results = today_df_results.dropna(subset=["mv"])
     
-    today_df_results = today_df_results[[
+    # "image_path" unbedingt durchschleifen, sonst crasht df_records spaeter!
+    cols_to_keep = [
         "player_id", "first_name", "last_name", "position", "team_name",
         "date", "mv_change_1d", "mv_trend_1d", "mv_change_3d", "mv_trend_7d",
         "mv", "predicted_mv_target", "predicted_mv_target_3d", "predicted_mv_target_7d", "p", "mp",
-    ]]
+    ]
+    if "image_path" in today_df_results.columns:
+        cols_to_keep.append("image_path")
+        
+    today_df_results = today_df_results[cols_to_keep]
 
     return today_df_results
 
@@ -132,7 +137,7 @@ _CONTEXT_RENAME_MAP = {
     "mvgl": "total_value_change",
     "mvt": "trend_direction",
     "iotm": "team_of_the_week",
-    "pim": "image_path",
+    # "pim": "image_path",  # Nutze stattdessen image_path aus data_handler (profileBig)
 }
 
 
