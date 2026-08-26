@@ -359,6 +359,28 @@ const PlayerAvatar = ({ url, name, position, size = 64 }) => {
   );
 };
 
+
+const PlayerImageDetail = ({ url, name, position }) => {
+  const [failed, setFailed] = useState(false);
+  const isDummy = url && (url.includes('dummy') || url.includes('placeholder') || url.includes('default') || url.includes('silhouet'));
+  const showImage = url && !isDummy && !failed;
+
+  if (showImage) {
+    return (
+      <img
+        src={url}
+        alt={name}
+        // Wichtig: object-contain sorgt dafuer, dass das Bild nicht verzerrt,
+        // -mt-4 zieht es leicht nach oben fuer einen coolen 3D-Effekt ueber den Rand.
+        className="w-28 h-36 sm:w-32 sm:h-40 object-contain drop-shadow-[0_10px_15px_rgba(0,0,0,0.5)] -mt-4 -mr-2"
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+
+  return <PlayerAvatar url={null} name={name} position={position} size={72} />;
+};
+
 const TrendArrow = ({ code }) => {
   // "mvt" (Marktwert-Trendrichtung) ist ein Kickbase-interner Code - anhand
   // von Beobachtungen: 1 = fallend, 2 = steigend. Defensiv nur als kleiner
@@ -531,8 +553,8 @@ const PlayerDetailView = ({ player, onClose, isFavorite, onToggleFavorite }) => 
                 {player.firstName ? `${player.firstName} ${player.name}` : player.name}
               </h2>
             </div>
-            <div className="shrink-0 mt-1">
-              <PlayerAvatar url={player.imageUrl} name={player.name} position={player.position} />
+            <div className="shrink-0 relative z-10">
+              <PlayerImageDetail url={player.imageUrl} name={player.name} position={player.position} />
             </div>
           </div>
 
