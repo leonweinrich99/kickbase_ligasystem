@@ -444,7 +444,7 @@ const generateAIReasoning = (player) => {
   return sentences.join(" ");
 };
 
-const PlayerDetailView = ({ player, onClose, isFavorite, onToggleFavorite }) => {
+const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, onToggleFavorite }) => {
   const fullBaseHistory = normalizeHistory(player.history);
   const [timeRange, setTimeRange] = useState('3m');
   
@@ -905,6 +905,7 @@ const Advisor = () => {
       <div className="bg-[#000000] min-h-screen">
         <PlayerDetailView
           player={selectedPlayer}
+          teamLogos={teamLogos}
           onClose={() => setSelectedPlayer(null)}
           isFavorite={isFavorite(selectedPlayer.playerId)}
           onToggleFavorite={toggleFavorite}
