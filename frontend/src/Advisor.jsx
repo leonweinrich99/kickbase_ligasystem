@@ -623,7 +623,7 @@ const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, onToggl
           {/* Chart (Clean without grid) */}
           <div className="h-[160px] sm:h-[200px] w-full px-4 sm:px-6 mb-6 relative">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={history} margin={{ top: 5, right: 20, left: -15, bottom: 5 }}>
+              <LineChart data={history} margin={{ top: 5, right: 20, left: 5, bottom: 5 }}>
                 <XAxis
                   dataKey="date"
                   stroke="#4b5563"
@@ -635,14 +635,14 @@ const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, onToggl
                 />
                 <YAxis
                   stroke="#4b5563"
-                  fontSize={9}
+                  fontSize={10}
                   tickLine={false}
                   axisLine={false}
                   domain={['dataMin', 'dataMax']}
                   tickFormatter={formatCompactMoney}
                   orientation="left"
-                  width={50}
-                  tickMargin={8}
+                  width={75}
+                  tickMargin={4}
                 />
                 <Tooltip 
                    content={<ChartTooltip />}
