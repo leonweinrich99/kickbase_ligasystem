@@ -56,6 +56,8 @@ const formatSignedMoney = (val) => {
   return `${sign}${rounded.toLocaleString('de-DE')} €`;
 };
 
+const isDummyImage = (url) => url && (url.includes('dummy') || url.includes('placeholder') || url.includes('default') || url.includes('silhouet'));
+
 const formatCompactMoney = (val) => {
   if (val === null || val === undefined) return '–';
   if (Math.abs(val) >= 1_000_000) return `${(val / 1_000_000).toFixed(2).replace('.', ',')} Mio €`;
@@ -204,7 +206,7 @@ const StarIcon = ({ filled }) => (
   </svg>
 );
 
-const PlayerCard = ({ entry, onClick, isFavorite, onToggleFavorite }) => {
+const PlayerCard = ({ entry, teamLogo, onClick, isFavorite, onToggleFavorite }) => {
   const rising = (entry.predictedChange || 0) >= 0;
   const hasHistory = Array.isArray(entry.history) && entry.history.length > 1;
   const isBuyContext = entry.onMarket;
@@ -221,18 +223,41 @@ const PlayerCard = ({ entry, onClick, isFavorite, onToggleFavorite }) => {
       tabIndex={hasHistory ? 0 : undefined}
       onClick={hasHistory ? onClick : undefined}
       onKeyDown={hasHistory ? (e) => (e.key === 'Enter' || e.key === ' ') && onClick() : undefined}
-      className={`w-full flex items-center p-2 mb-2 bg-[#171717] border rounded-xl shadow-sm text-left transition-all ${showSellBadge ? 'border-red-500/40' : (showPlayBadge || showTradeBadge) ? 'border-green-500/40' : 'border-[#2e2e2e]'} ${hasHistory ? 'hover:border-cyan-500/50 hover:bg-[#1c1c1c] active:scale-[0.99] cursor-pointer' : 'cursor-default'}`}
+      className={`relative overflow-hidden w-full flex items-center p-3 mb-2 bg-[#171717] border rounded-xl shadow-sm text-left transition-all ${showSellBadge ? 'border-red-500/40' : (showPlayBadge || showTradeBadge) ? 'border-green-500/40' : 'border-[#2e2e2e]'} ${hasHistory ? 'hover:border-cyan-500/50 hover:bg-[#1c1c1c] active:scale-[0.99] cursor-pointer' : 'cursor-default'}`}
     >
+      {/* Background Hero Image + Team Logo Watermark */}
+      <div className="absolute top-0 right-0 bottom-0 z-0 pointer-events-none w-[60%] sm:w-1/2 flex justify-end overflow-hidden rounded-r-xl">
+        {teamLogo && (
+          <img 
+            src={teamLogo} 
+            alt={entry.team} 
+            className="absolute top-1/2 -translate-y-1/2 right-4 w-20 h-20 sm:w-24 sm:h-24 object-contain opacity-[0.15] mix-blend-screen" 
+          />
+        )}
+        {entry.imageUrl && !isDummyImage(entry.imageUrl) && (
+          <img 
+            src={entry.imageUrl}
+            alt=""
+            className="h-[160%] w-auto object-cover object-top pointer-events-none"
+            style={{ 
+              transform: 'translateY(-15%) translateX(15%)',
+              WebkitMaskImage: 'linear-gradient(270deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.9) 35%, rgba(0,0,0,0) 80%)',
+              maskImage: 'linear-gradient(270deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.9) 35%, rgba(0,0,0,0) 80%)',
+            }}
+          />
+        )}
+      </div>
+
       {onToggleFavorite && (
         <button
           onClick={(e) => { e.stopPropagation(); onToggleFavorite(entry.playerId); }}
           aria-label={isFavorite ? 'Favorit entfernen' : 'Als Favorit speichern'}
-          className="mr-2 shrink-0 p-1 -m-1"
+          className="mr-3 shrink-0 p-1 -m-1 relative z-10"
         >
           <StarIcon filled={isFavorite} />
         </button>
       )}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 relative z-10">
         <div className="flex items-center gap-1.5 flex-wrap">
           {entry.position && (
             <span className="text-[10px] font-black" style={{ color: POSITION_COLORS[entry.position] || '#8b92a5' }}>
@@ -285,7 +310,7 @@ const PlayerCard = ({ entry, onClick, isFavorite, onToggleFavorite }) => {
           </div>
         )}
       </div>
-      <div className="text-right ml-2 shrink-0 flex flex-col justify-center items-end">
+      <div className="text-right ml-2 shrink-0 flex flex-col justify-center items-end relative z-10">
         <div className="text-[12px] font-bold text-gray-300 leading-none mb-1">
           {formatCompactMoney(entry.marketValue)}
         </div>
@@ -338,7 +363,7 @@ const PlayerAvatar = ({ url, name, position, size = 64 }) => {
   const [failed, setFailed] = useState(false);
   // Kickbase sendet oft "dummy" Bilder für Spieler ohne Foto. 
   // Wir ignorieren diese und nutzen stattdessen unseren Initialen-Kreis.
-  const isDummy = url && (url.includes('dummy') || url.includes('placeholder') || url.includes('default') || url.includes('silhouet'));
+  const isDummy = isDummyImage(url);
   const showImage = url && !isDummy && !failed;
   return (
     <div
@@ -362,7 +387,7 @@ const PlayerAvatar = ({ url, name, position, size = 64 }) => {
 
 const PlayerImageDetail = ({ url, name, position, teamLogo }) => {
   const [failed, setFailed] = useState(false);
-  const isDummy = url && (url.includes('dummy') || url.includes('placeholder') || url.includes('default') || url.includes('silhouet'));
+  const isDummy = isDummyImage(url);
   const showImage = url && !isDummy && !failed;
 
   if (showImage) {
@@ -1083,7 +1108,7 @@ const Advisor = () => {
                     {filteredMarket.length ? (
                       <div className="mb-10">
                         {filteredMarket.map((entry, index) => (
-                          <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} onClick={() => setSelectedPlayer(entry)} isFavorite={isFavorite(entry.playerId)} onToggleFavorite={toggleFavorite} />
+                          <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} teamLogo={teamLogos[entry.team]} onClick={() => setSelectedPlayer(entry)} isFavorite={isFavorite(entry.playerId)} onToggleFavorite={toggleFavorite} />
                         ))}
                       </div>
                     ) : (
@@ -1156,7 +1181,7 @@ const Advisor = () => {
                         {filteredSquad.length ? (
                           <div className="mb-10">
                             {filteredSquad.map((entry, index) => (
-                              <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} onClick={() => setSelectedPlayer(entry)} isFavorite={isFavorite(entry.playerId)} onToggleFavorite={toggleFavorite} />
+                              <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} teamLogo={teamLogos[entry.team]} onClick={() => setSelectedPlayer(entry)} isFavorite={isFavorite(entry.playerId)} onToggleFavorite={toggleFavorite} />
                             ))}
                           </div>
                         ) : (
@@ -1189,7 +1214,7 @@ const Advisor = () => {
                       <>
                         <div>
                           {filteredDb.slice(0, dbVisibleCount).map((entry, index) => (
-                            <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} onClick={() => setSelectedPlayer(entry)} isFavorite={isFavorite(entry.playerId)} onToggleFavorite={toggleFavorite} />
+                            <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} teamLogo={teamLogos[entry.team]} onClick={() => setSelectedPlayer(entry)} isFavorite={isFavorite(entry.playerId)} onToggleFavorite={toggleFavorite} />
                           ))}
                         </div>
                         {dbVisibleCount < filteredDb.length && (
@@ -1226,7 +1251,7 @@ const Advisor = () => {
                     {filteredFavorites.length ? (
                       <div className="mb-10">
                         {filteredFavorites.map((entry, index) => (
-                          <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} onClick={() => setSelectedPlayer(entry)} isFavorite={isFavorite(entry.playerId)} onToggleFavorite={toggleFavorite} />
+                          <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} teamLogo={teamLogos[entry.team]} onClick={() => setSelectedPlayer(entry)} isFavorite={isFavorite(entry.playerId)} onToggleFavorite={toggleFavorite} />
                         ))}
                       </div>
                     ) : (
