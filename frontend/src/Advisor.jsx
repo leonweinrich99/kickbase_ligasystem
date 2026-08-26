@@ -62,6 +62,13 @@ const formatCompactMoney = (val) => {
   return `${Math.round(val / 1000)}k €`;
 };
 
+const formatSignedCompactMoney = (val) => {
+  if (val === null || val === undefined) return '–';
+  const sign = val > 0 ? '+' : '';
+  if (Math.abs(val) >= 1_000_000) return `${sign}${(val / 1_000_000).toFixed(2).replace('.', ',')} Mio €`;
+  return `${sign}${Math.round(val / 1000)}k €`;
+};
+
 const formatShortDate = (dateStr) => {
   if (!dateStr) return '';
   const [, month, day] = dateStr.split('-');
@@ -472,22 +479,22 @@ const PlayerHistoryModal = ({ player, onClose, isFavorite, onToggleFavorite }) =
           )}
 
           <h3 className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] mb-2">Markt</h3>
-          <div className="flex gap-3 mb-3">
+          <div className="flex flex-col sm:flex-row gap-3 mb-3">
             <div className="bg-[#0a0a0a] border border-[#2e2e2e] rounded-xl p-3 flex-1">
               <div className="text-[9px] font-black uppercase tracking-widest text-[#8b92a5] mb-1">Aktueller Marktwert</div>
               <div className="text-base font-black text-white flex items-center gap-1.5">{formatMoney(player.marketValue)} <TrendArrow code={player.trendDirection} /></div>
             </div>
             <div className="bg-[#0a0a0a] border border-[#2e2e2e] rounded-xl p-3 flex-1">
               <div className="text-[9px] font-black uppercase tracking-widest text-[#8b92a5] mb-1">Prognose (1 / 3 / 7 Tage)</div>
-              <div className="flex gap-2 items-center">
+              <div className="flex flex-wrap gap-x-2 gap-y-1 items-center">
                   <div className={`text-sm font-black ${(player.predictedChange || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    {formatSignedMoney(player.predictedChange)}
+                    {formatSignedCompactMoney(player.predictedChange)}
                   </div>
                   {player.predictedChange3d !== undefined && (
                       <>
                           <span className="text-[#4b5563]">/</span>
                           <div className={`text-sm font-black ${(player.predictedChange3d || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                            {formatSignedMoney(player.predictedChange3d)}
+                            {formatSignedCompactMoney(player.predictedChange3d)}
                           </div>
                       </>
                   )}
@@ -495,7 +502,7 @@ const PlayerHistoryModal = ({ player, onClose, isFavorite, onToggleFavorite }) =
                       <>
                           <span className="text-[#4b5563]">/</span>
                           <div className={`text-sm font-black ${(player.predictedChange7d || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                            {formatSignedMoney(player.predictedChange7d)}
+                            {formatSignedCompactMoney(player.predictedChange7d)}
                           </div>
                       </>
                   )}
