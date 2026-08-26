@@ -885,7 +885,24 @@ def main():
             result["leagues"][key]["managers"] = managers_list
             result["leagues"][key]["managerSquads"] = squads_by_manager
 
+
+    # ----------------- 4. Team Logos exportieren -----------------
+    from kickbase_api.others import get_all_teams
+    team_logos = {}
+    for league_def in LEAGUE_DEFS:
+        key = league_def["key"]
+        league_id = league_ids.get(key)
+        token = league_tokens.get(key)
+        if not league_id or not token:
+            continue
+        try:
+            teams = get_all_teams(token, league_id)
+            result["leagues"][key]["teams"] = teams
+        except Exception as e:
+            pass
+
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
+
     with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
         json.dump(result, f, ensure_ascii=False, indent=2)
 

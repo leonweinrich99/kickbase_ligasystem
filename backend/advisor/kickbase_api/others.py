@@ -9,9 +9,7 @@ def get_all_teams(token, competition_id):
     url = f"{BASE_URL}/competitions/{competition_id}/table"
     data = get_json_with_token(url, token)
 
-    return [
-        {"team_id": item.get("tid"), "team_name": item.get("tn")}
-        for item in data.get("it", [])
+    return data.get("it", []))
     ]
 
 

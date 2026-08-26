@@ -42,7 +42,7 @@ def get_all_players(token, competition_id):
     """Get all players in a competition by iterating through all teams."""
 
     all_players = []
-    team_ids = [team["team_id"] for team in get_all_teams(token, competition_id)]
+    team_ids = [team.get("tid") for team in get_all_teams(token, competition_id)]
 
     for team_id in team_ids:
         url = f"{BASE_URL}/competitions/{competition_id}/teams/{team_id}/teamprofile"
