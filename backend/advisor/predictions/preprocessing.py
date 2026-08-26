@@ -50,6 +50,11 @@ def preprocess_player_data(df):
 
     df["market_divergence"] = (df["mv"] / df.groupby("md")["mv"].transform("mean")).rolling(3).mean()
 
+    # Kalender-Features (Prototyp)
+    df["month"] = df["date"].dt.month
+    df["is_preseason"] = df["month"].isin([6, 7, 8]).astype(int)
+    df["is_winter_break"] = df["month"].isin([12, 1]).astype(int)
+
     for target in ["mv_target", "mv_target_3d", "mv_target_7d"]:
         q1 = df[target].quantile(0.25)
         q3 = df[target].quantile(0.75)
