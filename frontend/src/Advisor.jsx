@@ -370,15 +370,18 @@ const PlayerImageDetail = ({ url, name, position }) => {
       <img
         src={url}
         alt={name}
-        // Wichtig: object-contain sorgt dafuer, dass das Bild nicht verzerrt,
-        // -mt-4 zieht es leicht nach oben fuer einen coolen 3D-Effekt ueber den Rand.
-        className="w-28 h-36 sm:w-32 sm:h-40 object-contain drop-shadow-[0_10px_15px_rgba(0,0,0,0.5)] -mt-4 -mr-2"
+        className="w-48 h-56 sm:w-64 sm:h-72 object-contain opacity-30 pointer-events-none mix-blend-screen"
+        style={{ WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%)', maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%)' }}
         onError={() => setFailed(true)}
       />
     );
   }
 
-  return <PlayerAvatar url={null} name={name} position={position} size={72} />;
+  return (
+    <div className="opacity-10 pointer-events-none blur-md scale-150 transform origin-top-right mt-4 mr-4">
+      <PlayerAvatar url={null} name={name} position={position} size={100} />
+    </div>
+  );
 };
 
 const TrendArrow = ({ code }) => {
@@ -534,37 +537,40 @@ const PlayerDetailView = ({ player, onClose, isFavorite, onToggleFavorite }) => 
         )}
       </div>
 
-        <div className="overflow-y-auto min-h-0 pt-6 pb-8">
+        <div className="overflow-y-auto min-h-0 pt-6 pb-8 relative">
+          
+          {/* Huge faded background image */}
+          <div className="absolute top-0 right-0 z-0 pointer-events-none overflow-hidden" style={{ width: '60%', height: '300px', display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-start' }}>
+             <PlayerImageDetail url={player.imageUrl} name={player.name} position={player.position} />
+          </div>
+
           {/* Header - Name & Team */}
-          <div className="px-4 sm:px-6 mb-3 flex justify-between items-start gap-4">
+          <div className="px-4 sm:px-6 mb-3 relative z-10">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 bg-[#0a0a0a]/60 backdrop-blur-md px-1.5 py-0.5 rounded-md -ml-1.5">
                   {teamLogos[player.team] && (
-                    <img src={teamLogos[player.team]} alt={player.team} className="w-4 h-4 object-contain opacity-80" />
+                    <img src={teamLogos[player.team]} alt={player.team} className="w-4 h-4 object-contain opacity-90 drop-shadow-md" />
                   )}
                   <span className="text-[#8b92a5] font-medium text-sm tracking-wide">{player.team}</span>
                 </div>
                 {player.position && (
                     <span
-                      className="text-[10px] font-semibold uppercase tracking-wider rounded px-1.5 py-0.5"
+                      className="text-[10px] font-semibold uppercase tracking-wider rounded px-1.5 py-0.5 backdrop-blur-md"
                       style={{ backgroundColor: `${POSITION_COLORS[player.position] || '#8b92a5'}26`, color: POSITION_COLORS[player.position] || '#8b92a5' }}
                     >
                       {player.position}
                     </span>
                 )}
               </div>
-              <h2 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight leading-tight">
+              <h2 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight leading-tight drop-shadow-lg w-[80%]">
                 {player.firstName ? `${player.firstName} ${player.name}` : player.name}
               </h2>
-            </div>
-            <div className="shrink-0 relative z-10">
-              <PlayerImageDetail url={player.imageUrl} name={player.name} position={player.position} />
             </div>
           </div>
 
           {/* Price & Change (Scalable Style) */}
-          <div className="px-4 sm:px-6 mb-6">
+          <div className="px-4 sm:px-6 mb-6 relative z-10">
             <div className="text-3xl sm:text-[40px] font-semibold text-white leading-none tracking-tight mb-2">
               {formatMoney(player.marketValue)}
             </div>
