@@ -539,7 +539,12 @@ const PlayerDetailView = ({ player, onClose, isFavorite, onToggleFavorite }) => 
           <div className="px-4 sm:px-6 mb-3 flex justify-between items-start gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-[#8b92a5] font-medium text-sm tracking-wide">{player.team}</span>
+                <div className="flex items-center gap-1.5">
+                  {teamLogos[player.team] && (
+                    <img src={teamLogos[player.team]} alt={player.team} className="w-4 h-4 object-contain opacity-80" />
+                  )}
+                  <span className="text-[#8b92a5] font-medium text-sm tracking-wide">{player.team}</span>
+                </div>
                 {player.position && (
                     <span
                       className="text-[10px] font-semibold uppercase tracking-wider rounded px-1.5 py-0.5"
