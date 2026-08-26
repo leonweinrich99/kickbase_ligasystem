@@ -278,11 +278,31 @@
       "tjalf (Liga 3, kein Teil der Quali 25/26) nachträglich gegen das Freilos des schwächsten seinerzeitigen Freilos-Rangs (Mo6, Rang 5) gesetzt - m13 dadurch von Freilos zu echter Partie, m23 (Achtelfinale) entsprechend auf 'Sieger SF13' statt 'Mo6' korrigiert."
     ],
     "roundSchedule": {
-      "Sechzehntelfinale": { "matchday": 5, "date": "10.10.2026", "highlight": "Köln - Gladbach" },
-      "Achtelfinale": { "matchday": 8, "date": "31.10.2026", "highlight": "Bayern - Dortmund" },
-      "Viertelfinale": { "matchday": 10, "date": "21.11.2026", "highlight": "Bremen - Hamburg" },
-      "Halbfinale": { "matchday": 12, "date": "05.12.2026", "highlight": "Schalke - Dortmund" },
-      "Finale": { "matchday": 14, "date": "19.12.2026", "highlight": "Hinrunden-Finale" }
+      "Sechzehntelfinale": {
+        "matchday": 5,
+        "date": "10.10.2026",
+        "highlight": "Köln - Gladbach"
+      },
+      "Achtelfinale": {
+        "matchday": 8,
+        "date": "31.10.2026",
+        "highlight": "Bayern - Dortmund"
+      },
+      "Viertelfinale": {
+        "matchday": 10,
+        "date": "21.11.2026",
+        "highlight": "Bremen - Hamburg"
+      },
+      "Halbfinale": {
+        "matchday": 12,
+        "date": "05.12.2026",
+        "highlight": "Schalke - Dortmund"
+      },
+      "Finale": {
+        "matchday": 14,
+        "date": "19.12.2026",
+        "highlight": "Hinrunden-Finale"
+      }
     }
   }
 }
