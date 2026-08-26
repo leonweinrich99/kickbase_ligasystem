@@ -17,24 +17,24 @@ import numpy as np
 # Kickbase-Zugangsdaten hinterlegen.
 
 
-def live_data_predictions(today_df, model, features):
-    """Make live data predictions for today_df using the trained model."""
+def live_data_predictions(today_df, model, model_3d, model_7d, features):
+    """Make live data predictions for today_df using the trained models for 1, 3 and 7 days."""
 
     today_df_features = today_df[features]
     today_df_results = today_df.copy()
 
     today_df_results["predicted_mv_target"] = np.round(model.predict(today_df_features), 2)
+    today_df_results["predicted_mv_target_3d"] = np.round(model_3d.predict(today_df_features), 2) if model_3d else 0
+    today_df_results["predicted_mv_target_7d"] = np.round(model_7d.predict(today_df_features), 2) if model_7d else 0
+    
     today_df_results = today_df_results.sort_values("predicted_mv_target", ascending=False)
 
     today_df_results = today_df_results.dropna(subset=["mv"])
-    # Zusaetzlich zu den urspruenglichen Spalten auch die bereits berechneten
-    # Mehr-Zeitraum-Features (3-Tage-/7-Tage-Marktwerttrend) sowie zuletzt
-    # bekannte Punkte/Einsatzminuten mitgeben - fuer den "Scouting-Report"
-    # im Frontend (Spieler-Detailansicht im Trading Advisor).
+    
     today_df_results = today_df_results[[
         "player_id", "first_name", "last_name", "position", "team_name",
         "date", "mv_change_1d", "mv_trend_1d", "mv_change_3d", "mv_trend_7d",
-        "mv", "predicted_mv_target", "p", "mp",
+        "mv", "predicted_mv_target", "predicted_mv_target_3d", "predicted_mv_target_7d", "p", "mp",
     ]]
 
     return today_df_results
@@ -119,7 +119,7 @@ def _prepare_context_df(raw_list, debug_label=""):
 
 _BASE_RESULT_COLUMNS = [
     "player_id", "first_name", "last_name", "position", "team_name", "mv", "mv_change_yesterday",
-    "mv_change_3d", "mv_trend_7d", "p", "mp", "predicted_mv_target", "s_11_prob", "status",
+    "mv_change_3d", "mv_trend_7d", "p", "mp", "predicted_mv_target", "predicted_mv_target_3d", "predicted_mv_target_7d", "s_11_prob", "status",
     "season_appearances", "season_points", "total_value_change", "trend_direction",
     "team_of_the_week", "image_path",
 ]

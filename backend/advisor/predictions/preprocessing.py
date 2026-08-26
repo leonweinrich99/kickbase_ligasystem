@@ -29,6 +29,13 @@ def preprocess_player_data(df):
 
     df["mv_next_day"] = df.groupby("player_id")["mv"].shift(-1)
     df["mv_target"] = df["mv_next_day"] - df["mv"]
+
+    # Multi-day targets
+    df["mv_next_3_days"] = df.groupby("player_id")["mv"].shift(-3)
+    df["mv_target_3d"] = df["mv_next_3_days"] - df["mv"]
+    
+    df["mv_next_7_days"] = df.groupby("player_id")["mv"].shift(-7)
+    df["mv_target_7d"] = df["mv_next_7_days"] - df["mv"]
     df = df[df["mv"] != 0.0]
 
     df["mv_change_1d"] = df["mv"] - df.groupby("player_id")["mv"].shift(1)
@@ -43,13 +50,15 @@ def preprocess_player_data(df):
 
     df["market_divergence"] = (df["mv"] / df.groupby("md")["mv"].transform("mean")).rolling(3).mean()
 
-    q1 = df["mv_target"].quantile(0.25)
-    q3 = df["mv_target"].quantile(0.75)
-    iqr = q3 - q1
-    lower_bound = q1 - 2.5 * iqr
-    upper_bound = q3 + 2.5 * iqr
-
-    df["mv_target_clipped"] = df["mv_target"].clip(lower_bound, upper_bound)
+    for target in ["mv_target", "mv_target_3d", "mv_target_7d"]:
+        q1 = df[target].quantile(0.25)
+        q3 = df[target].quantile(0.75)
+        iqr = q3 - q1
+        lower_bound = q1 - 2.5 * iqr
+        upper_bound = q3 + 2.5 * iqr
+        
+        clipped_col = "mv_target_clipped" if target == "mv_target" else f"{target}_clipped"
+        df[clipped_col] = df[target].clip(lower_bound, upper_bound)
 
     df = df.fillna({
         "market_divergence": 1,
@@ -68,7 +77,7 @@ def preprocess_player_data(df):
     today_df = df[df["date"].dt.date >= max_date]
     df = df[df["date"].dt.date < max_date]
 
-    df = df.dropna(subset=["mv_change_1d", "next_day", "next_md", "days_to_next", "mv_next_day", "mv_target", "mv_target_clipped"])
+    df = df.dropna(subset=["mv_change_1d", "next_day", "next_md", "days_to_next", "mv_next_day", "mv_target", "mv_target_clipped", "mv_target_3d_clipped", "mv_target_7d_clipped"])
 
     return df, today_df
 

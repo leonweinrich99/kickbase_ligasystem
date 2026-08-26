@@ -420,6 +420,10 @@ def build_market_payload(token, league_id, live_predictions_df, history_by_playe
     market_df["mv_change_3d"] = market_df["mv_change_3d"].round(0)
     market_df["mv_trend_7d"] = (market_df["mv_trend_7d"] * 100).round(1)
     market_df["predicted_mv_target"] = market_df["predicted_mv_target"].round(0)
+    if "predicted_mv_target_3d" in market_df.columns:
+        market_df["predicted_mv_target_3d"] = market_df["predicted_mv_target_3d"].round(0)
+    if "predicted_mv_target_7d" in market_df.columns:
+        market_df["predicted_mv_target_7d"] = market_df["predicted_mv_target_7d"].round(0)
     market_df["position"] = market_df["position"].map(POSITION_LABELS).fillna(market_df["position"])
     if "s_11_prob" in market_df.columns:
         market_df["s_11_prob"] = market_df["s_11_prob"].round(3)
@@ -439,6 +443,8 @@ def build_market_payload(token, league_id, live_predictions_df, history_by_playe
         "p": "lastPoints",
         "mp": "lastMinutesPlayed",
         "predicted_mv_target": "predictedChange",
+        "predicted_mv_target_3d": "predictedChange3d",
+        "predicted_mv_target_7d": "predictedChange7d",
         "s_11_prob": "startElfProbability",
         "status": "status",
         "season_points": "seasonPoints",
@@ -494,6 +500,10 @@ def build_squad_records(token, league_id, live_predictions_df, history_by_player
     squad_df["mv_change_3d"] = squad_df["mv_change_3d"].round(0)
     squad_df["mv_trend_7d"] = (squad_df["mv_trend_7d"] * 100).round(1)
     squad_df["predicted_mv_target"] = squad_df["predicted_mv_target"].round(0)
+    if "predicted_mv_target_3d" in squad_df.columns:
+        squad_df["predicted_mv_target_3d"] = squad_df["predicted_mv_target_3d"].round(0)
+    if "predicted_mv_target_7d" in squad_df.columns:
+        squad_df["predicted_mv_target_7d"] = squad_df["predicted_mv_target_7d"].round(0)
     squad_df["position"] = squad_df["position"].map(POSITION_LABELS).fillna(squad_df["position"])
     if "s_11_prob" in squad_df.columns:
         squad_df["s_11_prob"] = squad_df["s_11_prob"].round(3)
@@ -513,6 +523,8 @@ def build_squad_records(token, league_id, live_predictions_df, history_by_player
         "p": "lastPoints",
         "mp": "lastMinutesPlayed",
         "predicted_mv_target": "predictedChange",
+        "predicted_mv_target_3d": "predictedChange3d",
+        "predicted_mv_target_7d": "predictedChange7d",
         "s_11_prob": "startElfProbability",
         "status": "status",
         "season_points": "seasonPoints",
@@ -596,6 +608,10 @@ def build_all_players_payload(live_predictions_df, history_by_player=None, playe
     df["mv_change_3d"] = df["mv_change_3d"].round(0)
     df["mv_trend_7d"] = (df["mv_trend_7d"] * 100).round(1)
     df["predicted_mv_target"] = df["predicted_mv_target"].round(0)
+    if "predicted_mv_target_3d" in df.columns:
+        df["predicted_mv_target_3d"] = df["predicted_mv_target_3d"].round(0)
+    if "predicted_mv_target_7d" in df.columns:
+        df["predicted_mv_target_7d"] = df["predicted_mv_target_7d"].round(0)
     df["position"] = df["position"].map(POSITION_LABELS).fillna(df["position"])
 
     records = df_records(df, {
@@ -611,6 +627,8 @@ def build_all_players_payload(live_predictions_df, history_by_player=None, playe
         "p": "lastPoints",
         "mp": "lastMinutesPlayed",
         "predicted_mv_target": "predictedChange",
+        "predicted_mv_target_3d": "predictedChange3d",
+        "predicted_mv_target_7d": "predictedChange7d",
     })
 
     if history_by_player:
@@ -768,9 +786,14 @@ def main():
 
             proc_df, today_df = preprocess_player_data(player_df)
             X_train, X_test, y_train, y_test = split_data(proc_df, FEATURES, TARGET)
+            X_train_3d, X_test_3d, y_train_3d, y_test_3d = split_data(proc_df, FEATURES, "mv_target_3d_clipped")
+            X_train_7d, X_test_7d, y_train_7d, y_test_7d = split_data(proc_df, FEATURES, "mv_target_7d_clipped")
 
-            print(f"Trainiere Modell auf {len(X_train)} Datenpunkten...")
+            print(f"Trainiere Modelle auf {len(X_train)} Datenpunkten...")
             model = train_model(X_train, y_train)
+            model_3d = train_model(X_train_3d, y_train_3d)
+            model_7d = train_model(X_train_7d, y_train_7d)
+            
             signs_percent, rmse, mae, r2 = evaluate_model(model, X_test, y_test)
             result["modelStats"] = {
                 "signsCorrectPercent": round(float(signs_percent), 1),
@@ -780,9 +803,9 @@ def main():
                 "trainSamples": int(len(X_train)),
                 "testSamples": int(len(X_test)),
             }
-            print(f"Modell-Guete: {signs_percent:.1f}% Richtungstreffer, R2={r2:.3f}")
+            print(f"Modell-Guete 1D: {signs_percent:.1f}% Richtungstreffer, R2={r2:.3f}")
 
-            live_predictions_df = live_data_predictions(today_df, model, FEATURES)
+            live_predictions_df = live_data_predictions(today_df, model, model_3d, model_7d, FEATURES)
             print(f"Baue durchsuchbare Spieler-Datenbank ({len(live_predictions_df)} Spieler)...")
             result["players"] = build_all_players_payload(live_predictions_df, history_by_player, player_stats, predicted_probabilities, football_enrichment)
     except Exception as e:

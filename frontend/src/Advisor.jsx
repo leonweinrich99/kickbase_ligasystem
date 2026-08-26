@@ -300,8 +300,13 @@ const ChartTooltip = ({ active, payload, label }) => {
   const point = payload[0].payload;
   return (
     <div className="bg-[#0a0a0a] border border-[#2e2e2e] rounded-xl px-3 py-2 shadow-xl">
-      <div className="text-[10px] text-[#8b92a5] mb-1">{formatShortDate(label)}</div>
-      <div className="text-sm font-bold text-cyan-400">{formatMoney(point.mv)}</div>
+      <div className="text-[10px] text-[#8b92a5] mb-1">
+        {formatShortDate(label)}
+        {point.isPredicted && " (Prognose)"}
+      </div>
+      <div className={`text-sm font-bold ${point.isPredicted ? 'text-[#eab308]' : 'text-cyan-400'}`}>
+        {formatMoney(point.mv !== undefined ? point.mv : point.mv_predicted)}
+      </div>
       {typeof point.points === 'number' && (
         <div className="text-[10px] text-[#8b92a5] mt-0.5">{point.points} Punkte an diesem Spieltag</div>
       )}
@@ -355,7 +360,35 @@ const TrendArrow = ({ code }) => {
 };
 
 const PlayerHistoryModal = ({ player, onClose, isFavorite, onToggleFavorite }) => {
-  const history = normalizeHistory(player.history);
+  const baseHistory = normalizeHistory(player.history);
+  
+  // Extend history with predictions
+  const history = [...baseHistory];
+  if (history.length > 0) {
+      // Create a copy of the last point to connect the predicted line
+      const lastPoint = history[history.length - 1];
+      const todayDateObj = new Date(lastPoint.date);
+      
+      // We set mv_predicted on the last point so the dashed line starts here
+      lastPoint.mv_predicted = lastPoint.mv;
+      
+      const addPredictedPoint = (daysAhead, change) => {
+          if (change === undefined) return;
+          const futureDate = new Date(todayDateObj);
+          futureDate.setDate(futureDate.getDate() + daysAhead);
+          const dateStr = futureDate.toISOString().split('T')[0];
+          history.push({
+              date: dateStr,
+              mv_predicted: (player.marketValue || lastPoint.mv) + change,
+              isPredicted: true
+          });
+      };
+      
+      addPredictedPoint(1, player.predictedChange);
+      addPredictedPoint(3, player.predictedChange3d);
+      addPredictedPoint(7, player.predictedChange7d);
+  }
+  
   const hasScoutingFacts = player.appearances !== undefined || player.totalMinutes !== undefined || player.avgPoints !== undefined;
   const isFit = player.status === null || player.status === undefined || player.status === 0;
   const showPlayBadge = player.onMarket && player.playRecommended;
@@ -445,9 +478,27 @@ const PlayerHistoryModal = ({ player, onClose, isFavorite, onToggleFavorite }) =
               <div className="text-base font-black text-white flex items-center gap-1.5">{formatMoney(player.marketValue)} <TrendArrow code={player.trendDirection} /></div>
             </div>
             <div className="bg-[#0a0a0a] border border-[#2e2e2e] rounded-xl p-3 flex-1">
-              <div className="text-[9px] font-black uppercase tracking-widest text-[#8b92a5] mb-1">Prognose morgen</div>
-              <div className={`text-base font-black ${(player.predictedChange || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                {(player.predictedChange || 0) >= 0 ? '▲' : '▼'} {formatSignedMoney(player.predictedChange)}
+              <div className="text-[9px] font-black uppercase tracking-widest text-[#8b92a5] mb-1">Prognose (1 / 3 / 7 Tage)</div>
+              <div className="flex gap-2 items-center">
+                  <div className={`text-sm font-black ${(player.predictedChange || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    {formatSignedMoney(player.predictedChange)}
+                  </div>
+                  {player.predictedChange3d !== undefined && (
+                      <>
+                          <span className="text-[#4b5563]">/</span>
+                          <div className={`text-sm font-black ${(player.predictedChange3d || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            {formatSignedMoney(player.predictedChange3d)}
+                          </div>
+                      </>
+                  )}
+                  {player.predictedChange7d !== undefined && (
+                      <>
+                          <span className="text-[#4b5563]">/</span>
+                          <div className={`text-sm font-black ${(player.predictedChange7d || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            {formatSignedMoney(player.predictedChange7d)}
+                          </div>
+                      </>
+                  )}
               </div>
             </div>
           </div>
@@ -498,10 +549,11 @@ const PlayerHistoryModal = ({ player, onClose, isFavorite, onToggleFavorite }) =
                 />
                 <Tooltip content={<ChartTooltip />} />
                 <Line type="monotone" dataKey="mv" stroke="#22d3ee" strokeWidth={2.5} dot={false} activeDot={{ r: 5, strokeWidth: 0 }} animationDuration={800} />
+                <Line type="monotone" dataKey="mv_predicted" stroke="#eab308" strokeDasharray="4 4" strokeWidth={2.5} dot={{ r: 3, fill: "#eab308", strokeWidth: 0 }} activeDot={{ r: 5, strokeWidth: 0 }} animationDuration={800} />
               </LineChart>
             </ResponsiveContainer>
           </div>
-          <p className="text-[10px] text-[#8b92a5] text-center mb-5">Marktwert-Verlauf der letzten {history.length} Tage</p>
+          <p className="text-[10px] text-[#8b92a5] text-center mb-5">Marktwert-Verlauf der letzten {baseHistory.length} Tage</p>
 
           {/* Leistung: alles, was Kickbase zuverlaessig hergibt (Einsatzminuten,
               Punkte, offizielle Saison-Statistik) + Tore/Vorlagen/Verletzungen
