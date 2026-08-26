@@ -1,7 +1,6 @@
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { getFirestore } from 'firebase-admin/firestore';
 import { getMessaging } from 'firebase-admin/messaging';
-import { getAuth } from 'firebase-admin/auth';
 
 function getAdminApp() {
   if (getApps().length) return getApps()[0];
@@ -25,6 +24,11 @@ export default async function handler(req, res) {
   if (!app) return res.status(200).json({ sent: 0, skipped: true, reason: 'Firebase nicht eingerichtet' });
 
   try {
+    // Bewusst dynamischer Import statt statischem Top-Level-Import (siehe
+    // notify-admins.js): "firebase-admin/auth" als statischer Import ließ die
+    // gesamte Funktion beim Laden in Vercels Serverless-Bundling mit einem
+    // 500er crashen, noch bevor der Handler-Code überhaupt lief.
+    const { getAuth } = await import('firebase-admin/auth');
     const decodedToken = await getAuth(app).verifyIdToken(idToken);
     const db = getFirestore(app);
     
@@ -78,6 +82,7 @@ export default async function handler(req, res) {
     }
 
     if (invalidTokens.length > 0) {
+      const { FieldValue } = await import('firebase-admin/firestore');
       const batch = db.batch();
       const uniqueOwners = new Set();
       invalidTokens.forEach((token) => {
