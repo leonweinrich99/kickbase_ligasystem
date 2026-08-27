@@ -49,8 +49,8 @@ const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}
       {/* Foto-Medaillons - gross, bluten an den Aussenkanten der Karte nach
           aussen (per overflow-hidden gekappt), nach innen bleibt der runde
           Fade sichtbar */}
-      <ManagerImageDetail name={isPlaceholderName(match.p1) ? null : match.p1} size={104} ringColor={color1} bleed="left" />
-      <ManagerImageDetail name={isPlaceholderName(match.p2) ? null : match.p2} size={104} ringColor={color2} bleed="right" />
+      <ManagerImageDetail name={isPlaceholderName(match.p1) ? null : match.p1} size={84} ringColor={color1} bleed="left" bleedPull={14} />
+      <ManagerImageDetail name={isPlaceholderName(match.p2) ? null : match.p2} size={84} ringColor={color2} bleed="right" bleedPull={14} />
 
       {/* Scrim am unteren Rand - garantiert lesbaren Namen unabhaengig vom Fotoinhalt */}
       <div className="absolute inset-x-0 bottom-0 h-9 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none z-[5]" />

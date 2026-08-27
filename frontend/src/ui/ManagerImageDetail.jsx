@@ -10,6 +10,8 @@ import ManagerAvatar from './ManagerAvatar';
 // Aussenkante seines (positioned + overflow-hidden) Elternelements
 // geschoben - der Elternrahmen kappt den Rest, sodass eine grosse, gut
 // gefuellte, nach innen fadende Sichel entsteht (wie im Trading Advisor).
+// "bleedPull" (px) steuert, wie weit es nach aussen geschoben wird - kleiner
+// = mehr vom Kreis bleibt sichtbar/mittig, groesser = schmalere Sichel.
 // Ohne bleed wird das Medaillon normal/zentriert im Textfluss dargestellt.
 //
 // WICHTIG: Ist fuer den Namen (noch) kein Kickbase-Bild bekannt, faellt die
@@ -17,13 +19,13 @@ import ManagerAvatar from './ManagerAvatar';
 // bewusst NICHT in der grossen Bleed-Groesse/-Position (haette dort einen
 // hart abgeschnittenen, nicht fadenden Rand), sondern klein und mittig an
 // der Kante, wie ein normaler Avatar.
-export default function ManagerImageDetail({ name, photoURL, size = 160, ringColor = '#ff5c3e', bleed = null, className = '' }) {
+export default function ManagerImageDetail({ name, photoURL, size = 160, ringColor = '#ff5c3e', bleed = null, bleedPull = 32, className = '' }) {
   const images = useManagerImages();
   const [failed, setFailed] = useState(false);
   const src = !failed ? ((name && images[name]) || photoURL || null) : null;
 
   const bleedOffset = bleed === 'right' ? 'right-2 sm:right-2.5' : 'left-2 sm:left-2.5';
-  const bleedPull = bleed === 'right' ? '-right-8 sm:-right-9' : '-left-8 sm:-left-9';
+  const bleedPullStyle = bleed === 'right' ? { right: -bleedPull } : { left: -bleedPull };
 
   if (!src) {
     const fallbackSize = bleed ? Math.round(size * 0.42) : size;
@@ -63,7 +65,7 @@ export default function ManagerImageDetail({ name, photoURL, size = 160, ringCol
   if (!bleed) return photo;
 
   return (
-    <div className={`absolute ${bleedPull} top-1/2 -translate-y-1/2 z-0 pointer-events-none`}>
+    <div className="absolute top-1/2 -translate-y-1/2 z-0 pointer-events-none" style={bleedPullStyle}>
       {photo}
     </div>
   );

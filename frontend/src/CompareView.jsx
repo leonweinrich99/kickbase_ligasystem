@@ -224,14 +224,12 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
         <BackButton onClick={goBack} />
       </div>
 
-      {/* Duel Header - kartenlos, mit grossem rundem Foto-Medaillon (Sichel-
-          Look: blutet zur jeweiligen Aussenseite hin aus, wie im Trading
-          Advisor) */}
+      {/* Duel Header - kartenlos, volle runde Foto-Medaillons mit Fade (kein
+          Bleed/Crop noetig - im Head-to-Head soll das ganze Foto sichtbar
+          bleiben) */}
       <div className="flex items-center justify-between mb-8 sm:mb-10 gap-2 sm:gap-6">
         <div className="flex flex-col items-center gap-2 w-[42%] sm:w-2/5 min-w-0">
-          <div className="relative overflow-hidden w-full h-[112px] sm:h-[142px]">
-            <ManagerImageDetail name={user1.name} ringColor="#ff5c3e" size={160} bleed="left" />
-          </div>
+          <ManagerImageDetail name={user1.name} ringColor="#ff5c3e" size={112} />
           <div className="min-w-0 text-center">
             <h1 className="text-sm sm:text-2xl font-semibold tracking-tight text-white truncate">{user1.name}</h1>
             <div className="text-[10px] sm:text-sm font-medium text-[#ff5c3e] mt-0.5">Rank #{user1.rank}</div>
@@ -241,9 +239,7 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
         <div className="text-lg sm:text-3xl font-black text-[#2e2e2e] italic shrink-0">VS</div>
 
         <div className="flex flex-col items-center gap-2 w-[42%] sm:w-2/5 min-w-0">
-          <div className="relative overflow-hidden w-full h-[112px] sm:h-[142px]">
-            <ManagerImageDetail name={user2.name} ringColor="#3b82f6" size={160} bleed="right" />
-          </div>
+          <ManagerImageDetail name={user2.name} ringColor="#3b82f6" size={112} />
           <div className="min-w-0 text-center">
             <h1 className="text-sm sm:text-2xl font-semibold tracking-tight text-white truncate">{user2.name}</h1>
             <div className="text-[10px] sm:text-sm font-medium text-[#3b82f6] mt-0.5">Rank #{user2.rank}</div>
