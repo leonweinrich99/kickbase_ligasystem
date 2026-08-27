@@ -14,8 +14,10 @@ import ManagerAvatar from './ui/ManagerAvatar';
 const isPlaceholderName = (name) => !name || name.startsWith('Sieger') || name === 'Freilos';
 
 // Horizontale Kachel - Foto-Avatar (ohne Fade, mit duennem farbigem
-// Liga-Ring) links, Name direkt rechts daneben (nicht mehr ueberlagernd) -
-// Ergebnis mittig.
+// Liga-Ring), Name direkt daneben (nicht mehr ueberlagernd) - Ergebnis
+// mittig. Gespiegelt: bei Spieler 2 (rechts) sitzt der Avatar aussen an der
+// rechten Kartenkante, der Name links daneben - beide Avatare "schauen" so
+// zur Kartenmitte.
 const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}, onOpenCompare, pokalMembers = null }) => {
   const isWinner1 = match.winner === 1;
   const isWinner2 = match.winner === 2;
@@ -64,13 +66,14 @@ const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}
         </div>
       </div>
 
-      {/* Spieler 2 (rechts): Avatar, Name direkt rechts daneben */}
-      <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
+      {/* Spieler 2 (rechts): Name links daneben, Avatar aussen an der
+          rechten Kartenkante */}
+      <div className="flex flex-row-reverse items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
         <ManagerAvatar name={isPlaceholderName(match.p2) ? null : match.p2} size={40} ringColor={color2} ringWidth={1.5} />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1">
-            <span className={`text-[10px] sm:text-xs font-bold truncate ${isWinner2 ? 'text-white' : 'text-gray-300'}`}>{match.p2 || '-'}</span>
+        <div className="min-w-0 flex-1 text-right">
+          <div className="flex items-center justify-end gap-1">
             {isMember2 && <Check size={10} strokeWidth={3.5} className="text-green-500 shrink-0" />}
+            <span className={`text-[10px] sm:text-xs font-bold truncate ${isWinner2 ? 'text-white' : 'text-gray-300'}`}>{match.p2 || '-'}</span>
           </div>
         </div>
       </div>
