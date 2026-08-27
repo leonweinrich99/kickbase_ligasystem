@@ -29,6 +29,11 @@ def fetch_player_data(token, competition_ids, last_mv_values, last_pfm_values, m
         raw_players = get_all_players_raw(token, competition_id)
         players = [p["i"] for p in raw_players if "i" in p]
         roster_by_id = {p["i"]: p for p in raw_players if "i" in p}
+        # Diagnose: falls ein einzelner Spieler in der App fehlt, hilft dieser
+        # Zaehler zu unterscheiden zwischen "steht noch gar nicht in Kickbases
+        # eigener Kader-Liste" (Zahl zu niedrig) und "steht drin, faellt aber
+        # spaeter in der Pipeline raus" (siehe fallback_value-Logs unten).
+        print(f"Competition {competition_id}: {len(players)} Spieler in der Kader-Liste gefunden.")
 
         def process_player(player_id):
             try:
@@ -51,6 +56,13 @@ def fetch_player_data(token, competition_ids, last_mv_values, last_pfm_values, m
                     if fallback_value:
                         mv_df = pd.DataFrame([{"mv": fallback_value, "date": datetime.now().date().isoformat()}])
                         print(f"Info: Spieler {player_id} hat noch keine Marktwert-Historie, nutze aktuellen Wert {fallback_value} aus der Kader-Liste als Startpunkt.")
+                    else:
+                        # Diagnose fuer den Fall, dass MV_FALLBACK_FIELDS noch
+                        # nicht das richtige Kickbase-Feld trifft - zeigt die
+                        # tatsaechlich vorhandenen Kader-Felder dieses Spielers,
+                        # damit die Liste bei Bedarf ergaenzt werden kann
+                        # (Latte-Lath-Fall: Spieler fehlte weiterhin trotz Fix).
+                        print(f"Info: Spieler {player_id} hat weder Marktwert-Historie noch ein bekanntes Fallback-Feld ({MV_FALLBACK_FIELDS}) - wird uebersprungen. Verfuegbare Kader-Felder: {sorted(roster_entry.keys())}")
 
                 if not mv_df.empty:
                     mv_df["date"] = pd.to_datetime(mv_df["date"])
