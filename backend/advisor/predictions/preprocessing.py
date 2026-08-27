@@ -31,10 +31,21 @@ def preprocess_player_data(df):
     _trace(df, "0_input")
 
     df = df.sort_values(["player_id", "date"])
+    # team_id ist das AKTUELLE Team des Spielers (frisch bei jedem Lauf
+    # abgefragt), t1/t2 stammen dagegen aus der beim jeweiligen Datum
+    # gemergten Performance-Zeile - fuer HISTORISCHE Zeilen vor einem
+    # Vereinswechsel ist das voellig korrekt sein altes Team, nicht das
+    # aktuelle. Ohne die vierte Bedingung ("mv" vorhanden) wurden dadurch
+    # praktisch ALLE Marktwert-Zeilen eines waehrend der Saison gewechselten
+    # Spielers verworfen (Bug-Fall "Latte Lath": 365 von 366 Zeilen weg,
+    # nur eine wertlose Zukunfts-Zeile mit mv=NaN blieb uebrig). Eine echte
+    # Marktwert-Zeile ist immer eigenstaendig gueltig, unabhaengig davon, fuer
+    # welches Team der gemergte Performance-Kontext gerade steht.
     df = df[
         (df["team_id"] == df["t1"]) |
         (df["team_id"] == df["t2"]) |
-        (df["t1"].isna() & df["t2"].isna())
+        (df["t1"].isna() & df["t2"].isna()) |
+        df["mv"].notna()
     ]
     _trace(df, "1_team_id_matches_t1_or_t2")
 
