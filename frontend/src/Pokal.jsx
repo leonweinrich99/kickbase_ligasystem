@@ -13,10 +13,10 @@ import ManagerImageDetail from './ui/ManagerImageDetail';
 // echter Manager und kann daher nicht mit jemandem verglichen werden.
 const isPlaceholderName = (name) => !name || name.startsWith('Sieger') || name === 'Freilos';
 
-// Horizontale Kachel - Foto-Medaillon (rund, mit Fade wenn ein Kickbase-Bild
-// bekannt ist) + Name links/rechts, Ergebnis mittig. Name steht bewusst NIE
-// über dem Foto (eigener Flex-Bereich daneben), damit er immer gut lesbar
-// bleibt.
+// Horizontale Kachel - rundes Foto-Medaillon (mit Fade wenn ein Kickbase-Bild
+// bekannt ist) sitzt an der jeweiligen Aussenkante der Karte ("Ausschnitt ins
+// Karteninnere"), der Name bekommt per Padding klar definierten Abstand dazu
+// und wird dadurch nie vom Foto überdeckt.
 const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}, onOpenCompare, pokalMembers = null }) => {
   const isWinner1 = match.winner === 1;
   const isWinner2 = match.winner === 2;
@@ -42,22 +42,27 @@ const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}
       data-tour={tourTarget ? 'pokal-first-match' : undefined}
       onClick={isClickable ? () => onOpenCompare(id1, id2) : undefined}
       role={isClickable ? 'button' : undefined}
-      className={`flex items-center gap-1.5 sm:gap-2 card-surface rounded-xl overflow-hidden shadow-lg w-full xl:w-64 flex-shrink-0 p-2 sm:p-2.5 transition-transform hover:scale-105 hover:border-[#8b5cf6]/50 ${isFinal ? 'ring-2 ring-[#8b5cf6] shadow-[0_0_20px_rgba(139,92,246,0.3)] xl:scale-110 z-10' : ''} ${isClickable ? 'cursor-pointer active:scale-95' : ''}`}
+      className={`relative overflow-hidden flex items-center card-surface rounded-xl shadow-lg w-full xl:w-64 h-[58px] sm:h-[66px] flex-shrink-0 transition-transform hover:scale-105 hover:border-[#8b5cf6]/50 ${isFinal ? 'ring-2 ring-[#8b5cf6] shadow-[0_0_20px_rgba(139,92,246,0.3)] xl:scale-110 z-10' : ''} ${isClickable ? 'cursor-pointer active:scale-95' : ''}`}
     >
-      {/* Spieler 1 (links) */}
-      <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
-        <ManagerImageDetail name={isPlaceholderName(match.p1) ? null : match.p1} size={28} ringColor={color1} />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1">
-            <span className={`text-[10px] sm:text-xs font-bold truncate ${isWinner1 ? 'text-white' : 'text-gray-300'}`}>{match.p1 || '-'}</span>
-            {isMember1 && <Check size={10} strokeWidth={3.5} className="text-green-500 shrink-0" />}
-          </div>
+      {/* Foto-Medaillons an den Aussenkanten der Karte */}
+      <div className="absolute left-1 sm:left-1.5 top-1/2 -translate-y-1/2 z-0 pointer-events-none">
+        <ManagerImageDetail name={isPlaceholderName(match.p1) ? null : match.p1} size={46} ringColor={color1} />
+      </div>
+      <div className="absolute right-1 sm:right-1.5 top-1/2 -translate-y-1/2 z-0 pointer-events-none">
+        <ManagerImageDetail name={isPlaceholderName(match.p2) ? null : match.p2} size={46} ringColor={color2} />
+      </div>
+
+      {/* Spieler 1 (links) - Padding haelt den Text frei vom Foto */}
+      <div className="relative z-10 flex-1 min-w-0 pl-[52px] sm:pl-[58px] pr-1">
+        <div className="flex items-center gap-1">
+          <span className={`text-[10px] sm:text-xs font-bold truncate ${isWinner1 ? 'text-white' : 'text-gray-300'}`}>{match.p1 || '-'}</span>
+          {isMember1 && <Check size={10} strokeWidth={3.5} className="text-green-500 shrink-0" />}
         </div>
       </div>
 
       {/* Ergebnis mittig - min-w reserviert genug Platz fuer den Arena-Modus,
           dessen Punktestand auch mal vierstellig sein kann (z.B. 1354:1876) */}
-      <div className="flex flex-col items-center shrink-0 px-0.5 min-w-[44px] sm:min-w-[56px]">
+      <div className="relative z-10 flex flex-col items-center shrink-0 px-0.5 min-w-[44px] sm:min-w-[56px]">
         <div className="text-[11px] sm:text-sm font-black whitespace-nowrap tabular-nums">
           <span className={isWinner1 ? 'text-green-400' : 'text-gray-500'}>{score1Display}</span>
           <span className="text-gray-600 mx-0.5">:</span>
@@ -66,13 +71,10 @@ const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}
       </div>
 
       {/* Spieler 2 (rechts) */}
-      <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0 flex-row-reverse text-right">
-        <ManagerImageDetail name={isPlaceholderName(match.p2) ? null : match.p2} size={28} ringColor={color2} />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center justify-end gap-1">
-            {isMember2 && <Check size={10} strokeWidth={3.5} className="text-green-500 shrink-0" />}
-            <span className={`text-[10px] sm:text-xs font-bold truncate ${isWinner2 ? 'text-white' : 'text-gray-300'}`}>{match.p2 || '-'}</span>
-          </div>
+      <div className="relative z-10 flex-1 min-w-0 pr-[52px] sm:pr-[58px] pl-1 text-right">
+        <div className="flex items-center justify-end gap-1">
+          {isMember2 && <Check size={10} strokeWidth={3.5} className="text-green-500 shrink-0" />}
+          <span className={`text-[10px] sm:text-xs font-bold truncate ${isWinner2 ? 'text-white' : 'text-gray-300'}`}>{match.p2 || '-'}</span>
         </div>
       </div>
     </div>
