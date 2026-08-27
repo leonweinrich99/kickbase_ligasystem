@@ -7,9 +7,28 @@ import numpy as np
 # uebernommen - reine Datenaufbereitung/Feature-Engineering, keine
 # Kickbase-Login-spezifische Logik.
 
+# Temporaerer Tracer fuer den "Latte Lath fehlt trotz vorhandener Marktwert-
+# Historie"-Fall (Kickbase-Player-ID 12763, per Debug-Log in data_handler.py
+# bestaetigt) - zeigt, in welchem Filterschritt seine Zeile(n) verschwinden.
+# Kann nach Klaerung wieder entfernt werden.
+DEBUG_PLAYER_ID = "12763"
+
+
+def _trace(df, step):
+    if "player_id" not in df.columns:
+        return
+    match = df[df["player_id"].astype(str) == DEBUG_PLAYER_ID]
+    if match.empty:
+        print(f"TRACE Latte-Lath (id={DEBUG_PLAYER_ID}): nach Schritt '{step}' NICHT mehr in den Daten (0 Zeilen).")
+    else:
+        cols = [c for c in ["date", "t1", "t2", "team_id", "mv", "p", "days_to_next", "mv_change_1d"] if c in match.columns]
+        print(f"TRACE Latte-Lath (id={DEBUG_PLAYER_ID}): nach Schritt '{step}' noch {len(match)} Zeile(n) vorhanden:\n{match[cols].to_string()}")
+
 
 def preprocess_player_data(df):
     """Preprocess the player data for modeling."""
+
+    _trace(df, "0_input")
 
     df = df.sort_values(["player_id", "date"])
     df = df[
@@ -17,6 +36,7 @@ def preprocess_player_data(df):
         (df["team_id"] == df["t2"]) |
         (df["t1"].isna() & df["t2"].isna())
     ]
+    _trace(df, "1_team_id_matches_t1_or_t2")
 
     df["date"] = pd.to_datetime(df["date"])
     df["md"] = pd.to_datetime(df["md"])
@@ -37,6 +57,7 @@ def preprocess_player_data(df):
     df["mv_next_7_days"] = df.groupby("player_id")["mv"].shift(-7)
     df["mv_target_7d"] = df["mv_next_7_days"] - df["mv"]
     df = df[df["mv"] != 0.0]
+    _trace(df, "2_mv_not_zero")
 
     df["mv_change_1d"] = df["mv"] - df.groupby("player_id")["mv"].shift(1)
     df["mv_trend_1d"] = df.groupby("player_id")["mv"].pct_change(fill_method=None)
@@ -88,6 +109,7 @@ def preprocess_player_data(df):
 
     today_df = df[df["date"].dt.date >= max_date]
     df = df[df["date"].dt.date < max_date]
+    _trace(today_df, "3_today_df_split")
 
     df = df.dropna(subset=["mv_change_1d", "next_day", "next_md", "days_to_next", "mv_next_day", "mv_target", "mv_target_clipped", "mv_target_3d_clipped", "mv_target_7d_clipped"])
 

@@ -14,10 +14,9 @@ import ManagerImageDetail from './ui/ManagerImageDetail';
 const isPlaceholderName = (name) => !name || name.startsWith('Sieger') || name === 'Freilos';
 
 // Horizontale Kachel - rundes Foto-Medaillon (mit Fade wenn ein Kickbase-Bild
-// bekannt ist) blutet gross an der jeweiligen Aussenkante der Karte ins Bild
-// hinein ("Sichel"-Look: die Karte ist gut ausgefuellt, nach innen bleibt ein
-// runder, fadender Ausschnitt sichtbar - wie im Trading Advisor). Der Name
-// liegt jetzt direkt ueber dem Foto, unten angehaengt - ein Scrim-Verlauf am
+// bekannt ist), IMMER vollstaendig sichtbar (nie von der Kartenkante
+// angeschnitten - das wuerde eine harte, gerade Kante erzeugen). Der Name
+// liegt direkt ueber dem Foto, unten angehaengt - ein Scrim-Verlauf am
 // unteren Kartenrand sorgt unabhaengig vom Fotoinhalt fuer Lesbarkeit.
 const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}, onOpenCompare, pokalMembers = null }) => {
   const isWinner1 = match.winner === 1;
@@ -46,11 +45,14 @@ const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}
       role={isClickable ? 'button' : undefined}
       className={`relative overflow-hidden card-surface rounded-xl shadow-lg w-full xl:w-64 h-[70px] sm:h-[78px] flex-shrink-0 transition-transform hover:scale-105 hover:border-[#8b5cf6]/50 ${isFinal ? 'ring-2 ring-[#8b5cf6] shadow-[0_0_20px_rgba(139,92,246,0.3)] xl:scale-110 z-10' : ''} ${isClickable ? 'cursor-pointer active:scale-95' : ''}`}
     >
-      {/* Foto-Medaillons - gross, bluten an den Aussenkanten der Karte nach
-          aussen (per overflow-hidden gekappt), nach innen bleibt der runde
-          Fade sichtbar */}
-      <ManagerImageDetail name={isPlaceholderName(match.p1) ? null : match.p1} size={76} ringColor={color1} bleed="left" bleedPull={12} />
-      <ManagerImageDetail name={isPlaceholderName(match.p2) ? null : match.p2} size={76} ringColor={color2} bleed="right" bleedPull={12} />
+      {/* Foto-Medaillons - vollstaendige Kreise, nur nah an die Kante
+          positioniert statt sie anzuschneiden */}
+      <div className="absolute left-2 top-1/2 -translate-y-1/2 z-0 pointer-events-none">
+        <ManagerImageDetail name={isPlaceholderName(match.p1) ? null : match.p1} size={52} ringColor={color1} />
+      </div>
+      <div className="absolute right-2 top-1/2 -translate-y-1/2 z-0 pointer-events-none">
+        <ManagerImageDetail name={isPlaceholderName(match.p2) ? null : match.p2} size={52} ringColor={color2} />
+      </div>
 
       {/* Scrim am unteren Rand - garantiert lesbaren Namen unabhaengig vom Fotoinhalt */}
       <div className="absolute inset-x-0 bottom-0 h-9 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none z-[5]" />

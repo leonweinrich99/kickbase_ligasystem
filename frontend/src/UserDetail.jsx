@@ -301,15 +301,13 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
 
       <div className="max-w-[1000px] w-full mx-auto pt-2 pb-8 px-4 sm:px-6">
 
-        {/* Name, Rang & grosses rundes Foto-Medaillon (Sichel-Look wie im
-            Trading Advisor: Karte gut ausgefuellt, nach innen fadender
-            runder Ausschnitt). Container-Hoehe entspricht der Bildgroesse
-            (sonst wuerde der Kreis oben/unten hart abgeschnitten, bevor der
-            Fade fertig ist - das war der Grund fuer den "komischen" Crop). */}
-        <div className="relative overflow-hidden min-h-[176px] mb-3">
-          <ManagerImageDetail name={userData.name} ringColor={userData.leagueColor || '#ff5c3e'} size={176} bleed="right" bleedPull={28} />
+        {/* Name, Rang & rundes Foto-Medaillon - Foto ist IMMER vollstaendig
+            sichtbar (nie angeschnitten, das wuerde eine harte, gerade Kante
+            erzeugen statt eines sauberen Fades). */}
+        <div className="flex items-center gap-4 mb-3">
+          <ManagerImageDetail name={userData.name} ringColor={userData.leagueColor || '#ff5c3e'} size={88} />
 
-          <div className="relative z-10 w-[60%] sm:w-[62%] min-h-[176px] flex flex-col justify-center">
+          <div className="min-w-0">
             {mode !== 'archive' && userData.leagueName && (
               <span
                 className="inline-flex text-[10px] font-semibold uppercase tracking-wider rounded px-1.5 py-0.5 mb-1.5 w-fit"
@@ -318,7 +316,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                 {userData.leagueName}
               </span>
             )}
-            <h2 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight leading-tight">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight leading-tight truncate">
               {userData.name}
             </h2>
             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
