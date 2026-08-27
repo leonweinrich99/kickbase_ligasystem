@@ -19,12 +19,12 @@ const LigaTab = ({ kickbaseId }) => {
 
   return (
     <div>
-      <div className="flex items-center gap-2 mb-5">
-        <img src={ligaLogo} alt="" className="w-5 h-5 object-contain shrink-0" />
-        <span className="text-xs font-bold uppercase tracking-wider" style={{ color: entry.leagueColor }}>
-          {entry.leagueName}
-        </span>
-      </div>
+      <span
+        className="inline-flex items-center text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full mb-5"
+        style={{ backgroundColor: `${entry.leagueColor}26`, color: entry.leagueColor }}
+      >
+        {entry.leagueName}
+      </span>
       <div className="grid grid-cols-3 gap-4 mb-5">
         <div className="flex flex-col">
           <span className="text-[#8b92a5] text-[10px] font-bold uppercase tracking-widest mb-1">Platz</span>
@@ -141,10 +141,12 @@ const PokalTab = ({ kickbaseId, kickbaseName, photoURL }) => {
   return (
     <div>
       <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-2">
-          <img src={pokalLogo} alt="" className="w-5 h-5 object-contain shrink-0" />
-          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: theme.color }}>{status.round}</span>
-        </div>
+        <span
+          className="inline-flex items-center text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full"
+          style={{ backgroundColor: `${theme.color}26`, color: theme.color }}
+        >
+          {status.round}
+        </span>
         <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: theme.color }}>
           {theme.label}
         </span>
@@ -341,30 +343,30 @@ const KaderTab = ({ kickbaseId }) => {
 // Kader-Tab wurde bewusst entfernt: personalisierte Kader-Empfehlungen sind
 // jetzt exklusiv im Trading Advisor (Advisor.jsx) zu finden, nicht mehr auf
 // der Account-Seite. KaderTab-Komponente bleibt im Code erhalten.
-const TABS = [
-  { key: 'liga', label: 'Liga' },
-  { key: 'pokal', label: 'Pokal' },
-];
+
+// Liga und Pokal stehen untereinander statt in Tabs - die jeweiligen Logos
+// übernehmen die visuelle Abgrenzung zwischen den beiden Abschnitten (siehe
+// Nutzer-Feedback: Tabs sollten weg, Logos sollen die Trennung übernehmen).
+const Section = ({ logo, title, children }) => (
+  <div className="mb-8 last:mb-0">
+    <div className="flex items-center gap-2.5 mb-5 pb-3 border-b border-[#2a2a2a]">
+      <img src={logo} alt="" className="w-7 h-7 object-contain shrink-0" />
+      <span className="text-sm font-bold uppercase tracking-wider text-white">{title}</span>
+    </div>
+    {children}
+  </div>
+);
 
 export const SeasonSnapshot = ({ kickbaseId, kickbaseName, photoURL }) => {
-  const [tab, setTab] = useState('liga');
-
   return (
     <div className="mb-6">
-      <div className="flex gap-5 border-b border-[#2a2a2a] mb-5">
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            className={`pb-3 -mb-px text-xs font-bold uppercase tracking-wider transition-colors border-b-2 ${tab === t.key ? 'text-white border-[#ff5c3e]' : 'text-[#6b7280] border-transparent hover:text-gray-300'}`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-      {tab === 'liga' && <LigaTab kickbaseId={kickbaseId} />}
-      {tab === 'pokal' && <PokalTab kickbaseId={kickbaseId} kickbaseName={kickbaseName} photoURL={photoURL} />}
-      {/* Kader- und Spieltag-Tab bewusst deaktiviert, siehe TABS oben */}
+      <Section logo={ligaLogo} title="Liga">
+        <LigaTab kickbaseId={kickbaseId} />
+      </Section>
+      <Section logo={pokalLogo} title="Pokal">
+        <PokalTab kickbaseId={kickbaseId} kickbaseName={kickbaseName} photoURL={photoURL} />
+      </Section>
+      {/* Kader- und Spieltag-Tab bewusst deaktiviert, siehe Kommentar oben */}
     </div>
   );
 };

@@ -41,7 +41,7 @@ const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}
       data-tour={tourTarget ? 'pokal-first-match' : undefined}
       onClick={isClickable ? () => onOpenCompare(id1, id2) : undefined}
       role={isClickable ? 'button' : undefined}
-      className={`flex items-center gap-1.5 sm:gap-2 card-surface rounded-xl overflow-hidden shadow-lg w-full xl:w-56 flex-shrink-0 p-2 sm:p-2.5 transition-transform hover:scale-105 hover:border-[#8b5cf6]/50 ${isFinal ? 'ring-2 ring-[#8b5cf6] shadow-[0_0_20px_rgba(139,92,246,0.3)] xl:scale-110 z-10' : ''} ${isClickable ? 'cursor-pointer active:scale-95' : ''}`}
+      className={`flex items-center gap-1.5 sm:gap-2 card-surface rounded-xl overflow-hidden shadow-lg w-full xl:w-64 flex-shrink-0 p-2 sm:p-2.5 transition-transform hover:scale-105 hover:border-[#8b5cf6]/50 ${isFinal ? 'ring-2 ring-[#8b5cf6] shadow-[0_0_20px_rgba(139,92,246,0.3)] xl:scale-110 z-10' : ''} ${isClickable ? 'cursor-pointer active:scale-95' : ''}`}
     >
       {/* Spieler 1 (links) */}
       <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
@@ -54,9 +54,10 @@ const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}
         </div>
       </div>
 
-      {/* Ergebnis mittig */}
-      <div className="flex flex-col items-center shrink-0 px-0.5">
-        <div className="text-xs sm:text-sm font-black whitespace-nowrap">
+      {/* Ergebnis mittig - min-w reserviert genug Platz fuer den Arena-Modus,
+          dessen Punktestand auch mal vierstellig sein kann (z.B. 1354:1876) */}
+      <div className="flex flex-col items-center shrink-0 px-0.5 min-w-[44px] sm:min-w-[56px]">
+        <div className="text-[11px] sm:text-sm font-black whitespace-nowrap tabular-nums">
           <span className={isWinner1 ? 'text-green-400' : 'text-gray-500'}>{score1Display}</span>
           <span className="text-gray-600 mx-0.5">:</span>
           <span className={isWinner2 ? 'text-green-400' : 'text-gray-500'}>{score2Display}</span>
