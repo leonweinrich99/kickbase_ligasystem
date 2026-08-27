@@ -1,9 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Info, RefreshCw, CheckCircle2, XCircle, Star } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import { useBackNavigation } from './useBackNavigation';
 import { useFavorites } from './useFavorites';
+import PageHeader from './ui/PageHeader';
+import CloseButton from './ui/CloseButton';
+import StatTile from './ui/StatTile';
 
 // Zeigt die Auswertungen des "Kickbase Trading Advisor" an (siehe
 // backend/advisor/, generiert per GitHub Action aus
@@ -41,7 +45,7 @@ const SECTION_TABS = [
   { key: 'market', label: 'Markt' },
   { key: 'squad', label: 'Kader' },
   { key: 'database', label: 'Datenbank' },
-  { key: 'favorites', label: '★ Favoriten' },
+  { key: 'favorites', label: 'Favoriten' },
 ];
 
 const formatMoney = (val) => {
@@ -173,13 +177,6 @@ const FilterBar = ({ filters, onChange, teams, showTeamFilter = false, recommend
     >
       Nur steigend
     </button>
-  </div>
-);
-
-const StatCard = ({ label, value, accent = '#22d3ee' }) => (
-  <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl p-4 flex-1 min-w-[120px]">
-    <div className="text-[9px] font-black uppercase tracking-widest text-[#8b92a5] mb-1">{label}</div>
-    <div className="text-xl font-black" style={{ color: accent }}>{value}</div>
   </div>
 );
 
@@ -789,6 +786,7 @@ const Advisor = () => {
   const [dbVisibleCount, setDbVisibleCount] = useState(DB_PAGE_SIZE);
   const [isAdvisorUpdating, setIsAdvisorUpdating] = useState(false);
   const [advisorUpdateStatus, setAdvisorUpdateStatus] = useState(null);
+  const [advisorUpdateStatusOk, setAdvisorUpdateStatusOk] = useState(true);
   const [sectionTab, setSectionTab] = useState('budgets');
   const [showInfo, setShowInfo] = useState(false);
 
@@ -843,15 +841,18 @@ const Advisor = () => {
         headers: { Authorization: `Bearer ${password}` }
       });
       if (res.ok) {
-        setAdvisorUpdateStatus("✅ Angestoßen! Läuft ca. 2-5 Minuten im Hintergrund.");
+        setAdvisorUpdateStatusOk(true);
+        setAdvisorUpdateStatus("Angestoßen! Läuft ca. 2-5 Minuten im Hintergrund.");
         setTimeout(() => setAdvisorUpdateStatus(null), 6000);
       } else {
         const errData = await res.json();
-        setAdvisorUpdateStatus(`❌ Fehler: ${errData.error || "Unbefugt"}`);
+        setAdvisorUpdateStatusOk(false);
+        setAdvisorUpdateStatus(`Fehler: ${errData.error || "Unbefugt"}`);
         setTimeout(() => setAdvisorUpdateStatus(null), 6000);
       }
     } catch {
-      setAdvisorUpdateStatus("❌ Netzwerkfehler beim Update-Aufruf.");
+      setAdvisorUpdateStatusOk(false);
+      setAdvisorUpdateStatus("Netzwerkfehler beim Update-Aufruf.");
       setTimeout(() => setAdvisorUpdateStatus(null), 6000);
     } finally {
       setIsAdvisorUpdating(false);
@@ -983,46 +984,33 @@ const Advisor = () => {
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-4">
-          <div>
-            <div className="text-[10px] font-bold tracking-wider text-cyan-400 mb-1">ADMIN</div>
-            <h1 className="text-2xl sm:text-3xl font-black uppercase text-white">Trading Advisor</h1>
-          </div>
+          <PageHeader eyebrow="ADMIN" accentColor="#22d3ee" title="Trading Advisor" />
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => setShowInfo((v) => !v)}
               aria-label="Info"
-              className={`w-9 h-9 flex items-center justify-center rounded-full border transition-all font-black text-xs ${showInfo ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400' : 'bg-[#171717] border-[#2e2e2e] text-[#8b92a5] hover:text-white hover:border-[#404040]'}`}
+              className={`w-10 h-10 flex items-center justify-center rounded-xl border transition-all ${showInfo ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400' : 'bg-[#171717] border-[#2e2e2e] text-[#8b92a5] hover:text-white hover:border-[#404040]'}`}
             >
-              i
+              <Info size={18} strokeWidth={2.5} />
             </button>
             <button
               onClick={handleAdvisorUpdate}
               disabled={isAdvisorUpdating}
               aria-label="Trading Advisor aktualisieren"
               title="Trading Advisor aktualisieren"
-              className="w-9 h-9 flex items-center justify-center rounded-full bg-[#171717] border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500 transition-all disabled:opacity-50"
+              className="w-10 h-10 flex items-center justify-center rounded-xl bg-[#171717] border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500 transition-all disabled:opacity-50"
             >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={isAdvisorUpdating ? 'animate-spin' : ''}>
-                <polyline points="23 4 23 10 17 10"></polyline>
-                <polyline points="1 20 1 14 7 14"></polyline>
-                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-              </svg>
+              <RefreshCw size={16} strokeWidth={2.5} className={isAdvisorUpdating ? 'animate-spin' : ''} />
             </button>
-            <button
-              onClick={goBack}
-              aria-label="Schließen"
-              className="w-9 h-9 flex items-center justify-center bg-[#171717] border border-[#2e2e2e] rounded-full text-[#8b92a5] hover:text-white hover:border-[#404040] transition-all"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
+            <CloseButton onClick={goBack} />
           </div>
         </div>
 
         {advisorUpdateStatus && (
-          <p className="text-xs text-cyan-400 mb-4">{advisorUpdateStatus}</p>
+          <p className={`flex items-center gap-1.5 text-xs mb-4 ${advisorUpdateStatus.includes('...') ? 'text-cyan-400' : advisorUpdateStatusOk ? 'text-green-400' : 'text-red-400'}`}>
+            {!advisorUpdateStatus.includes('...') && (advisorUpdateStatusOk ? <CheckCircle2 size={13} /> : <XCircle size={13} />)}
+            {advisorUpdateStatus}
+          </p>
         )}
 
         {showInfo && (
@@ -1034,15 +1022,15 @@ const Advisor = () => {
             </p>
             {data && (
               <div className="flex flex-wrap gap-3 mt-4">
-                <StatCard
+                <StatTile
                   label="Zuletzt aktualisiert"
                   value={generatedAt ? generatedAt.toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '–'}
-                  accent="#8b92a5"
+                  valueColor="#8b92a5"
                 />
                 {data.modelStats && (
                   <>
-                    <StatCard label="Richtungstreffer" value={`${data.modelStats.signsCorrectPercent}%`} accent="#22d3ee" />
-                    <StatCard label="Trainingsdaten" value={data.modelStats.trainSamples} accent="#8b92a5" />
+                    <StatTile label="Richtungstreffer" value={`${data.modelStats.signsCorrectPercent}%`} valueColor="#22d3ee" />
+                    <StatTile label="Trainingsdaten" value={data.modelStats.trainSamples} valueColor="#8b92a5" />
                   </>
                 )}
               </div>
@@ -1080,8 +1068,9 @@ const Advisor = () => {
                 <button
                   key={t.key}
                   onClick={() => setSectionTab(t.key)}
-                  className={`px-4 py-3 text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-colors border-b-2 ${sectionTab === t.key ? 'text-white border-cyan-400' : 'text-[#8b92a5] border-transparent hover:text-gray-300'}`}
+                  className={`px-4 py-3 text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-colors border-b-2 flex items-center gap-1.5 ${sectionTab === t.key ? 'text-white border-cyan-400' : 'text-[#8b92a5] border-transparent hover:text-gray-300'}`}
                 >
+                  {t.key === 'favorites' && <Star size={12} fill={sectionTab === t.key ? 'currentColor' : 'none'} />}
                   {t.label}
                 </button>
               ))}
@@ -1161,7 +1150,7 @@ const Advisor = () => {
                     </select>
 
                     {selectedManagerBudget && (
-                      <div className="bg-[#0a0a0a] border border-[#2e2e2e] rounded-xl p-4 mb-4">
+                      <div className="bg-[#000] border border-[#2e2e2e] rounded-xl p-4 mb-4">
                         <div className="text-[9px] font-black uppercase tracking-widest text-[#8b92a5] mb-2">Verfügbares Budget</div>
                         <div className="text-lg font-black text-white mb-3">{formatMoney(selectedManagerBudget.availableBudget ?? selectedManagerBudget.budget)}</div>
                         {affordableBuyRecommendations.length > 0 ? (
@@ -1246,7 +1235,10 @@ const Advisor = () => {
               <>
                 <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                   <div>
-                    <h2 className="text-[1.2rem] font-black text-[#f8fafc] tracking-tight uppercase">★ Favoriten</h2>
+                    <h2 className="text-[1.2rem] font-black text-[#f8fafc] tracking-tight uppercase flex items-center gap-2">
+                      <Star size={16} className="text-yellow-500" fill="currentColor" />
+                      Favoriten
+                    </h2>
                     <p className="text-[10px] text-[#8b92a5] mt-1">Deine gemerkten Spieler, geräteübergreifend gespeichert.</p>
                   </div>
                   <span className="text-[10px] text-[#8b92a5]">{filteredFavorites.length} von {favoritePlayersList.length} Spielern</span>

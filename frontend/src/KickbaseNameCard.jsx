@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { ChevronRight } from 'lucide-react';
 import { doc, updateDoc, deleteField } from 'firebase/firestore';
 import { db } from './firebase';
 import { useAuth } from './AuthContext';
@@ -171,7 +172,7 @@ export default function KickbaseNameField() {
           className="inline-flex items-center gap-1.5 mt-3 text-[10px] font-black uppercase tracking-widest text-[#ff5c3e] hover:text-[#ff7056] transition-colors"
         >
           Mein Kickbase-Profil ansehen
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          <ChevronRight size={12} strokeWidth={3} />
         </Link>
       )}
     </div>

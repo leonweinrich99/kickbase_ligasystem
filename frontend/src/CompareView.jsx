@@ -5,10 +5,11 @@ import {
   ResponsiveContainer, ReferenceArea, Legend, LabelList 
 } from 'recharts';
 import { 
-  ArrowLeft, TrendingUp, TrendingDown, Target, 
+  TrendingUp, TrendingDown, Target, 
   Award, Wallet, Activity, Star, Zap
 } from 'lucide-react';
 import { useBackNavigation } from './useBackNavigation';
+import { BackButton } from './ui/CloseButton';
 
 const calculatePerformanceScore = (points, avg, opt, max) => {
   if (points <= 0) return 1.0;
@@ -219,13 +220,7 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
       
       {/* Back Button */}
       <div className="mb-8">
-        <button
-          onClick={goBack}
-          className="group flex items-center gap-3 bg-[#171717] border border-[#2e2e2e] px-4 py-2 rounded-xl text-[#8b92a5] hover:text-white transition-all w-fit"
-        >
-          <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-          <span className="text-xs font-bold uppercase tracking-wider">Zurück</span>
-        </button>
+        <BackButton onClick={goBack} />
       </div>
 
       {/* Duel Header Desktop */}

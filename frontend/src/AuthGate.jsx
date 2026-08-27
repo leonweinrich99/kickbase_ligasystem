@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { XCircle, Clock, HelpCircle } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import Login from './Login';
 import LoadingScreen from './LoadingScreen';
@@ -28,7 +29,7 @@ const PendingScreen = ({ status }) => {
     <div className="min-h-screen bg-[#000000] flex items-center justify-center p-4">
       <div className="max-w-md w-full text-center bg-[#171717] border border-[#2e2e2e] rounded-3xl p-8 shadow-2xl">
         <div className={`w-14 h-14 mx-auto mb-5 rounded-2xl flex items-center justify-center ${isRejected ? 'bg-red-500/10 text-red-400' : 'bg-yellow-500/10 text-yellow-400'}`}>
-          {isRejected ? '✕' : '⏳'}
+          {isRejected ? <XCircle size={26} strokeWidth={2.5} /> : <Clock size={26} strokeWidth={2.5} />}
         </div>
         <h1 className="text-lg font-black text-white uppercase mb-3">
           {isRejected ? 'Zugang abgelehnt' : 'Warte auf Freischaltung'}
@@ -48,11 +49,7 @@ const PendingScreen = ({ status }) => {
               onClick={tour.start}
               className="w-full flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest text-yellow-500 border border-yellow-500/30 bg-yellow-500/10 px-4 py-3 rounded-xl hover:bg-yellow-500/20 transition-colors"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-              </svg>
+              <HelpCircle size={14} strokeWidth={2.5} />
               App-Tutorial ansehen
             </button>
           </>

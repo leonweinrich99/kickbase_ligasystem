@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Users, Star, Trophy, Info, ChevronLeft, ChevronRight, TrendingUp, TrendingDown } from 'lucide-react';
 import logo from './assets/logo.png';
+import PageHeader from './ui/PageHeader';
+import CloseButton from './ui/CloseButton';
 
 export const AvatarIcon = ({ name }) => {
   return (
@@ -12,25 +15,11 @@ export const AvatarIcon = ({ name }) => {
 
 export const TrophyIcon = ({ type }) => {
   const colors = { gold: '#eab308', silver: '#94a3b8', bronze: '#ca8a04' };
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={colors[type]} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-      <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-      <path d="M4 22h16"></path>
-      <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
-      <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
-      <path d="M18 2H6v7c0 3.31 2.69 6 6 6s6-2.69 6-6V2z"></path>
-    </svg>
-  );
+  return <Trophy size={18} color={colors[type]} strokeWidth={2.5} />;
 };
 
 export const UsersIcon = ({ className }) => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-    <circle cx="9" cy="7" r="4"></circle>
-    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-  </svg>
+  <Users size={18} strokeWidth={2.5} className={className} />
 );
 
 export const Header = ({
@@ -74,7 +63,7 @@ export const Header = ({
           data-tour="optimal-team-button"
           className="shrink-0 flex items-center gap-1.5 bg-[#171717] border border-[#ff5c3e]/40 hover:border-[#ff5c3e] transition-colors rounded-full pl-2.5 pr-3 py-1.5 shadow-lg active:scale-95 group mt-1"
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="#ff5c3e" stroke="#ff5c3e" strokeWidth="1" className="shrink-0"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          <Star size={12} fill="#ff5c3e" stroke="#ff5c3e" strokeWidth={1} className="shrink-0" />
           <span className="text-[10px] font-bold text-gray-300 group-hover:text-white transition-colors whitespace-nowrap">
             Top Elf
           </span>
@@ -90,7 +79,7 @@ export const Header = ({
             onClick={onPrev}
             className="px-3 sm:px-5 h-full text-[#8b92a5] hover:text-[#ff5c3e] transition-colors bg-[#141414] active:scale-90"
           >
-            &lsaquo;
+            <ChevronLeft size={18} />
           </button>
           <span className="px-2 sm:px-6 text-[11px] sm:text-sm text-gray-200 whitespace-nowrap uppercase tracking-widest text-center flex-1 flex items-center justify-center gap-1.5">
             {displayLabel}
@@ -104,11 +93,7 @@ export const Header = ({
                 aria-label="Erklärung zur wahren Tabelle"
                 className="text-[#ff5c3e] opacity-80 hover:opacity-100 transition-opacity shrink-0"
               >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="12" y1="16" x2="12" y2="12"></line>
-                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                </svg>
+                <Info size={13} strokeWidth={2.5} />
               </span>
             )}
           </span>
@@ -116,7 +101,7 @@ export const Header = ({
             onClick={onNext}
             className="px-3 sm:px-5 h-full text-[#8b92a5] hover:text-[#ff5c3e] transition-colors bg-[#141414] active:scale-90"
           >
-            &rsaquo;
+            <ChevronRight size={18} />
           </button>
         </div>
 
@@ -163,8 +148,8 @@ export const UserRow = ({ item, color, isSaisonView, displayRank, prevRank, rout
           <div className="flex items-center gap-2">
             <div className="text-[16px] font-bold tracking-wide text-gray-100 truncate">{item.name}</div>
             {rankChange !== 0 && isSaisonView && (
-              <div className={`flex items-center text-[10px] font-black shrink-0 ${rankChange > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                {rankChange > 0 ? '▲' : '▼'} {Math.abs(rankChange)}
+              <div className={`flex items-center gap-1 text-[10px] font-black shrink-0 ${rankChange > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                {rankChange > 0 ? <TrendingUp size={11} /> : <TrendingDown size={11} />} {Math.abs(rankChange)}
               </div>
             )}
           </div>
@@ -219,23 +204,10 @@ const TrueTableInfoModal = ({ onClose }) => (
       className="max-w-md w-full bg-[#171717] border border-[#2e2e2e] rounded-3xl p-6 shadow-2xl relative"
       onClick={(e) => e.stopPropagation()}
     >
-      <button
-        onClick={onClose}
-        className="absolute top-4 right-4 text-[#8b92a5] hover:text-white transition-colors"
-        aria-label="Schließen"
-      >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
+      <CloseButton onClick={onClose} size="compact" className="absolute top-4 right-4" />
 
       <div className="w-11 h-11 rounded-xl bg-[#ff5c3e]/10 text-[#ff5c3e] flex items-center justify-center mb-4">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="16" x2="12" y2="12"></line>
-          <line x1="12" y1="8" x2="12.01" y2="8"></line>
-        </svg>
+        <Info size={20} strokeWidth={2.5} />
       </div>
 
       <h2 className="text-lg font-black uppercase text-white mb-3">Die wahre Tabelle</h2>

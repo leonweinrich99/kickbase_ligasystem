@@ -5,10 +5,12 @@ import {
   ResponsiveContainer, ReferenceArea, Legend, LabelList 
 } from 'recharts';
 import { 
-  ArrowLeft, TrendingUp, TrendingDown, Target, 
+  TrendingUp, TrendingDown, Target, 
   Award, Wallet, Activity, Star, Users, Search, X, Zap
 } from 'lucide-react';
 import { useBackNavigation } from './useBackNavigation';
+import StatCard from './ui/StatCard';
+import { BackButton } from './ui/CloseButton';
 
 const calculatePerformanceScore = (points, avg, opt, max) => {
   if (points <= 0) return 1.0;
@@ -289,13 +291,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
         
         {/* Top bar on mobile (Back + Compare buttons) */}
         <div className="flex items-center justify-between w-full sm:w-auto">
-            <button 
-              onClick={goBack}
-              className="group flex items-center gap-3 bg-[#171717] border border-[#2e2e2e] px-4 py-2 rounded-xl text-[#8b92a5] hover:text-white transition-all shrink-0"
-            >
-              <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-              <span className="text-xs font-bold uppercase tracking-wider">Zurück</span>
-            </button>
+            <BackButton onClick={goBack} />
 
             {/* Compare Buttons on mobile */}
             <div className="flex sm:hidden items-center gap-2">
@@ -662,41 +658,6 @@ const ThresholdCard = ({ rank, points, thresholds }) => {
       </div>
 
       <div className={`absolute right-0 top-0 bottom-0 w-1 ${info.type === 'success' ? 'bg-green-500' : info.type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'}`}></div>
-    </div>
-  );
-};
-
-const StatCard = ({ icon, label, value, subValue, isRating, loading }) => {
-  const getRatingColor = (val) => {
-    if (!val) return 'text-gray-400';
-    const num = parseFloat(val.toString().replace(',', '.'));
-    if (num >= 8) return 'text-green-400';
-    if (num >= 6) return 'text-green-500/80';
-    if (num >= 4) return 'text-yellow-500';
-    if (num >= 2) return 'text-orange-500';
-    return 'text-red-500';
-  };
-
-  return (
-    <div className="bg-[#171717] border border-[#2e2e2e] p-3 sm:p-5 rounded-2xl shadow-sm hover:border-[#404040] transition-all group relative overflow-hidden flex flex-col justify-between">
-      <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-        <div className="bg-[#1f1f1f] p-1.5 sm:p-2 rounded-lg group-hover:scale-110 transition-transform shrink-0">
-          {React.cloneElement(icon, { size: 16, className: "sm:w-[18px] sm:h-[18px]" })}
-        </div>
-        <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-[#8b92a5] leading-tight">{label}</span>
-      </div>
-      
-      <div className="flex flex-col mb-1 gap-1">
-          {loading ? (
-            <div className="h-5 sm:h-6 w-12 rounded bg-[#1f1f1f] animate-pulse"></div>
-          ) : (
-            <div className={`text-[17px] sm:text-xl font-black leading-none ${isRating ? getRatingColor(value) : ''}`}>
-              {value}
-              {isRating && <span className="text-[10px] text-gray-500 ml-1">/ 10</span>}
-            </div>
-          )}
-      </div>
-      <div className="text-[8px] sm:text-[9px] font-bold text-[#626978] uppercase tracking-wider mt-1">{subValue}</div>
     </div>
   );
 };

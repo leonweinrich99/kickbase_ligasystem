@@ -1,25 +1,25 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { collection, onSnapshot, doc, updateDoc, deleteField, query, orderBy } from 'firebase/firestore';
+import { Check, X, AlertTriangle, MoreVertical, MessageCircle, RefreshCw, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { db } from './firebase';
 import { useAuth } from './AuthContext';
 import PushNotificationCard from './PushNotificationCard';
 import AdminMessengerCard from './AdminMessengerCard';
 import { useBackNavigation } from './useBackNavigation';
+import PageHeader from './ui/PageHeader';
+import CloseButton from './ui/CloseButton';
+import StatusPill from './ui/StatusPill';
 
-const StatusBadge = ({ status }) => {
-  const styles = {
-    approved: 'bg-green-500/10 text-green-400 border-green-500/30',
-    pending: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
-    rejected: 'bg-red-500/10 text-red-400 border-red-500/30'
-  };
-  const labels = { approved: 'Freigegeben', pending: 'Ausstehend', rejected: 'Abgelehnt' };
-  return (
-    <span className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full border shrink-0 ${styles[status] || styles.pending}`}>
-      {labels[status] || status}
-    </span>
-  );
-};
+const STATUS_VARIANTS = { approved: 'green', pending: 'yellow', rejected: 'red' };
+const STATUS_ICONS = { approved: CheckCircle2, pending: Clock, rejected: XCircle };
+const STATUS_LABELS = { approved: 'Freigegeben', pending: 'Ausstehend', rejected: 'Abgelehnt' };
+
+const StatusBadge = ({ status }) => (
+  <StatusPill icon={STATUS_ICONS[status]} variant={STATUS_VARIANTS[status] || 'yellow'}>
+    {STATUS_LABELS[status] || status}
+  </StatusPill>
+);
 
 const MenuItem = ({ onClick, children, danger, accent }) => (
   <button
@@ -51,11 +51,14 @@ const UserRow = ({ u, isSelf, onSetStatus, onSetRole, onApproveKickbaseChange, o
         <div className="flex items-center gap-1 mt-1">
           {u.kickbaseId ? (
             <span className="inline-flex items-center gap-1 text-[9px] font-bold text-green-400">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <Check size={10} strokeWidth={4} className="shrink-0" />
               {u.kickbaseName || 'Verknüpft'}
             </span>
           ) : (
-            <span className="text-[9px] font-bold text-yellow-500/80">⚠ Kickbase nicht verknüpft{u.kickbaseName ? ` (nur Name: "${u.kickbaseName}")` : ''}</span>
+            <span className="inline-flex items-center gap-1 text-[9px] font-bold text-yellow-500/80">
+              <AlertTriangle size={10} strokeWidth={3} className="shrink-0" />
+              Kickbase nicht verknüpft{u.kickbaseName ? ` (nur Name: "${u.kickbaseName}")` : ''}
+            </span>
           )}
         </div>
       </div>
@@ -70,14 +73,14 @@ const UserRow = ({ u, isSelf, onSetStatus, onSetRole, onApproveKickbaseChange, o
             aria-label="Freigeben"
             className="w-7 h-7 flex items-center justify-center rounded-lg bg-green-500/10 text-green-400 border border-green-500/30 hover:bg-green-500/20 transition-colors"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <Check size={14} strokeWidth={3} />
           </button>
           <button
             onClick={() => onSetStatus(u.id, 'rejected')}
             aria-label="Ablehnen"
             className="w-7 h-7 flex items-center justify-center rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-colors"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            <X size={14} strokeWidth={3} />
           </button>
         </div>
       ) : (
@@ -87,7 +90,7 @@ const UserRow = ({ u, isSelf, onSetStatus, onSetRole, onApproveKickbaseChange, o
             aria-label="Weitere Optionen"
             className="w-7 h-7 flex items-center justify-center rounded-lg text-[#8b92a5] hover:text-white hover:bg-[#1f1f1f] transition-colors"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle></svg>
+            <MoreVertical size={16} strokeWidth={2.5} />
           </button>
           {menuOpen && (
             <div className="absolute right-0 top-full mt-1 w-44 bg-[#1f1f1f] border border-[#2e2e2e] rounded-xl shadow-2xl z-20 overflow-hidden py-1">
@@ -137,6 +140,7 @@ const AdminPanel = () => {
   const [filter, setFilter] = useState('pending');
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateStatus, setUpdateStatus] = useState(null);
+  const [updateStatusOk, setUpdateStatusOk] = useState(true);
   const [openMenuId, setOpenMenuId] = useState(null);
   const [showMessenger, setShowMessenger] = useState(false);
   const menuRef = useRef(null);
@@ -157,15 +161,18 @@ const AdminPanel = () => {
         headers: { Authorization: `Bearer ${password}` }
       });
       if (res.ok) {
-        setUpdateStatus("✅ Update erfolgreich angestoßen! Der Workflow läuft.");
+        setUpdateStatus("Update erfolgreich angestoßen! Der Workflow läuft.");
+        setUpdateStatusOk(true);
         setTimeout(() => setUpdateStatus(null), 5000);
       } else {
         const errData = await res.json();
-        setUpdateStatus(`❌ Fehler: ${errData.error || "Unbefugt"}`);
+        setUpdateStatus(`Fehler: ${errData.error || "Unbefugt"}`);
+        setUpdateStatusOk(false);
         setTimeout(() => setUpdateStatus(null), 5000);
       }
     } catch {
-      setUpdateStatus("❌ Netzwerkfehler beim Update-Aufruf.");
+      setUpdateStatus("Netzwerkfehler beim Update-Aufruf.");
+      setUpdateStatusOk(false);
       setTimeout(() => setUpdateStatus(null), 5000);
     } finally {
       setIsUpdating(false);
@@ -238,30 +245,16 @@ const AdminPanel = () => {
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <div>
-            <div className="text-[10px] font-bold tracking-wider text-[#ff5c3e] mb-1">ADMIN</div>
-            <h1 className="text-2xl sm:text-3xl font-black uppercase text-white">Nutzerverwaltung</h1>
-          </div>
+          <PageHeader eyebrow="ADMIN" title="Nutzerverwaltung" />
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => setShowMessenger(true)}
               aria-label="Messenger öffnen"
               className="w-10 h-10 flex items-center justify-center bg-[#171717] border border-[#2e2e2e] rounded-xl text-[#8b92a5] hover:text-white hover:border-[#404040] transition-all"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-              </svg>
+              <MessageCircle size={18} strokeWidth={2.5} />
             </button>
-            <button
-              onClick={goBack}
-              aria-label="Schließen"
-              className="w-10 h-10 flex items-center justify-center bg-[#171717] border border-[#2e2e2e] rounded-xl text-[#8b92a5] hover:text-white hover:border-[#404040] transition-all"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
+            <CloseButton onClick={goBack} />
           </div>
         </div>
 
@@ -271,16 +264,7 @@ const AdminPanel = () => {
           <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setShowMessenger(false)}>
             <div className="w-full max-w-md" onClick={(e) => e.stopPropagation()}>
               <div className="flex justify-end mb-2">
-                <button
-                  onClick={() => setShowMessenger(false)}
-                  aria-label="Schließen"
-                  className="w-8 h-8 flex items-center justify-center bg-[#171717] border border-[#2e2e2e] rounded-lg text-[#8b92a5] hover:text-white transition-colors"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                  </svg>
-                </button>
+                <CloseButton onClick={() => setShowMessenger(false)} size="compact" />
               </div>
               <AdminMessengerCard />
             </div>
@@ -330,12 +314,14 @@ const AdminPanel = () => {
             disabled={isUpdating}
             className="w-full flex items-center justify-center gap-2 bg-[#171717] border border-[#ff5c3e]/30 text-[#ff5c3e] font-black uppercase tracking-widest text-xs py-4 rounded-2xl hover:bg-[#ff5c3e]/10 hover:border-[#ff5c3e] transition-all disabled:opacity-50 shadow-lg"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="23 4 23 10 17 10"></polyline>
-              <polyline points="1 20 1 14 7 14"></polyline>
-              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-            </svg>
-            {updateStatus ? updateStatus : isUpdating ? 'Läuft...' : 'Kickbase-Daten jetzt aktualisieren'}
+            {updateStatus ? (
+              updateStatusOk ? <CheckCircle2 size={16} strokeWidth={2.5} className="text-green-400" /> : <XCircle size={16} strokeWidth={2.5} className="text-red-400" />
+            ) : (
+              <RefreshCw size={16} strokeWidth={2.5} className={isUpdating ? 'animate-spin' : ''} />
+            )}
+            <span className={updateStatus ? (updateStatusOk ? 'text-green-400' : 'text-red-400') : ''}>
+              {updateStatus ? updateStatus : isUpdating ? 'Läuft...' : 'Kickbase-Daten jetzt aktualisieren'}
+            </span>
           </button>
           <p className="text-[10px] text-[#8b92a5] text-center mt-3">Stößt den GitHub-Actions-Workflow zum Abruf der Ligadaten manuell an.</p>
         </div>

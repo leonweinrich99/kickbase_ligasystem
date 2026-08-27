@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  X, TrendingUp, TrendingDown, Wallet, Zap, Activity,
+  TrendingUp, TrendingDown, Wallet, Zap, Activity,
   Users, Clock, Shuffle, CheckCircle2, Trophy, ShoppingCart
 } from 'lucide-react';
+import CloseButton from './ui/CloseButton';
+import StatTile from './ui/StatTile';
+import MetricRow from './ui/MetricRow';
 
 // Einheitliche Farbwelt je Rating-Stufe (normale Medaillen-Reihenfolge:
 // Amateur < Bronze < Silber < Gold < Elite - siehe calculate-ratings.js).
@@ -17,22 +20,6 @@ const LEVEL_THEME = {
 
 const fmtEUR = (val) => `${Math.round(val).toLocaleString('de-DE')} €`;
 const fmtSignedEUR = (val) => `${val > 0 ? '+' : ''}${fmtEUR(val)}`;
-
-// Ein Icon in einer farbigen Box + Titel + kurze Klartext-Beschreibung links,
-// großer farbiger Wert rechts - dasselbe Muster wie ThresholdCard/StatCard in
-// UserDetail.jsx, damit sich das Manager-Rating in die restliche App einfügt.
-const MetricRow = ({ icon: Icon, iconColor, title, description, value, valueColor }) => (
-  <div className="flex items-center gap-3 bg-[#1f1f1f] border border-[#2a2a2a] rounded-xl p-3">
-    <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${iconColor}1A`, color: iconColor }}>
-      <Icon size={17} />
-    </div>
-    <div className="flex-1 min-w-0">
-      <div className="text-sm font-bold text-white truncate">{title}</div>
-      {description && <div className="text-[11px] text-gray-500 truncate">{description}</div>}
-    </div>
-    <div className={`text-sm font-black shrink-0 text-right ${valueColor}`}>{value}</div>
-  </div>
-);
 
 const SectionLabel = ({ children }) => (
   <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8b92a5] mb-2">{children}</div>
@@ -103,9 +90,7 @@ const ManagerRatingBadge = ({ kickbaseId }) => {
                   <h2 className="text-2xl font-black text-white">Manager Rating</h2>
                   <p className="text-sm text-gray-400 mt-1">Wie gut managst du deinen Kader?</p>
                 </div>
-                <button onClick={() => setIsOpen(false)} className="w-8 h-8 bg-[#2a2a2a] rounded-full flex items-center justify-center text-gray-400 shrink-0">
-                  <X size={14} strokeWidth={3} />
-                </button>
+                <CloseButton onClick={() => setIsOpen(false)} size="compact" />
               </div>
 
               {/* Score */}
@@ -122,21 +107,9 @@ const ManagerRatingBadge = ({ kickbaseId }) => {
               <div>
                 <SectionLabel>Wie setzt sich der Score zusammen?</SectionLabel>
                 <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="bg-[#1f1f1f] rounded-xl p-2.5 border border-[#2a2a2a]">
-                    <Wallet size={16} className="mx-auto mb-1.5 text-[#22c55e]" />
-                    <div className="text-sm font-black text-white">{rating.financialScore}</div>
-                    <div className="text-[8px] text-gray-500 font-bold uppercase tracking-wider mt-0.5">Kauf & Verkauf</div>
-                  </div>
-                  <div className="bg-[#1f1f1f] rounded-xl p-2.5 border border-[#2a2a2a]">
-                    <Zap size={16} className="mx-auto mb-1.5 text-[#eab308]" />
-                    <div className="text-sm font-black text-white">{rating.performanceScore}</div>
-                    <div className="text-[8px] text-gray-500 font-bold uppercase tracking-wider mt-0.5">Pkt. pro Mio.</div>
-                  </div>
-                  <div className="bg-[#1f1f1f] rounded-xl p-2.5 border border-[#2a2a2a]">
-                    <Activity size={16} className="mx-auto mb-1.5 text-[#3b82f6]" />
-                    <div className="text-sm font-black text-white">{rating.rebuildScore}</div>
-                    <div className="text-[8px] text-gray-500 font-bold uppercase tracking-wider mt-0.5">Marktaktivität</div>
-                  </div>
+                  <StatTile icon={Wallet} iconColor="#22c55e" value={rating.financialScore} label="Kauf & Verkauf" />
+                  <StatTile icon={Zap} iconColor="#eab308" value={rating.performanceScore} label="Pkt. pro Mio." />
+                  <StatTile icon={Activity} iconColor="#3b82f6" value={rating.rebuildScore} label="Marktaktivität" />
                 </div>
               </div>
 

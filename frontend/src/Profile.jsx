@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { Camera } from 'lucide-react';
 import {
   updateProfile as updateAuthProfile,
   updatePassword,
@@ -11,6 +12,7 @@ import { db, auth, storage } from './firebase';
 import { useAuth } from './AuthContext';
 import { useBackNavigation } from './useBackNavigation';
 import KickbaseNameField from './KickbaseNameCard';
+import CloseButton from './ui/CloseButton';
 
 const mapPasswordError = (error) => {
   const code = error?.code || '';
@@ -24,12 +26,6 @@ const mapPasswordError = (error) => {
   return map[code] || error.message;
 };
 
-const CameraIcon = (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-    <circle cx="12" cy="13" r="4"></circle>
-  </svg>
-);
 
 export default function Profile() {
   const { user, profile } = useAuth();
@@ -128,16 +124,7 @@ export default function Profile() {
       <div className="max-w-lg mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-xl sm:text-2xl font-black uppercase text-white">Profil</h1>
-          <button
-            onClick={goBack}
-            aria-label="Schließen"
-            className="w-10 h-10 shrink-0 flex items-center justify-center bg-[#171717] border border-[#2e2e2e] rounded-xl text-[#8b92a5] hover:text-white hover:border-[#404040] transition-all"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
+          <CloseButton onClick={goBack} />
         </div>
 
         {/* Profilbild */}
@@ -153,7 +140,7 @@ export default function Profile() {
               <span className="text-3xl font-black text-[#ff5c3e]">{(profile?.displayName || user.email || '?').charAt(0).toUpperCase()}</span>
             )}
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white">
-              {uploading ? <span className="text-[10px] font-bold uppercase">...</span> : CameraIcon}
+              {uploading ? <span className="text-[10px] font-bold uppercase">...</span> : <Camera size={16} strokeWidth={2.5} />}
             </div>
           </button>
           <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoSelect} />

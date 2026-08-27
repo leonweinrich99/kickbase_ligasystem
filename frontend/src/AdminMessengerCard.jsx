@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
+import { CheckCircle2, XCircle } from 'lucide-react';
 import { useAuth } from './AuthContext';
-import { getAuth } from 'firebase/auth';
 
 export default function AdminMessengerCard() {
   const { user } = useAuth();
@@ -8,10 +8,12 @@ export default function AdminMessengerCard() {
   const [body, setBody] = useState('');
   const [link, setLink] = useState('/');
   const [status, setStatus] = useState('');
+  const [statusOk, setStatusOk] = useState(true);
   const [isSending, setIsSending] = useState(false);
 
   const handleSend = async () => {
     if (!title || !body) {
+      setStatusOk(false);
       setStatus('Titel und Nachricht dürfen nicht leer sein.');
       return;
     }
@@ -25,14 +27,16 @@ export default function AdminMessengerCard() {
 
     try {
       if (!user) {
-        setStatus('❌ Fehler: Nicht eingeloggt.');
+        setStatusOk(false);
+        setStatus('Fehler: Nicht eingeloggt.');
         setIsSending(false);
         return;
       }
-      
+
       const token = await user.getIdToken();
       if (!token) {
-        setStatus('❌ Fehler: Konnte kein Auth-Token generieren.');
+        setStatusOk(false);
+        setStatus('Fehler: Konnte kein Auth-Token generieren.');
         setIsSending(false);
         return;
       }
@@ -47,15 +51,18 @@ export default function AdminMessengerCard() {
       });
 
       const data = await response.json();
-      
+
       if (response.ok) {
-        setStatus(`✅ Gesendet an ${data.sent} Gerät(e). (Fehlgeschlagen: ${data.failed || 0})`);
+        setStatusOk(true);
+        setStatus(`Gesendet an ${data.sent} Gerät(e). (Fehlgeschlagen: ${data.failed || 0})`);
         setBody(''); // Reset message
       } else {
-        setStatus(`❌ Fehler: ${data.error || data.reason || 'Unbekannter Fehler'}`);
+        setStatusOk(false);
+        setStatus(`Fehler: ${data.error || data.reason || 'Unbekannter Fehler'}`);
       }
     } catch (err) {
-      setStatus(`❌ Netzwerkfehler: ${err.message}`);
+      setStatusOk(false);
+      setStatus(`Netzwerkfehler: ${err.message}`);
     } finally {
       setIsSending(false);
       setTimeout(() => setStatus(''), 8000);
@@ -111,7 +118,8 @@ export default function AdminMessengerCard() {
         </button>
 
         {status && (
-          <div className={`text-[11px] mt-2 font-bold ${status.includes('✅') ? 'text-green-400' : 'text-red-400'}`}>
+          <div className={`flex items-center gap-1.5 text-[11px] mt-2 font-bold ${statusOk ? 'text-green-400' : 'text-red-400'}`}>
+            {status !== 'Sende...' && (statusOk ? <CheckCircle2 size={13} /> : <XCircle size={13} />)}
             {status}
           </div>
         )}

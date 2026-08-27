@@ -1,22 +1,17 @@
 import { useState } from 'react';
+import { Bell } from 'lucide-react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import { useAuth } from './AuthContext';
 import { useBackNavigation } from './useBackNavigation';
 import Toggle from './Toggle';
+import CloseButton from './ui/CloseButton';
 import {
   enablePushNotifications,
   disablePushNotifications,
   isPushConfigured,
   needsHomeScreenInstall,
 } from './pushNotifications';
-
-const BellIcon = (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-  </svg>
-);
 
 
 const ReminderRow = ({ title, description, checked, onChange, disabled }) => (
@@ -97,20 +92,11 @@ export default function Reminders() {
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-[#ff5c3e]/10 text-[#ff5c3e]">
-              {BellIcon}
+              <Bell size={18} strokeWidth={2.5} />
             </div>
             <h1 className="text-xl sm:text-2xl font-black uppercase text-white">Erinnerungen</h1>
           </div>
-          <button
-            onClick={goBack}
-            aria-label="Schließen"
-            className="w-10 h-10 shrink-0 flex items-center justify-center bg-[#171717] border border-[#2e2e2e] rounded-xl text-[#8b92a5] hover:text-white hover:border-[#404040] transition-all"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
+          <CloseButton onClick={goBack} />
         </div>
 
         {needsHomeScreenInstall() && (

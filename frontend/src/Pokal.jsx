@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check } from 'lucide-react';
+import { Check, Minus, Plus, RotateCcw, Trophy } from 'lucide-react';
 import logo from './assets/pokal_logo.png';
 import LoadingScreen from './LoadingScreen';
 import useMinimumDelay from './useMinimumDelay';
@@ -362,15 +362,15 @@ const Pokal = () => {
         {/* Zoom Controls */}
         <div className="absolute right-8 top-0 flex items-center gap-1.5 bg-[#171717] border border-[#2e2e2e] p-1.5 rounded-xl z-20 shadow-lg">
           <button onClick={() => setZoomLevel(prev => Math.max(0.4, prev - 0.15))} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#2e2e2e] text-[#8b92a5] hover:text-white transition-colors">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <Minus size={18} strokeWidth={2.5} />
           </button>
           <span className="text-[11px] font-black w-12 text-center text-gray-300 tracking-wider">{Math.round(zoomLevel * 100)}%</span>
           <button onClick={() => setZoomLevel(prev => Math.min(1.5, prev + 0.15))} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#2e2e2e] text-[#8b92a5] hover:text-white transition-colors">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <Plus size={18} strokeWidth={2.5} />
           </button>
           <div className="w-[1px] h-5 bg-[#2e2e2e] mx-1"></div>
           <button onClick={() => setZoomLevel(1)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#2e2e2e] text-[#8b92a5] hover:text-white transition-colors" title="Reset Zoom">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
+            <RotateCcw size={15} strokeWidth={2.5} />
           </button>
         </div>
 
@@ -398,14 +398,7 @@ const Pokal = () => {
             ))}
             {/* Trophy Icon underneath final */}
             <div className="mt-12 opacity-80">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-                    <path d="M4 22h16"></path>
-                    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
-                    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
-                    <path d="M18 2H6v7c0 3.31 2.69 6 6 6s6-2.69 6-6V2z"></path>
-                </svg>
+                <Trophy size={48} color="#8b5cf6" strokeWidth={1.5} />
             </div>
           </div>
 

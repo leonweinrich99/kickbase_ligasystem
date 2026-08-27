@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Trophy, Wallet } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Trophy, Wallet, Star, SearchX } from 'lucide-react';
+import CloseButton from './ui/CloseButton';
 
 const formatMoney = (val) => (val || 0).toLocaleString('de-DE') + ' €';
 
@@ -141,15 +142,13 @@ const OptimalTeam = ({ isOpen, onClose, availableMatchdays, currentGlobalMatchda
       ></div>
       
       {/* Modal Container */}
-      <div className="bg-[#121212] border border-[#2e2e2e] w-full max-w-2xl max-h-[90vh] rounded-2xl shadow-2xl relative flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="bg-[#171717] border border-[#2e2e2e] w-full max-w-2xl max-h-[90vh] rounded-2xl shadow-2xl relative flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-[#2e2e2e] bg-[#171717]">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-[#ff5c3e]/10 flex items-center justify-center text-[#ff5c3e]">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-              </svg>
+              <Star size={18} strokeWidth={2.5} fill="#ff5c3e" />
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-black uppercase tracking-wider text-white">Die Optimale Elf</h2>
@@ -157,16 +156,11 @@ const OptimalTeam = ({ isOpen, onClose, availableMatchdays, currentGlobalMatchda
             </div>
           </div>
           
-          <button 
-            onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-[#1f1f1f] text-[#8b92a5] hover:text-white hover:bg-[#2e2e2e] transition-colors"
-          >
-            ✕
-          </button>
+          <CloseButton onClick={onClose} size="compact" />
         </div>
 
         {/* Matchday Toggle & Summary */}
-        <div className="px-6 py-4 bg-[#161616] border-b border-[#2e2e2e] flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="px-6 py-4 bg-[#171717] border-b border-[#2e2e2e] flex flex-col md:flex-row justify-between items-center gap-6">
           
           {/* Spieltag-Wechsler (Dashboard-Design) */}
           <div className="bg-[#171717] border border-[#2e2e2e] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden w-full md:w-auto justify-between h-12">
@@ -237,7 +231,7 @@ const OptimalTeam = ({ isOpen, onClose, availableMatchdays, currentGlobalMatchda
           ) : error ? (
             <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
               <div>
-                <div className="text-4xl mb-4 opacity-50">🏟️</div>
+                <SearchX size={36} strokeWidth={1.5} className="mx-auto mb-4 text-gray-500" />
                 <h3 className="text-gray-300 font-bold mb-2">Keine Daten gefunden</h3>
                 <p className="text-xs text-[#8b92a5] max-w-xs mx-auto">Die optimale Elf für Spieltag {matchday} wurde noch nicht berechnet oder der Spieltag existiert nicht in der Historie.</p>
               </div>
