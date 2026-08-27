@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
-  TrendingUp, TrendingDown, Wallet, Zap, Activity,
+  TrendingUp, TrendingDown,
   Users, Clock, Shuffle, CheckCircle2, Trophy, ShoppingCart
 } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import { useBackNavigation } from './useBackNavigation';
 import { BackButton } from './ui/CloseButton';
-import StatTile from './ui/StatTile';
 import MetricRow from './ui/MetricRow';
-import { LEVEL_THEME } from './ManagerRatingBadge';
+import FifaManagerCard from './ui/FifaManagerCard';
+import RatingCalculationSection from './ui/RatingCalculationSection';
+import OverallRatingBreakdown from './ui/OverallRatingBreakdown';
 
 // Vollbild-Seite (eigene Route /account/manager-rating) statt Bottom-Sheet-
 // Modal - gleiche Design-Strategie wie UserDetail/OptimalTeam: sticky Header
@@ -35,6 +36,7 @@ const ManagerRatingPage = () => {
   const kickbaseId = profile?.kickbaseId;
   const goBack = useBackNavigation('/account');
   const [rating, setRating] = useState(null);
+  const [allRatings, setAllRatings] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -46,6 +48,7 @@ const ManagerRatingPage = () => {
       .then(res => res.json())
       .then(data => {
         setRating(data[kickbaseId] || null);
+        setAllRatings(data);
         setLoading(false);
       })
       .catch(err => {
@@ -53,6 +56,27 @@ const ManagerRatingPage = () => {
         setLoading(false);
       });
   }, [kickbaseId]);
+
+  // Liga-Vergleichslisten fuer OVP/AKT (siehe RatingCalculationSection) -
+  // muss VOR den frühen Returns stehen (Rules of Hooks), daher robust gegen
+  // rating/allRatings === null.
+  const leaguePeers = useMemo(() => {
+    if (!allRatings || !rating) return { ovp: [], akt: [] };
+    const peers = Object.entries(allRatings)
+      .filter(([, r]) => r.league === rating.league)
+      .map(([uid, r]) => ({ uid, name: r.name, r }));
+
+    const ovp = peers
+      .filter(p => p.r.calculation?.ovp?.averageOverpayRatio != null)
+      .map(p => ({ name: p.name, value: p.r.calculation.ovp.averageOverpayRatio, isYou: p.uid === kickbaseId }))
+      .sort((a, b) => a.value - b.value);
+
+    const akt = peers
+      .map(p => ({ name: p.name, value: p.r.calculation.akt.totalTransactions, isYou: p.uid === kickbaseId }))
+      .sort((a, b) => b.value - a.value);
+
+    return { ovp, akt };
+  }, [allRatings, rating, kickbaseId]);
 
   if (loading) {
     return <div className="min-h-screen bg-[#000000]"></div>;
@@ -72,7 +96,6 @@ const ManagerRatingPage = () => {
     );
   }
 
-  const color = LEVEL_THEME[rating.level] || LEVEL_THEME.Bronze;
   const profitColor = (val) => (val >= 0 ? 'text-green-500' : 'text-red-500');
 
   return (
@@ -89,29 +112,30 @@ const ManagerRatingPage = () => {
           <p className="text-sm text-[#8b92a5] mt-1">Wie gut managst du deinen Kader?</p>
         </div>
 
-        {/* Score */}
-        <div className="flex items-center justify-center py-2">
-          <div className="relative w-32 h-32 flex items-center justify-center rounded-full border-4" style={{ borderColor: color }}>
-            <div className="text-5xl font-black" style={{ color }}>{rating.score}</div>
-            <div className="absolute -bottom-3 bg-[#000] px-3 font-bold text-[10px] tracking-widest uppercase rounded-full border" style={{ borderColor: color, color }}>
-              {rating.level}
-            </div>
-          </div>
-        </div>
+        {/* FIFA-Karte: Score, Foto, Name, 6 Attribute (ersetzt Score-Kreis
+            + die frueheren 3 Teilscore-Kacheln) */}
+        <FifaManagerCard rating={rating} photoURL={profile?.photoURL} />
 
-        {/* Teilscores mit Klartext-Erklärung statt nackter Zahl */}
-        <div>
-          <SectionLabel>Wie setzt sich der Score zusammen?</SectionLabel>
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <StatTile icon={Wallet} iconColor="#22c55e" value={rating.financialScore} label="Kauf & Verkauf" />
-            <StatTile icon={Zap} iconColor="#eab308" value={rating.performanceScore} label="Pkt. pro Mio." />
-            <StatTile icon={Activity} iconColor="#3b82f6" value={rating.rebuildScore} label="Marktaktivität" />
-          </div>
+        {/* Transparenz: woraus setzen sich die 6 Kartenwerte zusammen? Nutzt
+            die vom Backend mitgelieferten Rohdaten/Formeln 1:1. */}
+        <RatingCalculationSection
+          calculation={rating.calculation}
+          ovpLeaguePeers={leaguePeers.ovp}
+          aktLeaguePeers={leaguePeers.akt}
+        />
+
+        {/* Wie wird aus den Boni der 0-100-Gesamtscore (und damit die
+            Kartenstufe Bronze/Silber/Gold)? */}
+        <OverallRatingBreakdown rating={rating} />
+
+        <div className="border-t border-[#2a2a2a] pt-1">
+          <h3 className="text-lg font-semibold text-white tracking-tight">Deine Trading-Historie</h3>
+          <p className="text-[11px] text-gray-500 mt-1">Die konkreten Trades, Verkäufe und Kaderdaten hinter deinen Kartenwerten.</p>
         </div>
 
         {/* Kaderstatus */}
         {typeof rating.squadReadiness === 'number' && (
-          <div>
+          <div id="kaderstatus" className="scroll-mt-20">
             <SectionLabel>Kaderstatus</SectionLabel>
             <div className="bg-[#0a0a0a] rounded-xl p-3 border border-[#2a2a2a]">
               <div className="flex items-center gap-3 mb-2.5">
@@ -120,7 +144,7 @@ const ManagerRatingPage = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-bold text-white">
-                    {rating.squadReadiness >= 1 ? 'Startelf-fähig' : `${Math.round(rating.squadReadiness * 100)}% startelf-fähig`}
+                    {Math.round(rating.squadReadiness * 100)}% Ø Startelf-Wahrscheinlichkeit
                   </div>
                   <div className="text-[11px] text-gray-500">{rating.squadTotal} Spieler im Kader</div>
                 </div>
@@ -135,6 +159,7 @@ const ManagerRatingPage = () => {
                   }}
                 />
               </div>
+              <p className="text-[10px] text-gray-600 mt-2">Basiert auf Kickbases echter Startelf-Prognose (Quelle: Ligainsider) je Spieler – nicht nur, ob du überhaupt jemanden auf der Position hast.</p>
               {(rating.budget < 0 || rating.squadRiskPenalty < -0.5) && (
                 <div className="text-[11px] text-red-400 font-bold mt-2">
                   {rating.budget < 0 ? 'Budget im Minus – ' : ''}
@@ -146,7 +171,7 @@ const ManagerRatingPage = () => {
         )}
 
         {/* Trades & Verkäufe */}
-        <div>
+        <div id="trades-verkaeufe" className="scroll-mt-20">
           <SectionLabel>Trades & Verkäufe</SectionLabel>
           <div className="space-y-2">
             <MetricRow
@@ -201,7 +226,7 @@ const ManagerRatingPage = () => {
         {/* Verkaufsgespür - bewusst von der Gesamtbilanz getrennt: das ist KEIN
             echtes Geld, sondern eine Was-wäre-wenn-Kennzahl (siehe Erklärtext). */}
         {rating.saleTimingSampleSize > 0 && (
-          <div className="rounded-xl p-3 border border-dashed border-[#3a3a3a] bg-[#0a0a0a]">
+          <div id="verkaufsgespuer" className="scroll-mt-20 rounded-xl p-3 border border-dashed border-[#3a3a3a] bg-[#0a0a0a]">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 bg-[#06b6d41A] text-[#06b6d4]">
                 <TrendingUp size={17} />
@@ -221,7 +246,7 @@ const ManagerRatingPage = () => {
         )}
 
         {/* Kaufverhalten */}
-        <div>
+        <div id="kaufverhalten" className="scroll-mt-20">
           <SectionLabel>Kaufverhalten</SectionLabel>
           <MetricRow
             icon={ShoppingCart}

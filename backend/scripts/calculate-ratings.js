@@ -57,7 +57,7 @@ function openPositionConfidence(buyDate, now = new Date()) {
 // unabhängig davon, wie gut die bisherigen Trades gelaufen sind.
 // SQUAD_MIN_POSITIONS/SQUAD_MIN_TOTAL leben zentral in ../squadRules.js (auch
 // vom Trading Advisor Budget-Check genutzt, siehe frontend/src/squadRules.js).
-const { computeSquadReadiness } = require('../squadRules');
+const { computeSquadReadiness, SQUAD_MIN_POSITIONS, SQUAD_MIN_TOTAL } = require('../squadRules');
 const NEGATIVE_BUDGET_PENALTY_PER_MIO = 0.4; // pro 1 Mio. im Minus, gedeckelt
 const MAX_SQUAD_RISK_PENALTY = 20;
 
@@ -84,9 +84,11 @@ function computeSquadRiskPenalty(readiness, budget) {
 }
 
 // Der Trading Advisor exportiert pro Liga den aktuellen Kader jedes Managers
-// (managerSquads). Wir brauchen daraus nur Positionsverteilung + Gesamtgröße,
-// zusammengeführt über ALLE Ligen zu einer einzigen Map (Manager-IDs sind
-// liga-übergreifend eindeutig).
+// (managerSquads). Wir brauchen daraus Positionsverteilung + Gesamtgröße
+// (fürs alte Flaschenhals-Readiness) UND die einzelnen Spieler-IDs je Position
+// (für die REALISTISCHE Startelf-Wahrscheinlichkeit, siehe
+// computeRealisticSquadReadiness weiter unten) - zusammengeführt über ALLE
+// Ligen zu einer einzigen Map (Manager-IDs sind liga-übergreifend eindeutig).
 function loadManagerSquads() {
     const advisorPath = path.join(__dirname, '../../frontend/public/advisor-data.json');
     const map = new Map();
@@ -96,10 +98,12 @@ function loadManagerSquads() {
             Object.values(advisorData.leagues || {}).forEach(league => {
                 Object.entries(league.managerSquads || {}).forEach(([managerId, squad]) => {
                     const positionCounts = {};
+                    const players = [];
                     (squad || []).forEach(p => {
                         if (p.position) positionCounts[p.position] = (positionCounts[p.position] || 0) + 1;
+                        if (p.playerId) players.push({ id: p.playerId, position: p.position });
                     });
-                    map.set(String(managerId), { total: (squad || []).length, positionCounts });
+                    map.set(String(managerId), { total: (squad || []).length, positionCounts, players });
                 });
             });
         }
@@ -107,6 +111,50 @@ function loadManagerSquads() {
         console.warn('Konnte advisor-data.json nicht lesen (Kaderdaten):', e.message);
     }
     return map;
+}
+
+// --- Realistische Startelf-Wahrscheinlichkeit (statt reiner Kopfzahl) ---
+// computeSquadReadiness (squadRules.js) zaehlt jeden Spieler in der richtigen
+// Position einfach als "1" - ob der Spieler bei seinem echten Verein
+// UEBERHAUPT eine reelle Chance auf einen Startelf-Einsatz hat, blieb bisher
+// unberuecksichtigt. Kickbase liefert dafuer pro Spieler selbst eine
+// Wahrscheinlichkeits-Einstufung (Quelle: Ligainsider) - das Feld `prob`
+// (1 = sehr unwahrscheinlich bis 5 = sehr wahrscheinlich) in all_players.json
+// (siehe playerMap in run()). Das ersetzt hier die reine Kopfzahl je Position
+// durch die Summe der TATSAECHLICHEN Wahrscheinlichkeiten der jeweils besten
+// Spieler je Position - ein Kader voller Ersatzbank-Spieler sieht dadurch
+// nicht mehr wie ein "voll einsatzfaehiger" Kader aus.
+const PROB_SCALE_MAX = 5; // Kickbase/Ligainsider-Skala: 1 (unwahrscheinlich) bis 5 (sehr wahrscheinlich)
+const PROB_FALLBACK_UNKNOWN = 3; // neutraler Mittelwert, falls fuer einen Spieler keine prob-Daten vorliegen (z.B. Datenluecke) - lieber neutral als der Manager fuer eine Datenluecke bestraft wird
+
+function playerStartProbability(playerId, playerMap) {
+    const player = playerMap.get(playerId) || playerMap.get(String(playerId));
+    const prob = player && typeof player.prob === 'number' ? player.prob : null;
+    return prob != null ? prob : PROB_FALLBACK_UNKNOWN;
+}
+
+function computeRealisticSquadReadiness(squadPlayers, playerMap, totalCount) {
+    let required = 0;
+    let satisfied = 0;
+    const positionGroups = {};
+    (squadPlayers || []).forEach(sp => {
+        if (!sp.position) return;
+        const prob = playerStartProbability(sp.id, playerMap);
+        (positionGroups[sp.position] = positionGroups[sp.position] || []).push(prob);
+    });
+
+    for (const [pos, need] of Object.entries(SQUAD_MIN_POSITIONS)) {
+        required += need;
+        // Nur die N besten (wahrscheinlichsten) Spieler je Position zaehlen fuer
+        // die geforderte Anzahl - fehlende Slots (weniger Spieler als noetig,
+        // oder ueberzaehlige Bankspieler) zaehlen als 0.
+        const taken = (positionGroups[pos] || []).sort((a, b) => b - a).slice(0, need);
+        satisfied += taken.reduce((sum, prob) => sum + prob / PROB_SCALE_MAX, 0);
+    }
+
+    const positionalReadiness = required > 0 ? satisfied / required : 1;
+    const totalReadiness = Math.min(1, totalCount / SQUAD_MIN_TOTAL);
+    return Math.min(positionalReadiness, totalReadiness);
 }
 
 // --- Verkaufs-Timing: war der Verkauf im Nachhinein betrachtet klug? ---
@@ -180,6 +228,108 @@ function findForcedSaleTrigger(player, saleDate) {
         }
     }
     return trigger;
+}
+
+// --- FIFA-Karten-Attribute (0-99, wie PAC/SHO/PAS/DRI/DEF/PHY) ---
+// Streckt die bestehenden Bonus-/Malus-Werte (die urspruenglich fuer die
+// 50±x-Score-Formel gedacht waren) auf eine 1-99-Skala, wie man sie von
+// FIFA/FC-Spielerkarten kennt. NEUTRAL_CARD_SCORE ist der Fallback-Wert,
+// wenn fuer eine Kategorie schlicht keine Datenbasis existiert (z.B. noch
+// keine Trades) - lieber ein neutraler Mittelwert als eine irrefuehrende 0.
+const NEUTRAL_CARD_SCORE = 50;
+
+function clampCardScore(val) {
+    if (!Number.isFinite(val)) return NEUTRAL_CARD_SCORE;
+    return Math.max(1, Math.min(99, Math.round(val)));
+}
+
+// Prozentrang (0-100) einer Metrik unter echten Liga-Kollegen: "wie viel
+// Prozent der eigenen Liga liegen bei dieser Metrik schlechter?" - genutzt
+// fuer OVP und AKT, weil "aktiv" oder "diszipliniert beim Einkauf" stark von
+// der jeweiligen Liga-Kultur abhaengt, statt an einem global fixen Referenz-
+// wert festgemacht zu werden. higherIsBetter=false dreht die Richtung um
+// (z.B. bei Overpay ist WENIGER Aufschlag besser). Gleiche Werte teilen sich
+// ihren Rang fair (Mittelrang-Methode); bei nur einem Vergleichswert (Liga
+// mit 1 Mitglied) gibt es keinen sinnvollen Rang -> neutral 50.
+function percentileRank(value, allValues, higherIsBetter = true) {
+    if (!Number.isFinite(value) || allValues.length === 0) return null;
+    if (allValues.length === 1) return 50;
+    let worseCount = 0;
+    let equalCount = 0;
+    allValues.forEach(v => {
+        if (higherIsBetter ? v < value : v > value) worseCount++;
+        else if (v === value) equalCount++;
+    });
+    return ((worseCount + equalCount / 2) / allValues.length) * 100;
+}
+
+// PRO (Profit): profitBonus reicht von -20 bis +25 -> auf 1-99 gestreckt.
+function computeProScore(profitBonus, hasWeightedTrades) {
+    if (!hasWeightedTrades) return NEUTRAL_CARD_SCORE;
+    return clampCardScore(50 + profitBonus * 1.96);
+}
+
+// OVP (Overpay-Disziplin): Prozentrang unter den Liga-Kollegen (weniger
+// Aufschlag als andere = besser) statt eines fixen Referenzwerts - wird erst
+// NACH der Liga-weiten Vergleichsrunde (siehe run(), zweiter Durchlauf) final
+// gesetzt, weil dafuer alle Liga-Mitglieder bekannt sein muessen.
+function computeOvpScore(percentile) {
+    if (percentile == null) return NEUTRAL_CARD_SCORE;
+    return clampCardScore(1 + (percentile / 100) * 98);
+}
+
+// PKT (Punkte pro Million): ppm von 0 bis referenzhaft ~3 (siehe perfBonus-Logik) -> 1-99.
+function computePktScore(ppm, hasPoints) {
+    if (!hasPoints) return NEUTRAL_CARD_SCORE;
+    return clampCardScore((ppm / 3) * 99);
+}
+
+// AKT (Marktaktivitaet): ebenfalls Prozentrang unter den Liga-Kollegen (mehr
+// Transaktionen als andere = besser) statt eines fixen Referenzwerts von 20 -
+// final gesetzt im zweiten Durchlauf, siehe computeOvpScore.
+function computeAktScore(percentile) {
+    if (percentile == null) return NEUTRAL_CARD_SCORE;
+    return clampCardScore(1 + (percentile / 100) * 98);
+}
+
+// KAD (Kaderstaerke & Risiko): squadRiskPenalty reicht von -20 (schlecht) bis 0 (top) ->
+// invertiert auf 20-99 gestreckt, damit ein voll startelf-faehiger, solventer Kader
+// nahe 99 liegt und ein leerer/verschuldeter Kader nahe 20 (nie 0, das waere zu hart).
+function computeKadScore(squadReadiness, squadRiskPenalty) {
+    if (squadReadiness === null) return NEUTRAL_CARD_SCORE;
+    return clampCardScore(99 - (Math.abs(squadRiskPenalty) / MAX_SQUAD_RISK_PENALTY) * 79);
+}
+
+// TIM (Verkaufsgespuer): durchschnittlicher saleTimingProfit pro Verkauf.
+// Anders als PRO/OVP/KAD/AKT hat dieser Wert keine vorgegebene Referenzskala
+// aus dem urspruenglichen Scoring-Modell (dort nur ein kleines Zusatzgewicht,
+// kein eigener Bonus mit fester Spannbreite) - per tanh() statt linearer
+// Streckung gemappt, damit auch sehr hohe Betraege (teure/volatile Spieler)
+// nicht sofort alle bei 99 landen und die Karte noch differenziert.
+function computeTimScore(saleTimingProfit, saleTimingSampleSize) {
+    if (saleTimingSampleSize <= 0) return NEUTRAL_CARD_SCORE;
+    const avgTiming = saleTimingProfit / saleTimingSampleSize;
+    return clampCardScore(50 + Math.tanh(avgTiming / 900000) * 45);
+}
+
+// Kartenstufe (Bronze/Silber/Gold) aus der bestehenden 5-stufigen Bewertung
+// (Amateur < Bronze < Silber < Gold < Elite) - Amateur faellt optisch mit
+// Bronze zusammen, Elite mit Gold (Elite-Manager stechen weiterhin ueber den
+// hoeheren Score/goldenen Glow hervor, brauchen aber keine 4. Kartenfarbe).
+function computeCardTier(level) {
+    if (level === 'Silber') return 'silver';
+    if (level === 'Gold' || level === 'Elite') return 'gold';
+    return 'bronze';
+}
+
+// Kurzform der Liga fuer den "Position"-Slot der FIFA-Karte (z.B. "LIGA 1" ->
+// "L1"). Faellt auf die ersten beiden Buchstaben zurueck, falls der Liganame
+// mal keine Nummer enthaelt.
+function leagueCode(leagueName) {
+    if (!leagueName) return '';
+    const num = leagueName.match(/\d+/);
+    if (num) return `L${num[0]}`;
+    return leagueName.slice(0, 2).toUpperCase();
 }
 
 function loadExcludedManagerNames() {
@@ -500,7 +650,13 @@ function run() {
                 // Budget trägt ein echtes Risiko für die kommenden Spieltage.
                 const budget = parseSignedMoney(u.estimatedBudget);
                 const squadInfo = managerSquads.get(String(uid)) || null;
-                const squadReadiness = squadInfo ? computeSquadReadiness(squadInfo.positionCounts, squadInfo.total) : null;
+                // "Startelf-Fähigkeit" nutzt jetzt die REALISTISCHE Wahrscheinlichkeit
+                // (Kickbase/Ligainsider-Feld `prob` je Spieler) statt reiner Kopfzahl je
+                // Position - siehe computeRealisticSquadReadiness weiter oben. Die alte,
+                // rein kopfzahlbasierte Variante bleibt zusaetzlich erhalten (nur fuer die
+                // Berechnungs-Transparenz im Frontend), beeinflusst aber nicht mehr den Score.
+                const squadHeadcountReadiness = squadInfo ? computeSquadReadiness(squadInfo.positionCounts, squadInfo.total) : null;
+                const squadReadiness = squadInfo ? computeRealisticSquadReadiness(squadInfo.players, playerMap, squadInfo.total) : null;
                 const squadRiskPenalty = computeSquadRiskPenalty(squadReadiness, budget);
 
                 // --- SCORING MODELL (Basis 50) ---
@@ -540,7 +696,9 @@ function run() {
                 }
 
                 // 5. Kaderrisiko (-20 bis 0 Punkte)
-                // Unvollständiger Kader (keine startelf-fähige Aufstellung) und/oder
+                // Unvollständiger Kader UND/ODER Kader voller Spieler mit realistisch
+                // niedriger Startelf-Chance (siehe computeRealisticSquadReadiness, nutzt
+                // Kickbases eigene Startelf-Wahrscheinlichkeit je Spieler) sowie
                 // negatives/knappes Budget - siehe computeSquadRiskPenalty. Wird NICHT
                 // bewertet, wenn keine Kaderdaten vorliegen (squadReadiness === null).
                 let totalScore = Math.round(baseScore + actBonus + profitBonus + overpayBonus + perfBonus + squadRiskPenalty);
@@ -548,9 +706,8 @@ function run() {
 
                 // Kleine kosmetische Anpassung: Wer noch keine abgeschlossenen Trades hat,
                 // aber aktiv Positionen aufgebaut hat, wird fürs Scouting honoriert.
-                if (completedTrades === 0 && openPositions > 5) {
-                    totalScore += 5;
-                }
+                const scoutingBonus = (completedTrades === 0 && openPositions > 5) ? 5 : 0;
+                totalScore += scoutingBonus;
                 totalScore = Math.max(0, Math.min(100, totalScore));
 
                 // Stufen in normaler Medaillen-Reihenfolge (Amateur < Bronze < Silber < Gold < Elite) -
@@ -565,9 +722,78 @@ function run() {
                     name: u.name,
                     score: totalScore,
                     level,
-                    financialScore: Math.round(50 + profitBonus * 1.6 + overpayBonus * 1.6),
-                    performanceScore: Math.round(50 + perfBonus * 5),
-                    rebuildScore: Math.round(50 + actBonus * 3.3),
+                    cardTier: computeCardTier(level),
+                    league: leagueCode(l.name),
+
+                    // FIFA-Karten-Attribute (0-99), sechs statt der frueheren drei
+                    // Teilscores - siehe computeXxxScore-Funktionen weiter oben. OVP/AKT
+                    // sind hier noch Platzhalter (neutral 50) - werden im zweiten Durchlauf
+                    // nach der Liga-weiten Vergleichsrunde final gesetzt (siehe Ende von run()).
+                    pro: computeProScore(profitBonus, weightedTradeWeight > 0),
+                    ovp: NEUTRAL_CARD_SCORE,
+                    pkt: computePktScore(ppm, userPoints > 0),
+                    akt: NEUTRAL_CARD_SCORE,
+                    kad: computeKadScore(squadReadiness, squadRiskPenalty),
+                    tim: computeTimScore(saleTimingProfit, saleTimingSampleSize),
+
+                    // Vollstaendige Rechenbasis fuer die "So wird deine Karte berechnet"-
+                    // Sektion im Frontend (ManagerRatingPage) - damit die Anzeige exakt die
+                    // gleichen Rohwerte/Formeln zeigt, die auch tatsaechlich verwendet wurden,
+                    // statt einer im Frontend nachgebauten (und potenziell abweichenden) Kopie.
+                    calculation: {
+                        pro: {
+                            score: computeProScore(profitBonus, weightedTradeWeight > 0),
+                            weightedAverageProfit: weightedTradeWeight > 0 ? avgWeightedProfit : null,
+                            completedTrades,
+                            openPositions,
+                            orphanSales,
+                            saleTimingSampleSize,
+                            profitBonus,
+                        },
+                        // score/leaguePercentile/leagueRank/leagueSize werden im zweiten
+                        // Durchlauf gesetzt (Liga-Vergleich, siehe Ende von run()).
+                        ovp: {
+                            score: NEUTRAL_CARD_SCORE,
+                            purchaseCount: overpayRatios.length,
+                            averageOverpayRatio: overpayRatios.length > 0 ? avgOverpayRatio : null,
+                        },
+                        pkt: {
+                            score: computePktScore(ppm, userPoints > 0),
+                            points: userPoints,
+                            totalSpent,
+                            ppm: userPoints > 0 ? ppm : null,
+                            perfBonus,
+                        },
+                        akt: {
+                            score: NEUTRAL_CARD_SCORE,
+                            buys: trades.buys.length,
+                            sells: trades.sells.length,
+                            totalTransactions,
+                        },
+                        kad: {
+                            score: computeKadScore(squadReadiness, squadRiskPenalty),
+                            squadTotal: squadInfo ? squadInfo.total : null,
+                            squadReadiness,
+                            squadHeadcountReadiness,
+                            squadRiskPenalty,
+                            budget,
+                        },
+                        tim: {
+                            score: computeTimScore(saleTimingProfit, saleTimingSampleSize),
+                            sampleSize: saleTimingSampleSize,
+                            averageTimingProfit: saleTimingSampleSize > 0 ? (saleTimingProfit / saleTimingSampleSize) : null,
+                        },
+                        overall: {
+                            baseScore,
+                            activityBonus: actBonus,
+                            profitBonus,
+                            overpayBonus,
+                            performanceBonus: perfBonus,
+                            squadRiskPenalty,
+                            scoutingBonus,
+                            finalScore: totalScore,
+                        },
+                    },
 
                     // Gesamtbild (realisiert + unrealisiert + Kaderverkäufe)
                     totalProfit,
@@ -607,8 +833,55 @@ function run() {
                     budget,
                     squadTotal: squadInfo ? squadInfo.total : null,
                     squadReadiness,
+                    squadHeadcountReadiness,
                     squadRiskPenalty
                 };
+            });
+        });
+    }
+
+    // --- Zweiter Durchlauf: Liga-relative Bewertung fuer OVP und AKT ---
+    // Muss NACH dem ersten Durchlauf laufen, weil dafuer alle Liga-Mitglieder
+    // bereits berechnet sein muessen (Prozentrang braucht die komplette
+    // Vergleichsgruppe). Pro Liga getrennt, damit sich Manager nur mit ihren
+    // ECHTEN Liga-Kollegen vergleichen, nicht liga-uebergreifend.
+    if (data.leagues) {
+        data.leagues.forEach(l => {
+            const memberUids = l.users.filter(isRealManager).map(u => u.id || u.i).filter(uid => ratings[uid]);
+
+            // AKT: mehr Transaktionen als die Liga-Kollegen = besser.
+            const aktValues = memberUids.map(uid => ratings[uid].calculation.akt.totalTransactions);
+            const aktRanked = [...aktValues].sort((a, b) => b - a);
+            memberUids.forEach(uid => {
+                const totalTransactions = ratings[uid].calculation.akt.totalTransactions;
+                const percentile = percentileRank(totalTransactions, aktValues, true);
+                const score = computeAktScore(percentile);
+                Object.assign(ratings[uid].calculation.akt, {
+                    leaguePercentile: percentile,
+                    leagueRank: aktRanked.indexOf(totalTransactions) + 1,
+                    leagueSize: aktValues.length,
+                    score,
+                });
+                ratings[uid].akt = score;
+            });
+
+            // OVP: WENIGER Aufschlag als die Liga-Kollegen = besser - nur unter
+            // Managern vergleichen, die ueberhaupt schon eingekauft haben.
+            const ovpMembers = memberUids.filter(uid => ratings[uid].calculation.ovp.averageOverpayRatio != null);
+            const ovpValues = ovpMembers.map(uid => ratings[uid].calculation.ovp.averageOverpayRatio);
+            const ovpRanked = [...ovpValues].sort((a, b) => a - b);
+            memberUids.forEach(uid => {
+                const avgRatio = ratings[uid].calculation.ovp.averageOverpayRatio;
+                if (avgRatio == null) return; // bleibt neutral (Platzhalter aus erstem Durchlauf)
+                const percentile = percentileRank(avgRatio, ovpValues, false);
+                const score = computeOvpScore(percentile);
+                Object.assign(ratings[uid].calculation.ovp, {
+                    leaguePercentile: percentile,
+                    leagueRank: ovpRanked.indexOf(avgRatio) + 1,
+                    leagueSize: ovpValues.length,
+                    score,
+                });
+                ratings[uid].ovp = score;
             });
         });
     }
