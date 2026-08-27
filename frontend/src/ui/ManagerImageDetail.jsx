@@ -47,16 +47,22 @@ export default function ManagerImageDetail({ name, photoURL, size = 160, ringCol
       <img
         src={src}
         alt={name || 'Avatar'}
-        className="w-full h-full object-cover object-center relative z-10"
+        // WICHTIG: "rounded-full" steht HIER direkt am <img>, nicht nur am
+        // umschliessenden <div> - Reihenfolge ist "erst rund zuschneiden,
+        // DANN faden", beides auf demselben Element. Vorher lag border-radius
+        // nur am Eltern-Div (per overflow-hidden) und die Maske am Kind
+        // (<img>) - manche Browser (v.a. Safari/WebKit) behandeln ein
+        // maskiertes Element als eigene Compositing-Ebene, die vom
+        // Eltern-overflow-hidden NICHT mehr sauber mitgeschnitten wird -
+        // dadurch blitzten die rechteckigen Maskenkanten an den Ecken durch
+        // (der Bug hinter "man sieht noch Raender vom viereckigen Bild").
+        className="w-full h-full object-cover object-center relative z-10 rounded-full"
         style={{
-          // Vignette statt hartem Kreis-Rand: WICHTIG ist "circle closest-side"
-          // (statt der CSS-Standardgroesse "farthest-corner") - nur so
-          // entspricht der 100%-Punkt des Gradienten exakt dem sichtbaren
-          // Kreisrand. Ohne das wurde der Fade nie wirklich transparent,
-          // bevor er vom Kreis-Clip hart abgeschnitten wurde (der eigentliche
-          // Bug hinter "Fade sieht komisch/abgeschnitten aus"). Zentrum bleibt
-          // sichtbar/scharf (dort ist meistens das eigentliche Gesicht), nach
-          // aussen wird kraeftig bis auf 0 ausgeblendet.
+          // Vignette: Zentrum bleibt sichtbar/scharf (dort ist meistens das
+          // eigentliche Gesicht), nach aussen wird kraeftig bis auf 0
+          // ausgeblendet. "circle closest-side" sorgt dafuer, dass der
+          // 100%-Punkt exakt dem Kreisrand entspricht (nicht der weiter
+          // entfernten Boxecke, dem CSS-Standardverhalten).
           WebkitMaskImage: 'radial-gradient(circle closest-side at 50% 50%, rgba(0,0,0,1) 34%, rgba(0,0,0,0) 100%)',
           maskImage: 'radial-gradient(circle closest-side at 50% 50%, rgba(0,0,0,1) 34%, rgba(0,0,0,0) 100%)',
         }}
