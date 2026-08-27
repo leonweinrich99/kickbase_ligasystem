@@ -275,7 +275,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                    <ManagerAvatar name={u.name} size={32} />
                    <div className="flex-1">
                      <div className="font-bold text-sm text-gray-200">{u.name}</div>
-                     <div className="text-[10px] text-gray-500 uppercase tracking-widest">Rank #{u.rank}</div>
+                      <div className="text-[10px] text-gray-500 uppercase tracking-widest">Platz #{u.rank}</div>
                    </div>
                  </button>
                ))}
@@ -299,12 +299,13 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
         </button>
       </div>
 
-      <div className="max-w-[1000px] w-full mx-auto pt-2 pb-8 px-4 sm:px-6">
+      <div className="max-w-[1000px] w-full mx-auto pt-6 sm:pt-8 pb-8 px-4 sm:px-6">
 
-        {/* Name, Rang & rundes Foto-Medaillon rechts (wie im Trading Advisor) -
-            Foto ist IMMER vollstaendig sichtbar (nie angeschnitten, das
-            wuerde eine harte, gerade Kante erzeugen statt eines sauberen
-            Fades). */}
+        {/* Name, Platz & grosses rundes Foto-Medaillon rechts (wie im
+            Trading Advisor) - extra Abstand nach oben (pt-6/pt-8), damit das
+            groessere Bild nicht direkt am Sticky-Header klebt. Foto ist
+            IMMER vollstaendig sichtbar (nie angeschnitten, das wuerde eine
+            harte, gerade Kante erzeugen statt eines sauberen Fades). */}
         <div className="flex items-center justify-between gap-4 mb-3">
           <div className="min-w-0">
             {mode !== 'archive' && userData.leagueName && (
@@ -319,7 +320,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
               {userData.name}
             </h2>
             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-              <span className="text-[#8b92a5] font-medium text-sm">Rank #{userData.rank}</span>
+              <span className="text-[#8b92a5] font-medium text-sm">Platz #{userData.rank}</span>
               {stats && stats.rankChange !== 0 && (
                 <span className={`inline-flex items-center gap-1 text-[11px] font-semibold ${stats.rankChange > 0 ? 'text-green-500' : 'text-red-500'}`}>
                   {stats.rankChange > 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
@@ -329,7 +330,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
             </div>
           </div>
 
-          <ManagerImageDetail name={userData.name} ringColor={userData.leagueColor || '#ff5c3e'} size={88} />
+          <ManagerImageDetail name={userData.name} ringColor={userData.leagueColor || '#ff5c3e'} size={140} />
         </div>
 
         {/* Gesamtpunkte (Scalable Style, wie Marktwert im Advisor) */}
