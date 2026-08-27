@@ -19,11 +19,25 @@ import pandas as pd
 # Datenbank auftaucht, statt komplett zu fehlen.
 MV_FALLBACK_FIELDS = ["mv", "marketValue", "curVal"]
 
+# Temporaerer, gezielter Debug-Filter fuer den "Latte Lath fehlt"-Fall (siehe
+# Nutzer-Feedback: der Spieler wurde ihm per Kickbase-Auto-Fill zugelost,
+# nicht selbst gekauft - unklar, ob er ueberhaupt in der normalen
+# Kader-/Team-Liste auftaucht oder ob er dort zwar steht, aber aus einem
+# anderen Grund spaeter in der Pipeline rausfaellt). Kann nach Klaerung
+# wieder entfernt werden.
+DEBUG_NAME_FILTER = ("latte", "lath")
+
+
+def _matches_debug_filter(player_info):
+    full_name = f"{player_info.get('first_name') or ''} {player_info.get('last_name') or ''}".lower()
+    return any(term in full_name for term in DEBUG_NAME_FILTER)
+
 
 def fetch_player_data(token, competition_ids, last_mv_values, last_pfm_values, max_workers=12):
     """Fetch market-value + performance history for all players of the given competitions."""
 
     all_competitions_dfs = []
+    debug_target_found = []  # thread-sicher genug fuer simples append() (GIL)
 
     for competition_id in competition_ids:
         raw_players = get_all_players_raw(token, competition_id)
@@ -38,10 +52,14 @@ def fetch_player_data(token, competition_ids, last_mv_values, last_pfm_values, m
         def process_player(player_id):
             try:
                 player_info = get_player_info(token, competition_id, player_id)
+                is_debug_target = _matches_debug_filter(player_info)
                 player_team_id = player_info["team_id"]
                 player_df = pd.DataFrame([player_info])
 
                 mv_df = pd.DataFrame(get_player_market_value(token, competition_id, player_id, last_mv_values))
+                if is_debug_target:
+                    debug_target_found.append(player_id)
+                    print(f"DEBUG Latte-Lath-Suche: gefunden id={player_id} name={player_info.get('first_name')} {player_info.get('last_name')} team={player_info.get('team_name')} position={player_info.get('position')} mv_historie_leer={mv_df.empty} roster_felder={sorted(roster_by_id.get(player_id, {}).keys())} roster_eintrag={roster_by_id.get(player_id)}")
                 if mv_df.empty:
                     # Brandneuer Spieler (z.B. frischer Transfer) - Kickbase hat
                     # noch keine Marktwert-HISTORIE fuer ihn. Falls die Kader-
@@ -102,6 +120,15 @@ def fetch_player_data(token, competition_ids, last_mv_values, last_pfm_values, m
         if valid_dfs:
             comp_final_df = pd.concat(valid_dfs, ignore_index=True)
             all_competitions_dfs.append(comp_final_df)
+
+    # Diagnose-Fazit fuer den Latte-Lath-Fall: taucht der Name in KEINER der
+    # abgefragten Ligen/Wettbewerbe ueberhaupt in der Kader-/Team-Liste auf,
+    # ist der Fallback-Fix (fehlende Marktwert-Historie) nicht die Ursache -
+    # dann fehlt er schon VOR unserer Pipeline in Kickbases eigener
+    # Team-Kader-Liste (z.B. anderes Team/Liga als erwartet, oder generell
+    # noch nicht in der Wettbewerbs-Datenbank registriert).
+    if not debug_target_found:
+        print("DEBUG Latte-Lath-Suche: in KEINER der abgefragten Team-Kader-Listen gefunden - liegt vermutlich nicht an fehlender Marktwert-Historie, sondern daran, dass er (noch) nirgends in Kickbases eigener Team-/Kader-Liste auftaucht.")
 
     if not all_competitions_dfs:
         return pd.DataFrame()
