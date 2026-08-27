@@ -6,15 +6,15 @@ import logo from './assets/pokal_logo.png';
 import LoadingScreen from './LoadingScreen';
 import useMinimumDelay from './useMinimumDelay';
 import { shouldShowSplash, markSplashShown } from './appLoadState';
-import ManagerImageDetail from './ui/ManagerImageDetail';
+import ManagerAvatar from './ui/ManagerAvatar';
 
 // "Sieger SF13" & Co. sind Platzhalter für noch nicht ausgespielte Partien,
 // "Freilos" für einen direkten Aufstieg ohne Gegner - beides ist (noch) kein
 // echter Manager und kann daher nicht mit jemandem verglichen werden.
 const isPlaceholderName = (name) => !name || name.startsWith('Sieger') || name === 'Freilos';
 
-// Horizontale Kachel - rundes Foto-Medaillon (mit Fade wenn ein Kickbase-Bild
-// bekannt ist), IMMER vollstaendig sichtbar (nie von der Kartenkante
+// Horizontale Kachel - Foto-Avatar (ohne Fade, mit duennem farbigem
+// Liga-Ring) ist IMMER vollstaendig sichtbar (nie von der Kartenkante
 // angeschnitten - das wuerde eine harte, gerade Kante erzeugen). Der Name
 // liegt direkt ueber dem Foto, unten angehaengt - ein Scrim-Verlauf am
 // unteren Kartenrand sorgt unabhaengig vom Fotoinhalt fuer Lesbarkeit.
@@ -45,13 +45,13 @@ const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}
       role={isClickable ? 'button' : undefined}
       className={`relative overflow-hidden card-surface rounded-xl shadow-lg w-full xl:w-64 h-[70px] sm:h-[78px] flex-shrink-0 transition-transform hover:scale-105 hover:border-[#8b5cf6]/50 ${isFinal ? 'ring-2 ring-[#8b5cf6] shadow-[0_0_20px_rgba(139,92,246,0.3)] xl:scale-110 z-10' : ''} ${isClickable ? 'cursor-pointer active:scale-95' : ''}`}
     >
-      {/* Foto-Medaillons - vollstaendige Kreise, nur nah an die Kante
-          positioniert statt sie anzuschneiden */}
+      {/* Avatare - vollstaendige Kreise (kein Fade), duenner farbiger
+          Liga-Ring, nur nah an die Kante positioniert statt angeschnitten */}
       <div className="absolute left-2 top-1/2 -translate-y-1/2 z-0 pointer-events-none">
-        <ManagerImageDetail name={isPlaceholderName(match.p1) ? null : match.p1} size={52} ringColor={color1} />
+        <ManagerAvatar name={isPlaceholderName(match.p1) ? null : match.p1} size={52} ringColor={color1} ringWidth={1.5} />
       </div>
       <div className="absolute right-2 top-1/2 -translate-y-1/2 z-0 pointer-events-none">
-        <ManagerImageDetail name={isPlaceholderName(match.p2) ? null : match.p2} size={52} ringColor={color2} />
+        <ManagerAvatar name={isPlaceholderName(match.p2) ? null : match.p2} size={52} ringColor={color2} ringWidth={1.5} />
       </div>
 
       {/* Scrim am unteren Rand - garantiert lesbaren Namen unabhaengig vom Fotoinhalt */}

@@ -301,12 +301,11 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
 
       <div className="max-w-[1000px] w-full mx-auto pt-2 pb-8 px-4 sm:px-6">
 
-        {/* Name, Rang & rundes Foto-Medaillon - Foto ist IMMER vollstaendig
-            sichtbar (nie angeschnitten, das wuerde eine harte, gerade Kante
-            erzeugen statt eines sauberen Fades). */}
-        <div className="flex items-center gap-4 mb-3">
-          <ManagerImageDetail name={userData.name} ringColor={userData.leagueColor || '#ff5c3e'} size={88} />
-
+        {/* Name, Rang & rundes Foto-Medaillon rechts (wie im Trading Advisor) -
+            Foto ist IMMER vollstaendig sichtbar (nie angeschnitten, das
+            wuerde eine harte, gerade Kante erzeugen statt eines sauberen
+            Fades). */}
+        <div className="flex items-center justify-between gap-4 mb-3">
           <div className="min-w-0">
             {mode !== 'archive' && userData.leagueName && (
               <span
@@ -329,6 +328,8 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
               )}
             </div>
           </div>
+
+          <ManagerImageDetail name={userData.name} ringColor={userData.leagueColor || '#ff5c3e'} size={88} />
         </div>
 
         {/* Gesamtpunkte (Scalable Style, wie Marktwert im Advisor) */}

@@ -9,7 +9,7 @@ import { useManagerImages } from '../useManagerImages';
 // eingesammelt, siehe backend/scripts/fetch-manager-images.js, Zuordnung
 // ueber den Kickbase-Namen) > eigenes App-Profilbild (photoURL, nur fuer den
 // eingeloggten Account selbst verfuegbar) > Buchstaben-Fallback.
-export default function ManagerAvatar({ name, photoURL, size = 40, className = '', ringColor }) {
+export default function ManagerAvatar({ name, photoURL, size = 40, className = '', ringColor, ringWidth = 2 }) {
   const images = useManagerImages();
   const [failed, setFailed] = useState(false);
 
@@ -22,7 +22,7 @@ export default function ManagerAvatar({ name, photoURL, size = 40, className = '
       style={{
         width: size,
         height: size,
-        border: ringColor ? `2px solid ${ringColor}` : undefined,
+        border: ringColor ? `${ringWidth}px solid ${ringColor}` : undefined,
       }}
     >
       {src ? (
