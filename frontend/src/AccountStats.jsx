@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, ChevronRight, TrendingUp, TrendingDown } from 'lucide-react';
 import { useLeagueEntry } from './useLeagueEntry';
+import { usePokalStatus } from './usePokalStatus';
+import { useNextMatchday } from './useNextMatchday';
 import ManagerAvatar from './ui/ManagerAvatar';
 import ligaLogo from './assets/logo.png';
 import pokalLogo from './assets/pokal_logo.png';
@@ -49,44 +51,6 @@ const LigaTab = ({ kickbaseId }) => {
 
 // ---------- Pokal-Tab ----------
 
-const ROUND_ORDER = [
-  { key: 'Sechzehntelfinale', sides: ['roundOf32Left', 'roundOf32Right'] },
-  { key: 'Achtelfinale', sides: ['roundOf16Left', 'roundOf16Right'] },
-  { key: 'Viertelfinale', sides: ['quarterFinalsLeft', 'quarterFinalsRight'] },
-  { key: 'Halbfinale', sides: ['semiFinalsLeft', 'semiFinalsRight'] },
-  { key: 'Finale', sides: ['final'] },
-];
-
-const isPlaceholderName = (name) => !name || name.startsWith('Sieger') || name === 'Freilos';
-
-function getPokalStatus(data, playerName) {
-  if (!data || !playerName) return null;
-  let lastFound = null;
-  for (const round of ROUND_ORDER) {
-    for (const sideKey of round.sides) {
-      for (const match of data[sideKey] || []) {
-        if (match.p1 === playerName || match.p2 === playerName) {
-          const slot = match.p1 === playerName ? 1 : 2;
-          lastFound = { round, match, slot };
-        }
-      }
-    }
-  }
-  if (!lastFound) return { status: 'none' };
-  const { round, match, slot } = lastFound;
-  const opponentRaw = slot === 1 ? match.p2 : match.p1;
-  const opponent = isPlaceholderName(opponentRaw) ? null : opponentRaw;
-
-  if (match.winner) {
-    if (match.winner === slot) {
-      if (round.key === 'Finale') return { status: 'champion' };
-      return { status: 'advanced', round: round.key };
-    }
-    return { status: 'eliminated', round: round.key, opponent };
-  }
-  return { status: 'upcoming', round: round.key, opponent };
-}
-
 const STATUS_THEME = {
   advanced: { color: '#22c55e', label: 'Weiter dabei' },
   upcoming: { color: '#8b5cf6', label: 'Bevorstehend' },
@@ -104,18 +68,17 @@ const findManagerByName = (leagueData, name) => {
   return null;
 };
 
-const PokalTab = ({ kickbaseId, kickbaseName, photoURL }) => {
-  const [pokalData, setPokalData] = useState(null);
+// status kommt jetzt von aussen (SeasonSnapshot, per usePokalStatus) - wird
+// dort AUSSERDEM fuer die Spieltag-Anzeige in der Section-Kopfzeile
+// gebraucht, daher nur EIN gemeinsamer Fetch statt zwei.
+const PokalTab = ({ kickbaseId, kickbaseName, photoURL, status }) => {
   const [leagueData, setLeagueData] = useState(null);
   const myEntry = useLeagueEntry(kickbaseId);
 
   useEffect(() => {
-    fetch(`/pokal-data.json?t=${Date.now()}`).then((res) => res.json()).then(setPokalData).catch(() => setPokalData(null));
     fetch(`/data.json?t=${Date.now()}`).then((res) => res.json()).then(setLeagueData).catch(() => setLeagueData(null));
   }, []);
 
-  const status = useMemo(() => getPokalStatus(pokalData, kickbaseName), [pokalData, kickbaseName]);
-  const roundInfo = pokalData?.meta?.roundSchedule?.[status?.round];
   const opponentEntry = useMemo(
     () => (status?.opponent ? findManagerByName(leagueData, status.opponent) : null),
     [leagueData, status]
@@ -141,20 +104,12 @@ const PokalTab = ({ kickbaseId, kickbaseName, photoURL }) => {
   return (
     <div>
       <div className="flex items-center justify-between mb-5">
-        <div>
-          <span
-            className="inline-flex items-center text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full"
-            style={{ backgroundColor: `${theme.color}26`, color: theme.color }}
-          >
-            {status.round}
-          </span>
-          {roundInfo && (
-            <div className="flex items-center gap-1.5 text-[10px] text-[#8b92a5] mt-1.5">
-              <Calendar size={11} strokeWidth={2.5} />
-              <span>Spieltag {roundInfo.matchday} · {roundInfo.date}</span>
-            </div>
-          )}
-        </div>
+        <span
+          className="inline-flex items-center text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full"
+          style={{ backgroundColor: `${theme.color}26`, color: theme.color }}
+        >
+          {status.round}
+        </span>
         <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: theme.color }}>
           {theme.label}
         </span>
@@ -349,24 +304,40 @@ const KaderTab = ({ kickbaseId }) => {
 // Liga und Pokal stehen untereinander statt in Tabs - die jeweiligen Logos
 // übernehmen die visuelle Abgrenzung zwischen den beiden Abschnitten (siehe
 // Nutzer-Feedback: Tabs sollten weg, Logos sollen die Trennung übernehmen).
-const Section = ({ logo, title, children }) => (
+// "right" ist ein optionaler, rechtsbündiger Zusatz in derselben Kopfzeile
+// (z.B. Spieltag+Datum neben Logo/Schriftzug).
+const Section = ({ logo, title, right, children }) => (
   <div className="mb-8 last:mb-0">
-    <div className="flex items-center gap-2.5 mb-5 pb-3 border-b border-[#2a2a2a]">
-      <img src={logo} alt="" className="w-7 h-7 object-contain shrink-0" />
-      <span className="text-sm font-bold uppercase tracking-wider text-white">{title}</span>
+    <div className="flex items-center justify-between gap-2 mb-5 pb-3 border-b border-[#2a2a2a]">
+      <div className="flex items-center gap-2.5 min-w-0">
+        <img src={logo} alt="" className="w-7 h-7 object-contain shrink-0" />
+        <span className="text-sm font-bold uppercase tracking-wider text-white truncate">{title}</span>
+      </div>
+      {right && <div className="text-[10px] text-[#8b92a5] font-medium shrink-0 text-right">{right}</div>}
     </div>
     {children}
   </div>
 );
 
 export const SeasonSnapshot = ({ kickbaseId, kickbaseName, photoURL }) => {
+  const nextMatchday = useNextMatchday();
+  const { status: pokalStatus, roundInfo: pokalRoundInfo } = usePokalStatus(kickbaseName);
+
   return (
     <div className="mb-6">
-      <Section logo={ligaLogo} title="Liga">
+      <Section
+        logo={ligaLogo}
+        title="Liga"
+        right={nextMatchday && `Spieltag ${nextMatchday.number} · ${nextMatchday.dateRange}`}
+      >
         <LigaTab kickbaseId={kickbaseId} />
       </Section>
-      <Section logo={pokalLogo} title="Pokal">
-        <PokalTab kickbaseId={kickbaseId} kickbaseName={kickbaseName} photoURL={photoURL} />
+      <Section
+        logo={pokalLogo}
+        title="Pokal"
+        right={pokalRoundInfo && `Spieltag ${pokalRoundInfo.matchday} · ${pokalRoundInfo.date}`}
+      >
+        <PokalTab kickbaseId={kickbaseId} kickbaseName={kickbaseName} photoURL={photoURL} status={pokalStatus} />
       </Section>
       {/* Kader- und Spieltag-Tab bewusst deaktiviert, siehe Kommentar oben */}
     </div>

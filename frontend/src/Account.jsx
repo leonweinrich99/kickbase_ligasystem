@@ -4,7 +4,6 @@ import { motion as Motion } from 'framer-motion';
 import { BookOpen, Trophy, Archive, Shield, TrendingUp, HelpCircle, Bell, Link2, ChevronRight } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import { useTour } from './Tour';
-import { useNextMatchday } from './useNextMatchday';
 import accountLogo from './assets/account_logo.png';
 import { SeasonSnapshot } from './AccountStats';
 import ManagerRatingBadge from './ManagerRatingBadge';
@@ -53,7 +52,6 @@ const getGreeting = () => {
 const Account = () => {
   const { user, profile, isAdmin, isFirebaseConfigured, signOut } = useAuth();
   const tour = useTour();
-  const nextMatchday = useNextMatchday();
   const firstName = profile?.displayName?.split(' ')[0];
 
   return (
@@ -64,14 +62,7 @@ const Account = () => {
             <div className="w-11 h-11 sm:w-14 sm:h-14 flex items-center justify-center overflow-hidden flex-shrink-0">
               <img src={accountLogo} alt="Account Logo" className="w-full h-full object-contain" />
             </div>
-            <div className="min-w-0">
-              <PageHeader eyebrow="SAISON 26/27" title={`${getGreeting()}${firstName ? `, ${firstName}` : ''}`} />
-              {nextMatchday && (
-                <div className="text-[10px] sm:text-xs text-[#8b92a5] font-medium mt-0.5 truncate">
-                  Spieltag {nextMatchday.number} · {nextMatchday.dateRange}
-                </div>
-              )}
-            </div>
+            <PageHeader eyebrow="SAISON 26/27" title={`${getGreeting()}${firstName ? `, ${firstName}` : ''}`} />
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
