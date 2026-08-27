@@ -11,7 +11,6 @@ import {
 import { useBackNavigation } from './useBackNavigation';
 import { BackButton } from './ui/CloseButton';
 import ManagerAvatar from './ui/ManagerAvatar';
-import ManagerImageDetail from './ui/ManagerImageDetail';
 
 const calculatePerformanceScore = (points, avg, opt, max) => {
   if (points <= 0) return 1.0;
@@ -299,7 +298,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
         </button>
       </div>
 
-      <div className="max-w-[1000px] w-full mx-auto pt-6 sm:pt-8 pb-8 px-4 sm:px-6">
+      <div className="max-w-[1400px] w-full mx-auto pt-6 sm:pt-8 pb-8 px-4 sm:px-6">
 
         {/* Name, Platz & grosses rundes Foto-Medaillon rechts (wie im
             Trading Advisor) - extra Abstand nach oben (pt-6/pt-8), damit das
@@ -330,7 +329,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
             </div>
           </div>
 
-          <ManagerImageDetail name={userData.name} ringColor={userData.leagueColor || '#ff5c3e'} size={140} />
+          <ManagerAvatar name={userData.name} ringColor={userData.leagueColor || '#ff5c3e'} size={140} />
         </div>
 
         {/* Gesamtpunkte (Scalable Style, wie Marktwert im Advisor) */}

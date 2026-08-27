@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { useBackNavigation } from './useBackNavigation';
 import { BackButton } from './ui/CloseButton';
-import ManagerImageDetail from './ui/ManagerImageDetail';
+import ManagerAvatar from './ui/ManagerAvatar';
 
 const calculatePerformanceScore = (points, avg, opt, max) => {
   if (points <= 0) return 1.0;
@@ -217,32 +217,30 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
   }
 
   return (
-    <div className="max-w-[1000px] mx-auto pb-20 px-0 relative">
+    <div className="max-w-[1400px] mx-auto pb-20 px-0 relative">
       
       {/* Back Button */}
       <div className="mb-6">
         <BackButton onClick={goBack} />
       </div>
 
-      {/* Duel Header - kartenlos, volle runde Foto-Medaillons mit Fade (kein
-          Bleed/Crop noetig - im Head-to-Head soll das ganze Foto sichtbar
-          bleiben) */}
+      {/* Duel Header - kartenlos, volle runde Foto-Avatare (kein Fade) */}
       <div className="flex items-center justify-between mb-8 sm:mb-10 gap-2 sm:gap-6">
         <div className="flex flex-col items-center gap-2 w-[42%] sm:w-2/5 min-w-0">
-          <ManagerImageDetail name={user1.name} ringColor="#ff5c3e" size={112} />
+          <ManagerAvatar name={user1.name} ringColor="#ff5c3e" size={112} />
           <div className="min-w-0 text-center">
             <h1 className="text-sm sm:text-2xl font-semibold tracking-tight text-white truncate">{user1.name}</h1>
-            <div className="text-[10px] sm:text-sm font-medium text-[#ff5c3e] mt-0.5">Rank #{user1.rank}</div>
+            <div className="text-[10px] sm:text-sm font-medium text-[#ff5c3e] mt-0.5">Platz #{user1.rank}</div>
           </div>
         </div>
 
         <div className="text-lg sm:text-3xl font-black text-[#2e2e2e] italic shrink-0">VS</div>
 
         <div className="flex flex-col items-center gap-2 w-[42%] sm:w-2/5 min-w-0">
-          <ManagerImageDetail name={user2.name} ringColor="#3b82f6" size={112} />
+          <ManagerAvatar name={user2.name} ringColor="#3b82f6" size={112} />
           <div className="min-w-0 text-center">
             <h1 className="text-sm sm:text-2xl font-semibold tracking-tight text-white truncate">{user2.name}</h1>
-            <div className="text-[10px] sm:text-sm font-medium text-[#3b82f6] mt-0.5">Rank #{user2.rank}</div>
+            <div className="text-[10px] sm:text-sm font-medium text-[#3b82f6] mt-0.5">Platz #{user2.rank}</div>
           </div>
         </div>
       </div>
