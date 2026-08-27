@@ -9,8 +9,9 @@ token = login(email, password)
 # Liga-ID der Pokal-Liga suchen (wir wissen aus dem Test: "Pokal", 10 Mitglieder)
 from kickbase_api.config import BASE_URL
 leagues = get_json_with_token(f"{BASE_URL}/leagues", token)
-league = next(l for l in leagues["lgs"] if l["n"] == "Pokal")
-league_id = league["i"]
+leagues_list = leagues.get("lins") or leagues.get("leagues") or (leagues if isinstance(leagues, list) else [])
+league = next(l for l in leagues_list if (l.get("n") or l.get("name")) == "Pokal")
+league_id = league.get("i") or league.get("id")
 print("Liga-ID:", league_id)
 
 ranking = get_json_with_token(f"{BASE_URL}/leagues/{league_id}/ranking", token)
