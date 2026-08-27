@@ -14,9 +14,11 @@ import ManagerImageDetail from './ui/ManagerImageDetail';
 const isPlaceholderName = (name) => !name || name.startsWith('Sieger') || name === 'Freilos';
 
 // Horizontale Kachel - rundes Foto-Medaillon (mit Fade wenn ein Kickbase-Bild
-// bekannt ist) sitzt an der jeweiligen Aussenkante der Karte ("Ausschnitt ins
-// Karteninnere"), der Name bekommt per Padding klar definierten Abstand dazu
-// und wird dadurch nie vom Foto überdeckt.
+// bekannt ist) blutet gross an der jeweiligen Aussenkante der Karte ins Bild
+// hinein ("Sichel"-Look: die Karte ist gut ausgefuellt, nach innen bleibt ein
+// runder, fadender Ausschnitt sichtbar - wie im Trading Advisor). Der Name
+// bekommt per Padding klar definierten Abstand dazu und wird dadurch nie vom
+// Foto überdeckt.
 const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}, onOpenCompare, pokalMembers = null }) => {
   const isWinner1 = match.winner === 1;
   const isWinner2 = match.winner === 2;
@@ -42,18 +44,16 @@ const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}
       data-tour={tourTarget ? 'pokal-first-match' : undefined}
       onClick={isClickable ? () => onOpenCompare(id1, id2) : undefined}
       role={isClickable ? 'button' : undefined}
-      className={`relative overflow-hidden flex items-center card-surface rounded-xl shadow-lg w-full xl:w-64 h-[58px] sm:h-[66px] flex-shrink-0 transition-transform hover:scale-105 hover:border-[#8b5cf6]/50 ${isFinal ? 'ring-2 ring-[#8b5cf6] shadow-[0_0_20px_rgba(139,92,246,0.3)] xl:scale-110 z-10' : ''} ${isClickable ? 'cursor-pointer active:scale-95' : ''}`}
+      className={`relative overflow-hidden flex items-center card-surface rounded-xl shadow-lg w-full xl:w-64 h-[60px] sm:h-[68px] flex-shrink-0 transition-transform hover:scale-105 hover:border-[#8b5cf6]/50 ${isFinal ? 'ring-2 ring-[#8b5cf6] shadow-[0_0_20px_rgba(139,92,246,0.3)] xl:scale-110 z-10' : ''} ${isClickable ? 'cursor-pointer active:scale-95' : ''}`}
     >
-      {/* Foto-Medaillons an den Aussenkanten der Karte */}
-      <div className="absolute left-1 sm:left-1.5 top-1/2 -translate-y-1/2 z-0 pointer-events-none">
-        <ManagerImageDetail name={isPlaceholderName(match.p1) ? null : match.p1} size={46} ringColor={color1} />
-      </div>
-      <div className="absolute right-1 sm:right-1.5 top-1/2 -translate-y-1/2 z-0 pointer-events-none">
-        <ManagerImageDetail name={isPlaceholderName(match.p2) ? null : match.p2} size={46} ringColor={color2} />
-      </div>
+      {/* Foto-Medaillons - gross, bluten an den Aussenkanten der Karte nach
+          aussen (per overflow-hidden gekappt), nach innen bleibt der runde
+          Fade sichtbar */}
+      <ManagerImageDetail name={isPlaceholderName(match.p1) ? null : match.p1} size={96} ringColor={color1} bleed="left" />
+      <ManagerImageDetail name={isPlaceholderName(match.p2) ? null : match.p2} size={96} ringColor={color2} bleed="right" />
 
       {/* Spieler 1 (links) - Padding haelt den Text frei vom Foto */}
-      <div className="relative z-10 flex-1 min-w-0 pl-[52px] sm:pl-[58px] pr-1">
+      <div className="relative z-10 flex-1 min-w-0 pl-[72px] sm:pl-[78px] pr-1">
         <div className="flex items-center gap-1">
           <span className={`text-[10px] sm:text-xs font-bold truncate ${isWinner1 ? 'text-white' : 'text-gray-300'}`}>{match.p1 || '-'}</span>
           {isMember1 && <Check size={10} strokeWidth={3.5} className="text-green-500 shrink-0" />}

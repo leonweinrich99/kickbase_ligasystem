@@ -299,40 +299,42 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
         </button>
       </div>
 
-      <div className="max-w-[1000px] w-full mx-auto pt-2 pb-8 px-4 sm:px-6 relative">
+      <div className="max-w-[1000px] w-full mx-auto pt-2 pb-8 px-4 sm:px-6">
 
-        {/* Rundes Foto-Medaillon rechts (mit Fade), wie im Trading Advisor -
-            liegt hinter dem Namen, der Text bleibt dank begrenzter Breite frei */}
-        <div className="absolute top-0 right-0 z-0 pointer-events-none">
-          <ManagerImageDetail name={userData.name} ringColor={userData.leagueColor || '#ff5c3e'} size={132} />
-        </div>
+        {/* Name, Rang & grosses rundes Foto-Medaillon (Sichel-Look wie im
+            Trading Advisor: Karte gut ausgefuellt, nach innen fadender
+            runder Ausschnitt). Eigener Block mit fester Mindesthoehe, damit
+            Foto & Text sauber zueinander ausgerichtet bleiben und nichts mit
+            dem Sticky-Header darueber oder dem Punkte-Block darunter kollidiert. */}
+        <div className="relative overflow-hidden min-h-[112px] sm:min-h-[136px] mb-3">
+          <ManagerImageDetail name={userData.name} ringColor={userData.leagueColor || '#ff5c3e'} size={200} bleed="right" />
 
-        {/* Name & Rank */}
-        <div className="relative z-10 pt-2 w-[62%] sm:w-[65%]">
-          {mode !== 'archive' && userData.leagueName && (
-            <span
-              className="inline-flex text-[10px] font-semibold uppercase tracking-wider rounded px-1.5 py-0.5 mb-1.5"
-              style={{ backgroundColor: `${userData.leagueColor}26`, color: userData.leagueColor }}
-            >
-              {userData.leagueName}
-            </span>
-          )}
-          <h2 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight leading-tight">
-            {userData.name}
-          </h2>
-          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-            <span className="text-[#8b92a5] font-medium text-sm">Rank #{userData.rank}</span>
-            {stats && stats.rankChange !== 0 && (
-              <span className={`inline-flex items-center gap-1 text-[11px] font-semibold ${stats.rankChange > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                {stats.rankChange > 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                {Math.abs(stats.rankChange)} {stats.rankChange > 0 ? 'auf' : 'ab'}
+          <div className="relative z-10 w-[60%] sm:w-[62%] min-h-[112px] sm:min-h-[136px] flex flex-col justify-center">
+            {mode !== 'archive' && userData.leagueName && (
+              <span
+                className="inline-flex text-[10px] font-semibold uppercase tracking-wider rounded px-1.5 py-0.5 mb-1.5 w-fit"
+                style={{ backgroundColor: `${userData.leagueColor}26`, color: userData.leagueColor }}
+              >
+                {userData.leagueName}
               </span>
             )}
+            <h2 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight leading-tight">
+              {userData.name}
+            </h2>
+            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+              <span className="text-[#8b92a5] font-medium text-sm">Rank #{userData.rank}</span>
+              {stats && stats.rankChange !== 0 && (
+                <span className={`inline-flex items-center gap-1 text-[11px] font-semibold ${stats.rankChange > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  {stats.rankChange > 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                  {Math.abs(stats.rankChange)} {stats.rankChange > 0 ? 'auf' : 'ab'}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Gesamtpunkte (Scalable Style, wie Marktwert im Advisor) */}
-        <div className="mb-6 mt-4 relative z-10">
+        <div className="mb-6">
           <div className="text-3xl sm:text-[40px] font-semibold text-white leading-none tracking-tight mb-2">
             {userData.points}
             <span className="text-base sm:text-lg text-[#8b92a5] font-medium ml-2">Punkte</span>

@@ -2,31 +2,44 @@ import { useState } from 'react';
 import { useManagerImages } from '../useManagerImages';
 import ManagerAvatar from './ManagerAvatar';
 
-// Rundes/ovales Foto-Medaillon mit weichem Vignetten-Fade nach aussen -
-// Pendant zu Advisor::PlayerImageDetail, aber bewusst rund/oval statt
-// rechteckig: dadurch bleibt daneben stehender Text (Name etc.) immer klar
-// getrennt vom Foto und gut lesbar - auch in kompakten Kontexten wie den
-// Pokal-Kacheln oder nebeneinander im Head-to-Head.
+// Rundes Foto-Medaillon mit weichem Vignetten-Fade nach aussen - Pendant zu
+// Advisor::PlayerImageDetail, aber rund/oval statt rechteckig.
 //
-// Drop-in-Ersatz fuer ManagerAvatar (gleiche Props: name, photoURL, size,
-// ringColor) - faellt automatisch auf den klassischen Buchstaben-Kreis
-// zurueck, solange fuer diesen Namen kein Kickbase-Profilbild bekannt ist.
-export default function ManagerImageDetail({ name, photoURL, size = 160, ringColor = '#ff5c3e', oval = false, className = '' }) {
+// bleed = 'left' | 'right' | null steuert einen "Sichel"-Look: das Foto ist
+// deutlich groesser als sein sichtbarer Bereich und wird an die jeweilige
+// Aussenkante seines (positioned + overflow-hidden) Elternelements
+// geschoben - der Elternrahmen kappt den Rest, sodass eine grosse, gut
+// gefuellte, nach innen fadende Sichel entsteht (wie im Trading Advisor).
+// Ohne bleed wird das Medaillon normal/zentriert im Textfluss dargestellt.
+//
+// WICHTIG: Ist fuer den Namen (noch) kein Kickbase-Bild bekannt, faellt die
+// Komponente auf den klassischen Buchstaben-Kreis zurueck - im Bleed-Modus
+// bewusst NICHT in der grossen Bleed-Groesse/-Position (haette dort einen
+// hart abgeschnittenen, nicht fadenden Rand), sondern klein und mittig an
+// der Kante, wie ein normaler Avatar.
+export default function ManagerImageDetail({ name, photoURL, size = 160, ringColor = '#ff5c3e', bleed = null, className = '' }) {
   const images = useManagerImages();
   const [failed, setFailed] = useState(false);
   const src = !failed ? ((name && images[name]) || photoURL || null) : null;
 
+  const bleedOffset = bleed === 'right' ? 'right-2 sm:right-2.5' : 'left-2 sm:left-2.5';
+  const bleedPull = bleed === 'right' ? '-right-8 sm:-right-9' : '-left-8 sm:-left-9';
+
   if (!src) {
-    return <ManagerAvatar name={name} photoURL={photoURL} size={size} ringColor={ringColor} className={className} />;
+    const fallbackSize = bleed ? Math.round(size * 0.42) : size;
+    const avatar = <ManagerAvatar name={name} photoURL={photoURL} size={fallbackSize} ringColor={ringColor} className={bleed ? '' : className} />;
+    if (!bleed) return avatar;
+    return (
+      <div className={`absolute ${bleedOffset} top-1/2 -translate-y-1/2 z-0 pointer-events-none`}>
+        {avatar}
+      </div>
+    );
   }
 
-  const width = size;
-  const height = oval ? Math.round(size * 1.22) : size;
-
-  return (
+  const photo = (
     <div
-      className={`relative shrink-0 rounded-full overflow-hidden ${className}`}
-      style={{ width, height }}
+      className={`relative shrink-0 rounded-full overflow-hidden ${bleed ? '' : className}`}
+      style={{ width: size, height: size }}
     >
       <div className="absolute inset-0 rounded-full blur-2xl opacity-25" style={{ backgroundColor: ringColor }} />
       <img
@@ -42,6 +55,14 @@ export default function ManagerImageDetail({ name, photoURL, size = 160, ringCol
         }}
         onError={() => setFailed(true)}
       />
+    </div>
+  );
+
+  if (!bleed) return photo;
+
+  return (
+    <div className={`absolute ${bleedPull} top-1/2 -translate-y-1/2 z-0 pointer-events-none`}>
+      {photo}
     </div>
   );
 }
