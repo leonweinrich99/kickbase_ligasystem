@@ -141,12 +141,20 @@ const PokalTab = ({ kickbaseId, kickbaseName, photoURL }) => {
   return (
     <div>
       <div className="flex items-center justify-between mb-5">
-        <span
-          className="inline-flex items-center text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full"
-          style={{ backgroundColor: `${theme.color}26`, color: theme.color }}
-        >
-          {status.round}
-        </span>
+        <div>
+          <span
+            className="inline-flex items-center text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full"
+            style={{ backgroundColor: `${theme.color}26`, color: theme.color }}
+          >
+            {status.round}
+          </span>
+          {roundInfo && (
+            <div className="flex items-center gap-1.5 text-[10px] text-[#8b92a5] mt-1.5">
+              <Calendar size={11} strokeWidth={2.5} />
+              <span>Spieltag {roundInfo.matchday} · {roundInfo.date}</span>
+            </div>
+          )}
+        </div>
         <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: theme.color }}>
           {theme.label}
         </span>
@@ -176,14 +184,8 @@ const PokalTab = ({ kickbaseId, kickbaseName, photoURL }) => {
         </div>
       </div>
 
-      {roundInfo && (
-        <div className="flex items-center gap-2 text-[11px] text-[#8b92a5] border-t border-[#2a2a2a] pt-3 mb-1">
-          <Calendar size={13} strokeWidth={2.5} />
-          <span>Bundesliga-Spieltag {roundInfo.matchday} · {roundInfo.date}</span>
-        </div>
-      )}
       {opponentEntry && (
-        <div className="text-[11px] text-[#8b92a5]">
+        <div className="text-[11px] text-[#8b92a5] border-t border-[#2a2a2a] pt-3">
           Gegner-Stats: <span className="text-gray-200 font-bold">Platz {opponentEntry.rank}</span> · <span className="text-gray-200 font-bold">{opponentEntry.points} Punkte</span>
         </div>
       )}
