@@ -36,7 +36,7 @@ export default function PushNotificationCard() {
   };
 
   return (
-    <div className="bg-[#171717] border border-[#2e2e2e] rounded-xl px-4 py-3 flex items-center justify-between gap-3 mb-4">
+    <div className="card-surface rounded-xl px-4 py-3 flex items-center justify-between gap-3 mb-4">
       <div className="min-w-0">
         <div className="text-sm font-bold text-gray-100">Neue Registrierungen</div>
         <div className="text-[11px] text-[#8b92a5] mt-0.5">Benachrichtigung auf diesem Gerät, sobald sich jemand registriert.</div>

@@ -61,7 +61,7 @@ const Login = () => {
   if (!isFirebaseConfigured) {
     return (
       <div className="min-h-screen bg-[#000000] flex items-center justify-center p-4">
-        <div className="max-w-md text-center bg-[#171717] border border-[#2e2e2e] rounded-2xl p-8">
+        <div className="max-w-md text-center card-surface rounded-2xl p-8">
           <h1 className="text-lg font-black text-white mb-3 uppercase">Login noch nicht konfiguriert</h1>
           <p className="text-sm text-[#8b92a5]">
             Es fehlen die Firebase-Umgebungsvariablen (siehe <code className="text-[#ff5c3e]">frontend/.env.example</code>).
@@ -74,7 +74,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-[#000000] flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-[#171717] border border-[#2e2e2e] rounded-3xl p-8 shadow-2xl">
+      <div className="w-full max-w-md card-surface rounded-3xl p-8 shadow-2xl">
         <div className="flex flex-col items-center mb-8">
           <div className="w-16 h-16 mb-4">
             <img src={logo} alt="Logo" className="w-full h-full object-contain" />

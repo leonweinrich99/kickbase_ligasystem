@@ -158,7 +158,7 @@ export default function Profile() {
 
         {/* Alle Einstellungen in EINER Karte mit Trennlinien statt drei
             separaten Kacheln - weniger visuelle Wiederholung. */}
-        <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl divide-y divide-[#2a2a2a] overflow-hidden mb-4">
+        <div className="card-surface rounded-2xl divide-y divide-[#2a2a2a] overflow-hidden mb-4">
           <div className="p-5">
             <div className="flex items-center gap-2 mb-3">
               <span className="text-sm font-bold text-gray-100 flex-1">Name</span>

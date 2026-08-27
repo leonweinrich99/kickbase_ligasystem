@@ -224,7 +224,7 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
       </div>
 
       {/* Duel Header Desktop */}
-      <div className="hidden sm:flex justify-between items-center bg-[#171717] border border-[#2e2e2e] rounded-3xl p-8 mb-10 shadow-lg relative overflow-hidden">
+      <div className="hidden sm:flex justify-between items-center card-surface rounded-3xl p-8 mb-10 shadow-lg relative overflow-hidden">
          <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-[#2e2e2e] px-6 py-1 rounded-b-xl text-xs font-black tracking-widest uppercase text-gray-300 z-10">
             Head to Head
          </div>
@@ -256,7 +256,7 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
       </div>
 
       {/* Duel Header Mobile */}
-      <div className="sm:hidden flex flex-col items-center bg-[#171717] border border-[#2e2e2e] rounded-3xl p-5 mb-8 shadow-lg relative overflow-hidden text-center gap-4">
+      <div className="sm:hidden flex flex-col items-center card-surface rounded-3xl p-5 mb-8 shadow-lg relative overflow-hidden text-center gap-4">
          <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-[#2e2e2e] px-4 py-0.5 rounded-b-lg text-[9px] font-black tracking-widest uppercase text-gray-300 z-10">
             Head to Head
          </div>
@@ -328,7 +328,7 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl p-4 sm:p-6 shadow-lg">
+        <div className="card-surface rounded-2xl p-4 sm:p-6 shadow-lg">
           <div className="flex justify-between items-center mb-4 sm:mb-6">
             <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Platzierungsverlauf</h3>
           </div>
@@ -354,7 +354,7 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
           </div>
         </div>
 
-        <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl p-4 sm:p-6 shadow-lg">
+        <div className="card-surface rounded-2xl p-4 sm:p-6 shadow-lg">
           <div className="flex justify-between items-center mb-4 sm:mb-6">
             <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Performance Index</h3>
           </div>
@@ -378,7 +378,7 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
           </div>
         </div>
 
-        <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl p-4 sm:p-6 shadow-lg">
+        <div className="card-surface rounded-2xl p-4 sm:p-6 shadow-lg">
           <div className="flex justify-between items-center mb-4 sm:mb-6">
             <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Spieltags-Leistung</h3>
             <div className="flex items-center">
@@ -446,7 +446,7 @@ const DuelStatRow = ({ icon, label, val1, val2, isScore, loading }) => {
     const p2Wins = !loading && num2 > num1;
 
     return (
-        <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl p-4 flex items-center shadow-sm relative overflow-hidden group hover:border-[#404040] transition-all">
+        <div className="card-surface rounded-2xl p-4 flex items-center shadow-sm relative overflow-hidden group hover:border-[#404040] transition-all">
             
             {/* Background Color Indication (Subtle) */}
             <div className={`absolute top-0 left-0 bottom-0 w-1/2 opacity-10 transition-colors ${p1Wins ? 'bg-green-500' : p2Wins ? 'bg-red-500' : ''}`}></div>

@@ -142,7 +142,7 @@ const OptimalTeam = ({ isOpen, onClose, availableMatchdays, currentGlobalMatchda
       ></div>
       
       {/* Modal Container */}
-      <div className="bg-[#171717] border border-[#2e2e2e] w-full max-w-2xl max-h-[90vh] rounded-2xl shadow-2xl relative flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="card-surface w-full max-w-2xl max-h-[90vh] rounded-2xl shadow-2xl relative flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-[#2e2e2e] bg-[#171717]">

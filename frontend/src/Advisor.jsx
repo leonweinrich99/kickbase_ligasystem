@@ -181,7 +181,7 @@ const FilterBar = ({ filters, onChange, teams, showTeamFilter = false, recommend
 );
 
 const BudgetRow = ({ entry, rank, color }) => (
-  <div className="flex items-center p-3 mb-2.5 bg-[#171717] border border-[#2e2e2e] rounded-[14px] shadow-sm">
+  <div className="flex items-center p-3 mb-2.5 card-surface rounded-[14px] shadow-sm">
     <div className="w-8 flex justify-center items-center text-xs font-bold text-[#8b92a5] shrink-0">{rank}</div>
     <div className="ml-2 flex-1 min-w-0">
       <div className="text-[15px] font-bold text-gray-100 truncate">{entry.manager}</div>
@@ -220,7 +220,8 @@ const PlayerCard = ({ entry, teamLogo, ownerName, onClick, isFavorite, onToggleF
       onClick={hasHistory ? onClick : undefined}
       onKeyDown={hasHistory ? (e) => (e.key === 'Enter' || e.key === ' ') && onClick() : undefined}
       // p-3 instead of pl-[72px], the text wrapper gets margin instead
-      className={`relative overflow-hidden w-full h-[72px] flex items-center p-3 mb-2 bg-[#171717] border rounded-xl shadow-sm text-left transition-all ${showSellBadge ? 'border-red-500/40' : (showPlayBadge || showTradeBadge) ? 'border-green-500/40' : 'border-[#2e2e2e]'} ${hasHistory ? 'hover:border-cyan-500/50 hover:bg-[#1c1c1c] active:scale-[0.99] cursor-pointer' : 'cursor-default'}`}
+      className={`relative overflow-hidden w-full h-[72px] flex items-center p-3 mb-2 card-surface rounded-xl shadow-sm text-left transition-all ${hasHistory ? 'hover:border-cyan-500/50 hover:bg-[#1c1c1c] active:scale-[0.99] cursor-pointer' : 'cursor-default'}`}
+      style={{ borderColor: showSellBadge ? 'rgba(239,68,68,0.4)' : (showPlayBadge || showTradeBadge) ? 'rgba(34,197,94,0.4)' : undefined }}
     >
       {/* Background Hero Image + Team Logo Watermark (LEFT ALIGNED) */}
       <div className="absolute top-0 left-0 bottom-0 z-0 pointer-events-none w-1/2 flex justify-start overflow-hidden rounded-l-xl">
@@ -957,7 +958,7 @@ const Advisor = () => {
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-[#000000] flex items-center justify-center p-4">
-        <div className="text-center bg-[#171717] border border-[#2e2e2e] rounded-2xl p-8">
+        <div className="text-center card-surface rounded-2xl p-8">
           <h1 className="text-lg font-black text-white uppercase mb-3">Kein Zugriff</h1>
           <p className="text-sm text-[#8b92a5] mb-6">Diese Seite ist nur für Admins.</p>
           <Link to="/" className="text-[#ff5c3e] text-sm font-bold uppercase tracking-widest">Zurück zum Ligasystem</Link>
@@ -1014,7 +1015,7 @@ const Advisor = () => {
         )}
 
         {showInfo && (
-          <div className="bg-[#171717] border border-[#2e2e2e] rounded-xl p-4 text-xs text-[#8b92a5] mb-6">
+          <div className="card-surface rounded-xl p-4 text-xs text-[#8b92a5] mb-6">
             <p>
               Budget-Schätzungen & Marktwert-Prognosen, basierend auf dem Open-Source-Tool{' '}
               <a href="https://github.com/LennardFe/Kickbase-Trading-Advisor" target="_blank" rel="noreferrer" className="text-cyan-400 hover:underline">Kickbase-Trading-Advisor</a>{' '}
@@ -1039,7 +1040,7 @@ const Advisor = () => {
         )}
 
         {error && (
-          <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl p-6 text-center text-sm text-[#8b92a5] mb-6">
+          <div className="card-surface rounded-2xl p-6 text-center text-sm text-[#8b92a5] mb-6">
             Noch keine Auswertung vorhanden. Klicke oben auf das Aktualisieren-Symbol, um sie einmalig zu erzeugen.
           </div>
         )}

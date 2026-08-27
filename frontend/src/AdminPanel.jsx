@@ -36,7 +36,7 @@ const UserRow = ({ u, isSelf, onSetStatus, onSetRole, onApproveKickbaseChange, o
 
   return (
     <div className="flex flex-col gap-2">
-    <div className="bg-[#171717] border border-[#2e2e2e] rounded-xl px-3.5 py-2.5 flex items-center gap-3">
+    <div className="card-surface rounded-xl px-3.5 py-2.5 flex items-center gap-3">
       <div className="w-8 h-8 rounded-full bg-[#1f1f1f] flex items-center justify-center font-black text-[#ff5c3e] text-xs shrink-0">
         {(u.displayName || u.email || '?').charAt(0).toUpperCase()}
       </div>
@@ -204,7 +204,7 @@ const AdminPanel = () => {
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-[#000000] flex items-center justify-center p-4">
-        <div className="text-center bg-[#171717] border border-[#2e2e2e] rounded-2xl p-8">
+        <div className="text-center card-surface rounded-2xl p-8">
           <h1 className="text-lg font-black text-white uppercase mb-3">Kein Zugriff</h1>
           <p className="text-sm text-[#8b92a5] mb-6">Diese Seite ist nur für Admins.</p>
           <Link to="/" className="text-[#ff5c3e] text-sm font-bold uppercase tracking-widest">Zurück zum Ligasystem</Link>

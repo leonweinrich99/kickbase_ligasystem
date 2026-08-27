@@ -108,3 +108,31 @@ body {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+/* Zentrale Kartenoberfläche - ersetzt das frühere überall wiederholte
+   "bg-[#171717] border border-[#2e2e2e]". Aktuell im Glas-Look (halbtransparent
+   + Weichzeichner + heller Rand). Um zurück auf die alte, flache Optik zu
+   wechseln, einfach diesen Block gegen den auskommentierten Alternativblock
+   darunter tauschen - keine einzelne Komponente muss dafür angefasst werden.
+   Bewusst in @layer components: so gewinnen Tailwind-Utility-Klassen wie
+   hover:border-... oder ein bedingtes border-[#404040] weiterhin korrekt
+   dagegen (Utilities liegen in @layer utilities, das per Cascade-Layer-Regel
+   IMMER Vorrang vor @layer components hat - unabhängig von Reihenfolge/
+   Spezifität). Ohne @layer würde die unlayered Regel alles überstimmen. */
+@layer components {
+  .card-surface {
+    background-color: color-mix(in srgb, var(--color-card-bg) 55%, transparent);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+}
+
+/* Alte, flache Kartenoptik (zum Zurückwechseln einfach den Block oben
+   auskommentieren und diesen Block aktivieren):
+@layer components {
+  .card-surface {
+    background-color: var(--color-card-bg);
+    border: 1px solid var(--color-card-border);
+  }
+}
+*/

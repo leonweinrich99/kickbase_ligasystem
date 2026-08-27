@@ -19,7 +19,7 @@ function getRatingColor(val) {
 
 export default function StatCard({ icon, label, value, subValue, isRating, loading }) {
   return (
-    <div className="bg-[#171717] border border-[#2e2e2e] p-3 sm:p-5 rounded-2xl shadow-sm hover:border-[#404040] transition-all group relative overflow-hidden flex flex-col justify-between">
+    <div className="card-surface p-3 sm:p-5 rounded-2xl shadow-sm hover:border-[#404040] transition-all group relative overflow-hidden flex flex-col justify-between">
       <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
         <div className="bg-[#1f1f1f] p-1.5 sm:p-2 rounded-lg group-hover:scale-110 transition-transform shrink-0">
           {React.cloneElement(icon, { size: 16, className: 'sm:w-[18px] sm:h-[18px]' })}

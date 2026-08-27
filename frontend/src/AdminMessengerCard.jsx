@@ -70,7 +70,7 @@ export default function AdminMessengerCard() {
   };
 
   return (
-    <div className="bg-[#171717] border border-[#2e2e2e] rounded-xl px-4 py-3 mb-6">
+    <div className="card-surface rounded-xl px-4 py-3 mb-6">
       <div className="mb-3">
         <h2 className="text-sm font-bold text-white uppercase">Messenger</h2>
         <p className="text-[11px] text-[#8b92a5] mt-1">Sende eine Push-Benachrichtigung an alle Nutzer.</p>

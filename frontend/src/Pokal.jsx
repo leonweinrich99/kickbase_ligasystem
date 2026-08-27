@@ -33,7 +33,7 @@ const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}
       data-tour={tourTarget ? 'pokal-first-match' : undefined}
       onClick={isClickable ? () => onOpenCompare(id1, id2) : undefined}
       role={isClickable ? 'button' : undefined}
-      className={`flex flex-col bg-[#171717] border border-[#2e2e2e] rounded-xl overflow-hidden shadow-lg w-full xl:w-48 flex-shrink-0 transition-transform hover:scale-105 hover:border-[#8b5cf6]/50 ${isFinal ? 'ring-2 ring-[#8b5cf6] shadow-[0_0_20px_rgba(139,92,246,0.3)] xl:scale-110 z-10' : ''} ${isClickable ? 'cursor-pointer active:scale-95' : ''}`}
+      className={`flex flex-col card-surface rounded-xl overflow-hidden shadow-lg w-full xl:w-48 flex-shrink-0 transition-transform hover:scale-105 hover:border-[#8b5cf6]/50 ${isFinal ? 'ring-2 ring-[#8b5cf6] shadow-[0_0_20px_rgba(139,92,246,0.3)] xl:scale-110 z-10' : ''} ${isClickable ? 'cursor-pointer active:scale-95' : ''}`}
     >
       <div
         className={`flex justify-between items-center p-2.5 xl:p-2 border-b border-[#2e2e2e]`}

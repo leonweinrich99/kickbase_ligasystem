@@ -236,7 +236,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
       {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl w-full max-w-md flex flex-col max-h-[80vh] shadow-2xl">
+          <div className="card-surface rounded-2xl w-full max-w-md flex flex-col max-h-[80vh] shadow-2xl">
              <div className="p-4 border-b border-[#2e2e2e] flex justify-between items-center">
                <h3 className="text-lg font-bold text-gray-200">Gegner auswählen</h3>
                <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white transition-colors">
@@ -394,7 +394,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Rank History */}
-        <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl p-4 sm:p-6 shadow-lg">
+        <div className="card-surface rounded-2xl p-4 sm:p-6 shadow-lg">
           <div className="flex justify-between items-center mb-4 sm:mb-6">
             <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Platzierungsverlauf</h3>
             <div className="px-2 py-1 bg-[#1f1f1f] rounded text-[9px] sm:text-[10px] text-gray-400 font-bold uppercase">Liga Zonen</div>
@@ -447,7 +447,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
         </div>
 
         {/* Matchday Performance */}
-        <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl p-4 sm:p-6 shadow-lg">
+        <div className="card-surface rounded-2xl p-4 sm:p-6 shadow-lg">
           <div className="flex justify-between items-center mb-4 sm:mb-6">
             <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Spieltags-Leistung</h3>
             <div className="flex items-center gap-2">
@@ -527,7 +527,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
       </div>
       
       {/* Performance Rating History */}
-      <div className="mt-4 sm:mt-6 bg-[#171717] border border-[#2e2e2e] rounded-2xl p-4 sm:p-6 shadow-lg">
+      <div className="mt-4 sm:mt-6 card-surface rounded-2xl p-4 sm:p-6 shadow-lg">
         <div className="flex justify-between items-center mb-4 sm:mb-6">
           <div className="flex flex-col gap-1">
             <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Performance Index</h3>
@@ -586,7 +586,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
 
 const LeagueBadgeCard = ({ userData }) => {
   return (
-    <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl px-4 py-3 flex items-center gap-4 shadow-sm relative overflow-hidden">
+    <div className="card-surface rounded-2xl px-4 py-3 flex items-center gap-4 shadow-sm relative overflow-hidden">
       <div className="p-2 rounded-lg" style={{ backgroundColor: `${userData.leagueColor}1A`, color: userData.leagueColor }}>
         <Users size={20} />
       </div>
@@ -636,7 +636,10 @@ const ThresholdCard = ({ rank, points, thresholds }) => {
   const info = getLigaInfo();
 
   return (
-    <div className={`bg-[#171717] border ${info.type === 'success' ? 'border-green-500/30' : info.type === 'warning' ? 'border-yellow-500/30' : 'border-blue-500/30'} rounded-2xl px-4 py-3 flex items-center gap-4 shadow-sm relative overflow-hidden`}>
+    <div
+      className="card-surface rounded-2xl px-4 py-3 flex items-center gap-4 shadow-sm relative overflow-hidden"
+      style={{ borderColor: info.type === 'success' ? 'rgba(34,197,94,0.3)' : info.type === 'warning' ? 'rgba(234,179,8,0.3)' : 'rgba(59,130,246,0.3)' }}
+    >
       <div className={`p-2 rounded-lg ${info.type === 'success' ? 'bg-green-500/10 text-green-500' : info.type === 'warning' ? 'bg-yellow-500/10 text-yellow-500' : 'bg-blue-500/10 text-blue-500'}`}>
         <TrendingUp size={20} />
       </div>

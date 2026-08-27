@@ -368,7 +368,7 @@ export const SeasonSnapshot = ({ kickbaseId, kickbaseName, photoURL }) => {
   const [tab, setTab] = useState('liga');
 
   return (
-    <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl mb-4 overflow-hidden">
+    <div className="card-surface rounded-2xl mb-4 overflow-hidden">
       <div className="flex border-b border-[#2a2a2a]">
         {TABS.map((t) => (
           <button

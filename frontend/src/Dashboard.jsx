@@ -134,7 +134,10 @@ export const UserRow = ({ item, color, isSaisonView, displayRank, prevRank, rout
 
   return (
     <Link to={`${routeBase}/user/${item.id}`} className="block transition-transform active:scale-95" data-tour={isTourTarget ? 'user-row' : undefined}>
-      <div className={`flex items-center p-3 mb-2.5 bg-[#171717] border ${isSaisonView && item.status ? 'border-[#404040]' : 'border-[#2e2e2e]'} rounded-[14px] shadow-sm relative overflow-hidden group hover:border-[#ff5c3e]/50 hover:bg-[#202020] transition-all cursor-pointer`}>
+      <div
+        className={`flex items-center p-3 mb-2.5 card-surface rounded-[14px] shadow-sm relative overflow-hidden group hover:border-[#ff5c3e]/50 hover:bg-[#202020] transition-all cursor-pointer`}
+        style={isSaisonView && item.status ? { borderColor: '#404040' } : undefined}
+      >
         {isSaisonView && item.status && (
           <div className="absolute left-0 top-0 bottom-0 w-[4px]" style={{ backgroundColor: statusColors[item.status] }}></div>
         )}
@@ -201,7 +204,7 @@ export const LeagueColumn = ({ league, isSaisonView, rankOffset, prevRanks, rout
 const TrueTableInfoModal = ({ onClose }) => (
   <div className="fixed inset-0 z-[90] bg-black/80 flex items-center justify-center p-4" onClick={onClose}>
     <div
-      className="max-w-md w-full bg-[#171717] border border-[#2e2e2e] rounded-3xl p-6 shadow-2xl relative"
+      className="max-w-md w-full card-surface rounded-3xl p-6 shadow-2xl relative"
       onClick={(e) => e.stopPropagation()}
     >
       <CloseButton onClick={onClose} size="compact" className="absolute top-4 right-4" />

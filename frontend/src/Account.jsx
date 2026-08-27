@@ -34,7 +34,7 @@ const MenuRow = ({ to, onClick, icon: Icon, label, color = '#8b92a5' }) => {
 const MenuGroup = ({ title, children, index }) => (
   <Motion.div variants={fadeUp} initial="hidden" animate="show" custom={index} className="mb-5">
     {title && <div className="text-[10px] font-black uppercase tracking-widest text-[#626978] mb-2 px-1">{title}</div>}
-    <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl divide-y divide-[#2a2a2a] overflow-hidden">
+    <div className="card-surface rounded-2xl divide-y divide-[#2a2a2a] overflow-hidden">
       {children}
     </div>
   </Motion.div>

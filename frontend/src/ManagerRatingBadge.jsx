@@ -83,7 +83,7 @@ const ManagerRatingBadge = ({ kickbaseId }) => {
               exit={{ y: '100%' }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               onClick={e => e.stopPropagation()}
-              className="w-full max-w-sm max-h-[90vh] overflow-y-auto bg-[#171717] border border-[#2e2e2e] rounded-3xl p-6 flex flex-col gap-6"
+              className="w-full max-w-sm max-h-[90vh] overflow-y-auto card-surface rounded-3xl p-6 flex flex-col gap-6"
             >
               <div className="flex justify-between items-start">
                 <div>

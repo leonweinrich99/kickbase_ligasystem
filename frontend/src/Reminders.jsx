@@ -42,7 +42,7 @@ export default function Reminders() {
   if (!isPushConfigured() || !user) {
     return (
       <div className="min-h-screen bg-[#000000] flex items-center justify-center p-4">
-        <div className="text-center bg-[#171717] border border-[#2e2e2e] rounded-2xl p-8">
+        <div className="text-center card-surface rounded-2xl p-8">
           <p className="text-sm text-[#8b92a5] mb-6">Erinnerungen sind aktuell nicht verfügbar.</p>
           <button onClick={goBack} className="text-[#ff5c3e] text-sm font-bold uppercase tracking-widest">Zurück</button>
         </div>
@@ -109,7 +109,7 @@ export default function Reminders() {
         )}
 
         {!isEnabledOnThisDevice ? (
-          <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl p-6 text-center">
+          <div className="card-surface rounded-2xl p-6 text-center">
             <p className="text-sm text-[#8b92a5] mb-5">Aktiviere Benachrichtigungen auf diesem Gerät, um Erinnerungen zu erhalten.</p>
             <button
               onClick={handleEnable}
@@ -121,7 +121,7 @@ export default function Reminders() {
           </div>
         ) : (
           <>
-            <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl divide-y divide-[#2a2a2a] overflow-hidden mb-6">
+            <div className="card-surface rounded-2xl divide-y divide-[#2a2a2a] overflow-hidden mb-6">
               <ReminderRow
                 title="Pokal-Erinnerung"
                 description="Mittwochs vor einem Pokal-Spieltag"

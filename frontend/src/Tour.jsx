@@ -634,7 +634,7 @@ const TourOverlay = () => {
       {/* Tooltip & PWA Setup Card */}
       {!isSearching && (
         <div
-          className="absolute overflow-y-auto bg-[#171717] border border-[#2e2e2e] rounded-2xl shadow-2xl p-5 pointer-events-auto z-[215]"
+          className="absolute overflow-y-auto card-surface rounded-2xl shadow-2xl p-5 pointer-events-auto z-[215]"
           style={{ ...tooltipStyle, width: tooltipWidth, maxWidth: '92vw' }}
         >
           {notFound ? (
