@@ -9,8 +9,7 @@ def get_all_teams(token, competition_id):
     url = f"{BASE_URL}/competitions/{competition_id}/table"
     data = get_json_with_token(url, token)
 
-    return data.get("it", []))
-    ]
+    return data.get("it", [])
 
 
 def get_achievement_reward(token, league_id, achievement_id):
