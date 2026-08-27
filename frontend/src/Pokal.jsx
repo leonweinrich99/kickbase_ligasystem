@@ -6,12 +6,16 @@ import logo from './assets/pokal_logo.png';
 import LoadingScreen from './LoadingScreen';
 import useMinimumDelay from './useMinimumDelay';
 import { shouldShowSplash, markSplashShown } from './appLoadState';
+import ManagerAvatar from './ui/ManagerAvatar';
 
 // "Sieger SF13" & Co. sind Platzhalter für noch nicht ausgespielte Partien,
 // "Freilos" für einen direkten Aufstieg ohne Gegner - beides ist (noch) kein
 // echter Manager und kann daher nicht mit jemandem verglichen werden.
 const isPlaceholderName = (name) => !name || name.startsWith('Sieger') || name === 'Freilos';
 
+// Horizontale Kachel (Bild+Name links, Ergebnis mittig, Bild+Name rechts) -
+// der reservierte Ergebnis-Platz ("–:–") steht auch VOR Spielbeginn schon da,
+// damit die Kachel sich nicht "verschiebt", sobald die Partie ausgewertet ist.
 const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}, onOpenCompare, pokalMembers = null }) => {
   const isWinner1 = match.winner === 1;
   const isWinner2 = match.winner === 2;
@@ -28,32 +32,46 @@ const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}
   const isMember1 = pokalMembers && !isPlaceholderName(match.p1) && pokalMembers.has(match.p1);
   const isMember2 = pokalMembers && !isPlaceholderName(match.p2) && pokalMembers.has(match.p2);
 
+  const hasResult = Boolean(match.winner) || (match.score1 || 0) > 0 || (match.score2 || 0) > 0;
+  const score1Display = hasResult ? (match.score1 ?? 0) : '–';
+  const score2Display = hasResult ? (match.score2 ?? 0) : '–';
+
   return (
     <div
       data-tour={tourTarget ? 'pokal-first-match' : undefined}
       onClick={isClickable ? () => onOpenCompare(id1, id2) : undefined}
       role={isClickable ? 'button' : undefined}
-      className={`flex flex-col card-surface rounded-xl overflow-hidden shadow-lg w-full xl:w-48 flex-shrink-0 transition-transform hover:scale-105 hover:border-[#8b5cf6]/50 ${isFinal ? 'ring-2 ring-[#8b5cf6] shadow-[0_0_20px_rgba(139,92,246,0.3)] xl:scale-110 z-10' : ''} ${isClickable ? 'cursor-pointer active:scale-95' : ''}`}
+      className={`flex items-center gap-1.5 sm:gap-2 card-surface rounded-xl overflow-hidden shadow-lg w-full xl:w-56 flex-shrink-0 p-2 sm:p-2.5 transition-transform hover:scale-105 hover:border-[#8b5cf6]/50 ${isFinal ? 'ring-2 ring-[#8b5cf6] shadow-[0_0_20px_rgba(139,92,246,0.3)] xl:scale-110 z-10' : ''} ${isClickable ? 'cursor-pointer active:scale-95' : ''}`}
     >
-      <div
-        className={`flex justify-between items-center p-2.5 xl:p-2 border-b border-[#2e2e2e]`}
-        style={color1 ? { borderLeft: `3px solid ${color1}` } : undefined}
-      >
-        <span className="flex items-center gap-1 min-w-0 pr-2">
-          <span className={`text-xs sm:text-sm font-bold truncate ${isWinner1 ? 'text-white' : 'text-gray-300'}`}>{match.p1 || '-'}</span>
-          {isMember1 && <Check size={12} strokeWidth={3.5} className="text-green-500 shrink-0" />}
-        </span>
-        <span className={`text-xs sm:text-sm font-black ${isWinner1 ? 'text-green-400' : 'text-gray-500'}`}>{match.score1 > 0 ? match.score1 : ''}</span>
+      {/* Spieler 1 (links) */}
+      <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
+        <ManagerAvatar name={isPlaceholderName(match.p1) ? null : match.p1} size={28} ringColor={color1} />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1">
+            <span className={`text-[10px] sm:text-xs font-bold truncate ${isWinner1 ? 'text-white' : 'text-gray-300'}`}>{match.p1 || '-'}</span>
+            {isMember1 && <Check size={10} strokeWidth={3.5} className="text-green-500 shrink-0" />}
+          </div>
+        </div>
       </div>
-      <div
-        className={`flex justify-between items-center p-2.5 xl:p-2`}
-        style={color2 ? { borderLeft: `3px solid ${color2}` } : undefined}
-      >
-        <span className="flex items-center gap-1 min-w-0 pr-2">
-          <span className={`text-xs sm:text-sm font-bold truncate ${isWinner2 ? 'text-white' : 'text-gray-300'}`}>{match.p2 || '-'}</span>
-          {isMember2 && <Check size={12} strokeWidth={3.5} className="text-green-500 shrink-0" />}
-        </span>
-        <span className={`text-xs sm:text-sm font-black ${isWinner2 ? 'text-green-400' : 'text-gray-500'}`}>{match.score2 > 0 ? match.score2 : ''}</span>
+
+      {/* Ergebnis mittig */}
+      <div className="flex flex-col items-center shrink-0 px-0.5">
+        <div className="text-xs sm:text-sm font-black whitespace-nowrap">
+          <span className={isWinner1 ? 'text-green-400' : 'text-gray-500'}>{score1Display}</span>
+          <span className="text-gray-600 mx-0.5">:</span>
+          <span className={isWinner2 ? 'text-green-400' : 'text-gray-500'}>{score2Display}</span>
+        </div>
+      </div>
+
+      {/* Spieler 2 (rechts) */}
+      <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0 flex-row-reverse text-right">
+        <ManagerAvatar name={isPlaceholderName(match.p2) ? null : match.p2} size={28} ringColor={color2} />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-end gap-1">
+            {isMember2 && <Check size={10} strokeWidth={3.5} className="text-green-500 shrink-0" />}
+            <span className={`text-[10px] sm:text-xs font-bold truncate ${isWinner2 ? 'text-white' : 'text-gray-300'}`}>{match.p2 || '-'}</span>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -299,13 +317,7 @@ const Pokal = () => {
           </Link>
         </div>
 
-        {pokalMembers && (
-          <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-gray-500 font-bold">
-            <Check size={12} strokeWidth={3.5} className="text-green-500 shrink-0" />
-            <span>= bereits im Kickbase-Pokal beigetreten ({pokalMembers.size} von {data.meta?.participants ?? '?'})</span>
-          </div>
-        )}
-
+        {/* Zweite Zeile: Runden-Umschalter (mobil), auf gleicher Höhe wie der Spieltag-Wechsler in der Liga */}
         {/* Zweite Zeile: Runden-Umschalter (mobil), auf gleicher Höhe wie der Spieltag-Wechsler in der Liga */}
         <div className="flex xl:hidden w-full items-center gap-2 sm:gap-4">
           <div ref={tabsRef} className="flex overflow-x-auto gap-2 no-scrollbar scroll-smooth h-12 items-center flex-1 bg-[#171717] border border-[#2e2e2e] rounded-xl px-2 shadow-lg">

@@ -1,30 +1,32 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, 
-  ResponsiveContainer, ReferenceArea, Legend, LabelList 
+  LineChart, Line, BarChart, Bar, XAxis, YAxis,
+  ResponsiveContainer, ReferenceArea, Legend, LabelList
 } from 'recharts';
-import { 
-  TrendingUp, TrendingDown, Target, 
-  Award, Wallet, Activity, Star, Users, Search, X, Zap
+import {
+  TrendingUp, TrendingDown, Target,
+  Users, Search, X, Zap
 } from 'lucide-react';
 import { useBackNavigation } from './useBackNavigation';
-import StatCard from './ui/StatCard';
 import { BackButton } from './ui/CloseButton';
+import ManagerAvatar from './ui/ManagerAvatar';
 
 const calculatePerformanceScore = (points, avg, opt, max) => {
   if (points <= 0) return 1.0;
-  
+
   // Referenz ist 80% der "Besten Elf"
   const reference = (opt && opt > 0) ? opt : (max || 1);
   const target = reference * 0.8;
-  
+
   // Rein lineare Skalierung ohne Einbezug des Ligaschnitts
   const score = (points / target) * 10;
-  
+
   // Rückgabe zwischen 1,0 und 10,0
   return Math.min(10.0, Math.max(1.0, parseFloat(score.toFixed(1))));
 };
+
+const formatShortMD = (val) => `ST ${val}`;
 
 const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
   const { id } = useParams();
@@ -57,10 +59,10 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
           fetch(`${dataBase}/data.json?t=${Date.now()}`),
           fetch(`${dataBase}/history/index.json`)
         ]);
-        
+
         const latestData = await latestRes.json();
         const indexData = await indexRes.json();
-        
+
         const allUsersFlat = latestData.leagues.flatMap(l => l.users.map(u => ({...u, leagueColor: l.color, leagueName: l.name}))).sort((a,b) => a.rank - b.rank);
         setAllUsers(allUsersFlat);
 
@@ -102,7 +104,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
             const res = await fetch(`${dataBase}/history/spieltag-${m}.json`);
             if (!res.ok) return null;
             const data = await res.json();
-            
+
             let userAtMatchday = null;
             let allPoints = [];
             data.leagues.forEach(l => {
@@ -140,10 +142,10 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
         });
 
         const historyResults = (await Promise.all(historyPromises)).filter(Boolean);
-        
+
         const currentPoints = parseInt(foundUser.points.replace(/\./g, '')) || 0;
         const currentMatchdayPoints = parseInt(foundUser.pointsMatchday.replace(/\./g, '')) || 0;
-        
+
         if (!historyResults.find(h => h.matchday === latestData.matchday)) {
             const latestPoints = allUsersFlat.map(u => parseInt(u.pointsMatchday.replace(/\./g, '')) || 0);
             const latestAvg = latestPoints.length ? Math.round(latestPoints.reduce((a,b) => a+b, 0) / latestPoints.length) : 0;
@@ -189,13 +191,13 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
 
   const stats = useMemo(() => {
     if (historyWithScores.length === 0) return null;
-    
+
     const last = historyWithScores[historyWithScores.length - 1];
     const prev = historyWithScores.length > 1 ? historyWithScores[historyWithScores.length - 2] : null;
-    
+
     const avgPoints = historyWithScores.reduce((acc, h) => acc + h.pointsMatchday, 0) / historyWithScores.length;
     const bestMD = Math.max(...historyWithScores.map(h => h.pointsMatchday));
-    const rankChange = prev ? prev.rank - last.rank : 0; 
+    const rankChange = prev ? prev.rank - last.rank : 0;
 
     // Performance Rating (1-10)
     const scores = historyWithScores.map(h => h.performanceScore);
@@ -221,7 +223,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
     return (
       <div className="min-h-screen bg-[#000000] flex flex-col justify-center items-center gap-6">
         <div className="text-gray-400 text-lg font-bold">Spieler nicht gefunden</div>
-        <button 
+        <button
           onClick={goBack}
           className="bg-[#171717] border border-[#2e2e2e] px-6 py-3 rounded-xl text-gray-300 hover:text-white hover:border-[#ff5c3e] transition-all"
         >
@@ -232,8 +234,8 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto pb-20 px-0 relative">
-      {/* Modal */}
+    <div className="w-full bg-[#000000] min-h-screen relative flex flex-col pb-10">
+      {/* Modal: Gegner fuer Head-to-Head auswaehlen */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
           <div className="card-surface rounded-2xl w-full max-w-md flex flex-col max-h-[80vh] shadow-2xl">
@@ -246,9 +248,9 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
              <div className="p-4 border-b border-[#2e2e2e]">
                <div className="bg-[#000000] rounded-xl flex items-center px-3 py-2 border border-[#2e2e2e]">
                  <Search size={16} className="text-gray-500 mr-2" />
-                 <input 
-                   type="text" 
-                   placeholder="Spieler suchen..." 
+                 <input
+                   type="text"
+                   placeholder="Spieler suchen..."
                    className="bg-transparent border-none outline-none text-sm text-gray-200 w-full"
                    value={searchQuery}
                    onChange={(e) => setSearchQuery(e.target.value)}
@@ -269,9 +271,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                    }}
                    className="w-full text-left p-3 hover:bg-[#1f1f1f] rounded-xl flex items-center gap-3 transition-colors"
                  >
-                   <div className="w-8 h-8 rounded-full bg-[#2e2e2e] flex items-center justify-center font-bold text-xs text-gray-300">
-                     {u.name.charAt(0)}
-                   </div>
+                   <ManagerAvatar name={u.name} size={32} />
                    <div className="flex-1">
                      <div className="font-bold text-sm text-gray-200">{u.name}</div>
                      <div className="text-[10px] text-gray-500 uppercase tracking-widest">Rank #{u.rank}</div>
@@ -286,322 +286,278 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
         </div>
       )}
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 sm:mb-10 gap-6">
-        
-        {/* Top bar on mobile (Back + Compare buttons) */}
-        <div className="flex items-center justify-between w-full sm:w-auto">
-            <BackButton onClick={goBack} />
+      {/* Header mit Zurueck-Button (Page-Look, wie Advisor::PlayerDetailView) */}
+      <div className="sticky top-0 z-40 bg-[#000000]/90 backdrop-blur-md px-4 sm:px-6 py-4 flex items-center justify-between border-b border-[#2e2e2e]/50">
+        <BackButton onClick={goBack} />
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="group flex items-center gap-2 text-[#8b92a5] hover:text-white transition-colors"
+        >
+          <Users size={16} className="group-hover:text-[#ff5c3e] transition-colors" />
+          <span className="text-xs font-bold uppercase tracking-wider">Vergleichen</span>
+        </button>
+      </div>
 
-            {/* Compare Buttons on mobile */}
-            <div className="flex sm:hidden items-center gap-2">
-                <button 
-                  onClick={() => setIsModalOpen(true)}
-                  className="group flex items-center gap-2 bg-[#171717] border border-[#2e2e2e] px-4 py-2 rounded-xl text-[#8b92a5] hover:text-white hover:border-[#ff5c3e] transition-all"
-                >
-                  <Users size={16} className="group-hover:text-[#ff5c3e] transition-colors" />
-                  <span className="text-xs font-bold uppercase tracking-wider">VS</span>
-                </button>
+      <div className="max-w-[1000px] w-full mx-auto pt-6 pb-8 px-4 sm:px-6">
+
+        {/* Name & Avatar */}
+        <div className="flex items-center gap-4 mb-3">
+          <ManagerAvatar name={userData.name} size={64} ringColor="#ff5c3e" />
+          <div className="min-w-0">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight leading-tight truncate">
+              {userData.name}
+            </h2>
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <span className="text-[#8b92a5] font-medium text-sm">Rank #{userData.rank}</span>
+              {mode !== 'archive' && userData.leagueName && (
+                <span className="text-[10px] font-semibold uppercase tracking-wider rounded px-1.5 py-0.5" style={{ backgroundColor: `${userData.leagueColor}26`, color: userData.leagueColor }}>
+                  {userData.leagueName}
+                </span>
+              )}
+              {stats && stats.rankChange !== 0 && (
+                <span className={`inline-flex items-center gap-1 text-[11px] font-semibold ${stats.rankChange > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  {stats.rankChange > 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                  {Math.abs(stats.rankChange)} {stats.rankChange > 0 ? 'auf' : 'ab'}
+                </span>
+              )}
             </div>
-        </div>
-
-        <div className="flex items-center gap-4 w-full sm:w-auto">
-          {/* Compare Buttons on desktop */}
-          <div className="hidden sm:flex items-center gap-2">
-              <button 
-                onClick={() => setIsModalOpen(true)}
-                className="group flex items-center gap-2 bg-[#171717] border border-[#2e2e2e] px-4 py-2 rounded-xl text-[#8b92a5] hover:text-white hover:border-[#ff5c3e] transition-all"
-              >
-                <Users size={16} className="group-hover:text-[#ff5c3e] transition-colors" />
-                <span className="text-xs font-bold uppercase tracking-wider">Vergleichen</span>
-              </button>
-          </div>
-
-          <div className="flex items-center gap-3 sm:gap-4">
-              <div className="flex items-center">
-                   <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#171717] border border-[#2e2e2e] flex items-center justify-center relative shadow-xl overflow-hidden shrink-0 z-10">
-                      <div className="absolute inset-0 bg-[#ff5c3e] opacity-5"></div>
-                      <Star className="text-[#ff5c3e] opacity-20 absolute -right-2 -bottom-2 w-12 h-12 rotate-12" />
-                      <div className="text-2xl font-black text-[#ff5c3e] z-10">{userData.name.charAt(0)}</div>
-                   </div>
-              </div>
-              <div className="flex flex-col flex-1 min-w-0">
-                <h1 className="text-lg sm:text-3xl font-black tracking-tight uppercase flex flex-col sm:flex-row sm:items-center gap-0 sm:gap-2 leading-tight">
-                  <span className="truncate">{userData.name}</span>
-                </h1>
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1.5 sm:mt-1">
-                   <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#171717] border border-[#2e2e2e]">
-                      <Target size={12} className="text-[#8b92a5]" />
-                      <span className="text-[9px] sm:text-[10px] font-bold text-gray-300 uppercase tracking-widest">Rank #{userData.rank}</span>
-                   </div>
-                   {stats && stats.rankChange !== 0 && (
-                     <div className={`flex items-center gap-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest ${stats.rankChange > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                        {stats.rankChange > 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                        {Math.abs(stats.rankChange)} {stats.rankChange > 0 ? 'auf' : 'ab'}
-                     </div>
-                   )}
-                </div>
-              </div>
           </div>
         </div>
-      </div>
 
-      {/* Threshold Section */}
-      <div className="grid grid-cols-1 gap-4 mb-6 sm:mb-8">
+        {/* Gesamtpunkte (Scalable Style, wie Marktwert im Advisor) */}
+        <div className="mb-6">
+          <div className="text-3xl sm:text-[40px] font-semibold text-white leading-none tracking-tight mb-2">
+            {userData.points}
+            <span className="text-base sm:text-lg text-[#8b92a5] font-medium ml-2">Punkte</span>
+          </div>
+          {stats && (
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm sm:text-base font-medium">
+              <span className="text-[#8b92a5]">Ø {stats.avgPoints.toLocaleString('de-DE')} Pkt./Spieltag</span>
+              <span className="text-[#4b5563]">|</span>
+              <span className="text-[#8b92a5]">Bester ST: {stats.bestMD.toLocaleString('de-DE')}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Liga-Zonen-Info (Archiv) bzw. schlichte Liga-Zeile - kein Card-Rahmen mehr, nur ein Akzentstreifen */}
         {mode === 'archive' ? (
-          <ThresholdCard 
-            rank={userData.rank}
-            points={parseInt(userData.points.replace(/\./g, ''))}
-            thresholds={thresholds}
-          />
-        ) : (
-          <LeagueBadgeCard userData={userData} />
-        )}
-      </div>
+          <ThresholdLine rank={userData.rank} points={parseInt(userData.points.replace(/\./g, ''))} thresholds={thresholds} />
+        ) : null}
 
-      {/* Stats Grid */}
-      <div data-tour="user-stats" className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
-        <StatCard 
-          icon={<Award className="text-[#ff5c3e]" />} 
-          label="Gesamtpunkte" 
-          value={userData.points} 
-          subValue="Alle Spieltage" 
-        />
-        <StatCard 
-          icon={<Activity className="text-blue-400" />} 
-          label="Schnitt / Spieltag" 
-          value={stats?.avgPoints?.toLocaleString('de-DE')} 
-          subValue="Pkt. pro Spieltag" 
-          loading={historyLoading}
-        />
-        <StatCard 
-          icon={<Target className="text-yellow-500" />} 
-          label="Bester Spieltag" 
-          value={stats?.bestMD?.toLocaleString('de-DE')} 
-          subValue="Saisonrekord" 
-          loading={historyLoading}
-        />
-        <StatCard 
-          icon={<Zap className="text-purple-400" />} 
-          label="Performance Index" 
-          value={stats?.performanceScore} 
-          subValue="Saison-Rating (1-10)" 
-          isRating={true}
-          loading={historyLoading}
-        />
-      </div>
-
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        {/* Rank History */}
-        <div className="card-surface rounded-2xl p-4 sm:p-6 shadow-lg">
-          <div className="flex justify-between items-center mb-4 sm:mb-6">
-            <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Platzierungsverlauf</h3>
-            <div className="px-2 py-1 bg-[#1f1f1f] rounded text-[9px] sm:text-[10px] text-gray-400 font-bold uppercase">Liga Zonen</div>
+        {/* Kennzahlen (Scalable Style, wie Advisor::PlayerDetailView) */}
+        <div className="mt-6 mb-8">
+          <h3 className="text-lg font-semibold text-white mb-4">Kennzahlen</h3>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-y-6 gap-x-4">
+            <div className="flex flex-col">
+              <span className="text-[#8b92a5] text-xs font-medium mb-1">Gesamtpunkte</span>
+              <span className="text-white font-semibold text-lg">{userData.points}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[#8b92a5] text-xs font-medium mb-1">Schnitt / Spieltag</span>
+              <span className="text-white font-semibold text-lg">{historyLoading ? '–' : stats?.avgPoints?.toLocaleString('de-DE')}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[#8b92a5] text-xs font-medium mb-1">Bester Spieltag</span>
+              <span className="text-white font-semibold text-lg">{historyLoading ? '–' : stats?.bestMD?.toLocaleString('de-DE')}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[#8b92a5] text-xs font-medium mb-1 flex items-center gap-1"><Zap size={12} className="text-purple-400" /> Performance Index</span>
+              <span className="text-white font-semibold text-lg">{historyLoading ? '–' : `${stats?.performanceScore} / 10`}</span>
+            </div>
           </div>
-          <div className="h-[200px] sm:h-[250px] w-full">
+        </div>
+
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10">
+          {/* Rank History */}
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-sm font-semibold text-white">Platzierungsverlauf</h3>
+              <span className="text-[9px] sm:text-[10px] text-[#6b7280] font-bold uppercase tracking-widest">Liga-Zonen</span>
+            </div>
+            <div className="h-[200px] sm:h-[220px] w-full">
+              {historyLoading ? (
+                <div className="w-full h-full rounded-xl bg-[#0a0a0a] animate-pulse"></div>
+              ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={historyWithScores} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
+                  <XAxis
+                    dataKey="matchday"
+                    stroke="#4b5563"
+                    fontSize={10}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={formatShortMD}
+                  />
+                  <YAxis
+                    reversed
+                    stroke="#4b5563"
+                    fontSize={10}
+                    tickLine={false}
+                    axisLine={false}
+                    domain={[1, 30]}
+                    ticks={[1, 5, 10, 15, 20, 25, 30]}
+                  />
+
+                  {/* League Background Zones */}
+                  <ReferenceArea y1={1} y2={9} fill="#4ba6ff" fillOpacity={0.1} stroke="none" />
+                  <ReferenceArea y1={9} y2={18} fill="#ff5c3e" fillOpacity={0.1} stroke="none" />
+                  <ReferenceArea y1={18} y2={30} fill="#22c55e" fillOpacity={0.1} stroke="none" />
+
+                  <Line
+                    type="monotone"
+                    dataKey="rank"
+                    name={userData.name}
+                    stroke="#eab308"
+                    strokeWidth={2.5}
+                    dot={<CustomizedDot />}
+                    activeDot={{ r: 8, strokeWidth: 0 }}
+                    animationDuration={1500}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+              )}
+            </div>
+          </div>
+
+          {/* Matchday Performance */}
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-sm font-semibold text-white">Spieltags-Leistung</h3>
+              <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowAverage(!showAverage)}
+                    className={`text-[10px] font-semibold pb-0.5 border-b-2 transition-colors ${showAverage ? 'text-[#ff5c3e] border-[#ff5c3e]' : 'text-[#6b7280] border-transparent hover:text-gray-300'}`}
+                  >
+                    Ø Schnitt
+                  </button>
+                  <button
+                    onClick={() => setShowOptimal(!showOptimal)}
+                    className={`text-[10px] font-semibold pb-0.5 border-b-2 transition-colors ${showOptimal ? 'text-green-500 border-green-500' : 'text-[#6b7280] border-transparent hover:text-gray-300'}`}
+                  >
+                    Beste Elf
+                  </button>
+              </div>
+            </div>
+            <div className="h-[200px] sm:h-[220px] w-full mt-4">
+              {historyLoading ? (
+                <div className="w-full h-full rounded-xl bg-[#0a0a0a] animate-pulse"></div>
+              ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={historyWithScores} margin={{ top: 20, right: 5, left: -25, bottom: 5 }}>
+                  <XAxis
+                    dataKey="matchday"
+                    stroke="#4b5563"
+                    fontSize={10}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={formatShortMD}
+                  />
+                  <YAxis stroke="#4b5563" fontSize={10} tickLine={false} axisLine={false} />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
+
+                  {/* Durchschnitts-Balken */}
+                  {showAverage && (
+                    <Bar
+                      dataKey="averagePoints"
+                      name="Ligaschnitt"
+                      fill="#4b5563"
+                      radius={[4, 4, 0, 0]}
+                      animationDuration={1500}
+                    >
+                        <LabelList dataKey="averagePoints" position="top" fill="#8b92a5" fontSize={8} fontWeight="bold" formatter={(val) => `Ø ${val}`} />
+                    </Bar>
+                  )}
+
+                  {/* Spieler-Balken */}
+                  <Bar
+                    dataKey="pointsMatchday"
+                    name={userData.name}
+                    fill="#ff5c3e"
+                    radius={[4, 4, 0, 0]}
+                    animationDuration={1500}
+                  >
+                      <LabelList dataKey="pointsMatchday" position="top" fill="#ff5c3e" fontSize={8} fontWeight="bold" />
+                  </Bar>
+
+                  {/* Optimale Elf Balken */}
+                  {showOptimal && (
+                    <Bar
+                      dataKey="optimalPoints"
+                      name="Beste Elf"
+                      fill="#22c55e"
+                      radius={[4, 4, 0, 0]}
+                      animationDuration={1500}
+                    >
+                        <LabelList dataKey="optimalPoints" position="top" fill="#22c55e" fontSize={8} fontWeight="bold" formatter={(val) => `★ ${val}`} />
+                    </Bar>
+                  )}
+                </BarChart>
+              </ResponsiveContainer>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Performance Rating History */}
+        <div className="mt-8 sm:mt-10">
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h3 className="text-sm font-semibold text-white">Performance Index</h3>
+              <p className="text-[10px] text-[#6b7280] font-medium mt-0.5">Rating 1-10 pro Spieltag</p>
+            </div>
+            <span className="text-[10px] text-green-400 font-bold uppercase tracking-widest">Ø {stats?.performanceScore ?? '–'}</span>
+          </div>
+          <div className="h-[200px] sm:h-[220px] w-full">
             {historyLoading ? (
-              <div className="w-full h-full rounded-xl bg-[#1f1f1f] animate-pulse"></div>
+              <div className="w-full h-full rounded-xl bg-[#0a0a0a] animate-pulse"></div>
             ) : (
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={historyWithScores} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2e2e2e" vertical={false} />
-                <XAxis 
-                  dataKey="matchday" 
-                  stroke="#4b5563" 
-                  fontSize={10} 
-                  tickLine={false} 
+              <LineChart data={historyWithScores} margin={{ top: 20, right: 5, left: -25, bottom: 5 }}>
+                <XAxis
+                  dataKey="matchday"
+                  stroke="#4b5563"
+                  fontSize={10}
+                  tickLine={false}
                   axisLine={false}
-                  tickFormatter={val => `ST ${val}`}
+                  tickFormatter={formatShortMD}
                 />
-                <YAxis 
-                  reversed 
-                  stroke="#4b5563" 
-                  fontSize={10} 
-                  tickLine={false} 
+                <YAxis
+                  stroke="#4b5563"
+                  fontSize={10}
+                  tickLine={false}
                   axisLine={false}
-                  domain={[1, 30]}
-                  ticks={[1, 5, 10, 15, 20, 25, 30]}
+                  domain={[1, 10]}
+                  ticks={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
                 />
-                
-                {/* League Background Zones with increased visibility */}
-                <ReferenceArea y1={1} y2={9} fill="#4ba6ff" fillOpacity={0.12} stroke="none" />
-                <ReferenceArea y1={9} y2={18} fill="#ff5c3e" fillOpacity={0.12} stroke="none" />
-                <ReferenceArea y1={18} y2={30} fill="#22c55e" fillOpacity={0.12} stroke="none" />
 
-                
-                <Line 
-                  type="monotone" 
-                  dataKey="rank" 
-                  name={userData.name}
-                  stroke="#eab308" 
-                  strokeWidth={3} 
+                {/* Reference Area for "Good" performance */}
+                <ReferenceArea y1={5} y2={10} fill="#22c55e" fillOpacity={0.03} stroke="none" />
+
+                <Line
+                  type="monotone"
+                  dataKey="performanceScore"
+                  name="Performance Index"
+                  stroke="#22c55e"
+                  strokeWidth={2.5}
                   dot={<CustomizedDot />}
                   activeDot={{ r: 8, strokeWidth: 0 }}
                   animationDuration={1500}
                 />
+
+                {/* Ligaschnitt Reference Line */}
+                <ReferenceArea y1={4.95} y2={5.05} fill="#8b92a5" fillOpacity={0.5} label={{ value: 'Ø SCHNITT', position: 'right', fill: '#8b92a5', fontSize: 8, fontWeight: 'bold' }} />
               </LineChart>
             </ResponsiveContainer>
             )}
           </div>
         </div>
-
-        {/* Matchday Performance */}
-        <div className="card-surface rounded-2xl p-4 sm:p-6 shadow-lg">
-          <div className="flex justify-between items-center mb-4 sm:mb-6">
-            <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Spieltags-Leistung</h3>
-            <div className="flex items-center gap-2">
-                <button 
-                  onClick={() => setShowAverage(!showAverage)}
-                  className={`px-2.5 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase transition-all border shadow-lg ${showAverage ? 'bg-[#ff5c3e]/20 border-[#ff5c3e] text-[#ff5c3e]' : 'bg-[#1f1f1f] border-[#2e2e2e] text-[#8b92a5]'}`}
-                >
-                  Ø Schnitt
-                </button>
-                <button 
-                  onClick={() => setShowOptimal(!showOptimal)}
-                  className={`px-2.5 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase transition-all border shadow-lg ${showOptimal ? 'bg-green-500/20 border-green-500 text-green-500' : 'bg-[#1f1f1f] border-[#2e2e2e] text-[#8b92a5]'}`}
-                >
-                  Beste Elf
-                </button>
-            </div>
-          </div>
-          <div className="h-[200px] sm:h-[250px] w-full mt-4">
-            {historyLoading ? (
-              <div className="w-full h-full rounded-xl bg-[#1f1f1f] animate-pulse"></div>
-            ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={historyWithScores} margin={{ top: 20, right: 5, left: -25, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2e2e2e" vertical={false} />
-                <XAxis 
-                  dataKey="matchday" 
-                  stroke="#4b5563" 
-                  fontSize={10} 
-                  tickLine={false} 
-                  axisLine={false}
-                  tickFormatter={val => `ST ${val}`}
-                />
-                <YAxis stroke="#4b5563" fontSize={10} tickLine={false} axisLine={false} />
-                <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
-                
-                {/* Durchschnitts-Balken */}
-                {showAverage && (
-                  <Bar 
-                    dataKey="averagePoints" 
-                    name="Ligaschnitt" 
-                    fill="#4b5563" 
-                    radius={[4, 4, 0, 0]}
-                    animationDuration={1500} 
-                  >
-                      <LabelList dataKey="averagePoints" position="top" fill="#8b92a5" fontSize={8} fontWeight="bold" formatter={(val) => `Ø ${val}`} />
-                  </Bar>
-                )}
-
-                {/* Spieler-Balken */}
-                <Bar 
-                  dataKey="pointsMatchday" 
-                  name={userData.name}
-                  fill="#ff5c3e" 
-                  radius={[4, 4, 0, 0]}
-                  animationDuration={1500}
-                >
-                    <LabelList dataKey="pointsMatchday" position="top" fill="#ff5c3e" fontSize={8} fontWeight="bold" />
-                </Bar>
-
-                {/* Optimale Elf Balken */}
-                {showOptimal && (
-                  <Bar 
-                    dataKey="optimalPoints" 
-                    name="Beste Elf" 
-                    fill="#22c55e" 
-                    radius={[4, 4, 0, 0]}
-                    animationDuration={1500} 
-                  >
-                      <LabelList dataKey="optimalPoints" position="top" fill="#22c55e" fontSize={8} fontWeight="bold" formatter={(val) => `★ ${val}`} />
-                  </Bar>
-                )}
-              </BarChart>
-            </ResponsiveContainer>
-            )}
-          </div>
-        </div>
-      </div>
-      
-      {/* Performance Rating History */}
-      <div className="mt-4 sm:mt-6 card-surface rounded-2xl p-4 sm:p-6 shadow-lg">
-        <div className="flex justify-between items-center mb-4 sm:mb-6">
-          <div className="flex flex-col gap-1">
-            <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Performance Index</h3>
-            <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Performance Index (1-10) pro Spieltag</p>
-          </div>
-          <div className="px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-full text-[9px] text-green-400 font-bold uppercase tracking-widest">Ø {stats?.performanceScore ?? '–'}</div>
-        </div>
-        <div className="h-[200px] sm:h-[250px] w-full">
-          {historyLoading ? (
-            <div className="w-full h-full rounded-xl bg-[#1f1f1f] animate-pulse"></div>
-          ) : (
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={historyWithScores} margin={{ top: 20, right: 5, left: -25, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#2e2e2e" vertical={false} />
-              <XAxis 
-                dataKey="matchday" 
-                stroke="#4b5563" 
-                fontSize={10} 
-                tickLine={false} 
-                axisLine={false}
-                tickFormatter={val => `ST ${val}`}
-              />
-              <YAxis 
-                stroke="#4b5563" 
-                fontSize={10} 
-                tickLine={false} 
-                axisLine={false} 
-                domain={[1, 10]}
-                ticks={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
-              />
-              
-              {/* Reference Area for "Good" performance */}
-              <ReferenceArea y1={5} y2={10} fill="#22c55e" fillOpacity={0.03} stroke="none" />
-              
-              <Line 
-                type="monotone" 
-                dataKey="performanceScore" 
-                name="Performance Index"
-                stroke="#22c55e" 
-                strokeWidth={3} 
-                dot={<CustomizedDot />}
-                activeDot={{ r: 8, strokeWidth: 0 }}
-                animationDuration={1500}
-              />
-              
-              {/* Ligaschnitt Reference Line */}
-              <ReferenceArea y1={4.95} y2={5.05} fill="#8b92a5" fillOpacity={0.5} label={{ value: 'Ø SCHNITT', position: 'right', fill: '#8b92a5', fontSize: 8, fontWeight: 'bold' }} />
-            </LineChart>
-          </ResponsiveContainer>
-          )}
-        </div>
       </div>
     </div>
   );
 };
 
-const LeagueBadgeCard = ({ userData }) => {
-  return (
-    <div className="card-surface rounded-2xl px-4 py-3 flex items-center gap-4 shadow-sm relative overflow-hidden">
-      <div className="p-2 rounded-lg" style={{ backgroundColor: `${userData.leagueColor}1A`, color: userData.leagueColor }}>
-        <Users size={20} />
-      </div>
-      <div className="flex items-center gap-x-4 flex-1">
-        <span className="text-[10px] font-black px-1.5 py-0.5 rounded" style={{ backgroundColor: `${userData.leagueColor}33`, color: userData.leagueColor }}>
-          {userData.leagueName || 'LIGA'}
-        </span>
-        <span className="text-sm font-black text-gray-100">Platz {userData.rank}</span>
-      </div>
-      <div className="absolute right-0 top-0 bottom-0 w-1" style={{ backgroundColor: userData.leagueColor }}></div>
-    </div>
-  );
-};
-
-const ThresholdCard = ({ rank, points, thresholds }) => {
+const ThresholdLine = ({ rank, points, thresholds }) => {
   if (!thresholds) return null;
 
   const getLigaInfo = () => {
@@ -611,7 +567,7 @@ const ThresholdCard = ({ rank, points, thresholds }) => {
         current: "LIGA 1",
         primary: diffToDown !== null ? `${diffToDown.toLocaleString('de-DE')} Pkt Vorsprung auf Liga 2` : "An der Spitze!",
         secondary: null,
-        type: "success"
+        color: '#22c55e'
       };
     } else if (rank <= 18) {
       const diffToUp = thresholds.rank9 ? thresholds.rank9 - points : 0;
@@ -620,7 +576,7 @@ const ThresholdCard = ({ rank, points, thresholds }) => {
         current: "LIGA 2",
         primary: `${diffToUp.toLocaleString('de-DE')} Pkt bis Liga 1`,
         secondary: `${diffToDown.toLocaleString('de-DE')} Pkt Vorsprung auf Liga 3`,
-        type: "warning"
+        color: '#eab308'
       };
     } else {
       const diffToUp = thresholds.rank18 ? thresholds.rank18 - points : 0;
@@ -628,7 +584,7 @@ const ThresholdCard = ({ rank, points, thresholds }) => {
         current: "LIGA 3",
         primary: `${diffToUp.toLocaleString('de-DE')} Pkt bis Liga 2`,
         secondary: null,
-        type: "info"
+        color: '#3b82f6'
       };
     }
   };
@@ -636,31 +592,16 @@ const ThresholdCard = ({ rank, points, thresholds }) => {
   const info = getLigaInfo();
 
   return (
-    <div
-      className="card-surface rounded-2xl px-4 py-3 flex items-center gap-4 shadow-sm relative overflow-hidden"
-      style={{ borderColor: info.type === 'success' ? 'rgba(34,197,94,0.3)' : info.type === 'warning' ? 'rgba(234,179,8,0.3)' : 'rgba(59,130,246,0.3)' }}
-    >
-      <div className={`p-2 rounded-lg ${info.type === 'success' ? 'bg-green-500/10 text-green-500' : info.type === 'warning' ? 'bg-yellow-500/10 text-yellow-500' : 'bg-blue-500/10 text-blue-500'}`}>
-        <TrendingUp size={20} />
+    <div className="border-l-2 pl-3 py-1 mb-2 flex flex-col sm:flex-row sm:items-center gap-x-3 gap-y-1" style={{ borderColor: info.color }}>
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] font-black px-1.5 py-0.5 rounded" style={{ backgroundColor: `${info.color}26`, color: info.color }}>
+          {info.current}
+        </span>
+        <span className="text-sm font-semibold text-gray-100">{info.primary}</span>
       </div>
-      
-      <div className="flex flex-col sm:flex-row sm:items-center gap-x-4 flex-1">
-        <div className="flex items-center gap-2">
-          <span className={`text-[10px] font-black px-1.5 py-0.5 rounded ${info.type === 'success' ? 'bg-green-500/20 text-green-500' : info.type === 'warning' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-blue-500/20 text-blue-500'}`}>
-            {info.current}
-          </span>
-          <span className="text-sm font-black text-gray-100">{info.primary}</span>
-        </div>
-        
-        {info.secondary && (
-          <div className="text-[11px] font-bold text-gray-400 flex items-center gap-1.5">
-             <span className="hidden sm:inline w-1 h-1 rounded-full bg-gray-600"></span>
-             {info.secondary}
-          </div>
-        )}
-      </div>
-
-      <div className={`absolute right-0 top-0 bottom-0 w-1 ${info.type === 'success' ? 'bg-green-500' : info.type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'}`}></div>
+      {info.secondary && (
+        <span className="text-[11px] font-medium text-gray-500">{info.secondary}</span>
+      )}
     </div>
   );
 };

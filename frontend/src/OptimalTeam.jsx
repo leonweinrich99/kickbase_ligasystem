@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Trophy, Wallet, Star, SearchX } from 'lucide-react';
-import CloseButton from './ui/CloseButton';
+import { useBackNavigation } from './useBackNavigation';
+import { BackButton } from './ui/CloseButton';
 
-const formatMoney = (val) => (val || 0).toLocaleString('de-DE') + ' €';
+// Vollbild-Seite (eigene Route) statt Overlay-Modal - gleiche Design-Strategie
+// wie UserDetail/CompareView: sticky Header mit Zurueck-Button, Inhalt direkt
+// darunter, kein Backdrop/Card-Rahmen mehr. Der Spieltag steckt in der URL
+// (":matchday"), damit die Seite per Browser-Back/Deep-Link funktioniert.
 
-const PositionRow = ({ players, positionName }) => {
+const PositionRow = ({ players }) => {
   if (!players || players.length === 0) return null;
   return (
     <div className="flex flex-col items-center mb-4 last:mb-0 w-full z-10">
@@ -14,15 +19,15 @@ const PositionRow = ({ players, positionName }) => {
           const itemCount = players.length;
           const baseSize = itemCount > 4 ? "w-12 h-12 sm:w-14 sm:h-14" : "w-14 h-14 sm:w-16 sm:h-16";
           const containerSize = itemCount > 4 ? "w-[65px] sm:w-[80px]" : "w-[75px] sm:w-[90px]";
-          
+
           return (
             <div key={p.id} className={`relative flex flex-col items-center group ${containerSize}`}>
               {/* Spieler-Bild */}
               <div className={`${baseSize} rounded-full bg-[#202020] border-2 border-[#404040] overflow-hidden flex items-center justify-center shadow-lg relative group-hover:border-[#ff5c3e] transition-colors`}>
               {p.imagePath ? (
-                <img 
-                  src={`https://cdn.kickbase.com/files/players/${p.imagePath}/1`} 
-                  alt={p.name} 
+                <img
+                  src={`https://cdn.kickbase.com/files/players/${p.imagePath}/1`}
+                  alt={p.name}
                   className="w-full h-full object-cover scale-110 mt-2"
                   onError={(e) => { e.target.style.display = 'none'; }}
                 />
@@ -34,7 +39,7 @@ const PositionRow = ({ players, positionName }) => {
                 {p.points}
               </div>
             </div>
-            
+
             {/* Name & Wert */}
             <div className="mt-2 text-center w-full">
               <div className="text-[10px] sm:text-[11px] font-bold text-white truncate w-full shadow-sm" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
@@ -52,26 +57,50 @@ const PositionRow = ({ players, positionName }) => {
   );
 };
 
-const OptimalTeam = ({ isOpen, onClose, availableMatchdays, currentGlobalMatchday, dataBase = '' }) => {
-  // Start with the latest matchday, but ensure it's a number
-  const initial = availableMatchdays.filter(m => typeof m === 'number').sort((a,b) => b-a)[0] || currentGlobalMatchday;
-  const [matchday, setMatchday] = useState(initial);
+const OptimalTeam = ({ dataBase = '', routeBase = '' }) => {
+  const { matchday: matchdayParam } = useParams();
+  const navigate = useNavigate();
+  const goBack = useBackNavigation(routeBase || '/');
+
+  const [availableMatchdays, setAvailableMatchdays] = useState([]);
+  const [latestMatchday, setLatestMatchday] = useState(null);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Verfügbare Spieltage + aktuellsten Spieltag laden (einmalig) - sobald
+  // klar ist, welcher Spieltag "der neueste" ist, wird bei fehlendem
+  // URL-Parameter direkt dorthin umgeleitet.
+  useEffect(() => {
+    Promise.all([
+      fetch(`${dataBase}/history/index.json`).then((res) => res.json()).catch(() => ({ matchdays: [] })),
+      fetch(`${dataBase}/data.json`).then((res) => res.json())
+    ]).then(([index, latestData]) => {
+      const mDay = Number(latestData.matchday);
+      const historyDays = (index.matchdays || []).map(Number);
+      const all = [...new Set([...historyDays, mDay])].sort((a, b) => a - b);
+      setAvailableMatchdays(all);
+      setLatestMatchday(mDay);
+
+      if (!matchdayParam) {
+        navigate(`${routeBase}/optimale-elf/${mDay}`, { replace: true });
+      }
+    }).catch((err) => console.error('Fehler beim Laden der Spieltag-Liste:', err));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataBase]);
+
+  const matchday = matchdayParam ? Number(matchdayParam) : latestMatchday;
+
   // Fetch optimal team data
   useEffect(() => {
-    if (!isOpen) return;
+    if (!matchday) return;
 
     let cancelled = false;
-    const requestedMatchday = matchday;
-
     setLoading(true);
     setError(null);
 
     // Vermeide Caching
-    fetch(`${dataBase}/history/optimal-md-${requestedMatchday}-final.json?t=${Date.now()}`)
+    fetch(`${dataBase}/history/optimal-md-${matchday}-final.json?t=${Date.now()}`)
       .then(res => {
         if (!res.ok) {
           throw new Error('Keine optimalen Daten für diesen Spieltag gefunden.');
@@ -79,10 +108,6 @@ const OptimalTeam = ({ isOpen, onClose, availableMatchdays, currentGlobalMatchda
         return res.json();
       })
       .then(d => {
-        // Veraltete Antworten ignorieren, falls der Effekt zwischenzeitlich neu
-        // gelaufen ist (z.B. weil sich der Spieltag kurz hintereinander geändert
-        // hat) - verhindert, dass ein späterer korrekter Request von einem
-        // früheren, inzwischen überholten überschrieben wird.
         if (cancelled) return;
         setData(d);
         setLoading(false);
@@ -96,35 +121,20 @@ const OptimalTeam = ({ isOpen, onClose, availableMatchdays, currentGlobalMatchda
       });
 
     return () => { cancelled = true; };
-  }, [matchday, isOpen, dataBase]);
+  }, [matchday, dataBase]);
 
-  // Sync initial matchday when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      const bestInitial = availableMatchdays.filter(m => typeof m === 'number').sort((a,b) => b-a)[0] || currentGlobalMatchday;
-      setMatchday(bestInitial);
-    }
-  }, [isOpen, availableMatchdays, currentGlobalMatchday]);
-
-  if (!isOpen) return null;
-
-  const validMatchdays = availableMatchdays.filter(m => typeof m === 'number').sort((a, b) => a - b);
-  const currentIndex = validMatchdays.indexOf(matchday);
+  const currentIndex = availableMatchdays.indexOf(matchday);
 
   const handlePrev = () => {
-    if (currentIndex > 0) {
-      setMatchday(validMatchdays[currentIndex - 1]);
-    } else {
-      setMatchday(validMatchdays[validMatchdays.length - 1]); // wrap around
-    }
+    if (!availableMatchdays.length) return;
+    const idx = currentIndex > 0 ? currentIndex - 1 : availableMatchdays.length - 1;
+    navigate(`${routeBase}/optimale-elf/${availableMatchdays[idx]}`);
   };
 
   const handleNext = () => {
-    if (currentIndex < validMatchdays.length - 1) {
-      setMatchday(validMatchdays[currentIndex + 1]);
-    } else {
-      setMatchday(validMatchdays[0]); // wrap around
-    }
+    if (!availableMatchdays.length) return;
+    const idx = currentIndex < availableMatchdays.length - 1 ? currentIndex + 1 : 0;
+    navigate(`${routeBase}/optimale-elf/${availableMatchdays[idx]}`);
   };
 
   // Gruppieren
@@ -134,37 +144,21 @@ const OptimalTeam = ({ isOpen, onClose, availableMatchdays, currentGlobalMatchda
   const st = data?.lineup?.filter(p => p.position === 4) || [];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity" 
-        onClick={onClose}
-      ></div>
-      
-      {/* Modal Container */}
-      <div className="card-surface w-full max-w-2xl max-h-[90vh] rounded-2xl shadow-2xl relative flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-[#2e2e2e] bg-[#171717]">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-[#ff5c3e]/10 flex items-center justify-center text-[#ff5c3e]">
-              <Star size={18} strokeWidth={2.5} fill="#ff5c3e" />
-            </div>
-            <div>
-              <h2 className="text-base sm:text-lg font-black uppercase tracking-wider text-white">Die Optimale Elf</h2>
-              <p className="text-[10px] text-[#8b92a5] uppercase tracking-widest">Maximal mögliche Punkte</p>
-            </div>
-          </div>
-          
-          <CloseButton onClick={onClose} size="compact" />
+    <div className="w-full bg-[#000000] min-h-screen relative flex flex-col pb-10">
+      {/* Header mit Zurueck-Button (Page-Look, wie Advisor::PlayerDetailView) */}
+      <div className="sticky top-0 z-40 bg-[#000000]/90 backdrop-blur-md px-4 sm:px-6 py-4 flex items-center justify-between border-b border-[#2e2e2e]/50">
+        <BackButton onClick={goBack} />
+        <div className="flex items-center gap-2 text-[#ff5c3e]">
+          <Star size={16} strokeWidth={2.5} fill="#ff5c3e" />
+          <span className="text-xs font-bold uppercase tracking-wider">Die Optimale Elf</span>
         </div>
+      </div>
 
+      <div className="max-w-[700px] w-full mx-auto pt-6 pb-8 px-4 sm:px-6">
         {/* Matchday Toggle & Summary */}
-        <div className="px-6 py-4 bg-[#171717] border-b border-[#2e2e2e] flex flex-col md:flex-row justify-between items-center gap-6">
-          
-          {/* Spieltag-Wechsler (Dashboard-Design) */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-6">
           <div className="bg-[#171717] border border-[#2e2e2e] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden w-full md:w-auto justify-between h-12">
-            <button 
+            <button
               onClick={handlePrev}
               className="px-5 h-full text-[#8b92a5] hover:text-[#ff5c3e] transition-colors bg-[#141414] active:scale-90"
             >
@@ -172,10 +166,10 @@ const OptimalTeam = ({ isOpen, onClose, availableMatchdays, currentGlobalMatchda
             </button>
             <div className="px-6 flex-1 flex flex-col items-center justify-center min-w-[120px]">
               <span className="text-[11px] font-bold text-gray-200 whitespace-nowrap uppercase tracking-widest text-center">
-                Spieltag {matchday}
+                Spieltag {matchday ?? '–'}
               </span>
             </div>
-            <button 
+            <button
               onClick={handleNext}
               className="px-5 h-full text-[#8b92a5] hover:text-[#ff5c3e] transition-colors bg-[#141414] active:scale-90"
             >
@@ -216,11 +210,11 @@ const OptimalTeam = ({ isOpen, onClose, availableMatchdays, currentGlobalMatchda
         </div>
 
         {/* Content (Pitch) */}
-        <div data-tour="optimal-team-pitch" className="flex-1 overflow-y-auto bg-[#171717] relative min-h-[400px] flex flex-col justify-center py-8"
+        <div data-tour="optimal-team-pitch" className="rounded-2xl overflow-hidden relative min-h-[400px] flex flex-col justify-center py-8"
              style={{
-                backgroundImage: 'radial-gradient(circle at center, #202020 0%, #121212 100%)'
+                backgroundImage: 'radial-gradient(circle at center, #171717 0%, #0a0a0a 100%)'
              }}>
-          
+
           {loading ? (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="flex flex-col items-center">
@@ -246,10 +240,10 @@ const OptimalTeam = ({ isOpen, onClose, availableMatchdays, currentGlobalMatchda
 
               {/* Aufstellung Rows */}
               <div className="flex flex-col justify-between h-full gap-2 relative z-10">
-                <PositionRow players={st} positionName="ST" />
-                <PositionRow players={mf} positionName="MF" />
-                <PositionRow players={aw} positionName="AW" />
-                <PositionRow players={tw} positionName="TW" />
+                <PositionRow players={st} />
+                <PositionRow players={mf} />
+                <PositionRow players={aw} />
+                <PositionRow players={tw} />
               </div>
             </div>
           )}

@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Trophy, Star, Zap, Calendar, ChevronRight, TrendingUp, TrendingDown } from 'lucide-react';
+import { Calendar, ChevronRight, TrendingUp, TrendingDown } from 'lucide-react';
 import { useLeagueEntry } from './useLeagueEntry';
-import StatTile from './ui/StatTile';
+import ManagerAvatar from './ui/ManagerAvatar';
 import ligaLogo from './assets/logo.png';
 import pokalLogo from './assets/pokal_logo.png';
 
-// EIN Card-Container mit Tabs (Liga / Pokal / Spieltag) statt drei
-// gestapelter Einzelkarten - deutlich weniger "Kachel-Gefuehl", mehr Infos
-// pro Fleck. Wird auf der Account-Seite direkt unter dem Profil angezeigt.
+// Kartenlose Liga/Pokal-Ansicht im selben Duktus wie die Advisor-Detailseite
+// (PlayerDetailView) - freistehende Zahlen statt Kacheln, dünne Trennlinien
+// statt Card-Rahmen. Wird auf der Account-Seite direkt unter dem Profil
+// angezeigt.
 
 // ---------- Liga-Tab ----------
 
@@ -18,21 +19,25 @@ const LigaTab = ({ kickbaseId }) => {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <img src={ligaLogo} alt="" className="w-5 h-5 object-contain shrink-0" />
-          <span
-            className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full"
-            style={{ backgroundColor: `${entry.leagueColor}26`, color: entry.leagueColor }}
-          >
-            {entry.leagueName}
-          </span>
-        </div>
+      <div className="flex items-center gap-2 mb-5">
+        <img src={ligaLogo} alt="" className="w-5 h-5 object-contain shrink-0" />
+        <span className="text-xs font-bold uppercase tracking-wider" style={{ color: entry.leagueColor }}>
+          {entry.leagueName}
+        </span>
       </div>
-      <div className="flex items-stretch gap-2 mb-4">
-        <StatTile icon={Trophy} value={`#${entry.rank}`} label="Platz" boxed card={false} />
-        <StatTile icon={Star} value={entry.points} label="Punkte" boxed card={false} />
-        <StatTile icon={Zap} value={entry.pointsMatchday} label="Letzter ST" boxed card={false} />
+      <div className="grid grid-cols-3 gap-4 mb-5">
+        <div className="flex flex-col">
+          <span className="text-[#8b92a5] text-[10px] font-bold uppercase tracking-widest mb-1">Platz</span>
+          <span className="text-2xl font-semibold text-white">#{entry.rank}</span>
+        </div>
+        <div className="flex flex-col">
+          <span className="text-[#8b92a5] text-[10px] font-bold uppercase tracking-widest mb-1">Punkte</span>
+          <span className="text-2xl font-semibold text-white">{entry.points}</span>
+        </div>
+        <div className="flex flex-col">
+          <span className="text-[#8b92a5] text-[10px] font-bold uppercase tracking-widest mb-1">Letzter ST</span>
+          <span className="text-2xl font-semibold text-white">{entry.pointsMatchday}</span>
+        </div>
       </div>
       <Link to={`/user/${kickbaseId}`} className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[#ff5c3e] hover:text-[#ff7056] transition-colors">
         Vollständige Statistik ansehen
@@ -88,21 +93,6 @@ const STATUS_THEME = {
   eliminated: { color: '#6b7280', label: 'Ausgeschieden' },
 };
 
-const NameAvatar = ({ name, color, muted, photoUrl }) => (
-  <div
-    className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center font-black text-base shrink-0 overflow-hidden"
-    style={muted
-      ? { backgroundColor: '#1f1f1f', border: '2px solid #2e2e2e', color: '#8b92a5' }
-      : { backgroundColor: `${color}1F`, border: `2px solid ${color}`, color }}
-  >
-    {photoUrl ? (
-      <img src={photoUrl} alt={name || 'Avatar'} className="w-full h-full object-cover" />
-    ) : (
-      name ? name.charAt(0).toUpperCase() : '?'
-    )}
-  </div>
-);
-
 // Findet den Liga-Eintrag eines Managers anhand seines Kickbase-Namens
 // (Pokal-Paarungen speichern nur Namen, keine IDs - siehe pokal-data.json).
 const findManagerByName = (leagueData, name) => {
@@ -150,50 +140,42 @@ const PokalTab = ({ kickbaseId, kickbaseName, photoURL }) => {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
           <img src={pokalLogo} alt="" className="w-5 h-5 object-contain shrink-0" />
-          <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full" style={{ backgroundColor: `${theme.color}26`, color: theme.color }}>
-            {status.round}
-          </span>
+          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: theme.color }}>{status.round}</span>
         </div>
-        <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full" style={{ backgroundColor: `${theme.color}26`, color: theme.color }}>
+        <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: theme.color }}>
           {theme.label}
         </span>
       </div>
 
-      <div className="flex items-center justify-between gap-2 mb-4">
+      <div className="flex items-center justify-between gap-2 mb-5">
         <div className="flex flex-col items-center gap-1.5 w-[42%] min-w-0">
-          <NameAvatar name="Du" color={theme.color} photoUrl={photoURL} />
+          <ManagerAvatar name={kickbaseName} photoURL={photoURL} size={56} ringColor={theme.color} />
           <span className="text-[11px] font-bold text-gray-100 truncate max-w-full">Du</span>
           {myEntry && (
-            <span
-              className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full truncate max-w-full"
-              style={{ backgroundColor: `${myEntry.leagueColor}26`, color: myEntry.leagueColor }}
-            >
+            <span className="text-[9px] font-bold text-[#8b92a5] truncate max-w-full">
               {myEntry.leagueName} · #{myEntry.rank}
             </span>
           )}
         </div>
-        <div className="w-7 h-7 rounded-full bg-[#000] border border-[#2e2e2e] flex items-center justify-center text-[8px] font-black text-[#8b92a5] shrink-0">VS</div>
+        <div className="text-[11px] font-black text-[#4b5563] italic shrink-0">VS</div>
         <div className="flex flex-col items-center gap-1.5 w-[42%] min-w-0">
-          <NameAvatar name={status.opponent} muted />
+          <ManagerAvatar name={status.opponent} size={56} />
           <span className="text-[11px] font-bold text-gray-100 truncate max-w-full">{opponentLabel}</span>
           {opponentEntry ? (
-            <span
-              className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full truncate max-w-full"
-              style={{ backgroundColor: `${opponentEntry.leagueColor}26`, color: opponentEntry.leagueColor }}
-            >
+            <span className="text-[9px] font-bold text-[#8b92a5] truncate max-w-full">
               {opponentEntry.leagueName} · #{opponentEntry.rank}
             </span>
           ) : (
-            <span className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full opacity-0">-</span>
+            <span className="text-[9px] font-bold text-[#8b92a5] truncate max-w-full opacity-0">-</span>
           )}
         </div>
       </div>
 
       {roundInfo && (
-        <div className="flex items-center gap-2 text-[11px] text-[#8b92a5] bg-[#000] border border-[#2e2e2e] rounded-xl px-3 py-2.5 mb-2">
+        <div className="flex items-center gap-2 text-[11px] text-[#8b92a5] border-t border-[#2a2a2a] pt-3 mb-1">
           <Calendar size={13} strokeWidth={2.5} />
           <span>Bundesliga-Spieltag {roundInfo.matchday} · {roundInfo.date}</span>
         </div>
@@ -204,7 +186,7 @@ const PokalTab = ({ kickbaseId, kickbaseName, photoURL }) => {
         </div>
       )}
 
-      <div className="flex items-center flex-wrap gap-x-4 gap-y-2 mt-3">
+      <div className="flex items-center flex-wrap gap-x-4 gap-y-2 mt-4">
         {canOpenH2H && (
           <Link to={`/compare/${kickbaseId}/${opponentEntry.id}`} className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[#ff5c3e] hover:text-[#ff7056] transition-colors">
             Head-to-Head ansehen
@@ -368,23 +350,21 @@ export const SeasonSnapshot = ({ kickbaseId, kickbaseName, photoURL }) => {
   const [tab, setTab] = useState('liga');
 
   return (
-    <div className="card-surface rounded-2xl mb-4 overflow-hidden">
-      <div className="flex border-b border-[#2a2a2a]">
+    <div className="mb-6">
+      <div className="flex gap-5 border-b border-[#2a2a2a] mb-5">
         {TABS.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest transition-colors border-b-2 ${tab === t.key ? 'text-white border-[#ff5c3e]' : 'text-[#8b92a5] border-transparent hover:text-gray-300'}`}
+            className={`pb-3 -mb-px text-xs font-bold uppercase tracking-wider transition-colors border-b-2 ${tab === t.key ? 'text-white border-[#ff5c3e]' : 'text-[#6b7280] border-transparent hover:text-gray-300'}`}
           >
             {t.label}
           </button>
         ))}
       </div>
-      <div className="p-5">
-        {tab === 'liga' && <LigaTab kickbaseId={kickbaseId} />}
-        {tab === 'pokal' && <PokalTab kickbaseId={kickbaseId} kickbaseName={kickbaseName} photoURL={photoURL} />}
-        {/* Kader- und Spieltag-Tab bewusst deaktiviert, siehe TABS oben */}
-      </div>
+      {tab === 'liga' && <LigaTab kickbaseId={kickbaseId} />}
+      {tab === 'pokal' && <PokalTab kickbaseId={kickbaseId} kickbaseName={kickbaseName} photoURL={photoURL} />}
+      {/* Kader- und Spieltag-Tab bewusst deaktiviert, siehe TABS oben */}
     </div>
   );
 };

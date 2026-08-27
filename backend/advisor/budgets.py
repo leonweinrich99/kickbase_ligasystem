@@ -118,7 +118,17 @@ def calc_manager_budgets(token, league_id, league_start_date, start_budget):
 
     budget_df["Team Value"] = budget_df["Team Value"].fillna(0)
     budget_df["Max Negative"] = (budget_df["Team Value"] + budget_df["Budget"]) * -0.33
-    budget_df["Available Budget"] = (budget_df["Max Negative"].fillna(0) - budget_df["Budget"]) * -1
+    # "Verfuegbares Budget" ist das Geld, das sicher ausgegeben werden kann,
+    # OHNE danach ins Minus zu rutschen - bewusst NUR das reine Budget, ohne
+    # den Dispo-Puffer (Max Negative) mit einzurechnen. Kickbase erlaubt zwar
+    # kurzzeitig ein Minus beim Handeln, das Konto muss aber bis zum naechsten
+    # Spieltag wieder auf >= 0 ausgeglichen sein (sonst gibt es keine Punkte
+    # fuer den Spieltag) - der Dispo ist also KEIN sicher ausgebbares Geld.
+    # "Dispo Puffer" bleibt als reine Info-Kennzahl erhalten (wie weit man sich
+    # theoretisch verschulden darf), fliesst aber nicht mehr ins ausgebbare
+    # Budget mit ein (siehe Advisor.jsx).
+    budget_df["Available Budget"] = budget_df["Budget"]
+    budget_df["Dispo Puffer"] = budget_df["Max Negative"].fillna(0).abs()
 
     budget_df.sort_values("Available Budget", ascending=False, inplace=True, ignore_index=True)
 

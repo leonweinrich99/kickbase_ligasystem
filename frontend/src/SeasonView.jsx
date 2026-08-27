@@ -7,14 +7,12 @@ import OptimalTeam from './OptimalTeam';
 import LoadingScreen from './LoadingScreen';
 import useMinimumDelay from './useMinimumDelay';
 import { shouldShowSplash, markSplashShown } from './appLoadState';
-import { useTour } from './Tour';
 
 // SeasonView kapselt eine komplette "Saison-Ansicht" (Dashboard + User-Detail + Vergleich)
 // und kann sowohl auf die LIVE-Daten (dataBase="") als auch auf ARCHIVIERTE Daten
 // (dataBase="/archive/...") zeigen. routeBase sorgt dafür, dass interne Links
 // (z.B. /user/:id) im richtigen Teilbaum bleiben ("" für live, "/archiv" fürs Archiv).
 const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
-  const tour = useTour();
   const [data, setData] = useState(null);
   const [latestMatchday, setLatestMatchday] = useState(null);
   const [historyIndex, setHistoryIndex] = useState({ matchdays: [] });
@@ -22,12 +20,6 @@ const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
 
   const [currentViewIndex, setCurrentViewIndex] = useState(0);
   const [availableViews, setAvailableViews] = useState(['saison']);
-
-  const [isOptimalTeamOpen, setIsOptimalTeamOpen] = useState(false);
-  // Die Tour kann das Modal rein deklarativ "erzwingen" (z.B. während des
-  // Optimale-Elf-Schritts) - kein simulierter Klick, kein Timing-Risiko.
-  const isOptimalTeamForced = Boolean(tour?.step?.forceOptimalTeamOpen);
-  const optimalTeamVisible = isOptimalTeamOpen || isOptimalTeamForced;
 
   const minDelayElapsed = useMinimumDelay(1800);
 
@@ -142,7 +134,6 @@ const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
         prevRanks={prevRanks}
         mode={mode}
         routeBase={routeBase}
-        onOpenOptimalTeam={() => setIsOptimalTeamOpen(true)}
       />
     )
     : (showSplash ? <LoadingScreen /> : <div className="min-h-screen bg-[#000000]"></div>);
@@ -154,6 +145,8 @@ const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
           <Route index element={dashboardElement} />
           <Route path="user/:id" element={<UserDetail dataBase={dataBase} routeBase={routeBase} mode={mode} />} />
           <Route path="compare/:id1/:id2" element={<CompareView dataBase={dataBase} routeBase={routeBase} />} />
+          <Route path="optimale-elf" element={<OptimalTeam dataBase={dataBase} routeBase={routeBase} />} />
+          <Route path="optimale-elf/:matchday" element={<OptimalTeam dataBase={dataBase} routeBase={routeBase} />} />
         </Routes>
       </div>
 
@@ -164,14 +157,6 @@ const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
           </Link>
         </div>
       )}
-
-      <OptimalTeam
-        isOpen={optimalTeamVisible}
-        onClose={() => setIsOptimalTeamOpen(false)}
-        availableMatchdays={availableViews}
-        currentGlobalMatchday={latestMatchday}
-        dataBase={dataBase}
-      />
     </div>
   );
 };

@@ -305,6 +305,7 @@ def build_budgets_payload(token, league_id):
         "Budget": "budget",
         "Team Value": "teamValue",
         "Available Budget": "availableBudget",
+        "Dispo Puffer": "dispoBuffer",
     })
 
 

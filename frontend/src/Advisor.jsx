@@ -1,13 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Info, RefreshCw, CheckCircle2, XCircle, Star } from 'lucide-react';
+import { Info, RefreshCw, CheckCircle2, XCircle, Star, SlidersHorizontal, X, ChevronDown, AlertTriangle } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import { useBackNavigation } from './useBackNavigation';
 import { useFavorites } from './useFavorites';
 import PageHeader from './ui/PageHeader';
 import CloseButton from './ui/CloseButton';
 import StatTile from './ui/StatTile';
+import { countPositions, missingPositions, estimateReserveForMissingPositions } from './squadRules';
 
 // Zeigt die Auswertungen des "Kickbase Trading Advisor" an (siehe
 // backend/advisor/, generiert per GitHub Action aus
@@ -41,10 +42,10 @@ const REASON_LABELS = {
 const DB_PAGE_SIZE = 25;
 
 const SECTION_TABS = [
-  { key: 'budgets', label: 'Budgets' },
   { key: 'market', label: 'Markt' },
   { key: 'squad', label: 'Kader' },
   { key: 'database', label: 'Datenbank' },
+  { key: 'budgets', label: 'Budgets' },
   { key: 'favorites', label: 'Favoriten' },
 ];
 
@@ -123,62 +124,117 @@ function applyFilters(list, filters, recommendationMode) {
   return [...result].sort(sorters[filters.sort] || sorters.predictedDesc);
 }
 
-const FilterBar = ({ filters, onChange, teams, showTeamFilter = false, recommendationMode }) => (
-  <div className="flex flex-wrap gap-2 mb-4">
-    <input
-      type="text"
-      placeholder="Suche nach Name oder Team..."
-      value={filters.search}
-      onChange={(e) => onChange({ ...filters, search: e.target.value })}
-      className="flex-1 min-w-[180px] bg-[#171717] border border-[#2e2e2e] rounded-xl px-3 py-2 text-sm text-white placeholder-[#626978] outline-none focus:border-cyan-500"
-    />
-    <select
-      value={filters.position}
-      onChange={(e) => onChange({ ...filters, position: e.target.value })}
-      className="bg-[#171717] border border-[#2e2e2e] rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-cyan-500"
-    >
-      <option value="ALL">Alle Positionen</option>
-      {Object.entries(POSITION_LABELS).map(([code, label]) => (
-        <option key={code} value={code}>{label}</option>
-      ))}
-    </select>
-    {showTeamFilter && (
-      <select
-        value={filters.team}
-        onChange={(e) => onChange({ ...filters, team: e.target.value })}
-        className="bg-[#171717] border border-[#2e2e2e] rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-cyan-500"
-      >
-        <option value="ALL">Alle Teams</option>
-        {teams.map((t) => <option key={t} value={t}>{t}</option>)}
-      </select>
-    )}
-    <select
-      value={filters.sort}
-      onChange={(e) => onChange({ ...filters, sort: e.target.value })}
-      className="bg-[#171717] border border-[#2e2e2e] rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-cyan-500"
-    >
-      <option value="predictedDesc">Prognose: höchste zuerst</option>
-      <option value="predictedAsc">Prognose: niedrigste zuerst</option>
-      <option value="marketValueDesc">Marktwert: höchster zuerst</option>
-      <option value="marketValueAsc">Marktwert: niedrigster zuerst</option>
-      <option value="nameAsc">Name (A-Z)</option>
-    </select>
-    {recommendationMode && (
-      <button
-        onClick={() => onChange({ ...filters, recommendedOnly: !filters.recommendedOnly })}
-        className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filters.recommendedOnly ? (recommendationMode === 'sell' ? 'bg-red-500/20 text-red-400 border border-red-500/40' : 'bg-green-500/20 text-green-400 border border-green-500/40') : 'bg-[#171717] border border-[#2e2e2e] text-[#8b92a5] hover:text-white'}`}
-      >
-        {recommendationMode === 'sell' ? 'Nur Verkaufsempfehlungen' : 'Nur Kaufempfehlungen'}
-      </button>
-    )}
-    <button
-      onClick={() => onChange({ ...filters, risingOnly: !filters.risingOnly })}
-      className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filters.risingOnly ? 'bg-green-500/20 text-green-400 border border-green-500/40' : 'bg-[#171717] border border-[#2e2e2e] text-[#8b92a5] hover:text-white'}`}
-    >
-      Nur steigend
-    </button>
-  </div>
-);
+// Kompakte Filterleiste: nur Suche + ein Filter-Icon-Button sind permanent
+// sichtbar, alle weiteren Optionen (Position, Team, Sortierung, Toggles)
+// stecken in einem Popover - nimmt dadurch deutlich weniger Platz ein als
+// vorher (5+ Elemente nebeneinander).
+const FilterBar = ({ filters, onChange, teams, showTeamFilter = false, recommendationMode }) => {
+  const [open, setOpen] = useState(false);
+
+  const activeCount = [
+    filters.position !== 'ALL',
+    showTeamFilter && filters.team !== 'ALL',
+    filters.sort !== DEFAULT_FILTERS.sort,
+    filters.risingOnly,
+    recommendationMode && filters.recommendedOnly,
+  ].filter(Boolean).length;
+
+  return (
+    <div className="relative mb-4">
+      <div className="flex gap-2">
+        <input
+          type="text"
+          placeholder="Suche nach Name oder Team..."
+          value={filters.search}
+          onChange={(e) => onChange({ ...filters, search: e.target.value })}
+          className="flex-1 min-w-0 bg-[#171717] border border-[#2e2e2e] rounded-xl px-3 py-2.5 text-sm text-white placeholder-[#626978] outline-none focus:border-cyan-500"
+        />
+        <button
+          onClick={() => setOpen((v) => !v)}
+          aria-label="Filter"
+          className={`relative shrink-0 w-11 h-11 flex items-center justify-center rounded-xl border transition-all ${open || activeCount > 0 ? 'bg-cyan-500/10 border-cyan-500 text-cyan-400' : 'bg-[#171717] border-[#2e2e2e] text-[#8b92a5] hover:text-white'}`}
+        >
+          <SlidersHorizontal size={16} />
+          {activeCount > 0 && (
+            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-cyan-500 text-black text-[9px] font-black flex items-center justify-center">{activeCount}</span>
+          )}
+        </button>
+      </div>
+
+      {open && (
+        <>
+          <div className="fixed inset-0 z-20" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 z-30 mt-2 w-full sm:w-80 bg-[#171717] border border-[#2e2e2e] rounded-xl p-4 shadow-2xl space-y-3">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5]">Filter</span>
+              <button onClick={() => setOpen(false)} className="text-[#8b92a5] hover:text-white transition-colors"><X size={14} /></button>
+            </div>
+
+            <div>
+              <label className="block text-[9px] font-bold uppercase tracking-widest text-[#626978] mb-1">Position</label>
+              <select
+                value={filters.position}
+                onChange={(e) => onChange({ ...filters, position: e.target.value })}
+                className="w-full bg-[#000] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-cyan-500"
+              >
+                <option value="ALL">Alle Positionen</option>
+                {Object.entries(POSITION_LABELS).map(([code, label]) => (
+                  <option key={code} value={code}>{label}</option>
+                ))}
+              </select>
+            </div>
+
+            {showTeamFilter && (
+              <div>
+                <label className="block text-[9px] font-bold uppercase tracking-widest text-[#626978] mb-1">Team</label>
+                <select
+                  value={filters.team}
+                  onChange={(e) => onChange({ ...filters, team: e.target.value })}
+                  className="w-full bg-[#000] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-cyan-500"
+                >
+                  <option value="ALL">Alle Teams</option>
+                  {teams.map((t) => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-[9px] font-bold uppercase tracking-widest text-[#626978] mb-1">Sortierung</label>
+              <select
+                value={filters.sort}
+                onChange={(e) => onChange({ ...filters, sort: e.target.value })}
+                className="w-full bg-[#000] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-cyan-500"
+              >
+                <option value="predictedDesc">Prognose: höchste zuerst</option>
+                <option value="predictedAsc">Prognose: niedrigste zuerst</option>
+                <option value="marketValueDesc">Marktwert: höchster zuerst</option>
+                <option value="marketValueAsc">Marktwert: niedrigster zuerst</option>
+                <option value="nameAsc">Name (A-Z)</option>
+              </select>
+            </div>
+
+            <div className="flex flex-wrap gap-2 pt-1">
+              {recommendationMode && (
+                <button
+                  onClick={() => onChange({ ...filters, recommendedOnly: !filters.recommendedOnly })}
+                  className={`px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${filters.recommendedOnly ? (recommendationMode === 'sell' ? 'bg-red-500/20 text-red-400 border border-red-500/40' : 'bg-green-500/20 text-green-400 border border-green-500/40') : 'bg-[#000] border border-[#2e2e2e] text-[#8b92a5] hover:text-white'}`}
+                >
+                  {recommendationMode === 'sell' ? 'Nur Verkaufsempfehlungen' : 'Nur Kaufempfehlungen'}
+                </button>
+              )}
+              <button
+                onClick={() => onChange({ ...filters, risingOnly: !filters.risingOnly })}
+                className={`px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${filters.risingOnly ? 'bg-green-500/20 text-green-400 border border-green-500/40' : 'bg-[#000] border border-[#2e2e2e] text-[#8b92a5] hover:text-white'}`}
+              >
+                Nur steigend
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
 
 const BudgetRow = ({ entry, rank, color }) => (
   <div className="flex items-center p-3 mb-2.5 card-surface rounded-[14px] shadow-sm">
@@ -189,9 +245,9 @@ const BudgetRow = ({ entry, rank, color }) => (
     </div>
     <div className="text-right ml-2 shrink-0">
       <div className="text-[15px] font-bold" style={{ color }}>{formatMoney(entry.budget)}</div>
-      <div className="text-[9px] font-bold text-[#626978] tracking-widest mt-0.5 uppercase">Budget (geschätzt)</div>
-      {typeof entry.availableBudget === 'number' && (
-        <div className="text-[10px] text-[#8b92a5] mt-1">Verfügbar (inkl. Dispo): {formatMoney(entry.availableBudget)}</div>
+      <div className="text-[9px] font-bold text-[#626978] tracking-widest mt-0.5 uppercase">Verfügbares Budget</div>
+      {typeof entry.dispoBuffer === 'number' && entry.dispoBuffer > 0 && (
+        <div className="text-[10px] text-[#8b92a5] mt-1">Zulässiger Puffer bis Spieltag: {formatMoney(entry.dispoBuffer)}</div>
       )}
     </div>
   </div>
@@ -772,7 +828,7 @@ const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, onToggl
 };
 
 const Advisor = () => {
-  const { isAdmin } = useAuth();
+  const { isAdmin, profile } = useAuth();
   const goBack = useBackNavigation('/account');
   const { isFavorite, toggleFavorite, favoritePlayers } = useFavorites();
   const [data, setData] = useState(null);
@@ -784,11 +840,15 @@ const Advisor = () => {
   const [squadFilters, setSquadFilters] = useState(DEFAULT_FILTERS);
   const [favoritesFilters, setFavoritesFilters] = useState(DEFAULT_FILTERS);
   const [selectedManagerId, setSelectedManagerId] = useState('');
+  // Kader-Tab zeigt standardmaessig IMMER den eigenen Account (siehe
+  // profile.kickbaseId unten) - der Manager-Wechsler ist nur noch eine
+  // eingeklappte Test-/Debug-Option fuer Admins, kein prominentes UI-Element mehr.
+  const [showManagerSwitcher, setShowManagerSwitcher] = useState(false);
   const [dbVisibleCount, setDbVisibleCount] = useState(DB_PAGE_SIZE);
   const [isAdvisorUpdating, setIsAdvisorUpdating] = useState(false);
   const [advisorUpdateStatus, setAdvisorUpdateStatus] = useState(null);
   const [advisorUpdateStatusOk, setAdvisorUpdateStatusOk] = useState(true);
-  const [sectionTab, setSectionTab] = useState('budgets');
+  const [sectionTab, setSectionTab] = useState('market');
   const [showInfo, setShowInfo] = useState(false);
 
   // Vereinslogos auslesen (Kickbase API liefert die Tabelle mit den Logos als SVG)
@@ -933,27 +993,71 @@ const Advisor = () => {
   // Budget des ausgewaehlten Managers + welche Kaufempfehlungen er sich damit
   // tatsaechlich leisten koennte - beantwortet direkt "was kann ich mit
   // meinem Geld anfangen?", ohne Markt- und Budget-Tab manuell abgleichen
-  // zu muessen.
+  // zu muessen. Bewusst NUR das reine Budget (kein Dispo-Zuschlag mehr, siehe
+  // backend/advisor/budgets.py) - der Dispo-Puffer muss bis zum naechsten
+  // Spieltag wieder ausgeglichen sein, ist also kein sicher ausgebbares Geld.
   const selectedManagerBudget = league?.managerBudgets?.[selectedManagerId] || null;
+  const rawBudget = selectedManagerBudget?.budget ?? 0;
+
+  // Kader-Vollstaendigkeit: reicht das Budget noch fuer eine volle Elf, oder
+  // muessten fehlende Pflichtpositionen (siehe squadRules.js) zuerst
+  // nachbesetzt werden, bevor man "frei" Geld ausgeben kann?
+  const currentSquad = effectiveManagerSquads[selectedManagerId] || [];
+  const squadPositionCounts = useMemo(() => countPositions(currentSquad), [currentSquad]);
+  const squadMissing = useMemo(() => missingPositions(squadPositionCounts), [squadPositionCounts]);
+  const squadReserveInfo = useMemo(
+    () => estimateReserveForMissingPositions(squadMissing, data?.players || []),
+    [squadMissing, data]
+  );
+  const netBudgetAfterReserve = rawBudget - squadReserveInfo.reserve;
+
   const affordableBuyRecommendations = useMemo(() => {
     if (!selectedManagerBudget || !league?.marketRecommendations) return [];
-    const budget = selectedManagerBudget.availableBudget ?? selectedManagerBudget.budget ?? 0;
     return league.marketRecommendations
-      .filter((p) => p.buyRecommended && (p.marketValue || 0) <= budget)
+      .filter((p) => p.buyRecommended && (p.marketValue || 0) <= netBudgetAfterReserve)
       .slice(0, 5);
-  }, [selectedManagerBudget, league]);
+  }, [selectedManagerBudget, league, netBudgetAfterReserve]);
 
-  // Wenn sich die aktive Liga aendert (oder Daten neu laden), automatisch
-  // den ersten Manager mit einem tatsaechlich vorhandenen Kader auswaehlen.
+  // "Verkaufe X, dann kannst du dir auch noch Y leisten": pro Verkaufs-
+  // empfehlung im eigenen Kader wird geprueft, welches zusaetzliche Budget
+  // dieser eine Verkauf freigeben wuerde und welche (bisher nicht leistbaren)
+  // Kaufempfehlungen dadurch neu in Reichweite kommen.
+  const sellUnlockOpportunities = useMemo(() => {
+    if (!league?.marketRecommendations) return [];
+    const alreadyAffordableIds = new Set(affordableBuyRecommendations.map((p) => p.playerId));
+    const sellCandidates = currentSquad.filter((p) => p.sellRecommended);
+
+    return sellCandidates
+      .map((sellPlayer) => {
+        const budgetAfterSale = netBudgetAfterReserve + (sellPlayer.marketValue || 0);
+        const unlocked = league.marketRecommendations
+          .filter((p) => p.buyRecommended && !alreadyAffordableIds.has(p.playerId) && (p.marketValue || 0) <= budgetAfterSale)
+          .slice(0, 3);
+        return { sellPlayer, budgetAfterSale, unlocked };
+      })
+      .filter((entry) => entry.unlocked.length > 0);
+  }, [currentSquad, league, netBudgetAfterReserve, affordableBuyRecommendations]);
+
+  // Wenn sich die aktive Liga aendert (oder Daten neu laden): der eigene
+  // Account (per profile.kickbaseId verknuepft) hat immer Vorrang, damit der
+  // Kader-Tab standardmaessig den eigenen Kader zeigt. Nur falls kein eigener
+  // Kader gefunden wird (z.B. noch nicht verknuepft), faellt es auf den
+  // ersten verfuegbaren Manager zurueck.
   useEffect(() => {
     const managerIds = Object.keys(effectiveManagerSquads);
-    if (managerIds.length && !managerIds.includes(selectedManagerId)) {
+    if (!managerIds.length) {
+      if (selectedManagerId) setSelectedManagerId('');
+      return;
+    }
+    if (profile?.kickbaseId && managerIds.includes(profile.kickbaseId)) {
+      if (selectedManagerId !== profile.kickbaseId) setSelectedManagerId(profile.kickbaseId);
+      return;
+    }
+    if (!managerIds.includes(selectedManagerId)) {
       setSelectedManagerId(managerIds[0]);
-    } else if (!managerIds.length && selectedManagerId) {
-      setSelectedManagerId('');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [effectiveManagerSquads]);
+  }, [effectiveManagerSquads, profile?.kickbaseId]);
 
   if (!isAdmin) {
     return (
@@ -1079,7 +1183,7 @@ const Advisor = () => {
 
             {league && sectionTab === 'budgets' && (
               <>
-                <h2 className="text-[1.2rem] font-black text-[#f8fafc] mb-4 tracking-tight uppercase">Manager-Budgets (geschätzt)</h2>
+                <h2 className="text-lg font-semibold text-white mb-4">Manager-Budgets (geschätzt)</h2>
                 {league.budgets?.length ? (
                   <div className="mb-10">
                     {league.budgets.map((entry, index) => (
@@ -1095,7 +1199,7 @@ const Advisor = () => {
             {league && sectionTab === 'market' && (
               <>
                 <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-                  <h2 className="text-[1.2rem] font-black text-[#f8fafc] tracking-tight uppercase">Markt-Empfehlungen</h2>
+                  <h2 className="text-lg font-semibold text-white">Markt-Empfehlungen</h2>
                   <span className="text-[10px] text-[#8b92a5]">{filteredMarket.length} von {league.marketRecommendations?.length || 0} Spielern</span>
                 </div>
                 {league.marketRecommendations?.length ? (
@@ -1117,20 +1221,23 @@ const Advisor = () => {
               </>
             )}
 
-            {/* Kader-Empfehlungen: eigener Tab, damit sie nicht in einer
-                langen Seite untergehen. Fuer JEDEN Manager der Liga
-                verfuegbar (siehe backend/advisor/run_advisor.py::build_manager_squads_payload).
-                Admins koennen hier durchschalten, was ein beliebiger Manager
-                an personalisierten Empfehlungen sehen wuerde. Immer
-                sichtbar (auch mit alten/unvollstaendigen Daten, siehe
-                effectiveManagerSquads/resolvedManagers oben), zeigt sonst
-                einen klaren Hinweis statt einfach zu verschwinden. */}
+            {/* Kader-Empfehlungen: standardmaessig IMMER der eigene Account
+                (per profile.kickbaseId verknuepft, siehe Auto-Auswahl-Effekt
+                oben). Das Durchschalten anderer Manager (fuer JEDEN Manager
+                der Liga verfuegbar, siehe
+                backend/advisor/run_advisor.py::build_manager_squads_payload)
+                bleibt als eingeklappte Test-/Debug-Option fuer Admins
+                erhalten. Immer sichtbar (auch mit alten/unvollstaendigen
+                Daten, siehe effectiveManagerSquads/resolvedManagers oben),
+                zeigt sonst einen klaren Hinweis statt einfach zu verschwinden. */}
             {league && sectionTab === 'squad' && (
               <>
                 <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                   <div>
-                    <h2 className="text-[1.2rem] font-black text-[#f8fafc] tracking-tight uppercase">Kader-Empfehlungen</h2>
-                    <p className="text-[10px] text-[#8b92a5] mt-1">Personalisiert pro Manager - jeder Nutzer sieht (später) nur seinen eigenen Kader.</p>
+                    <h2 className="text-lg font-semibold text-white">Kader-Empfehlungen</h2>
+                    <p className="text-[10px] text-[#8b92a5] mt-1">
+                      {profile?.kickbaseId && selectedManagerId === profile.kickbaseId ? 'Dein Kader mit Kauf-/Verkaufsempfehlungen.' : 'Personalisiert pro Manager.'}
+                    </p>
                   </div>
                   {resolvedManagers.length > 0 && (
                     <span className="text-[10px] text-[#8b92a5]">{filteredSquad.length} von {(effectiveManagerSquads[selectedManagerId] || []).length} Spielern</span>
@@ -1138,36 +1245,80 @@ const Advisor = () => {
                 </div>
                 {resolvedManagers.length > 0 ? (
                   <>
-                    <select
-                      value={selectedManagerId}
-                      onChange={(e) => setSelectedManagerId(e.target.value)}
-                      className="w-full bg-[#171717] border border-[#2e2e2e] rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-cyan-500 mb-4"
+                    <button
+                      onClick={() => setShowManagerSwitcher((v) => !v)}
+                      className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[#8b92a5] hover:text-white transition-colors mb-3"
                     >
-                      {resolvedManagers.map((m) => (
-                        <option key={m.id} value={m.id} disabled={!effectiveManagerSquads[m.id]?.length}>
-                          {m.name}{!effectiveManagerSquads[m.id]?.length ? ' (kein Kader gefunden)' : ''}
-                        </option>
-                      ))}
-                    </select>
+                      <ChevronDown size={12} className={`transition-transform ${showManagerSwitcher ? 'rotate-180' : ''}`} />
+                      Testweise anderen Manager anzeigen
+                    </button>
+                    {showManagerSwitcher && (
+                      <select
+                        value={selectedManagerId}
+                        onChange={(e) => setSelectedManagerId(e.target.value)}
+                        className="w-full bg-[#171717] border border-[#2e2e2e] rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-cyan-500 mb-4"
+                      >
+                        {resolvedManagers.map((m) => (
+                          <option key={m.id} value={m.id} disabled={!effectiveManagerSquads[m.id]?.length}>
+                            {m.name}{!effectiveManagerSquads[m.id]?.length ? ' (kein Kader gefunden)' : ''}{m.id === profile?.kickbaseId ? ' (Du)' : ''}
+                          </option>
+                        ))}
+                      </select>
+                    )}
 
                     {selectedManagerBudget && (
                       <div className="bg-[#000] border border-[#2e2e2e] rounded-xl p-4 mb-4">
                         <div className="text-[9px] font-black uppercase tracking-widest text-[#8b92a5] mb-2">Verfügbares Budget</div>
-                        <div className="text-lg font-black text-white mb-3">{formatMoney(selectedManagerBudget.availableBudget ?? selectedManagerBudget.budget)}</div>
-                        {affordableBuyRecommendations.length > 0 ? (
-                          <>
-                            <div className="text-[9px] font-black uppercase tracking-widest text-green-400 mb-2">Damit leistbare Kaufempfehlungen</div>
-                            <div className="space-y-1.5">
-                              {affordableBuyRecommendations.map((p, i) => (
-                                <div key={`${p.playerId}-${i}`} className="flex items-center justify-between text-xs bg-[#171717] border border-[#2e2e2e] rounded-lg px-3 py-2">
-                                  <span className="text-gray-200 font-bold truncate">{p.firstName ? `${p.firstName} ${p.name}` : p.name}</span>
-                                  <span className="text-[#8b92a5] shrink-0 ml-2">{formatMoney(p.marketValue)}</span>
+                        <div className="text-lg font-black text-white">{formatMoney(rawBudget)}</div>
+
+                        {Object.keys(squadMissing).length > 0 && (
+                          <div className="flex items-start gap-2 mt-3 bg-orange-500/10 border border-orange-500/30 rounded-lg px-3 py-2">
+                            <AlertTriangle size={14} className="text-orange-400 shrink-0 mt-0.5" />
+                            <div className="text-[10px] text-orange-300 leading-relaxed">
+                              Kader wäre ohne Nachbesetzung nicht startelf-fähig (fehlt: {Object.entries(squadMissing).map(([pos, n]) => `${n}x ${POSITION_LABELS[pos] || pos}`).join(', ')}).
+                              {' '}Dafür reserviert: <span className="font-bold text-orange-200">{formatMoney(squadReserveInfo.reserve)}</span> → frei nutzbar: <span className="font-bold text-orange-200">{formatMoney(Math.max(0, netBudgetAfterReserve))}</span>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="mt-3">
+                          {affordableBuyRecommendations.length > 0 ? (
+                            <>
+                              <div className="text-[9px] font-black uppercase tracking-widest text-green-400 mb-2">Damit leistbare Kaufempfehlungen</div>
+                              <div className="space-y-1.5">
+                                {affordableBuyRecommendations.map((p, i) => (
+                                  <div key={`${p.playerId}-${i}`} className="flex items-center justify-between text-xs bg-[#171717] border border-[#2e2e2e] rounded-lg px-3 py-2">
+                                    <span className="text-gray-200 font-bold truncate">{p.firstName ? `${p.firstName} ${p.name}` : p.name}</span>
+                                    <span className="text-[#8b92a5] shrink-0 ml-2">{formatMoney(p.marketValue)}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </>
+                          ) : (
+                            <div className="text-[10px] text-[#8b92a5]">Aktuell keine passende, leistbare Kaufempfehlung auf dem Markt.</div>
+                          )}
+                        </div>
+
+                        {sellUnlockOpportunities.length > 0 && (
+                          <div className="mt-4 pt-3 border-t border-[#2e2e2e]">
+                            <div className="text-[9px] font-black uppercase tracking-widest text-cyan-400 mb-2">Verkaufen schafft zusätzlichen Spielraum</div>
+                            <div className="space-y-2">
+                              {sellUnlockOpportunities.map(({ sellPlayer, budgetAfterSale, unlocked }, i) => (
+                                <div key={`${sellPlayer.playerId}-${i}`} className="bg-[#171717] border border-[#2e2e2e] rounded-lg px-3 py-2">
+                                  <div className="text-[10px] text-gray-300">
+                                    Verkaufe <span className="font-bold text-white">{sellPlayer.firstName ? `${sellPlayer.firstName} ${sellPlayer.name}` : sellPlayer.name}</span> ({formatMoney(sellPlayer.marketValue)}) → {formatMoney(budgetAfterSale)} verfügbar
+                                  </div>
+                                  <div className="flex flex-wrap gap-1.5 mt-1.5">
+                                    {unlocked.map((p, j) => (
+                                      <span key={`${p.playerId}-${j}`} className="text-[9px] font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 rounded px-1.5 py-0.5">
+                                        {p.firstName ? `${p.firstName} ${p.name}` : p.name}
+                                      </span>
+                                    ))}
+                                  </div>
                                 </div>
                               ))}
                             </div>
-                          </>
-                        ) : (
-                          <div className="text-[10px] text-[#8b92a5]">Aktuell keine passende, leistbare Kaufempfehlung auf dem Markt.</div>
+                          </div>
                         )}
                       </div>
                     )}
@@ -1198,7 +1349,7 @@ const Advisor = () => {
               <>
                 <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                   <div>
-                    <h2 className="text-[1.2rem] font-black text-[#f8fafc] tracking-tight uppercase">Alle Spieler durchsuchen</h2>
+                    <h2 className="text-lg font-semibold text-white">Alle Spieler durchsuchen</h2>
                     <p className="text-[10px] text-[#8b92a5] mt-1">Marktwert-Prognose für die komplette Bundesliga, unabhängig davon, ob gerade jemand verkauft.</p>
                   </div>
                   <span className="text-[10px] text-[#8b92a5]">{filteredDb.length} von {data.players?.length || 0} Spielern</span>
@@ -1236,7 +1387,7 @@ const Advisor = () => {
               <>
                 <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                   <div>
-                    <h2 className="text-[1.2rem] font-black text-[#f8fafc] tracking-tight uppercase flex items-center gap-2">
+                    <h2 className="text-lg font-semibold text-white flex items-center gap-2">
                       <Star size={16} className="text-yellow-500" fill="currentColor" />
                       Favoriten
                     </h2>

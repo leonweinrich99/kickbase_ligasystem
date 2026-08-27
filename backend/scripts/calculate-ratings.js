@@ -55,8 +55,9 @@ function openPositionConfidence(buyDate, now = new Date()) {
 // negatives/knappes Budget sind ein echtes Risiko: es bleibt kaum Spielraum, die
 // Lücke ohne Not-Verkäufe (und damit potenziell schlechte Preise) zu schließen -
 // unabhängig davon, wie gut die bisherigen Trades gelaufen sind.
-const SQUAD_MIN_POSITIONS = { TW: 1, ABW: 3, MF: 2, ST: 1 };
-const SQUAD_MIN_TOTAL = 11;
+// SQUAD_MIN_POSITIONS/SQUAD_MIN_TOTAL leben zentral in ../squadRules.js (auch
+// vom Trading Advisor Budget-Check genutzt, siehe frontend/src/squadRules.js).
+const { computeSquadReadiness } = require('../squadRules');
 const NEGATIVE_BUDGET_PENALTY_PER_MIO = 0.4; // pro 1 Mio. im Minus, gedeckelt
 const MAX_SQUAD_RISK_PENALTY = 20;
 
@@ -70,21 +71,6 @@ function parseSignedMoney(val) {
     const cleaned = val.toString().replace(/[^0-9-]/g, '');
     const parsed = parseInt(cleaned, 10);
     return Number.isFinite(parsed) ? parsed : 0;
-}
-
-// 0 (kein brauchbarer Kader) bis 1 (startelf-fähig): Flaschenhals-Prinzip - sowohl
-// die Mindestbesetzung JEDER Position als auch die Gesamtzahl müssen stimmen, ein
-// Kader mit 3 Torhütern aber nur 2 Abwehrspielern ist trotz 9 Spielern nicht bereit.
-function computeSquadReadiness(positionCounts, totalCount) {
-    let required = 0;
-    let satisfied = 0;
-    for (const [pos, need] of Object.entries(SQUAD_MIN_POSITIONS)) {
-        required += need;
-        satisfied += Math.min(positionCounts[pos] || 0, need);
-    }
-    const positionalReadiness = required > 0 ? satisfied / required : 1;
-    const totalReadiness = Math.min(1, totalCount / SQUAD_MIN_TOTAL);
-    return Math.min(positionalReadiness, totalReadiness);
 }
 
 // -20 (leerer/nicht finanzierbarer Kader) bis 0 (startelf-fähig, solventes Budget).

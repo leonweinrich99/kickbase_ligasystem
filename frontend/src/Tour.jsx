@@ -72,11 +72,10 @@ export const TOUR_STEPS = [
     text: 'Tippe hier, um dir die stärkste mögliche Elf des Spieltags live anzuzeigen.'
   },
   {
-    path: '/archiv',
+    path: '/archiv/optimale-elf',
     selector: '[data-tour="optimal-team-pitch"]',
     title: 'Die optimale Elf',
-    text: 'Hier siehst du die stärkste mögliche Formation inklusive Gesamtpunkten und verbleibendem Budget.',
-    forceOptimalTeamOpen: true
+    text: 'Hier siehst du die stärkste mögliche Formation inklusive Gesamtpunkten und verbleibendem Budget.'
   },
   {
     path: '/archiv',

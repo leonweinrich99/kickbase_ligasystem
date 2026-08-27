@@ -8,6 +8,7 @@ import AdminPanel from './AdminPanel';
 import Advisor from './Advisor';
 import Account from './Account';
 import Profile from './Profile';
+import ManagerRatingPage from './ManagerRatingPage';
 import Reminders from './Reminders';
 import TabBar from './TabBar';
 import ScrollToTop from './ScrollToTop';
@@ -47,6 +48,7 @@ function App() {
                   <Route path="/admin/advisor" element={<Advisor />} />
                   <Route path="/account" element={<Account />} />
                   <Route path="/account/profile" element={<Profile />} />
+                  <Route path="/account/manager-rating" element={<ManagerRatingPage />} />
                   <Route path="/account/reminders" element={<Reminders />} />
 
                   {/* Archiv: eingefrorener Stand der Qualifikationsrunde 25/26 (nur Lesezugriff) */}

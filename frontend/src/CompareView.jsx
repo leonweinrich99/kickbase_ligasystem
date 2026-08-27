@@ -1,15 +1,16 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { 
-  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, 
+  LineChart, Line, BarChart, Bar, XAxis, YAxis, 
   ResponsiveContainer, ReferenceArea, Legend, LabelList 
 } from 'recharts';
 import { 
   TrendingUp, TrendingDown, Target, 
-  Award, Wallet, Activity, Star, Zap
+  Award, Wallet, Activity, Zap
 } from 'lucide-react';
 import { useBackNavigation } from './useBackNavigation';
 import { BackButton } from './ui/CloseButton';
+import ManagerAvatar from './ui/ManagerAvatar';
 
 const calculatePerformanceScore = (points, avg, opt, max) => {
   if (points <= 0) return 1.0;
@@ -216,79 +217,36 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto pb-20 px-0 relative">
+    <div className="max-w-[1000px] mx-auto pb-20 px-0 relative">
       
       {/* Back Button */}
-      <div className="mb-8">
+      <div className="mb-6">
         <BackButton onClick={goBack} />
       </div>
 
-      {/* Duel Header Desktop */}
-      <div className="hidden sm:flex justify-between items-center card-surface rounded-3xl p-8 mb-10 shadow-lg relative overflow-hidden">
-         <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-[#2e2e2e] px-6 py-1 rounded-b-xl text-xs font-black tracking-widest uppercase text-gray-300 z-10">
-            Head to Head
-         </div>
-         <div className="absolute inset-0 bg-gradient-to-r from-[#ff5c3e]/10 via-transparent to-[#3b82f6]/10 opacity-30"></div>
-         
-         <div className="flex items-center gap-6 z-10 w-2/5">
-             <div className="w-20 h-20 rounded-2xl bg-[#000000] border-2 border-[#ff5c3e] flex items-center justify-center relative shadow-xl overflow-hidden shrink-0">
-                 <Star className="text-[#ff5c3e] opacity-20 absolute -right-3 -bottom-3 w-16 h-16 rotate-12" />
-                 <div className="text-3xl font-black text-[#ff5c3e] z-10">{user1.name.charAt(0)}</div>
-             </div>
-             <div>
-                <h1 className="text-2xl font-black tracking-tight uppercase text-white">{user1.name}</h1>
-                <div className="text-sm font-bold text-[#ff5c3e] uppercase tracking-widest mt-1">Rank #{user1.rank}</div>
+      {/* Duel Header - kartenlos, wie Advisor::PlayerDetailView */}
+      <div className="flex items-center justify-between mb-8 sm:mb-10 gap-2 sm:gap-6">
+         <div className="flex flex-col sm:flex-row items-center sm:items-center gap-2 sm:gap-4 w-[42%] sm:w-2/5 min-w-0">
+             <ManagerAvatar name={user1.name} size={64} ringColor="#ff5c3e" />
+             <div className="min-w-0 text-center sm:text-left">
+                <h1 className="text-sm sm:text-2xl font-semibold tracking-tight text-white truncate">{user1.name}</h1>
+                <div className="text-[10px] sm:text-sm font-medium text-[#ff5c3e] mt-0.5">Rank #{user1.rank}</div>
              </div>
          </div>
          
-         <div className="text-4xl font-black text-[#2e2e2e] opacity-50 italic z-10">VS</div>
+         <div className="text-lg sm:text-3xl font-black text-[#2e2e2e] italic shrink-0">VS</div>
          
-         <div className="flex items-center gap-6 z-10 w-2/5 justify-end text-right">
-             <div>
-                <h1 className="text-2xl font-black tracking-tight uppercase text-white">{user2.name}</h1>
-                <div className="text-sm font-bold text-[#3b82f6] uppercase tracking-widest mt-1">Rank #{user2.rank}</div>
-             </div>
-             <div className="w-20 h-20 rounded-2xl bg-[#000000] border-2 border-[#3b82f6] flex items-center justify-center relative shadow-xl overflow-hidden shrink-0">
-                 <Star className="text-[#3b82f6] opacity-20 absolute -left-3 -bottom-3 w-16 h-16 -rotate-12" />
-                 <div className="text-3xl font-black text-[#3b82f6] z-10">{user2.name.charAt(0)}</div>
-             </div>
-         </div>
-      </div>
-
-      {/* Duel Header Mobile */}
-      <div className="sm:hidden flex flex-col items-center card-surface rounded-3xl p-5 mb-8 shadow-lg relative overflow-hidden text-center gap-4">
-         <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-[#2e2e2e] px-4 py-0.5 rounded-b-lg text-[9px] font-black tracking-widest uppercase text-gray-300 z-10">
-            Head to Head
-         </div>
-         <div className="absolute inset-0 bg-gradient-to-b from-[#ff5c3e]/10 via-transparent to-[#3b82f6]/10 opacity-30"></div>
-
-         <div className="flex justify-between items-center w-full z-10 mt-3">
-             <div className="flex flex-col items-center w-[40%] gap-2">
-                 <div className="w-14 h-14 rounded-xl bg-[#000000] border-2 border-[#ff5c3e] flex items-center justify-center relative shadow-xl overflow-hidden shrink-0">
-                    <div className="text-xl font-black text-[#ff5c3e] z-10">{user1.name.charAt(0)}</div>
-                 </div>
-                 <div>
-                    <h1 className="text-[13px] font-black tracking-tight uppercase text-white leading-tight break-all">{user1.name}</h1>
-                    <div className="text-[10px] font-bold text-[#ff5c3e] uppercase tracking-widest mt-0.5">Rank #{user1.rank}</div>
-                 </div>
-             </div>
-             
-             <div className="text-2xl font-black text-[#2e2e2e] opacity-60 italic shrink-0 w-[20%]">VS</div>
-             
-             <div className="flex flex-col items-center w-[40%] gap-2">
-                 <div className="w-14 h-14 rounded-xl bg-[#000000] border-2 border-[#3b82f6] flex items-center justify-center relative shadow-xl overflow-hidden shrink-0">
-                    <div className="text-xl font-black text-[#3b82f6] z-10">{user2.name.charAt(0)}</div>
-                 </div>
-                 <div>
-                    <h1 className="text-[13px] font-black tracking-tight uppercase text-white leading-tight break-all">{user2.name}</h1>
-                    <div className="text-[10px] font-bold text-[#3b82f6] uppercase tracking-widest mt-0.5">Rank #{user2.rank}</div>
-                 </div>
+         <div className="flex flex-col sm:flex-row-reverse items-center sm:items-center gap-2 sm:gap-4 w-[42%] sm:w-2/5 justify-end min-w-0">
+             <ManagerAvatar name={user2.name} size={64} ringColor="#3b82f6" />
+             <div className="min-w-0 text-center sm:text-right">
+                <h1 className="text-sm sm:text-2xl font-semibold tracking-tight text-white truncate">{user2.name}</h1>
+                <div className="text-[10px] sm:text-sm font-medium text-[#3b82f6] mt-0.5">Rank #{user2.rank}</div>
              </div>
          </div>
       </div>
 
       {/* Stats Duel View */}
-      <div className="flex flex-col gap-3 sm:gap-4 mb-8">
+      <div className="flex flex-col divide-y divide-[#2a2a2a] mb-10">
          <DuelStatRow 
             icon={<Award />} 
             label="Gesamtpunkte" 
@@ -327,76 +285,67 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <div className="card-surface rounded-2xl p-4 sm:p-6 shadow-lg">
-          <div className="flex justify-between items-center mb-4 sm:mb-6">
-            <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Platzierungsverlauf</h3>
-          </div>
-          <div className="h-[200px] sm:h-[250px] w-full">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10">
+        <div>
+          <h3 className="text-sm font-semibold text-white mb-4">Platzierungsverlauf</h3>
+          <div className="h-[200px] sm:h-[220px] w-full">
             {historyLoading ? (
-              <div className="w-full h-full rounded-xl bg-[#1f1f1f] animate-pulse"></div>
+              <div className="w-full h-full rounded-xl bg-[#0a0a0a] animate-pulse"></div>
             ) : (
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={historyWithScores} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2e2e2e" vertical={false} />
                 <XAxis dataKey="matchday" stroke="#4b5563" fontSize={10} tickLine={false} axisLine={false} tickFormatter={val => `ST ${val}`} />
                 <YAxis reversed stroke="#4b5563" fontSize={10} tickLine={false} axisLine={false} domain={[1, 30]} ticks={[1, 5, 10, 15, 20, 25, 30]} />
-                <ReferenceArea y1={1} y2={9} fill="#4ba6ff" fillOpacity={0.12} stroke="none" />
-                <ReferenceArea y1={9} y2={18} fill="#ff5c3e" fillOpacity={0.12} stroke="none" />
-                <ReferenceArea y1={18} y2={30} fill="#22c55e" fillOpacity={0.12} stroke="none" />
+                <ReferenceArea y1={1} y2={9} fill="#4ba6ff" fillOpacity={0.1} stroke="none" />
+                <ReferenceArea y1={9} y2={18} fill="#ff5c3e" fillOpacity={0.1} stroke="none" />
+                <ReferenceArea y1={18} y2={30} fill="#22c55e" fillOpacity={0.1} stroke="none" />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
                 
-                <Line type="monotone" dataKey="p1Rank" name={user1.name} stroke="#ff5c3e" strokeWidth={3} dot={<CustomizedDot />} activeDot={{ r: 8, strokeWidth: 0 }} animationDuration={1500} />
-                <Line type="monotone" dataKey="p2Rank" name={user2.name} stroke="#3b82f6" strokeWidth={3} dot={<CustomizedDot />} activeDot={{ r: 8, strokeWidth: 0 }} animationDuration={1500} />
+                <Line type="monotone" dataKey="p1Rank" name={user1.name} stroke="#ff5c3e" strokeWidth={2.5} dot={<CustomizedDot />} activeDot={{ r: 8, strokeWidth: 0 }} animationDuration={1500} />
+                <Line type="monotone" dataKey="p2Rank" name={user2.name} stroke="#3b82f6" strokeWidth={2.5} dot={<CustomizedDot />} activeDot={{ r: 8, strokeWidth: 0 }} animationDuration={1500} />
               </LineChart>
             </ResponsiveContainer>
             )}
           </div>
         </div>
 
-        <div className="card-surface rounded-2xl p-4 sm:p-6 shadow-lg">
-          <div className="flex justify-between items-center mb-4 sm:mb-6">
-            <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Performance Index</h3>
-          </div>
-          <div className="h-[200px] sm:h-[250px] w-full">
+        <div>
+          <h3 className="text-sm font-semibold text-white mb-4">Performance Index</h3>
+          <div className="h-[200px] sm:h-[220px] w-full">
             {historyLoading ? (
-              <div className="w-full h-full rounded-xl bg-[#1f1f1f] animate-pulse"></div>
+              <div className="w-full h-full rounded-xl bg-[#0a0a0a] animate-pulse"></div>
             ) : (
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={historyWithScores} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2e2e2e" vertical={false} />
                 <XAxis dataKey="matchday" stroke="#4b5563" fontSize={10} tickLine={false} axisLine={false} tickFormatter={val => `ST ${val}`} />
                 <YAxis stroke="#4b5563" fontSize={10} tickLine={false} axisLine={false} domain={[1, 10]} ticks={[1, 3, 5, 7, 10]} />
-                <ReferenceArea y1={8} y2={10} fill="#22c55e" fillOpacity={0.1} stroke="none" />
+                <ReferenceArea y1={8} y2={10} fill="#22c55e" fillOpacity={0.08} stroke="none" />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
                 
-                <Line type="monotone" dataKey="p1Score" name={user1.name} stroke="#ff5c3e" strokeWidth={3} dot={<CustomizedDot />} activeDot={{ r: 8, strokeWidth: 0 }} animationDuration={1500} />
-                <Line type="monotone" dataKey="p2Score" name={user2.name} stroke="#3b82f6" strokeWidth={3} dot={<CustomizedDot />} activeDot={{ r: 8, strokeWidth: 0 }} animationDuration={1500} />
+                <Line type="monotone" dataKey="p1Score" name={user1.name} stroke="#ff5c3e" strokeWidth={2.5} dot={<CustomizedDot />} activeDot={{ r: 8, strokeWidth: 0 }} animationDuration={1500} />
+                <Line type="monotone" dataKey="p2Score" name={user2.name} stroke="#3b82f6" strokeWidth={2.5} dot={<CustomizedDot />} activeDot={{ r: 8, strokeWidth: 0 }} animationDuration={1500} />
               </LineChart>
             </ResponsiveContainer>
             )}
           </div>
         </div>
 
-        <div className="card-surface rounded-2xl p-4 sm:p-6 shadow-lg">
-          <div className="flex justify-between items-center mb-4 sm:mb-6">
-            <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#8b92a5]">Spieltags-Leistung</h3>
-            <div className="flex items-center">
-                <button 
-                  onClick={() => setShowAverage(!showAverage)}
-                  className={`px-3 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase transition-all border shadow-lg ${showAverage ? 'bg-[#ff5c3e]/20 border-[#ff5c3e] text-[#ff5c3e]' : 'bg-[#1f1f1f] border-[#2e2e2e] text-[#8b92a5]'}`}
-                >
-                  Ø Ligaschnitt
-                </button>
-            </div>
+        <div className="lg:col-span-2">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-sm font-semibold text-white">Spieltags-Leistung</h3>
+            <button 
+              onClick={() => setShowAverage(!showAverage)}
+              className={`text-[10px] font-semibold pb-0.5 border-b-2 transition-colors ${showAverage ? 'text-[#ff5c3e] border-[#ff5c3e]' : 'text-[#6b7280] border-transparent hover:text-gray-300'}`}
+            >
+              Ø Ligaschnitt
+            </button>
           </div>
-          <div className="h-[200px] sm:h-[250px] w-full mt-4">
+          <div className="h-[200px] sm:h-[220px] w-full mt-4">
             {historyLoading ? (
-              <div className="w-full h-full rounded-xl bg-[#1f1f1f] animate-pulse"></div>
+              <div className="w-full h-full rounded-xl bg-[#0a0a0a] animate-pulse"></div>
             ) : (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={historyWithScores} margin={{ top: 20, right: 5, left: -25, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2e2e2e" vertical={false} />
                 <XAxis 
                   dataKey="matchday" 
                   stroke="#4b5563" 
@@ -446,39 +395,34 @@ const DuelStatRow = ({ icon, label, val1, val2, isScore, loading }) => {
     const p2Wins = !loading && num2 > num1;
 
     return (
-        <div className="card-surface rounded-2xl p-4 flex items-center shadow-sm relative overflow-hidden group hover:border-[#404040] transition-all">
-            
-            {/* Background Color Indication (Subtle) */}
-            <div className={`absolute top-0 left-0 bottom-0 w-1/2 opacity-10 transition-colors ${p1Wins ? 'bg-green-500' : p2Wins ? 'bg-red-500' : ''}`}></div>
-            <div className={`absolute top-0 right-0 bottom-0 w-1/2 opacity-10 transition-colors ${p2Wins ? 'bg-green-500' : p1Wins ? 'bg-red-500' : ''}`}></div>
-
-            <div className="w-full flex justify-between items-center relative z-10">
+        <div className="flex items-center py-4">
+            <div className="w-full flex justify-between items-center">
                 {/* User 1 Value */}
-                <div className={`w-[30%] text-left flex flex-col justify-center ${p1Wins ? 'text-green-500' : p2Wins ? 'text-gray-400' : 'text-gray-200'}`}>
+                <div className={`w-[30%] text-left flex flex-col justify-center ${p1Wins ? 'text-green-500' : p2Wins ? 'text-gray-500' : 'text-gray-200'}`}>
                     {loading ? (
-                      <div className="h-5 sm:h-7 w-10 rounded bg-[#1f1f1f] animate-pulse"></div>
+                      <div className="h-5 sm:h-7 w-10 rounded bg-[#0a0a0a] animate-pulse"></div>
                     ) : (
-                      <span className="text-sm sm:text-2xl font-black truncate">{val1}{isScore && <span className="text-[10px] ml-1 opacity-50">/ 10</span>}</span>
+                      <span className="text-lg sm:text-2xl font-semibold truncate">{val1}{isScore && <span className="text-[10px] ml-1 opacity-50">/ 10</span>}</span>
                     )}
                     {p1Wins && <span className="text-[9px] font-bold uppercase tracking-widest mt-0.5 opacity-80 hidden sm:block">Führend</span>}
                 </div>
 
                 {/* Center Label */}
-                <div className="w-[40%] flex flex-col items-center justify-center border-x border-[#2e2e2e] px-2 border-opacity-50">
-                    <div className="bg-[#1f1f1f] p-1.5 rounded-lg mb-1.5 text-gray-400 group-hover:scale-110 transition-transform group-hover:text-white">
+                <div className="w-[40%] flex flex-col items-center justify-center px-2">
+                    <div className="text-[#8b92a5] mb-1.5">
                         {React.cloneElement(icon, { size: 16 })}
                     </div>
-                    <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-[#8b92a5] text-center leading-tight">
+                    <span className="text-[8px] sm:text-[10px] font-bold uppercase tracking-widest text-[#8b92a5] text-center leading-tight">
                         {label}
                     </span>
                 </div>
 
                 {/* User 2 Value */}
-                <div className={`w-[30%] text-right flex flex-col justify-center ${p2Wins ? 'text-green-500' : p1Wins ? 'text-gray-400' : 'text-gray-200'}`}>
+                <div className={`w-[30%] text-right flex flex-col justify-center ${p2Wins ? 'text-green-500' : p1Wins ? 'text-gray-500' : 'text-gray-200'}`}>
                     {loading ? (
-                      <div className="h-5 sm:h-7 w-10 rounded bg-[#1f1f1f] animate-pulse ml-auto"></div>
+                      <div className="h-5 sm:h-7 w-10 rounded bg-[#0a0a0a] animate-pulse ml-auto"></div>
                     ) : (
-                      <span className="text-sm sm:text-2xl font-black truncate">{val2}{isScore && <span className="text-[10px] ml-1 opacity-50">/ 10</span>}</span>
+                      <span className="text-lg sm:text-2xl font-semibold truncate">{val2}{isScore && <span className="text-[10px] ml-1 opacity-50">/ 10</span>}</span>
                     )}
                     {p2Wins && <span className="text-[9px] font-bold uppercase tracking-widest mt-0.5 opacity-80 hidden sm:block">Führend</span>}
                 </div>

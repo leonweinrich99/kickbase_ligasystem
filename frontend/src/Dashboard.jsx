@@ -4,14 +4,7 @@ import { Users, Star, Trophy, Info, ChevronLeft, ChevronRight, TrendingUp, Trend
 import logo from './assets/logo.png';
 import PageHeader from './ui/PageHeader';
 import CloseButton from './ui/CloseButton';
-
-export const AvatarIcon = ({ name }) => {
-  return (
-    <div className="w-full h-full flex items-center justify-center bg-[#1f1f1f] text-[#ff5c3e] font-black text-xs uppercase">
-      {name?.charAt(0) || '?'}
-    </div>
-  );
-};
+import ManagerAvatar from './ui/ManagerAvatar';
 
 export const TrophyIcon = ({ type }) => {
   const colors = { gold: '#eab308', silver: '#94a3b8', bronze: '#ca8a04' };
@@ -28,7 +21,7 @@ export const Header = ({
   onNext,
   onPrev,
   mode = 'live',
-  onOpenOptimalTeam,
+  routeBase = '',
   onOpenTrueTableInfo
 }) => {
   const isTrueTable = currentView === 'wahre-tabelle';
@@ -58,8 +51,8 @@ export const Header = ({
         </div>
 
         {/* Right: Optimale-Elf-Badge (oben, wie die Pokal-Kachel) */}
-        <button
-          onClick={onOpenOptimalTeam}
+        <Link
+          to={`${routeBase}/optimale-elf`}
           data-tour="optimal-team-button"
           className="shrink-0 flex items-center gap-1.5 bg-[#171717] border border-[#ff5c3e]/40 hover:border-[#ff5c3e] transition-colors rounded-full pl-2.5 pr-3 py-1.5 shadow-lg active:scale-95 group mt-1"
         >
@@ -67,7 +60,7 @@ export const Header = ({
           <span className="text-[10px] font-bold text-gray-300 group-hover:text-white transition-colors whitespace-nowrap">
             Top Elf
           </span>
-        </button>
+        </Link>
       </div>
 
       {/* Bottom Row: Controls */}
@@ -144,8 +137,8 @@ export const UserRow = ({ item, color, isSaisonView, displayRank, prevRank, rout
         <div className="w-8 flex justify-center items-center text-xs font-bold text-[#8b92a5]">
           {item.isTrophy && isSaisonView ? <TrophyIcon type={item.trophyColor} /> : displayRank}
         </div>
-        <div className="w-10 h-10 rounded-full bg-[#1f1f1f] ml-2 flex items-center justify-center overflow-hidden border border-[#2e2e2e]">
-          <AvatarIcon name={item.name} />
+        <div className="w-10 h-10 rounded-full ml-2 overflow-hidden border border-[#2e2e2e]">
+          <ManagerAvatar name={item.name} size={40} />
         </div>
         <div className="ml-3 flex-1 flex flex-col justify-center min-w-0">
           <div className="flex items-center gap-2">
@@ -230,7 +223,7 @@ const TrueTableInfoModal = ({ onClose }) => (
 // mode 'archive' = altes Qualigruppen-Verhalten: alle Ligen zusammen global sortieren
 //                  und dann wieder in 3 Blöcke á 9 aufteilen (so wie es zur Quali lief).
 // mode 'live'     = neues Ligasystem: jede Liga läuft komplett unabhängig, eigenes Ranking.
-const Dashboard = ({ data, currentView, onNext, onPrev, prevRanks, mode = 'live', routeBase = '', onOpenOptimalTeam }) => {
+const Dashboard = ({ data, currentView, onNext, onPrev, prevRanks, mode = 'live', routeBase = '' }) => {
   const isTrueTable = currentView === 'wahre-tabelle';
   // "Die wahre Tabelle" zeigt immer die zuletzt geladenen Gesamt-Daten - für
   // Punkte-/Sortierzwecke verhält sie sich wie die Saisonansicht.
@@ -283,7 +276,7 @@ const Dashboard = ({ data, currentView, onNext, onPrev, prevRanks, mode = 'live'
         onNext={onNext}
         onPrev={onPrev}
         mode={mode}
-        onOpenOptimalTeam={onOpenOptimalTeam}
+        routeBase={routeBase}
         onOpenTrueTableInfo={() => setIsInfoOpen(true)}
       />
 
