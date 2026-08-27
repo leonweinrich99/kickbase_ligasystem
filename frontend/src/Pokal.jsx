@@ -49,15 +49,16 @@ const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}
       {/* Foto-Medaillons - gross, bluten an den Aussenkanten der Karte nach
           aussen (per overflow-hidden gekappt), nach innen bleibt der runde
           Fade sichtbar */}
-      <ManagerImageDetail name={isPlaceholderName(match.p1) ? null : match.p1} size={84} ringColor={color1} bleed="left" bleedPull={14} />
-      <ManagerImageDetail name={isPlaceholderName(match.p2) ? null : match.p2} size={84} ringColor={color2} bleed="right" bleedPull={14} />
+      <ManagerImageDetail name={isPlaceholderName(match.p1) ? null : match.p1} size={76} ringColor={color1} bleed="left" bleedPull={12} />
+      <ManagerImageDetail name={isPlaceholderName(match.p2) ? null : match.p2} size={76} ringColor={color2} bleed="right" bleedPull={12} />
 
       {/* Scrim am unteren Rand - garantiert lesbaren Namen unabhaengig vom Fotoinhalt */}
       <div className="absolute inset-x-0 bottom-0 h-9 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none z-[5]" />
 
-      {/* Ergebnis oben mittig - min-w reserviert genug Platz fuer den Arena-Modus,
-          dessen Punktestand auch mal vierstellig sein kann (z.B. 1354:1876) */}
-      <div className="absolute left-1/2 -translate-x-1/2 top-1.5 sm:top-2 z-10 flex flex-col items-center px-1 min-w-[44px] sm:min-w-[56px]">
+      {/* Ergebnis - mittig (horizontal UND vertikal) auf der Karte, min-w
+          reserviert genug Platz fuer den Arena-Modus, dessen Punktestand
+          auch mal vierstellig sein kann (z.B. 1354:1876) */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center px-1 min-w-[44px] sm:min-w-[56px]">
         <div className="text-[11px] sm:text-sm font-black whitespace-nowrap tabular-nums drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">
           <span className={isWinner1 ? 'text-green-400' : 'text-gray-200'}>{score1Display}</span>
           <span className="text-gray-400 mx-0.5">:</span>

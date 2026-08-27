@@ -303,13 +303,13 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
 
         {/* Name, Rang & grosses rundes Foto-Medaillon (Sichel-Look wie im
             Trading Advisor: Karte gut ausgefuellt, nach innen fadender
-            runder Ausschnitt). Eigener Block mit fester Mindesthoehe, damit
-            Foto & Text sauber zueinander ausgerichtet bleiben und nichts mit
-            dem Sticky-Header darueber oder dem Punkte-Block darunter kollidiert. */}
-        <div className="relative overflow-hidden min-h-[112px] sm:min-h-[136px] mb-3">
-          <ManagerImageDetail name={userData.name} ringColor={userData.leagueColor || '#ff5c3e'} size={200} bleed="right" />
+            runder Ausschnitt). Container-Hoehe entspricht der Bildgroesse
+            (sonst wuerde der Kreis oben/unten hart abgeschnitten, bevor der
+            Fade fertig ist - das war der Grund fuer den "komischen" Crop). */}
+        <div className="relative overflow-hidden min-h-[176px] mb-3">
+          <ManagerImageDetail name={userData.name} ringColor={userData.leagueColor || '#ff5c3e'} size={176} bleed="right" bleedPull={28} />
 
-          <div className="relative z-10 w-[60%] sm:w-[62%] min-h-[112px] sm:min-h-[136px] flex flex-col justify-center">
+          <div className="relative z-10 w-[60%] sm:w-[62%] min-h-[176px] flex flex-col justify-center">
             {mode !== 'archive' && userData.leagueName && (
               <span
                 className="inline-flex text-[10px] font-semibold uppercase tracking-wider rounded px-1.5 py-0.5 mb-1.5 w-fit"

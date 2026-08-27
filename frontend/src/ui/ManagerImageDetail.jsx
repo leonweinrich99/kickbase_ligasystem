@@ -49,13 +49,16 @@ export default function ManagerImageDetail({ name, photoURL, size = 160, ringCol
         alt={name || 'Avatar'}
         className="w-full h-full object-cover object-center relative z-10"
         style={{
-          // Vignette statt hartem Kreis-Rand: das Foto blendet schon VOR dem
-          // Rand des Kreises weich aus (Fade bleibt sichtbar/"cool"), statt
-          // scharf am Kreisrand abgeschnitten zu wirken. Zentrum bleibt
-          // sichtbar/scharf (dort ist meistens das eigentliche Gesicht),
-          // erst nach aussen hin wird kraeftig ausgeblendet.
-          WebkitMaskImage: 'radial-gradient(ellipse at 50% 50%, rgba(0,0,0,1) 38%, rgba(0,0,0,0) 92%)',
-          maskImage: 'radial-gradient(ellipse at 50% 50%, rgba(0,0,0,1) 38%, rgba(0,0,0,0) 92%)',
+          // Vignette statt hartem Kreis-Rand: WICHTIG ist "circle closest-side"
+          // (statt der CSS-Standardgroesse "farthest-corner") - nur so
+          // entspricht der 100%-Punkt des Gradienten exakt dem sichtbaren
+          // Kreisrand. Ohne das wurde der Fade nie wirklich transparent,
+          // bevor er vom Kreis-Clip hart abgeschnitten wurde (der eigentliche
+          // Bug hinter "Fade sieht komisch/abgeschnitten aus"). Zentrum bleibt
+          // sichtbar/scharf (dort ist meistens das eigentliche Gesicht), nach
+          // aussen wird kraeftig bis auf 0 ausgeblendet.
+          WebkitMaskImage: 'radial-gradient(circle closest-side at 50% 50%, rgba(0,0,0,1) 34%, rgba(0,0,0,0) 100%)',
+          maskImage: 'radial-gradient(circle closest-side at 50% 50%, rgba(0,0,0,1) 34%, rgba(0,0,0,0) 100%)',
         }}
         onError={() => setFailed(true)}
       />
