@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { useBackNavigation } from './useBackNavigation';
 import { BackButton } from './ui/CloseButton';
-import ManagerAvatar from './ui/ManagerAvatar';
+import ManagerImageDetail from './ui/ManagerImageDetail';
 
 const calculatePerformanceScore = (points, avg, opt, max) => {
   if (points <= 0) return 1.0;
@@ -224,25 +224,27 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
         <BackButton onClick={goBack} />
       </div>
 
-      {/* Duel Header - kartenlos, wie Advisor::PlayerDetailView */}
-      <div className="flex items-center justify-between mb-8 sm:mb-10 gap-2 sm:gap-6">
-         <div className="flex flex-col sm:flex-row items-center sm:items-center gap-2 sm:gap-4 w-[42%] sm:w-2/5 min-w-0">
-             <ManagerAvatar name={user1.name} size={64} ringColor="#ff5c3e" />
-             <div className="min-w-0 text-center sm:text-left">
-                <h1 className="text-sm sm:text-2xl font-semibold tracking-tight text-white truncate">{user1.name}</h1>
-                <div className="text-[10px] sm:text-sm font-medium text-[#ff5c3e] mt-0.5">Rank #{user1.rank}</div>
-             </div>
-         </div>
-         
-         <div className="text-lg sm:text-3xl font-black text-[#2e2e2e] italic shrink-0">VS</div>
-         
-         <div className="flex flex-col sm:flex-row-reverse items-center sm:items-center gap-2 sm:gap-4 w-[42%] sm:w-2/5 justify-end min-w-0">
-             <ManagerAvatar name={user2.name} size={64} ringColor="#3b82f6" />
-             <div className="min-w-0 text-center sm:text-right">
-                <h1 className="text-sm sm:text-2xl font-semibold tracking-tight text-white truncate">{user2.name}</h1>
-                <div className="text-[10px] sm:text-sm font-medium text-[#3b82f6] mt-0.5">Rank #{user2.rank}</div>
-             </div>
-         </div>
+      {/* Duel Header - kartenlos, wie Advisor::PlayerDetailView, mit zwei
+          Hero-Fotos die von aussen zur Bildschirmmitte hin ausblenden */}
+      <div className="relative mb-8 sm:mb-10">
+        <div className="absolute inset-x-0 top-0 z-0 pointer-events-none overflow-hidden flex justify-between h-[130px] sm:h-[190px]">
+          <ManagerImageDetail name={user1.name} accentColor="#ff5c3e" side="left" className="w-[46%] sm:w-[38%] h-full" />
+          <ManagerImageDetail name={user2.name} accentColor="#3b82f6" side="right" className="w-[46%] sm:w-[38%] h-full" />
+        </div>
+
+        <div className="relative z-10 flex items-end justify-between gap-2 sm:gap-6 pt-[100px] sm:pt-[145px]">
+          <div className="w-[42%] sm:w-2/5 min-w-0">
+            <h1 className="text-sm sm:text-2xl font-semibold tracking-tight text-white truncate drop-shadow-lg">{user1.name}</h1>
+            <div className="text-[10px] sm:text-sm font-medium text-[#ff5c3e] mt-0.5">Rank #{user1.rank}</div>
+          </div>
+
+          <div className="text-lg sm:text-3xl font-black text-[#2e2e2e] italic shrink-0 pb-1">VS</div>
+
+          <div className="w-[42%] sm:w-2/5 min-w-0 text-right">
+            <h1 className="text-sm sm:text-2xl font-semibold tracking-tight text-white truncate drop-shadow-lg">{user2.name}</h1>
+            <div className="text-[10px] sm:text-sm font-medium text-[#3b82f6] mt-0.5">Rank #{user2.rank}</div>
+          </div>
+        </div>
       </div>
 
       {/* Stats Duel View */}

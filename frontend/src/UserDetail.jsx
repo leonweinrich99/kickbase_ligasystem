@@ -11,6 +11,7 @@ import {
 import { useBackNavigation } from './useBackNavigation';
 import { BackButton } from './ui/CloseButton';
 import ManagerAvatar from './ui/ManagerAvatar';
+import ManagerImageDetail from './ui/ManagerImageDetail';
 
 const calculatePerformanceScore = (points, avg, opt, max) => {
   if (points <= 0) return 1.0;
@@ -298,34 +299,39 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
         </button>
       </div>
 
-      <div className="max-w-[1000px] w-full mx-auto pt-6 pb-8 px-4 sm:px-6">
+      <div className="max-w-[1000px] w-full mx-auto pt-2 pb-8 px-4 sm:px-6 relative">
 
-        {/* Name & Avatar */}
-        <div className="flex items-center gap-4 mb-3">
-          <ManagerAvatar name={userData.name} size={64} ringColor="#ff5c3e" />
-          <div className="min-w-0">
-            <h2 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight leading-tight truncate">
-              {userData.name}
-            </h2>
-            <div className="flex items-center gap-2 mt-1 flex-wrap">
-              <span className="text-[#8b92a5] font-medium text-sm">Rank #{userData.rank}</span>
-              {mode !== 'archive' && userData.leagueName && (
-                <span className="text-[10px] font-semibold uppercase tracking-wider rounded px-1.5 py-0.5" style={{ backgroundColor: `${userData.leagueColor}26`, color: userData.leagueColor }}>
-                  {userData.leagueName}
-                </span>
-              )}
-              {stats && stats.rankChange !== 0 && (
-                <span className={`inline-flex items-center gap-1 text-[11px] font-semibold ${stats.rankChange > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                  {stats.rankChange > 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                  {Math.abs(stats.rankChange)} {stats.rankChange > 0 ? 'auf' : 'ab'}
-                </span>
-              )}
-            </div>
+        {/* Hero-Hintergrundbild mit Fade-Maskierung (wie Advisor::PlayerImageDetail) */}
+        <div className="absolute top-0 right-0 z-0 pointer-events-none overflow-hidden" style={{ width: '100%', height: '200px', display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-start' }}>
+          <ManagerImageDetail name={userData.name} accentColor={userData.leagueColor || '#ff5c3e'} />
+        </div>
+
+        {/* Name & Rank */}
+        <div className="relative z-10 pt-4">
+          {mode !== 'archive' && userData.leagueName && (
+            <span
+              className="inline-flex text-[10px] font-semibold uppercase tracking-wider rounded px-1.5 py-0.5 backdrop-blur-md mb-1.5"
+              style={{ backgroundColor: `${userData.leagueColor}26`, color: userData.leagueColor }}
+            >
+              {userData.leagueName}
+            </span>
+          )}
+          <h2 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight leading-tight drop-shadow-lg w-[75%] sm:w-[70%]">
+            {userData.name}
+          </h2>
+          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+            <span className="text-[#8b92a5] font-medium text-sm">Rank #{userData.rank}</span>
+            {stats && stats.rankChange !== 0 && (
+              <span className={`inline-flex items-center gap-1 text-[11px] font-semibold ${stats.rankChange > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                {stats.rankChange > 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                {Math.abs(stats.rankChange)} {stats.rankChange > 0 ? 'auf' : 'ab'}
+              </span>
+            )}
           </div>
         </div>
 
         {/* Gesamtpunkte (Scalable Style, wie Marktwert im Advisor) */}
-        <div className="mb-6">
+        <div className="mb-6 relative z-10">
           <div className="text-3xl sm:text-[40px] font-semibold text-white leading-none tracking-tight mb-2">
             {userData.points}
             <span className="text-base sm:text-lg text-[#8b92a5] font-medium ml-2">Punkte</span>

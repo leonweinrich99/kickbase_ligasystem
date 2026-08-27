@@ -7,16 +7,20 @@ import LoadingScreen from './LoadingScreen';
 import useMinimumDelay from './useMinimumDelay';
 import { shouldShowSplash, markSplashShown } from './appLoadState';
 import ManagerAvatar from './ui/ManagerAvatar';
+import { useManagerImages } from './useManagerImages';
 
 // "Sieger SF13" & Co. sind Platzhalter für noch nicht ausgespielte Partien,
 // "Freilos" für einen direkten Aufstieg ohne Gegner - beides ist (noch) kein
 // echter Manager und kann daher nicht mit jemandem verglichen werden.
 const isPlaceholderName = (name) => !name || name.startsWith('Sieger') || name === 'Freilos';
 
-// Horizontale Kachel (Bild+Name links, Ergebnis mittig, Bild+Name rechts) -
-// der reservierte Ergebnis-Platz ("–:–") steht auch VOR Spielbeginn schon da,
-// damit die Kachel sich nicht "verschiebt", sobald die Partie ausgewertet ist.
+// Horizontale Kachel im selben Duktus wie Advisor::PlayerCard - das
+// Profilfoto blutet (falls bekannt) von der jeweiligen Aussenkante nach innen
+// aus, statt eines reinen Kreis-Avatars. Ist fuer einen Namen (noch) kein
+// Kickbase-Bild bekannt, faellt diese Seite automatisch auf den klassischen
+// Kreis-Avatar zurueck - sieht dann schlichter, aber nie "kaputt" aus.
 const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}, onOpenCompare, pokalMembers = null }) => {
+  const images = useManagerImages();
   const isWinner1 = match.winner === 1;
   const isWinner2 = match.winner === 2;
   const color1 = leagueColors[match.p1];
@@ -25,6 +29,9 @@ const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}
   const id1 = !isPlaceholderName(match.p1) ? nameToId[match.p1] : null;
   const id2 = !isPlaceholderName(match.p2) ? nameToId[match.p2] : null;
   const isClickable = Boolean(id1 && id2 && id1 !== id2 && onOpenCompare);
+
+  const img1 = !isPlaceholderName(match.p1) ? images[match.p1] : null;
+  const img2 = !isPlaceholderName(match.p2) ? images[match.p2] : null;
 
   // Grüner Haken: ist diese Person schon Mitglied der echten Kickbase-Pokal-Liga?
   // (pokalMembers === null, solange die Liste noch lädt -> dann lieber nichts
@@ -41,36 +48,67 @@ const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}
       data-tour={tourTarget ? 'pokal-first-match' : undefined}
       onClick={isClickable ? () => onOpenCompare(id1, id2) : undefined}
       role={isClickable ? 'button' : undefined}
-      className={`flex items-center gap-1.5 sm:gap-2 card-surface rounded-xl overflow-hidden shadow-lg w-full xl:w-64 flex-shrink-0 p-2 sm:p-2.5 transition-transform hover:scale-105 hover:border-[#8b5cf6]/50 ${isFinal ? 'ring-2 ring-[#8b5cf6] shadow-[0_0_20px_rgba(139,92,246,0.3)] xl:scale-110 z-10' : ''} ${isClickable ? 'cursor-pointer active:scale-95' : ''}`}
+      className={`relative overflow-hidden flex items-center card-surface rounded-xl shadow-lg w-full xl:w-64 h-[62px] sm:h-[70px] flex-shrink-0 transition-transform hover:scale-105 hover:border-[#8b5cf6]/50 ${isFinal ? 'ring-2 ring-[#8b5cf6] shadow-[0_0_20px_rgba(139,92,246,0.3)] xl:scale-110 z-10' : ''} ${isClickable ? 'cursor-pointer active:scale-95' : ''}`}
     >
+      {/* Hintergrund-Fotos (wie Advisor::PlayerCard) - je Seite nur, wenn ein Bild bekannt ist */}
+      {img1 && (
+        <div className="absolute top-0 left-0 bottom-0 z-0 pointer-events-none w-1/2 flex justify-start overflow-hidden rounded-l-xl">
+          <img
+            src={img1}
+            alt=""
+            className="h-[150%] w-auto object-cover object-top pointer-events-none"
+            style={{
+              transform: 'translateY(-12%)',
+              WebkitMaskImage: 'linear-gradient(90deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.85) 40%, rgba(0,0,0,0) 92%)',
+              maskImage: 'linear-gradient(90deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.85) 40%, rgba(0,0,0,0) 92%)',
+            }}
+          />
+        </div>
+      )}
+      {img2 && (
+        <div className="absolute top-0 right-0 bottom-0 z-0 pointer-events-none w-1/2 flex justify-end overflow-hidden rounded-r-xl">
+          <img
+            src={img2}
+            alt=""
+            className="h-[150%] w-auto object-cover object-top pointer-events-none"
+            style={{
+              transform: 'translateY(-12%)',
+              WebkitMaskImage: 'linear-gradient(270deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.85) 40%, rgba(0,0,0,0) 92%)',
+              maskImage: 'linear-gradient(270deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.85) 40%, rgba(0,0,0,0) 92%)',
+            }}
+          />
+        </div>
+      )}
+
       {/* Spieler 1 (links) */}
-      <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
-        <ManagerAvatar name={isPlaceholderName(match.p1) ? null : match.p1} size={28} ringColor={color1} />
+      <div className="relative z-10 flex items-center gap-1.5 flex-1 min-w-0 pl-2.5 sm:pl-3">
+        {!img1 && <ManagerAvatar name={isPlaceholderName(match.p1) ? null : match.p1} size={26} ringColor={color1} />}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1">
-            <span className={`text-[10px] sm:text-xs font-bold truncate ${isWinner1 ? 'text-white' : 'text-gray-300'}`}>{match.p1 || '-'}</span>
+            <span className={`text-[10px] sm:text-xs font-bold truncate drop-shadow-md ${isWinner1 ? 'text-white' : 'text-gray-300'}`}>{match.p1 || '-'}</span>
             {isMember1 && <Check size={10} strokeWidth={3.5} className="text-green-500 shrink-0" />}
           </div>
         </div>
       </div>
 
       {/* Ergebnis mittig - min-w reserviert genug Platz fuer den Arena-Modus,
-          dessen Punktestand auch mal vierstellig sein kann (z.B. 1354:1876) */}
-      <div className="flex flex-col items-center shrink-0 px-0.5 min-w-[44px] sm:min-w-[56px]">
-        <div className="text-[11px] sm:text-sm font-black whitespace-nowrap tabular-nums">
-          <span className={isWinner1 ? 'text-green-400' : 'text-gray-500'}>{score1Display}</span>
-          <span className="text-gray-600 mx-0.5">:</span>
-          <span className={isWinner2 ? 'text-green-400' : 'text-gray-500'}>{score2Display}</span>
+          dessen Punktestand auch mal vierstellig sein kann (z.B. 1354:1876).
+          Dunkler Hintergrund haelt die Zahlen lesbar, egal was dahinter liegt. */}
+      <div className="relative z-10 flex flex-col items-center shrink-0 px-1 min-w-[46px] sm:min-w-[58px]">
+        <div className="text-[11px] sm:text-sm font-black whitespace-nowrap tabular-nums bg-black/45 backdrop-blur-[2px] rounded-md px-1.5 py-0.5">
+          <span className={isWinner1 ? 'text-green-400' : 'text-gray-400'}>{score1Display}</span>
+          <span className="text-gray-500 mx-0.5">:</span>
+          <span className={isWinner2 ? 'text-green-400' : 'text-gray-400'}>{score2Display}</span>
         </div>
       </div>
 
       {/* Spieler 2 (rechts) */}
-      <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0 flex-row-reverse text-right">
-        <ManagerAvatar name={isPlaceholderName(match.p2) ? null : match.p2} size={28} ringColor={color2} />
+      <div className="relative z-10 flex items-center gap-1.5 flex-1 min-w-0 pr-2.5 sm:pr-3 flex-row-reverse text-right">
+        {!img2 && <ManagerAvatar name={isPlaceholderName(match.p2) ? null : match.p2} size={26} ringColor={color2} />}
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-end gap-1">
             {isMember2 && <Check size={10} strokeWidth={3.5} className="text-green-500 shrink-0" />}
-            <span className={`text-[10px] sm:text-xs font-bold truncate ${isWinner2 ? 'text-white' : 'text-gray-300'}`}>{match.p2 || '-'}</span>
+            <span className={`text-[10px] sm:text-xs font-bold truncate drop-shadow-md ${isWinner2 ? 'text-white' : 'text-gray-300'}`}>{match.p2 || '-'}</span>
           </div>
         </div>
       </div>
