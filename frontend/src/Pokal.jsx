@@ -14,10 +14,8 @@ import ManagerAvatar from './ui/ManagerAvatar';
 const isPlaceholderName = (name) => !name || name.startsWith('Sieger') || name === 'Freilos';
 
 // Horizontale Kachel - Foto-Avatar (ohne Fade, mit duennem farbigem
-// Liga-Ring) ist IMMER vollstaendig sichtbar (nie von der Kartenkante
-// angeschnitten - das wuerde eine harte, gerade Kante erzeugen). Der Name
-// liegt direkt ueber dem Foto, unten angehaengt - ein Scrim-Verlauf am
-// unteren Kartenrand sorgt unabhaengig vom Fotoinhalt fuer Lesbarkeit.
+// Liga-Ring) links, Name direkt rechts daneben (nicht mehr ueberlagernd) -
+// Ergebnis mittig.
 const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}, onOpenCompare, pokalMembers = null }) => {
   const isWinner1 = match.winner === 1;
   const isWinner2 = match.winner === 2;
@@ -43,41 +41,38 @@ const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}
       data-tour={tourTarget ? 'pokal-first-match' : undefined}
       onClick={isClickable ? () => onOpenCompare(id1, id2) : undefined}
       role={isClickable ? 'button' : undefined}
-      className={`relative overflow-hidden card-surface rounded-xl shadow-lg w-full xl:w-64 h-[70px] sm:h-[78px] flex-shrink-0 transition-transform hover:scale-105 hover:border-[#8b5cf6]/50 ${isFinal ? 'ring-2 ring-[#8b5cf6] shadow-[0_0_20px_rgba(139,92,246,0.3)] xl:scale-110 z-10' : ''} ${isClickable ? 'cursor-pointer active:scale-95' : ''}`}
+      className={`flex items-center gap-1.5 sm:gap-2 card-surface rounded-xl shadow-lg w-full xl:w-64 flex-shrink-0 p-2 sm:p-2.5 transition-transform hover:scale-105 hover:border-[#8b5cf6]/50 ${isFinal ? 'ring-2 ring-[#8b5cf6] shadow-[0_0_20px_rgba(139,92,246,0.3)] xl:scale-110 z-10' : ''} ${isClickable ? 'cursor-pointer active:scale-95' : ''}`}
     >
-      {/* Avatare - vollstaendige Kreise (kein Fade), duenner farbiger
-          Liga-Ring, nur nah an die Kante positioniert statt angeschnitten */}
-      <div className="absolute left-2 top-1/2 -translate-y-1/2 z-0 pointer-events-none">
-        <ManagerAvatar name={isPlaceholderName(match.p1) ? null : match.p1} size={52} ringColor={color1} ringWidth={1.5} />
-      </div>
-      <div className="absolute right-2 top-1/2 -translate-y-1/2 z-0 pointer-events-none">
-        <ManagerAvatar name={isPlaceholderName(match.p2) ? null : match.p2} size={52} ringColor={color2} ringWidth={1.5} />
-      </div>
-
-      {/* Scrim am unteren Rand - garantiert lesbaren Namen unabhaengig vom Fotoinhalt */}
-      <div className="absolute inset-x-0 bottom-0 h-9 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none z-[5]" />
-
-      {/* Ergebnis - mittig (horizontal UND vertikal) auf der Karte, min-w
-          reserviert genug Platz fuer den Arena-Modus, dessen Punktestand
-          auch mal vierstellig sein kann (z.B. 1354:1876) */}
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center px-1 min-w-[44px] sm:min-w-[56px]">
-        <div className="text-[11px] sm:text-sm font-black whitespace-nowrap tabular-nums drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">
-          <span className={isWinner1 ? 'text-green-400' : 'text-gray-200'}>{score1Display}</span>
-          <span className="text-gray-400 mx-0.5">:</span>
-          <span className={isWinner2 ? 'text-green-400' : 'text-gray-200'}>{score2Display}</span>
+      {/* Spieler 1 (links): Avatar, Name direkt rechts daneben */}
+      <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
+        <ManagerAvatar name={isPlaceholderName(match.p1) ? null : match.p1} size={40} ringColor={color1} ringWidth={1.5} />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1">
+            <span className={`text-[10px] sm:text-xs font-bold truncate ${isWinner1 ? 'text-white' : 'text-gray-300'}`}>{match.p1 || '-'}</span>
+            {isMember1 && <Check size={10} strokeWidth={3.5} className="text-green-500 shrink-0" />}
+          </div>
         </div>
       </div>
 
-      {/* Spieler 1 Name - unten links, direkt ueber dem Foto */}
-      <div className="absolute left-2 sm:left-2.5 bottom-1.5 z-10 max-w-[42%] flex items-center gap-1">
-        <span className={`text-[10px] sm:text-xs font-bold truncate drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] ${isWinner1 ? 'text-white' : 'text-gray-200'}`}>{match.p1 || '-'}</span>
-        {isMember1 && <Check size={10} strokeWidth={3.5} className="text-green-500 shrink-0 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]" />}
+      {/* Ergebnis mittig - min-w reserviert genug Platz fuer den Arena-Modus,
+          dessen Punktestand auch mal vierstellig sein kann (z.B. 1354:1876) */}
+      <div className="flex flex-col items-center shrink-0 px-0.5 min-w-[44px] sm:min-w-[56px]">
+        <div className="text-[11px] sm:text-sm font-black whitespace-nowrap tabular-nums">
+          <span className={isWinner1 ? 'text-green-400' : 'text-gray-500'}>{score1Display}</span>
+          <span className="text-gray-600 mx-0.5">:</span>
+          <span className={isWinner2 ? 'text-green-400' : 'text-gray-500'}>{score2Display}</span>
+        </div>
       </div>
 
-      {/* Spieler 2 Name - unten rechts, direkt ueber dem Foto */}
-      <div className="absolute right-2 sm:right-2.5 bottom-1.5 z-10 max-w-[42%] flex items-center justify-end gap-1">
-        {isMember2 && <Check size={10} strokeWidth={3.5} className="text-green-500 shrink-0 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]" />}
-        <span className={`text-[10px] sm:text-xs font-bold truncate drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] ${isWinner2 ? 'text-white' : 'text-gray-200'}`}>{match.p2 || '-'}</span>
+      {/* Spieler 2 (rechts): Avatar, Name direkt rechts daneben */}
+      <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
+        <ManagerAvatar name={isPlaceholderName(match.p2) ? null : match.p2} size={40} ringColor={color2} ringWidth={1.5} />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1">
+            <span className={`text-[10px] sm:text-xs font-bold truncate ${isWinner2 ? 'text-white' : 'text-gray-300'}`}>{match.p2 || '-'}</span>
+            {isMember2 && <Check size={10} strokeWidth={3.5} className="text-green-500 shrink-0" />}
+          </div>
+        </div>
       </div>
     </div>
   );
