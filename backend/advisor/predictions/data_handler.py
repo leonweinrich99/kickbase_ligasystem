@@ -1,4 +1,5 @@
-from kickbase_api.player import get_all_players, get_player_info, get_player_market_value, get_player_performance
+from kickbase_api.player import get_all_players_raw, get_player_info, get_player_market_value, get_player_performance
+from datetime import datetime
 import concurrent.futures
 import pandas as pd
 
@@ -11,6 +12,13 @@ import pandas as pd
 # "Due to some issues with the data, we always reload for now"), es geht also
 # kein Caching-Vorteil verloren.
 
+# Kandidaten fuer den aktuellen Marktwert direkt aus der Kader-/Team-Liste
+# (teamprofile-Endpoint) - als Fallback, wenn die dedizierte Marktwert-
+# HISTORIE (noch) komplett leer ist (brandneuer Spieler/frischer Transfer).
+# Genau EIN Datenpunkt reicht, damit der Spieler ueberhaupt in der
+# Datenbank auftaucht, statt komplett zu fehlen.
+MV_FALLBACK_FIELDS = ["mv", "marketValue", "curVal"]
+
 
 def fetch_player_data(token, competition_ids, last_mv_values, last_pfm_values, max_workers=12):
     """Fetch market-value + performance history for all players of the given competitions."""
@@ -18,7 +26,9 @@ def fetch_player_data(token, competition_ids, last_mv_values, last_pfm_values, m
     all_competitions_dfs = []
 
     for competition_id in competition_ids:
-        players = get_all_players(token, competition_id)
+        raw_players = get_all_players_raw(token, competition_id)
+        players = [p["i"] for p in raw_players if "i" in p]
+        roster_by_id = {p["i"]: p for p in raw_players if "i" in p}
 
         def process_player(player_id):
             try:
@@ -27,6 +37,21 @@ def fetch_player_data(token, competition_ids, last_mv_values, last_pfm_values, m
                 player_df = pd.DataFrame([player_info])
 
                 mv_df = pd.DataFrame(get_player_market_value(token, competition_id, player_id, last_mv_values))
+                if mv_df.empty:
+                    # Brandneuer Spieler (z.B. frischer Transfer) - Kickbase hat
+                    # noch keine Marktwert-HISTORIE fuer ihn. Falls die Kader-
+                    # Liste trotzdem einen aktuellen Wert liefert, nutzen wir
+                    # den als einzelnen Startpunkt, statt den Spieler komplett
+                    # zu verwerfen.
+                    roster_entry = roster_by_id.get(player_id, {})
+                    fallback_value = next(
+                        (roster_entry[f] for f in MV_FALLBACK_FIELDS if roster_entry.get(f)),
+                        None
+                    )
+                    if fallback_value:
+                        mv_df = pd.DataFrame([{"mv": fallback_value, "date": datetime.now().date().isoformat()}])
+                        print(f"Info: Spieler {player_id} hat noch keine Marktwert-Historie, nutze aktuellen Wert {fallback_value} aus der Kader-Liste als Startpunkt.")
+
                 if not mv_df.empty:
                     mv_df["date"] = pd.to_datetime(mv_df["date"])
                     mv_df = mv_df.sort_values("date")

@@ -72,6 +72,13 @@ def preprocess_player_data(df):
         "p": 0,
         "ppm": 0,
         "won": -1,
+        # Brandneue Spieler (genau 1 Datenpunkt, z.B. per Fallback-Marktwert
+        # aus der Kader-Liste eingefuegt, siehe data_handler.py) haben noch
+        # keinen Vortageswert bzw. kein bekanntes naechstes Spiel - ohne
+        # dieses Fallback wuerde model.predict() spaeter mit NaN abstuerzen
+        # (fuer den GESAMTEN Batch, nicht nur diesen einen Spieler!).
+        "mv_change_1d": 0,
+        "days_to_next": 0,
     })
 
     now = datetime.now(ZoneInfo("Europe/Berlin"))

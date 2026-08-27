@@ -41,13 +41,23 @@ def get_player_info(token, competition_id, player_id):
 def get_all_players(token, competition_id):
     """Get all players in a competition by iterating through all teams."""
 
+    return [p["i"] for p in get_all_players_raw(token, competition_id)]
+
+
+def get_all_players_raw(token, competition_id):
+    """Wie get_all_players, aber mit den vollen Roh-Datensaetzen pro Spieler
+    statt nur der ID. Wird u.a. als Fallback-Marktwert fuer brandneue Spieler
+    genutzt, die noch keine Marktwert-HISTORIE haben (siehe data_handler.py -
+    ohne diesen Fallback fielen ganz frisch verpflichtete Spieler komplett aus
+    der Datenbank, siehe Nutzer-Feedback "Latte Lath fehlt im Advisor")."""
+
     all_players = []
     team_ids = [team.get("tid") for team in get_all_teams(token, competition_id)]
 
     for team_id in team_ids:
         url = f"{BASE_URL}/competitions/{competition_id}/teams/{team_id}/teamprofile"
         data = get_json_with_token(url, token)
-        all_players.extend(player["i"] for player in data.get("it", []))
+        all_players.extend(data.get("it", []))
 
     return all_players
 
