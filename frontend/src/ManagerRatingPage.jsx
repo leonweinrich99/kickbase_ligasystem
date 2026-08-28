@@ -77,14 +77,13 @@ const ManagerRatingPage = () => {
   return (
     <div className="w-full bg-[#000000] min-h-screen relative flex flex-col pb-10">
       {/* Header mit Zurueck-Button (Page-Look) */}
-      <div className="sticky top-0 z-40 bg-[#000000]/90 backdrop-blur-md px-4 sm:px-6 py-4 flex items-center justify-between border-b border-[#2e2e2e]/50">
+      <div className="sticky top-0 z-40 bg-[#000000]/90 backdrop-blur-md px-4 sm:px-6 py-4 flex items-center border-b border-[#2e2e2e]/50">
         <BackButton onClick={goBack} />
-        <span className="text-xs font-bold uppercase tracking-wider text-[#8b92a5]">Manager Rating</span>
       </div>
 
       <div className="max-w-[600px] w-full mx-auto pt-6 pb-8 px-4 sm:px-6 flex flex-col gap-6">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight leading-tight">Manager Rating</h2>
+          <h2 className="text-[17px] sm:text-3xl font-black tracking-tight uppercase leading-[1.1] break-words">Manager Rating</h2>
           <p className="text-sm text-[#8b92a5] mt-1">Wie gut managst du deinen Kader?</p>
         </div>
 
