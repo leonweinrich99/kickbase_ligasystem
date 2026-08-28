@@ -128,7 +128,7 @@ export default function FifaManagerCard({ rating, photoURL }) {
       <div
         className="relative"
         style={{
-          width: 'min(100%, 340px)',
+          width: 'min(340px, calc(100vw - 2rem))',
           aspectRatio: `${CARD_W} / ${CARD_H}`,
           filter: isElite ? 'drop-shadow(0 0 14px rgba(244, 197, 66, 0.65))' : undefined,
         }}
