@@ -1,7 +1,7 @@
 {
   "1630703": {
     "name": "Ansgar Trinkmann",
-    "score": 59,
+    "score": 58,
     "level": "Bronze",
     "cardTier": "bronze",
     "league": "L2",
@@ -14,12 +14,12 @@
     "calculation": {
       "pro": {
         "score": 52,
-        "weightedAverageProfit": 18348.723009492933,
+        "weightedAverageProfit": 17385.54017735251,
         "completedTrades": 6,
         "openPositions": 12,
         "orphanSales": 12,
         "saleTimingSampleSize": 16,
-        "profitBonus": 0.9174361504746466
+        "profitBonus": 0.8692770088676256
       },
       "ovp": {
         "score": 32,
@@ -61,12 +61,12 @@
       "overall": {
         "baseScore": 50,
         "activityBonus": 15,
-        "profitBonus": 0.9174361504746466,
+        "profitBonus": 0.8692770088676256,
         "overpayBonus": -3.4157022319051267,
         "performanceBonus": 0,
         "squadRiskPenalty": -4,
         "scoutingBonus": 0,
-        "finalScore": 59
+        "finalScore": 58
       }
     },
     "totalProfit": -16048760,
@@ -77,7 +77,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 12,
     "unrealizedProfit": -12555852,
-    "openPositionsAvgAgeDays": 7.029338032407408,
+    "openPositionsAvgAgeDays": 7.084517430555555,
     "orphanSales": 12,
     "orphanSaleProfit": 920501,
     "forcedOrphanSales": 0,
@@ -120,12 +120,12 @@
     "calculation": {
       "pro": {
         "score": 55,
-        "weightedAverageProfit": 47473.95567267913,
+        "weightedAverageProfit": 46794.39823018225,
         "completedTrades": 2,
         "openPositions": 10,
         "orphanSales": 10,
         "saleTimingSampleSize": 10,
-        "profitBonus": 2.3736977836339563
+        "profitBonus": 2.3397199115091123
       },
       "ovp": {
         "score": 93,
@@ -167,7 +167,7 @@
       "overall": {
         "baseScore": 50,
         "activityBonus": 15,
-        "profitBonus": 2.3736977836339563,
+        "profitBonus": 2.3397199115091123,
         "overpayBonus": 7.748202679353099,
         "performanceBonus": 0,
         "squadRiskPenalty": -2.7999999999999994,
@@ -183,7 +183,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 10,
     "unrealizedProfit": -4235658,
-    "openPositionsAvgAgeDays": 6.666485613425925,
+    "openPositionsAvgAgeDays": 6.721665011574075,
     "orphanSales": 10,
     "orphanSaleProfit": 366620,
     "forcedOrphanSales": 0,
@@ -217,7 +217,7 @@
     "level": "Silber",
     "cardTier": "silver",
     "league": "L3",
-    "pro": 77,
+    "pro": 76,
     "ovp": 55,
     "pkt": 50,
     "akt": 55,
@@ -225,13 +225,13 @@
     "tim": 89,
     "calculation": {
       "pro": {
-        "score": 77,
-        "weightedAverageProfit": 271837.7728471686,
+        "score": 76,
+        "weightedAverageProfit": 270288.83856287744,
         "completedTrades": 2,
         "openPositions": 7,
         "orphanSales": 10,
         "saleTimingSampleSize": 12,
-        "profitBonus": 13.59188864235843
+        "profitBonus": 13.514441928143873
       },
       "ovp": {
         "score": 55,
@@ -273,7 +273,7 @@
       "overall": {
         "baseScore": 50,
         "activityBonus": 15,
-        "profitBonus": 13.59188864235843,
+        "profitBonus": 13.514441928143873,
         "overpayBonus": -3.6257966636486523,
         "performanceBonus": 0,
         "squadRiskPenalty": -6,
@@ -289,7 +289,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 7,
     "unrealizedProfit": -10420164,
-    "openPositionsAvgAgeDays": 7.458658101851853,
+    "openPositionsAvgAgeDays": 7.5138375,
     "orphanSales": 10,
     "orphanSaleProfit": 2976727,
     "forcedOrphanSales": 0,
@@ -323,7 +323,7 @@
     "level": "Bronze",
     "cardTier": "bronze",
     "league": "L1",
-    "pro": 58,
+    "pro": 57,
     "ovp": 28,
     "pkt": 50,
     "akt": 83,
@@ -331,13 +331,13 @@
     "tim": 87,
     "calculation": {
       "pro": {
-        "score": 58,
-        "weightedAverageProfit": 77418.0536246333,
+        "score": 57,
+        "weightedAverageProfit": 76225.20704937828,
         "completedTrades": 4,
         "openPositions": 14,
         "orphanSales": 14,
         "saleTimingSampleSize": 16,
-        "profitBonus": 3.8709026812316654
+        "profitBonus": 3.811260352468914
       },
       "ovp": {
         "score": 28,
@@ -379,7 +379,7 @@
       "overall": {
         "baseScore": 50,
         "activityBonus": 15,
-        "profitBonus": 3.8709026812316654,
+        "profitBonus": 3.811260352468914,
         "overpayBonus": -10,
         "performanceBonus": 0,
         "squadRiskPenalty": -3.1999999999999993,
@@ -395,7 +395,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 14,
     "unrealizedProfit": -16563538,
-    "openPositionsAvgAgeDays": 6.8965580489418,
+    "openPositionsAvgAgeDays": 6.951737486772486,
     "orphanSales": 14,
     "orphanSaleProfit": 1689562,
     "forcedOrphanSales": 0,
@@ -438,12 +438,12 @@
     "calculation": {
       "pro": {
         "score": 59,
-        "weightedAverageProfit": 93061.01656567908,
+        "weightedAverageProfit": 92681.41806294605,
         "completedTrades": 9,
         "openPositions": 8,
         "orphanSales": 12,
         "saleTimingSampleSize": 13,
-        "profitBonus": 4.653050828283954
+        "profitBonus": 4.634070903147302
       },
       "ovp": {
         "score": 44,
@@ -485,7 +485,7 @@
       "overall": {
         "baseScore": 50,
         "activityBonus": 15,
-        "profitBonus": 4.653050828283954,
+        "profitBonus": 4.634070903147302,
         "overpayBonus": -3.322483402307135,
         "performanceBonus": 0,
         "squadRiskPenalty": -2.8000000000000007,
@@ -501,7 +501,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 8,
     "unrealizedProfit": -6822986,
-    "openPositionsAvgAgeDays": 5.814421956018519,
+    "openPositionsAvgAgeDays": 5.869601354166667,
     "orphanSales": 12,
     "orphanSaleProfit": 897710,
     "forcedOrphanSales": 0,
@@ -531,7 +531,7 @@
   },
   "2926287": {
     "name": "Vinnie JR",
-    "score": 48,
+    "score": 47,
     "level": "Bronze",
     "cardTier": "bronze",
     "league": "L1",
@@ -544,12 +544,12 @@
     "calculation": {
       "pro": {
         "score": 50,
-        "weightedAverageProfit": 2371.2172928530686,
+        "weightedAverageProfit": 499.23568736702475,
         "completedTrades": 2,
         "openPositions": 8,
-        "orphanSales": 11,
+        "orphanSales": 12,
         "saleTimingSampleSize": 12,
-        "profitBonus": 0.11856086464265343
+        "profitBonus": 0.024961784368351236
       },
       "ovp": {
         "score": 17,
@@ -569,8 +569,8 @@
       "akt": {
         "score": 28,
         "buys": 10,
-        "sells": 13,
-        "totalTransactions": 23,
+        "sells": 14,
+        "totalTransactions": 24,
         "leaguePercentile": 27.77777777777778,
         "leagueRank": 7,
         "leagueSize": 9
@@ -591,12 +591,12 @@
       "overall": {
         "baseScore": 50,
         "activityBonus": 15,
-        "profitBonus": 0.11856086464265343,
+        "profitBonus": 0.024961784368351236,
         "overpayBonus": -10,
         "performanceBonus": 0,
         "squadRiskPenalty": -7.600000000000001,
         "scoutingBonus": 0,
-        "finalScore": 48
+        "finalScore": 47
       }
     },
     "totalProfit": -12766713,
@@ -607,11 +607,11 @@
     "forcedRealizedProfit": 0,
     "openPositions": 8,
     "unrealizedProfit": -16845624,
-    "openPositionsAvgAgeDays": 9.161784398148148,
-    "orphanSales": 11,
+    "openPositionsAvgAgeDays": 9.216963819444445,
+    "orphanSales": 12,
     "orphanSaleProfit": 930818,
     "forcedOrphanSales": 0,
-    "totalTransactions": 23,
+    "totalTransactions": 24,
     "totalOverpay": 25620047,
     "avgOverpayRatio": 0.24028994753325922,
     "ppm": 0,
@@ -650,12 +650,12 @@
     "calculation": {
       "pro": {
         "score": 65,
-        "weightedAverageProfit": 156593.90747181047,
+        "weightedAverageProfit": 155963.36628951397,
         "completedTrades": 10,
         "openPositions": 13,
         "orphanSales": 13,
         "saleTimingSampleSize": 20,
-        "profitBonus": 7.829695373590523
+        "profitBonus": 7.798168314475698
       },
       "ovp": {
         "score": 19,
@@ -697,7 +697,7 @@
       "overall": {
         "baseScore": 50,
         "activityBonus": 15,
-        "profitBonus": 7.829695373590523,
+        "profitBonus": 7.798168314475698,
         "overpayBonus": -10,
         "performanceBonus": 0,
         "squadRiskPenalty": -4,
@@ -713,7 +713,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 13,
     "unrealizedProfit": -9740108,
-    "openPositionsAvgAgeDays": 7.3960040429131055,
+    "openPositionsAvgAgeDays": 7.451183452635328,
     "orphanSales": 13,
     "orphanSaleProfit": 2080109,
     "forcedOrphanSales": 0,
@@ -756,12 +756,12 @@
     "calculation": {
       "pro": {
         "score": 43,
-        "weightedAverageProfit": -72803.01291338404,
+        "weightedAverageProfit": -73539.55158138282,
         "completedTrades": 1,
         "openPositions": 5,
         "orphanSales": 7,
         "saleTimingSampleSize": 7,
-        "profitBonus": -3.640150645669202
+        "profitBonus": -3.6769775790691415
       },
       "ovp": {
         "score": 35,
@@ -803,7 +803,7 @@
       "overall": {
         "baseScore": 50,
         "activityBonus": 10.5,
-        "profitBonus": -3.640150645669202,
+        "profitBonus": -3.6769775790691415,
         "overpayBonus": -9.162612299635683,
         "performanceBonus": 0,
         "squadRiskPenalty": -6.4,
@@ -819,7 +819,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 5,
     "unrealizedProfit": -4348690,
-    "openPositionsAvgAgeDays": 10.92894050925926,
+    "openPositionsAvgAgeDays": 10.984119907407408,
     "orphanSales": 7,
     "orphanSaleProfit": 1238503,
     "forcedOrphanSales": 0,
@@ -862,12 +862,12 @@
     "calculation": {
       "pro": {
         "score": 59,
-        "weightedAverageProfit": 95120.53266508554,
+        "weightedAverageProfit": 93972.69888398491,
         "completedTrades": 12,
         "openPositions": 8,
         "orphanSales": 12,
         "saleTimingSampleSize": 19,
-        "profitBonus": 4.756026633254277
+        "profitBonus": 4.698634944199245
       },
       "ovp": {
         "score": 72,
@@ -909,7 +909,7 @@
       "overall": {
         "baseScore": 50,
         "activityBonus": 15,
-        "profitBonus": 4.756026633254277,
+        "profitBonus": 4.698634944199245,
         "overpayBonus": -6.983082784263994,
         "performanceBonus": 0,
         "squadRiskPenalty": -6,
@@ -925,7 +925,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 8,
     "unrealizedProfit": -18246999,
-    "openPositionsAvgAgeDays": 8.010208912037037,
+    "openPositionsAvgAgeDays": 8.06538832175926,
     "orphanSales": 12,
     "orphanSaleProfit": 1350484,
     "forcedOrphanSales": 0,
@@ -968,12 +968,12 @@
     "calculation": {
       "pro": {
         "score": 54,
-        "weightedAverageProfit": 42686.35600806722,
+        "weightedAverageProfit": 40956.37981822476,
         "completedTrades": 4,
         "openPositions": 10,
         "orphanSales": 14,
         "saleTimingSampleSize": 17,
-        "profitBonus": 2.1343178004033607
+        "profitBonus": 2.047818990911238
       },
       "ovp": {
         "score": 83,
@@ -1015,7 +1015,7 @@
       "overall": {
         "baseScore": 50,
         "activityBonus": 15,
-        "profitBonus": 2.1343178004033607,
+        "profitBonus": 2.047818990911238,
         "overpayBonus": -6.119170563637839,
         "performanceBonus": 0,
         "squadRiskPenalty": -5.200000000000002,
@@ -1031,7 +1031,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 10,
     "unrealizedProfit": -19775640,
-    "openPositionsAvgAgeDays": 6.702816574074075,
+    "openPositionsAvgAgeDays": 6.757995972222221,
     "orphanSales": 14,
     "orphanSaleProfit": 2370088,
     "forcedOrphanSales": 0,
@@ -1074,12 +1074,12 @@
     "calculation": {
       "pro": {
         "score": 24,
-        "weightedAverageProfit": -263944.0618495121,
+        "weightedAverageProfit": -265637.5437603608,
         "completedTrades": 0,
         "openPositions": 6,
         "orphanSales": 10,
         "saleTimingSampleSize": 8,
-        "profitBonus": -13.197203092475604
+        "profitBonus": -13.28187718801804
       },
       "ovp": {
         "score": 16,
@@ -1121,7 +1121,7 @@
       "overall": {
         "baseScore": 50,
         "activityBonus": 12,
-        "profitBonus": -13.197203092475604,
+        "profitBonus": -13.28187718801804,
         "overpayBonus": -10,
         "performanceBonus": 0,
         "squadRiskPenalty": -6,
@@ -1137,7 +1137,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 6,
     "unrealizedProfit": -17369158,
-    "openPositionsAvgAgeDays": 9.024857959104938,
+    "openPositionsAvgAgeDays": 9.080037357253087,
     "orphanSales": 10,
     "orphanSaleProfit": -49153,
     "forcedOrphanSales": 0,
@@ -1274,7 +1274,7 @@
     "level": "Bronze",
     "cardTier": "bronze",
     "league": "L1",
-    "pro": 60,
+    "pro": 59,
     "ovp": 50,
     "pkt": 50,
     "akt": 72,
@@ -1282,13 +1282,13 @@
     "tim": 77,
     "calculation": {
       "pro": {
-        "score": 60,
-        "weightedAverageProfit": 97421.96690365892,
+        "score": 59,
+        "weightedAverageProfit": 96383.23885781653,
         "completedTrades": 5,
         "openPositions": 11,
         "orphanSales": 14,
         "saleTimingSampleSize": 14,
-        "profitBonus": 4.871098345182946
+        "profitBonus": 4.819161942890826
       },
       "ovp": {
         "score": 50,
@@ -1330,7 +1330,7 @@
       "overall": {
         "baseScore": 50,
         "activityBonus": 15,
-        "profitBonus": 4.871098345182946,
+        "profitBonus": 4.819161942890826,
         "overpayBonus": -10,
         "performanceBonus": 0,
         "squadRiskPenalty": -8.400000000000002,
@@ -1346,7 +1346,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 11,
     "unrealizedProfit": -11762447,
-    "openPositionsAvgAgeDays": 8.993814808501684,
+    "openPositionsAvgAgeDays": 9.048994195075757,
     "orphanSales": 14,
     "orphanSaleProfit": 2035111,
     "forcedOrphanSales": 0,
@@ -1389,12 +1389,12 @@
     "calculation": {
       "pro": {
         "score": 54,
-        "weightedAverageProfit": 44425.95912572281,
+        "weightedAverageProfit": 43324.61968044501,
         "completedTrades": 3,
         "openPositions": 10,
         "orphanSales": 14,
         "saleTimingSampleSize": 14,
-        "profitBonus": 2.2212979562861404
+        "profitBonus": 2.1662309840222504
       },
       "ovp": {
         "score": 94,
@@ -1436,7 +1436,7 @@
       "overall": {
         "baseScore": 50,
         "activityBonus": 15,
-        "profitBonus": 2.2212979562861404,
+        "profitBonus": 2.1662309840222504,
         "overpayBonus": 0.14911460250298034,
         "performanceBonus": 0,
         "squadRiskPenalty": -2.8000000000000007,
@@ -1452,7 +1452,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 10,
     "unrealizedProfit": -10857449,
-    "openPositionsAvgAgeDays": 4.115713599537036,
+    "openPositionsAvgAgeDays": 4.170892986111111,
     "orphanSales": 14,
     "orphanSaleProfit": 3054870,
     "forcedOrphanSales": 0,
@@ -1486,7 +1486,7 @@
     "level": "Silber",
     "cardTier": "silver",
     "league": "L1",
-    "pro": 92,
+    "pro": 91,
     "ovp": 6,
     "pkt": 50,
     "akt": 6,
@@ -1494,13 +1494,13 @@
     "tim": 92,
     "calculation": {
       "pro": {
-        "score": 92,
-        "weightedAverageProfit": 424191.2936160446,
+        "score": 91,
+        "weightedAverageProfit": 422730.79098969634,
         "completedTrades": 0,
         "openPositions": 10,
         "orphanSales": 11,
         "saleTimingSampleSize": 10,
-        "profitBonus": 21.20956468080223
+        "profitBonus": 21.136539549484816
       },
       "ovp": {
         "score": 6,
@@ -1542,7 +1542,7 @@
       "overall": {
         "baseScore": 50,
         "activityBonus": 15,
-        "profitBonus": 21.20956468080223,
+        "profitBonus": 21.136539549484816,
         "overpayBonus": -10,
         "performanceBonus": 0,
         "squadRiskPenalty": -7.199999999999999,
@@ -1558,7 +1558,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 10,
     "unrealizedProfit": -8056198,
-    "openPositionsAvgAgeDays": 8.598057349537038,
+    "openPositionsAvgAgeDays": 8.653236747685185,
     "orphanSales": 11,
     "orphanSaleProfit": 3433696,
     "forcedOrphanSales": 0,
@@ -1601,12 +1601,12 @@
     "calculation": {
       "pro": {
         "score": 32,
-        "weightedAverageProfit": -184692.73634186244,
+        "weightedAverageProfit": -185612.03086013635,
         "completedTrades": 1,
         "openPositions": 8,
         "orphanSales": 12,
         "saleTimingSampleSize": 13,
-        "profitBonus": -9.234636817093122
+        "profitBonus": -9.280601543006819
       },
       "ovp": {
         "score": 61,
@@ -1648,7 +1648,7 @@
       "overall": {
         "baseScore": 50,
         "activityBonus": 15,
-        "profitBonus": -9.234636817093122,
+        "profitBonus": -9.280601543006819,
         "overpayBonus": -10,
         "performanceBonus": 0,
         "squadRiskPenalty": -7.199999999999999,
@@ -1664,7 +1664,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 8,
     "unrealizedProfit": -16193637,
-    "openPositionsAvgAgeDays": 5.2472402199074075,
+    "openPositionsAvgAgeDays": 5.302419618055556,
     "orphanSales": 12,
     "orphanSaleProfit": 2858754,
     "forcedOrphanSales": 0,
@@ -1707,12 +1707,12 @@
     "calculation": {
       "pro": {
         "score": 37,
-        "weightedAverageProfit": -133255.96905171877,
+        "weightedAverageProfit": -135072.614554077,
         "completedTrades": 0,
         "openPositions": 7,
         "orphanSales": 8,
         "saleTimingSampleSize": 7,
-        "profitBonus": -6.662798452585939
+        "profitBonus": -6.75363072770385
       },
       "ovp": {
         "score": 6,
@@ -1754,7 +1754,7 @@
       "overall": {
         "baseScore": 50,
         "activityBonus": 11.25,
-        "profitBonus": -6.662798452585939,
+        "profitBonus": -6.75363072770385,
         "overpayBonus": -10,
         "performanceBonus": 0,
         "squadRiskPenalty": -4.4,
@@ -1770,7 +1770,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 7,
     "unrealizedProfit": -19798617,
-    "openPositionsAvgAgeDays": 7.610447134589948,
+    "openPositionsAvgAgeDays": 7.665626532738096,
     "orphanSales": 8,
     "orphanSaleProfit": 1647630,
     "forcedOrphanSales": 0,
@@ -1800,7 +1800,7 @@
   },
   "3650803": {
     "name": "franzi__j",
-    "score": 63,
+    "score": 62,
     "level": "Silber",
     "cardTier": "silver",
     "league": "L2",
@@ -1813,12 +1813,12 @@
     "calculation": {
       "pro": {
         "score": 59,
-        "weightedAverageProfit": 93244.37244516621,
+        "weightedAverageProfit": 92821.31507258634,
         "completedTrades": 3,
         "openPositions": 11,
         "orphanSales": 13,
         "saleTimingSampleSize": 15,
-        "profitBonus": 4.662218622258311
+        "profitBonus": 4.641065753629317
       },
       "ovp": {
         "score": 81,
@@ -1860,12 +1860,12 @@
       "overall": {
         "baseScore": 50,
         "activityBonus": 15,
-        "profitBonus": 4.662218622258311,
+        "profitBonus": 4.641065753629317,
         "overpayBonus": 0.458725027488862,
         "performanceBonus": 0,
         "squadRiskPenalty": -7.6,
         "scoutingBonus": 0,
-        "finalScore": 63
+        "finalScore": 62
       }
     },
     "totalProfit": -6228452,
@@ -1876,7 +1876,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 11,
     "unrealizedProfit": -5797043,
-    "openPositionsAvgAgeDays": 5.813213002946129,
+    "openPositionsAvgAgeDays": 5.868392401094277,
     "orphanSales": 13,
     "orphanSaleProfit": 2516627,
     "forcedOrphanSales": 0,
@@ -1982,7 +1982,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 4,
     "unrealizedProfit": -10166693,
-    "openPositionsAvgAgeDays": 1.7407588078703704,
+    "openPositionsAvgAgeDays": 1.7959382060185185,
     "orphanSales": 8,
     "orphanSaleProfit": 580650,
     "forcedOrphanSales": 0,
@@ -2025,12 +2025,12 @@
     "calculation": {
       "pro": {
         "score": 83,
-        "weightedAverageProfit": 337300.6203801175,
+        "weightedAverageProfit": 336189.2473751393,
         "completedTrades": 0,
         "openPositions": 7,
         "orphanSales": 11,
         "saleTimingSampleSize": 11,
-        "profitBonus": 16.865031019005876
+        "profitBonus": 16.809462368756968
       },
       "ovp": {
         "score": 56,
@@ -2072,7 +2072,7 @@
       "overall": {
         "baseScore": 50,
         "activityBonus": 13.5,
-        "profitBonus": 16.865031019005876,
+        "profitBonus": 16.809462368756968,
         "overpayBonus": -1.4044108145405165,
         "performanceBonus": 0,
         "squadRiskPenalty": -5.6000000000000005,
@@ -2088,7 +2088,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 7,
     "unrealizedProfit": -7318785,
-    "openPositionsAvgAgeDays": 8.462912377645504,
+    "openPositionsAvgAgeDays": 8.518091775793652,
     "orphanSales": 11,
     "orphanSaleProfit": 2935682,
     "forcedOrphanSales": 0,
@@ -2131,12 +2131,12 @@
     "calculation": {
       "pro": {
         "score": 66,
-        "weightedAverageProfit": 163644.6875295319,
+        "weightedAverageProfit": 162902.9316203416,
         "completedTrades": 4,
         "openPositions": 8,
         "orphanSales": 12,
         "saleTimingSampleSize": 12,
-        "profitBonus": 8.182234376476595
+        "profitBonus": 8.14514658101708
       },
       "ovp": {
         "score": 68,
@@ -2178,7 +2178,7 @@
       "overall": {
         "baseScore": 50,
         "activityBonus": 15,
-        "profitBonus": 8.182234376476595,
+        "profitBonus": 8.14514658101708,
         "overpayBonus": -0.052528419150715475,
         "performanceBonus": 0,
         "squadRiskPenalty": -6.800000000000001,
@@ -2194,7 +2194,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 8,
     "unrealizedProfit": -8640279,
-    "openPositionsAvgAgeDays": 8.122581701388889,
+    "openPositionsAvgAgeDays": 8.177761099537037,
     "orphanSales": 12,
     "orphanSaleProfit": 2087929,
     "forcedOrphanSales": 0,
@@ -2237,12 +2237,12 @@
     "calculation": {
       "pro": {
         "score": 84,
-        "weightedAverageProfit": 349212.59336365,
+        "weightedAverageProfit": 348723.4337662894,
         "completedTrades": 14,
         "openPositions": 14,
         "orphanSales": 14,
         "saleTimingSampleSize": 24,
-        "profitBonus": 17.460629668182502
+        "profitBonus": 17.43617168831447
       },
       "ovp": {
         "score": 45,
@@ -2284,7 +2284,7 @@
       "overall": {
         "baseScore": 50,
         "activityBonus": 15,
-        "profitBonus": 17.460629668182502,
+        "profitBonus": 17.43617168831447,
         "overpayBonus": -6.95535975301099,
         "performanceBonus": 0,
         "squadRiskPenalty": -4.8,
@@ -2300,7 +2300,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 14,
     "unrealizedProfit": -14210989,
-    "openPositionsAvgAgeDays": 4.926461531084656,
+    "openPositionsAvgAgeDays": 4.981640929232805,
     "orphanSales": 14,
     "orphanSaleProfit": 2073433,
     "forcedOrphanSales": 0,
@@ -2343,12 +2343,12 @@
     "calculation": {
       "pro": {
         "score": 53,
-        "weightedAverageProfit": 34360.016930890655,
+        "weightedAverageProfit": 33688.00395010678,
         "completedTrades": 8,
         "openPositions": 11,
         "orphanSales": 12,
         "saleTimingSampleSize": 15,
-        "profitBonus": 1.718000846544533
+        "profitBonus": 1.6844001975053389
       },
       "ovp": {
         "score": 65,
@@ -2390,7 +2390,7 @@
       "overall": {
         "baseScore": 50,
         "activityBonus": 15,
-        "profitBonus": 1.718000846544533,
+        "profitBonus": 1.6844001975053389,
         "overpayBonus": -2.1270073487784993,
         "performanceBonus": 0,
         "squadRiskPenalty": -5.6000000000000005,
@@ -2406,7 +2406,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 11,
     "unrealizedProfit": -9339028,
-    "openPositionsAvgAgeDays": 6.086678958333334,
+    "openPositionsAvgAgeDays": 6.141858356481482,
     "orphanSales": 12,
     "orphanSaleProfit": 2945875,
     "forcedOrphanSales": 0,
@@ -2449,12 +2449,12 @@
     "calculation": {
       "pro": {
         "score": 22,
-        "weightedAverageProfit": -284184.2895206589,
+        "weightedAverageProfit": -285133.46182644303,
         "completedTrades": 5,
         "openPositions": 10,
         "orphanSales": 14,
         "saleTimingSampleSize": 15,
-        "profitBonus": -14.209214476032944
+        "profitBonus": -14.256673091322153
       },
       "ovp": {
         "score": 39,
@@ -2496,7 +2496,7 @@
       "overall": {
         "baseScore": 50,
         "activityBonus": 15,
-        "profitBonus": -14.209214476032944,
+        "profitBonus": -14.256673091322153,
         "overpayBonus": -10,
         "performanceBonus": 0,
         "squadRiskPenalty": -9.2,
@@ -2512,7 +2512,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 10,
     "unrealizedProfit": -20538292,
-    "openPositionsAvgAgeDays": 4.167058518518519,
+    "openPositionsAvgAgeDays": 4.222237916666666,
     "orphanSales": 14,
     "orphanSaleProfit": 1886588,
     "forcedOrphanSales": 0,
@@ -2555,12 +2555,12 @@
     "calculation": {
       "pro": {
         "score": 52,
-        "weightedAverageProfit": 21079.667217506867,
+        "weightedAverageProfit": 20353.197245765947,
         "completedTrades": 2,
         "openPositions": 8,
         "orphanSales": 12,
         "saleTimingSampleSize": 11,
-        "profitBonus": 1.0539833608753433
+        "profitBonus": 1.0176598622882973
       },
       "ovp": {
         "score": 75,
@@ -2602,7 +2602,7 @@
       "overall": {
         "baseScore": 50,
         "activityBonus": 15,
-        "profitBonus": 1.0539833608753433,
+        "profitBonus": 1.0176598622882973,
         "overpayBonus": -1.2618491086061039,
         "performanceBonus": 0,
         "squadRiskPenalty": -7.600000000000001,
@@ -2618,7 +2618,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 8,
     "unrealizedProfit": -9825302,
-    "openPositionsAvgAgeDays": 6.007266342592592,
+    "openPositionsAvgAgeDays": 6.06244574074074,
     "orphanSales": 12,
     "orphanSaleProfit": 1606944,
     "forcedOrphanSales": 0,
@@ -2661,12 +2661,12 @@
     "calculation": {
       "pro": {
         "score": 36,
-        "weightedAverageProfit": -142863.32253450516,
+        "weightedAverageProfit": -143435.10163793934,
         "completedTrades": 1,
         "openPositions": 5,
         "orphanSales": 5,
         "saleTimingSampleSize": 5,
-        "profitBonus": -7.143166126725258
+        "profitBonus": -7.1717550818969675
       },
       "ovp": {
         "score": 84,
@@ -2708,7 +2708,7 @@
       "overall": {
         "baseScore": 50,
         "activityBonus": 9,
-        "profitBonus": -7.143166126725258,
+        "profitBonus": -7.1717550818969675,
         "overpayBonus": 0.9393437038860385,
         "performanceBonus": 0,
         "squadRiskPenalty": -2.400000000000001,
@@ -2724,7 +2724,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 5,
     "unrealizedProfit": -4181600,
-    "openPositionsAvgAgeDays": 4.614982210648148,
+    "openPositionsAvgAgeDays": 4.670161608796296,
     "orphanSales": 5,
     "orphanSaleProfit": -470618,
     "forcedOrphanSales": 0,
@@ -2767,12 +2767,12 @@
     "calculation": {
       "pro": {
         "score": 47,
-        "weightedAverageProfit": -30658.23860044035,
+        "weightedAverageProfit": -32362.55312011881,
         "completedTrades": 2,
         "openPositions": 7,
         "orphanSales": 10,
         "saleTimingSampleSize": 9,
-        "profitBonus": -1.5329119300220173
+        "profitBonus": -1.6181276560059406
       },
       "ovp": {
         "score": 7,
@@ -2814,7 +2814,7 @@
       "overall": {
         "baseScore": 50,
         "activityBonus": 15,
-        "profitBonus": -1.5329119300220173,
+        "profitBonus": -1.6181276560059406,
         "overpayBonus": -10,
         "performanceBonus": 0,
         "squadRiskPenalty": -9.6,
@@ -2830,7 +2830,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 7,
     "unrealizedProfit": -13338484,
-    "openPositionsAvgAgeDays": 10.24518587962963,
+    "openPositionsAvgAgeDays": 10.300365277777775,
     "orphanSales": 10,
     "orphanSaleProfit": 2129732,
     "forcedOrphanSales": 0,
@@ -2873,12 +2873,12 @@
     "calculation": {
       "pro": {
         "score": 44,
-        "weightedAverageProfit": -60463.8509932597,
+        "weightedAverageProfit": -60864.6085802511,
         "completedTrades": 3,
         "openPositions": 8,
         "orphanSales": 11,
         "saleTimingSampleSize": 12,
-        "profitBonus": -3.0231925496629852
+        "profitBonus": -3.0432304290125547
       },
       "ovp": {
         "score": 94,
@@ -2920,7 +2920,7 @@
       "overall": {
         "baseScore": 50,
         "activityBonus": 15,
-        "profitBonus": -3.0231925496629852,
+        "profitBonus": -3.0432304290125547,
         "overpayBonus": 2.670276043331301,
         "performanceBonus": 0,
         "squadRiskPenalty": -8.8,
@@ -2936,7 +2936,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 8,
     "unrealizedProfit": -6039038,
-    "openPositionsAvgAgeDays": 3.757324224537037,
+    "openPositionsAvgAgeDays": 3.812503622685185,
     "orphanSales": 11,
     "orphanSaleProfit": 2414915,
     "forcedOrphanSales": 0,
