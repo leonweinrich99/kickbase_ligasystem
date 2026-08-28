@@ -79,7 +79,7 @@ const TIER_THEME = {
   },
 };
 
-const STAT_ROW_Y = [440, 480, 520];
+const STAT_ROW_Y = [458, 498, 538];
 
 // Kleine Akzentfarbe je Kartenstufe - fuer UI-Elemente AUSSERHALB der Karte
 // selbst (z.B. die Berechnungs-Erklaerkarten darunter), damit die Farbwelt
