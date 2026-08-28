@@ -104,12 +104,6 @@ const EmptyState = ({ children }) => (
   </div>
 );
 
-const JumpLink = ({ href, children }) => (
-  <a href={href} className="inline-block mt-2.5 text-[10px] font-black uppercase tracking-widest text-[#8b92a5] hover:text-white transition-colors">
-    {children} ›
-  </a>
-);
-
 function StatCalcCard({ label, title, score, isOpen, onToggle, factors, emptyNote }) {
   const accent = TIER_ACCENT[scoreToTier(score)];
   return (
@@ -140,7 +134,7 @@ function StatCalcCard({ label, title, score, isOpen, onToggle, factors, emptyNot
 }
 
 export default function RatingCalculationSection({ calculation, ovpLeaguePeers, aktLeaguePeers }) {
-  const [openKey, setOpenKey] = useState('pro');
+  const [openKey, setOpenKey] = useState(null);
   if (!calculation) return null;
   const toggle = (key) => setOpenKey((cur) => (cur === key ? null : key));
 
@@ -258,13 +252,6 @@ export default function RatingCalculationSection({ calculation, ovpLeaguePeers, 
             </FactorGrid>
           )}
         />
-      </div>
-
-      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 px-1">
-        <JumpLink href="#trades-verkaeufe">PRO-Details</JumpLink>
-        <JumpLink href="#kaufverhalten">OVP-Details</JumpLink>
-        <JumpLink href="#kaderstatus">KAD-Details</JumpLink>
-        <JumpLink href="#verkaufsgespuer">TIM-Details</JumpLink>
       </div>
     </div>
   );

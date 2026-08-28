@@ -4,7 +4,6 @@ import { useBackNavigation } from './useBackNavigation';
 import { BackButton } from './ui/CloseButton';
 import FifaManagerCard from './ui/FifaManagerCard';
 import RatingCalculationSection from './ui/RatingCalculationSection';
-import OverallRatingBreakdown from './ui/OverallRatingBreakdown';
 
 // Vollbild-Seite (eigene Route /account/manager-rating) statt Bottom-Sheet-
 // Modal - gleiche Design-Strategie wie UserDetail/OptimalTeam: sticky Header
@@ -100,10 +99,6 @@ const ManagerRatingPage = () => {
           ovpLeaguePeers={leaguePeers.ovp}
           aktLeaguePeers={leaguePeers.akt}
         />
-
-        {/* Wie wird aus den Boni der 0-100-Gesamtscore (und damit die
-            Kartenstufe Bronze/Silber/Gold)? */}
-        <OverallRatingBreakdown rating={rating} />
       </div>
     </div>
   );
