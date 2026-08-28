@@ -234,4 +234,4 @@ export default function FifaManagerCard({ rating, photoURL }) {
   );
 }
 
-export { TIER_ACCENT };
+export { SHIELD_PATH, TIER_ACCENT, TIER_THEME };
