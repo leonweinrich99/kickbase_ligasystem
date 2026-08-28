@@ -121,7 +121,7 @@ export default function FifaManagerCard({ rating, photoURL }) {
   // eng - lieber etwas kleinere Schrift als ein am Kartenrand abgeschnittener
   // Name (SVG-Text bricht nicht automatisch um).
   const nameLength = rating.name?.length || 0;
-  const nameFontSize = nameLength > 18 ? 25 : nameLength > 14 ? 32 : 38;
+  const nameFontSize = nameLength > 18 ? 22 : nameLength > 14 ? 29 : 34;
 
   return (
     <div className="w-full flex justify-center py-2">
@@ -176,7 +176,7 @@ export default function FifaManagerCard({ rating, photoURL }) {
             ) : (
               <>
                 <rect x="183" y="109" width="190" height="247" fill="#00000022" />
-                <text x="278" y="232" textAnchor="middle" dominantBaseline="central" fontSize="90" fontWeight="600" fill={theme.subtext} opacity="0.5">
+                <text x="278" y="232" textAnchor="middle" dominantBaseline="central" fontSize="81" fontWeight="600" fill={theme.subtext} opacity="0.5">
                   {rating.name?.charAt(0)?.toUpperCase() || '?'}
                 </text>
               </>
@@ -191,7 +191,7 @@ export default function FifaManagerCard({ rating, photoURL }) {
             </text>
 
             {/* Gesamtscore */}
-            <text x="131" y="118" textAnchor="middle" dominantBaseline="central" fontSize="58" fontWeight="600" fill={theme.text}>
+            <text x="131" y="118" textAnchor="middle" dominantBaseline="central" fontSize="52" fontWeight="600" fill={theme.text}>
               {rating.score}
             </text>
 
@@ -205,16 +205,16 @@ export default function FifaManagerCard({ rating, photoURL }) {
             {/* Statistiken links: PRO / OVP / PKT */}
             {[['PRO', rating.pro], ['OVP', rating.ovp], ['PKT', rating.pkt]].map(([label, value], i) => (
               <text key={label} x="113" y={STAT_ROW_Y[i]} textAnchor="start" dominantBaseline="central" fill={theme.text}>
-                <tspan fontSize="34" fontWeight="600">{value}</tspan>
-                <tspan dx="9" fontSize="23" fontWeight="500" fill={theme.subtext}>{label}</tspan>
+                <tspan fontSize="31" fontWeight="600">{value}</tspan>
+                <tspan dx="9" fontSize="21" fontWeight="500" fill={theme.subtext}>{label}</tspan>
               </text>
             ))}
 
             {/* Statistiken rechts: AKT / KAD / TIM */}
             {[['AKT', rating.akt], ['KAD', rating.kad], ['TIM', rating.tim]].map(([label, value], i) => (
               <text key={label} x="288" y={STAT_ROW_Y[i]} textAnchor="start" dominantBaseline="central" fill={theme.text}>
-                <tspan fontSize="34" fontWeight="600">{value}</tspan>
-                <tspan dx="9" fontSize="23" fontWeight="500" fill={theme.subtext}>{label}</tspan>
+                <tspan fontSize="31" fontWeight="600">{value}</tspan>
+                <tspan dx="9" fontSize="21" fontWeight="500" fill={theme.subtext}>{label}</tspan>
               </text>
             ))}
 
