@@ -273,9 +273,13 @@ function computeProScore(profitBonus, hasWeightedTrades) {
 // Aufschlag als andere = besser) statt eines fixen Referenzwerts - wird erst
 // NACH der Liga-weiten Vergleichsrunde (siehe run(), zweiter Durchlauf) final
 // gesetzt, weil dafuer alle Liga-Mitglieder bekannt sein muessen.
+// Kalibrierung (Owner-Vorgabe 29.08.2026, identisch fuer alle liga-relativen
+// Kartenwerte): Liga-Durchschnitt (~Median, Prozentrang 50) ergibt 75, "schlecht"
+// (weit unter Liga-Niveau) ~50 - 50 ist schon schlecht -, der beste Manager der
+// Liga erreicht 99. Damit verlaesst kein Wert mehr den Rahmen 50-99.
 function computeOvpScore(percentile) {
     if (percentile == null) return NEUTRAL_CARD_SCORE;
-    return clampCardScore(1 + (percentile / 100) * 98);
+    return clampCardScore(51 + (percentile / 100) * 48);
 }
 
 // PKT (Punkte pro Million): ppm ab 0 - der Score wird NICHT mehr an einer fixen
@@ -289,13 +293,14 @@ function computePktScore(ppm, hasPoints) {
     return NEUTRAL_CARD_SCORE;
 }
 
-// PKT final: ppm im Verhältnis zum Liga-Mittelwert (statt fix ~3). Ein Manager
-// mit Liga-Durchschnitt landet bei ~50, doppelt so viel wie der Ligaschnitt bei
-// ~99, nahe 0 bei ~1. So misst die Karte, wie stark man relativ zu den eigenen
-// Liga-Kollegen spielt, statt an einem globalen Fixwert.
+// PKT final: ppm im Verhaeltnis zum Liga-Mittelwert (statt fix ~3). Kalibrierung
+// laut Owner-Vorgabe 29.08.2026: Liga-Durchschnitt (Verhaeltnis 1) ergibt 75,
+// die Haelfte des Liga-Mittelwerts ergibt 50 ("50 ist schon schlecht"), das
+// Doppelte ergibt 99 (Saettigung). So misst die Karte, wie stark man relativ zu
+// den eigenen Liga-Kollegen spielt, statt an einem globalen Fixwert.
 function computePktScoreFromMean(ppm, leagueMeanPpm) {
     if (!(ppm > 0) || !(leagueMeanPpm > 0)) return NEUTRAL_CARD_SCORE;
-    return clampCardScore(50 * (ppm / leagueMeanPpm));
+    return clampCardScore(25 + 50 * (ppm / leagueMeanPpm));
 }
 
 // AKT (Marktaktivitaet): Glockenkurve statt linearem Prozentrang (Owner-Vorgabe
