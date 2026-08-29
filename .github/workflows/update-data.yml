@@ -10,6 +10,21 @@ on:
         required: false
         default: 'false'
 
+# Verhindert einen Race zwischen zwei fast gleichzeitig getriggerten Laeufen
+# (z.B. zwei PR-Merges kurz hintereinander): manager-ratings.json & Co. werden
+# JEDEM Lauf komplett neu generiert (kein inkrementelles Update) - laufen zwei
+# Laeufe parallel, committet/pusht jeder seine eigene komplette Neuberechnung,
+# und der "git pull --rebase -X ours" im Push-Schritt darunter mischt beide
+# Versionen zeilenweise zusammen. Ergebnis: einzelne Manager landen mit
+# Top-Level-Score aus Lauf A, aber calculation-Objekt aus Lauf B (oder
+# umgekehrt) - inkonsistente, falsche Werte in der App, obwohl beide Laeufe
+# einzeln fuer sich vollkommen korrekt waren (siehe Issue c94c39b3, 29.08.2026).
+# cancel-in-progress: der aeltere Lauf bringt sowieso nur eine veraltete
+# Momentaufnahme - der neuere Push macht ihn ohnehin obsolet.
+concurrency:
+  group: update-kickbase-data
+  cancel-in-progress: true
+
 jobs:
   update-data:
     runs-on: ubuntu-latest
