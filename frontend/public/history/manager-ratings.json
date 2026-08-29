@@ -9,8 +9,8 @@
     "ovp": 72,
     "pkt": 68,
     "akt": 91,
-    "kad": 77,
-    "tim": 88,
+    "kad": 82,
+    "tim": 94,
     "calculation": {
       "pro": {
         "score": 56,
@@ -55,12 +55,18 @@
         "zScore": 0.8446822911304959
       },
       "kad": {
-        "score": 77,
+        "score": 82,
         "squadTotal": 13,
         "squadReadiness": 0.5999999999999999,
         "squadHeadcountReadiness": 1,
         "squadRiskPenalty": -5.600000000000001,
-        "budget": 179313563
+        "budget": 179313563,
+        "leaguePercentile": 56.25,
+        "leagueRank": 4,
+        "leagueSize": 8,
+        "leagueMean": -6.600000000000001,
+        "leagueStd": 2.9548990797366614,
+        "zScore": 0.3384210333468036
       },
       "tim": {
         "score": 88,
@@ -170,12 +176,18 @@
         "zScore": -0.6444014188668012
       },
       "kad": {
-        "score": 94,
+        "score": 98,
         "squadTotal": 15,
         "squadReadiness": 0.9142857142857143,
         "squadHeadcountReadiness": 1,
         "squadRiskPenalty": -1.2000000000000004,
-        "budget": 130437004
+        "budget": 130437004,
+        "leaguePercentile": 93.75,
+        "leagueRank": 1,
+        "leagueSize": 8,
+        "leagueMean": -6.600000000000001,
+        "leagueStd": 2.9548990797366614,
+        "zScore": 1.82747358007274
       },
       "tim": {
         "score": 55,
@@ -239,8 +251,8 @@
     "ovp": 77,
     "pkt": 86,
     "akt": 79,
-    "kad": 69,
-    "tim": 89,
+    "kad": 59,
+    "tim": 97,
     "calculation": {
       "pro": {
         "score": 77,
@@ -290,10 +302,16 @@
         "squadReadiness": 0.45714285714285713,
         "squadHeadcountReadiness": 1,
         "squadRiskPenalty": -7.600000000000001,
-        "budget": 154777591
+        "budget": 154777591,
+        "leaguePercentile": 15,
+        "leagueRank": 9,
+        "leagueSize": 10,
+        "leagueMean": -6.200000000000001,
+        "leagueStd": 1.8973665961010284,
+        "zScore": -0.7378647873726217
       },
       "tim": {
-        "score": 89,
+        "score": 97,
         "sampleSize": 12,
         "averageTimingProfit": 1210968
       },
@@ -630,12 +648,18 @@
         "zScore": -1.1691090500332504
       },
       "kad": {
-        "score": 66,
+        "score": 63,
         "squadTotal": 11,
         "squadReadiness": 0.39999999999999997,
         "squadHeadcountReadiness": 1,
         "squadRiskPenalty": -8.400000000000002,
-        "budget": 147133086
+        "budget": 147133086,
+        "leaguePercentile": 38.88888888888889,
+        "leagueRank": 6,
+        "leagueSize": 9,
+        "leagueMean": -7.111111111111111,
+        "leagueStd": 2.4230375793848333,
+        "zScore": -0.5319310355954602
       },
       "tim": {
         "score": 78,
@@ -745,12 +769,18 @@
         "zScore": 1.520500709265937
       },
       "kad": {
-        "score": 78,
+        "score": 85,
         "squadTotal": 15,
         "squadReadiness": 0.6285714285714284,
         "squadHeadcountReadiness": 1,
         "squadRiskPenalty": -5.200000000000002,
-        "budget": 182347401
+        "budget": 182347401,
+        "leaguePercentile": 68.75,
+        "leagueRank": 3,
+        "leagueSize": 8,
+        "leagueMean": -6.600000000000001,
+        "leagueStd": 2.9548990797366614,
+        "zScore": 0.47378944668552486
       },
       "tim": {
         "score": 80,
@@ -810,7 +840,7 @@
     "level": "Bronze",
     "cardTier": "bronze",
     "league": "L3",
-    "pro": 45,
+    "pro": 65,
     "ovp": 68,
     "pkt": 66,
     "akt": 58,
@@ -860,12 +890,18 @@
         "zScore": -0.8161937753941308
       },
       "kad": {
-        "score": 72,
+        "score": 67,
         "squadTotal": 13,
         "squadReadiness": 0.5142857142857142,
         "squadHeadcountReadiness": 1,
         "squadRiskPenalty": -6.800000000000001,
-        "budget": 156632926
+        "budget": 156632926,
+        "leaguePercentile": 45,
+        "leagueRank": 5,
+        "leagueSize": 10,
+        "leagueMean": -6.200000000000001,
+        "leagueStd": 1.8973665961010284,
+        "zScore": -0.3162277660168376
       },
       "tim": {
         "score": 82,
@@ -1044,8 +1080,8 @@
     "ovp": 91,
     "pkt": 66,
     "akt": 77,
-    "kad": 82,
-    "tim": 88,
+    "kad": 94,
+    "tim": 92,
     "calculation": {
       "pro": {
         "score": 55,
@@ -1090,12 +1126,18 @@
         "zScore": 0.10611010799059609
       },
       "kad": {
-        "score": 82,
+        "score": 94,
         "squadTotal": 12,
         "squadReadiness": 0.6857142857142857,
         "squadHeadcountReadiness": 1,
         "squadRiskPenalty": -4.4,
-        "budget": 136242969
+        "budget": 136242969,
+        "leaguePercentile": 77.77777777777779,
+        "leagueRank": 2,
+        "leagueSize": 9,
+        "leagueMean": -7.111111111111111,
+        "leagueStd": 2.4230375793848333,
+        "zScore": 1.118889419700793
       },
       "tim": {
         "score": 88,
@@ -1205,12 +1247,18 @@
         "zScore": -0.35801244980632546
       },
       "kad": {
-        "score": 72,
+        "score": 67,
         "squadTotal": 11,
         "squadReadiness": 0.5142857142857142,
         "squadHeadcountReadiness": 1,
         "squadRiskPenalty": -6.800000000000001,
-        "budget": 143422090
+        "budget": 143422090,
+        "leaguePercentile": 45,
+        "leagueRank": 5,
+        "leagueSize": 10,
+        "leagueMean": -6.200000000000001,
+        "leagueStd": 1.8973665961010284,
+        "zScore": -0.3162277660168376
       },
       "tim": {
         "score": 75,
@@ -1385,12 +1433,12 @@
     "level": "Silber",
     "cardTier": "silver",
     "league": "L1",
-    "pro": 50,
+    "pro": 66,
     "ovp": 96,
     "pkt": 87,
     "akt": 71,
-    "kad": 82,
-    "tim": 84,
+    "kad": 94,
+    "tim": 78,
     "calculation": {
       "pro": {
         "score": 50,
@@ -1435,15 +1483,21 @@
         "zScore": -0.14531599305325282
       },
       "kad": {
-        "score": 82,
+        "score": 94,
         "squadTotal": 10,
         "squadReadiness": 0.6857142857142857,
         "squadHeadcountReadiness": 0.9090909090909091,
         "squadRiskPenalty": -4.4,
-        "budget": 144016191
+        "budget": 144016191,
+        "leaguePercentile": 77.77777777777779,
+        "leagueRank": 2,
+        "leagueSize": 9,
+        "leagueMean": -7.111111111111111,
+        "leagueStd": 2.4230375793848333,
+        "zScore": 1.118889419700793
       },
       "tim": {
-        "score": 84,
+        "score": 78,
         "sampleSize": 15,
         "averageTimingProfit": 880280.3333333334
       },
@@ -1500,7 +1554,7 @@
     "level": "Gold",
     "cardTier": "gold",
     "league": "L1",
-    "pro": 99,
+    "pro": 98,
     "ovp": 59,
     "pkt": 72,
     "akt": 56,
@@ -1550,12 +1604,18 @@
         "zScore": -1.0064505345187587
       },
       "kad": {
-        "score": 66,
+        "score": 63,
         "squadTotal": 12,
         "squadReadiness": 0.4,
         "squadHeadcountReadiness": 1,
         "squadRiskPenalty": -8.4,
-        "budget": 189655786
+        "budget": 189655786,
+        "leaguePercentile": 50,
+        "leagueRank": 5,
+        "leagueSize": 9,
+        "leagueMean": -7.111111111111111,
+        "leagueStd": 2.4230375793848333,
+        "zScore": -0.5319310355954594
       },
       "tim": {
         "score": 91,
@@ -1730,7 +1790,7 @@
     "level": "Bronze",
     "cardTier": "bronze",
     "league": "L3",
-    "pro": 36,
+    "pro": 58,
     "ovp": 53,
     "pkt": 93,
     "akt": 60,
@@ -1780,12 +1840,18 @@
         "zScore": -0.691101774799017
       },
       "kad": {
-        "score": 80,
+        "score": 90,
         "squadTotal": 14,
         "squadReadiness": 0.6571428571428571,
         "squadHeadcountReadiness": 1,
         "squadRiskPenalty": -4.8,
-        "budget": 126585723
+        "budget": 126585723,
+        "leaguePercentile": 85,
+        "leagueRank": 2,
+        "leagueSize": 10,
+        "leagueMean": -6.200000000000001,
+        "leagueStd": 1.8973665961010284,
+        "zScore": 0.7378647873726222
       },
       "tim": {
         "score": 76,
@@ -1895,12 +1961,18 @@
         "zScore": -0.05376062213032072
       },
       "kad": {
-        "score": 67,
+        "score": 64,
         "squadTotal": 13,
         "squadReadiness": 0.42857142857142855,
         "squadHeadcountReadiness": 1,
         "squadRiskPenalty": -8,
-        "budget": 151718057
+        "budget": 151718057,
+        "leaguePercentile": 43.75,
+        "leagueRank": 5,
+        "leagueSize": 8,
+        "leagueMean": -6.600000000000001,
+        "leagueStd": 2.9548990797366614,
+        "zScore": -0.4737894466855246
       },
       "tim": {
         "score": 79,
@@ -2010,12 +2082,18 @@
         "zScore": -0.9499194351858634
       },
       "kad": {
-        "score": 74,
+        "score": 72,
         "squadTotal": 11,
         "squadReadiness": 0.5428571428571429,
         "squadHeadcountReadiness": 1,
         "squadRiskPenalty": -6.399999999999999,
-        "budget": 115984879
+        "budget": 115984879,
+        "leaguePercentile": 65,
+        "leagueRank": 4,
+        "leagueSize": 10,
+        "leagueMean": -6.200000000000001,
+        "leagueStd": 1.8973665961010284,
+        "zScore": -0.10540925533894462
       },
       "tim": {
         "score": 87,
@@ -2079,8 +2157,8 @@
     "ovp": 78,
     "pkt": 63,
     "akt": 53,
-    "kad": 80,
-    "tim": 89,
+    "kad": 88,
+    "tim": 95,
     "calculation": {
       "pro": {
         "score": 71,
@@ -2125,17 +2203,29 @@
         "zScore": -1.3979347627920666
       },
       "kad": {
-        "score": 80,
+        "score": 88,
         "squadTotal": 11,
         "squadReadiness": 0.6571428571428571,
         "squadHeadcountReadiness": 1,
         "squadRiskPenalty": -4.8,
-        "budget": 146354997
+        "budget": 146354997,
+        "leaguePercentile": 81.25,
+        "leagueRank": 2,
+        "leagueSize": 8,
+        "leagueMean": -6.600000000000001,
+        "leagueStd": 2.9548990797366614,
+        "zScore": 0.609157860024247
       },
       "tim": {
-        "score": 89,
+        "score": 95,
         "sampleSize": 10,
-        "averageTimingProfit": 1160208.3
+        "averageTimingProfit": 1160208.3,
+        "leaguePercentile": 93.75,
+        "leagueRank": 1,
+        "leagueSize": 8,
+        "leagueMean": 748762.428315462,
+        "leagueStd": 325065.6205284303,
+        "zScore": 1.265731734459298
       },
       "overall": {
         "baseScore": 50,
@@ -2240,12 +2330,18 @@
         "zScore": -0.05376062213032072
       },
       "kad": {
-        "score": 61,
+        "score": 56,
         "squadTotal": 11,
         "squadReadiness": 0.31428571428571433,
         "squadHeadcountReadiness": 1,
         "squadRiskPenalty": -9.6,
-        "budget": 189452097
+        "budget": 189452097,
+        "leaguePercentile": 18.75,
+        "leagueRank": 7,
+        "leagueSize": 8,
+        "leagueMean": -6.600000000000001,
+        "leagueStd": 2.9548990797366614,
+        "zScore": -1.0152631000404102
       },
       "tim": {
         "score": 79,
@@ -2475,7 +2571,13 @@
         "squadReadiness": 0.6,
         "squadHeadcountReadiness": 1,
         "squadRiskPenalty": -5.6000000000000005,
-        "budget": 154267853
+        "budget": 154267853,
+        "leaguePercentile": 75,
+        "leagueRank": 3,
+        "leagueSize": 10,
+        "leagueMean": -6.200000000000001,
+        "leagueStd": 1.8973665961010284,
+        "zScore": 0.31622776601683805
       },
       "tim": {
         "score": 79,
@@ -2654,7 +2756,7 @@
     "ovp": 87,
     "pkt": 83,
     "akt": 80,
-    "kad": 72,
+    "kad": 67,
     "tim": 85,
     "calculation": {
       "pro": {
@@ -2700,12 +2802,18 @@
         "zScore": 0.24993534396664957
       },
       "kad": {
-        "score": 72,
+        "score": 67,
         "squadTotal": 12,
         "squadReadiness": 0.5142857142857142,
         "squadHeadcountReadiness": 1,
         "squadRiskPenalty": -6.800000000000001,
-        "budget": 148098934
+        "budget": 148098934,
+        "leaguePercentile": 45,
+        "leagueRank": 5,
+        "leagueSize": 10,
+        "leagueMean": -6.200000000000001,
+        "leagueStd": 1.8973665961010284,
+        "zScore": -0.3162277660168376
       },
       "tim": {
         "score": 85,
@@ -2765,12 +2873,12 @@
     "level": "Bronze",
     "cardTier": "bronze",
     "league": "L3",
-    "pro": 36,
+    "pro": 58,
     "ovp": 92,
     "pkt": 50,
     "akt": 55,
-    "kad": 93,
-    "tim": 75,
+    "kad": 99,
+    "tim": 54,
     "calculation": {
       "pro": {
         "score": 36,
@@ -2815,17 +2923,29 @@
         "zScore": -1.0935594556473691
       },
       "kad": {
-        "score": 93,
+        "score": 99,
         "squadTotal": 15,
         "squadReadiness": 0.8857142857142858,
         "squadHeadcountReadiness": 1,
         "squadRiskPenalty": -1.599999999999999,
-        "budget": 120553088
+        "budget": 120553088,
+        "leaguePercentile": 95,
+        "leagueRank": 1,
+        "leagueSize": 10,
+        "leagueMean": -6.200000000000001,
+        "leagueStd": 1.8973665961010284,
+        "zScore": 2.4244128727957577
       },
       "tim": {
-        "score": 75,
+        "score": 54,
         "sampleSize": 5,
-        "averageTimingProfit": 554962
+        "averageTimingProfit": 554962,
+        "leaguePercentile": 5,
+        "leagueRank": 10,
+        "leagueSize": 10,
+        "leagueMean": 850286.2781110912,
+        "leagueStd": 245573.4455523303,
+        "zScore": -1.2025904407003947
       },
       "overall": {
         "baseScore": 50,
@@ -2880,7 +3000,7 @@
     "level": "Bronze",
     "cardTier": "bronze",
     "league": "L2",
-    "pro": 46,
+    "pro": 52,
     "ovp": 60,
     "pkt": 83,
     "akt": 56,
@@ -2938,7 +3058,7 @@
         "budget": 142561626
       },
       "tim": {
-        "score": 79,
+        "score": 69,
         "sampleSize": 11,
         "averageTimingProfit": 681333.1818181818
       },
