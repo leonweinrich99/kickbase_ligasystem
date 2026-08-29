@@ -278,10 +278,24 @@ function computeOvpScore(percentile) {
     return clampCardScore(1 + (percentile / 100) * 98);
 }
 
-// PKT (Punkte pro Million): ppm von 0 bis referenzhaft ~3 (siehe perfBonus-Logik) -> 1-99.
+// PKT (Punkte pro Million): ppm ab 0 - der Score wird NICHT mehr an einer fixen
+// Schwelle (~3) gemessen, sondern dynamisch am Liga-Mittelwert des jeweiligen
+// Managers ausgerichtet (Owner-Vorgabe 29.08.2026, bestätigt "Go"). Da der
+// Liga-Mittelwert erst bekannt ist, wenn alle Liga-Mitglieder gerechnet wurden,
+// bleibt PKT im ersten Durchlauf neutral (Platzhalter) und wird - wie OVP und
+// AKT - im zweiten Durchlauf final gesetzt (siehe Ende von run()).
 function computePktScore(ppm, hasPoints) {
     if (!hasPoints) return NEUTRAL_CARD_SCORE;
-    return clampCardScore((ppm / 3) * 99);
+    return NEUTRAL_CARD_SCORE;
+}
+
+// PKT final: ppm im Verhältnis zum Liga-Mittelwert (statt fix ~3). Ein Manager
+// mit Liga-Durchschnitt landet bei ~50, doppelt so viel wie der Ligaschnitt bei
+// ~99, nahe 0 bei ~1. So misst die Karte, wie stark man relativ zu den eigenen
+// Liga-Kollegen spielt, statt an einem globalen Fixwert.
+function computePktScoreFromMean(ppm, leagueMeanPpm) {
+    if (!(ppm > 0) || !(leagueMeanPpm > 0)) return NEUTRAL_CARD_SCORE;
+    return clampCardScore(50 * (ppm / leagueMeanPpm));
 }
 
 // AKT (Marktaktivitaet): Glockenkurve statt linearem Prozentrang (Owner-Vorgabe
@@ -900,6 +914,28 @@ function run() {
                     score,
                 });
                 ratings[uid].ovp = score;
+            });
+
+            // PKT (Punkte pro Million): Schwellenwert dynamisch am Liga-Mittelwert
+            // statt fix ~3 (Owner-Vorgabe 29.08.2026). Nur unter Managern mit echt
+            // vorliegenden Punkten/PPM vergleichen; ohne Punkte bleibt neutral.
+            const pktMembers = memberUids.filter(uid => ratings[uid].calculation.pkt.ppm != null);
+            const pktValues = pktMembers.map(uid => ratings[uid].calculation.pkt.ppm);
+            const pktMean = pktValues.length > 0 ? pktValues.reduce((a, b) => a + b, 0) / pktValues.length : 0;
+            const pktRanked = [...pktValues].sort((a, b) => b - a);
+            memberUids.forEach(uid => {
+                const ppm = ratings[uid].calculation.pkt.ppm;
+                if (ppm == null) return; // bleibt neutral (Platzhalter aus erstem Durchlauf)
+                const percentile = percentileRank(ppm, pktValues, true);
+                const score = computePktScoreFromMean(ppm, pktMean);
+                Object.assign(ratings[uid].calculation.pkt, {
+                    leaguePercentile: percentile,
+                    leagueRank: pktRanked.indexOf(ppm) + 1,
+                    leagueSize: pktValues.length,
+                    leagueMeanPpm: pktMean,
+                    score,
+                });
+                ratings[uid].pkt = score;
             });
         });
     }

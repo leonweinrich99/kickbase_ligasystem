@@ -133,7 +133,7 @@ function StatCalcCard({ label, title, score, isOpen, onToggle, factors, emptyNot
   );
 }
 
-export default function RatingCalculationSection({ calculation, ovpLeaguePeers, aktLeaguePeers }) {
+export default function RatingCalculationSection({ calculation, ovpLeaguePeers, aktLeaguePeers, pktLeaguePeers }) {
   const [openKey, setOpenKey] = useState(null);
   if (!calculation) return null;
   const toggle = (key) => setOpenKey((cur) => (cur === key ? null : key));
@@ -141,6 +141,7 @@ export default function RatingCalculationSection({ calculation, ovpLeaguePeers, 
   const { pro, ovp, pkt, akt, kad, tim } = calculation;
   const ovpAccent = TIER_ACCENT[scoreToTier(ovp.score)];
   const aktAccent = TIER_ACCENT[scoreToTier(akt.score)];
+  const pktAccent = TIER_ACCENT[scoreToTier(pkt.score)];
 
   return (
     <div>
@@ -193,8 +194,14 @@ export default function RatingCalculationSection({ calculation, ovpLeaguePeers, 
           ) : (
             <FactorGrid>
               <FactorChip value={fmtNum1(pkt.ppm)} label="Punkte pro Million" highlight />
+              <FactorChip
+                value={pkt.leagueMeanPpm != null ? fmtNum1(pkt.leagueMeanPpm) : '–'}
+                label="Ø der Liga"
+              />
               <FactorChip value={pkt.points.toLocaleString('de-DE')} label="Liga-Punkte" />
               <FactorChip value={fmtEUR(pkt.totalSpent)} label="Investierte Summe" />
+              <LeagueCompareBar percentile={pkt.leaguePercentile} rank={pkt.leagueRank} total={pkt.leagueSize} accent={pktAccent} />
+              <LeaguePeerList peers={pktLeaguePeers} formatValue={fmtNum1} />
             </FactorGrid>
           )}
         />

@@ -39,7 +39,7 @@ const ManagerRatingPage = () => {
   // muss VOR den frühen Returns stehen (Rules of Hooks), daher robust gegen
   // rating/allRatings === null.
   const leaguePeers = useMemo(() => {
-    if (!allRatings || !rating) return { ovp: [], akt: [] };
+    if (!allRatings || !rating) return { ovp: [], akt: [], pkt: [] };
     const peers = Object.entries(allRatings)
       .filter(([, r]) => r.league === rating.league)
       .map(([uid, r]) => ({ uid, name: r.name, r }));
@@ -53,7 +53,12 @@ const ManagerRatingPage = () => {
       .map(p => ({ name: p.name, value: p.r.calculation.akt.totalTransactions, isYou: p.uid === kickbaseId }))
       .sort((a, b) => b.value - a.value);
 
-    return { ovp, akt };
+    const pkt = peers
+      .filter(p => p.r.calculation?.pkt?.ppm != null)
+      .map(p => ({ name: p.name, value: p.r.calculation.pkt.ppm, isYou: p.uid === kickbaseId }))
+      .sort((a, b) => b.value - a.value);
+
+    return { ovp, akt, pkt };
   }, [allRatings, rating, kickbaseId]);
 
   if (loading) {
@@ -97,6 +102,7 @@ const ManagerRatingPage = () => {
           calculation={rating.calculation}
           ovpLeaguePeers={leaguePeers.ovp}
           aktLeaguePeers={leaguePeers.akt}
+          pktLeaguePeers={leaguePeers.pkt}
         />
       </div>
     </div>
