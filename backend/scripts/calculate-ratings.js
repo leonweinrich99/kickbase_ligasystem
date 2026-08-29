@@ -263,10 +263,14 @@ function percentileRank(value, allValues, higherIsBetter = true) {
     return ((worseCount + equalCount / 2) / allValues.length) * 100;
 }
 
-// PRO (Profit): profitBonus reicht von -20 bis +25 -> auf 1-99 gestreckt.
+// PRO (Profit): liga-relativ statt fixer -20..+25-Streckung (Owner-Vorgabe
+// 29.08.2026, "auch fuer die anderen Werte" - siehe OVP/PKT/AKT). Bleibt im
+// ersten Durchlauf neutral (Platzhalter), da der Liga-Vergleich erst nach
+// allen Liga-Mitgliedern moeglich ist - final gesetzt im zweiten Durchlauf
+// (siehe computeLeagueRelativeScore, Ende von run()).
 function computeProScore(profitBonus, hasWeightedTrades) {
     if (!hasWeightedTrades) return NEUTRAL_CARD_SCORE;
-    return clampCardScore(50 + profitBonus * 1.96);
+    return NEUTRAL_CARD_SCORE;
 }
 
 // OVP (Overpay-Disziplin): Prozentrang unter den Liga-Kollegen (weniger
@@ -317,24 +321,31 @@ function computeAktScore(zScore) {
     return Math.max(50, Math.min(99, Math.round(74.5 + 24.5 * Math.tanh(zScore))));
 }
 
-// KAD (Kaderstaerke & Risiko): squadRiskPenalty reicht von -20 (schlecht) bis 0 (top) ->
-// invertiert auf 20-99 gestreckt, damit ein voll startelf-faehiger, solventer Kader
-// nahe 99 liegt und ein leerer/verschuldeter Kader nahe 20 (nie 0, das waere zu hart).
-function computeKadScore(squadReadiness, squadRiskPenalty) {
-    if (squadReadiness === null) return NEUTRAL_CARD_SCORE;
-    return clampCardScore(99 - (Math.abs(squadRiskPenalty) / MAX_SQUAD_RISK_PENALTY) * 79);
+// Gemeinsame Glockenkurve fuer PRO/KAD/TIM (Owner-Vorgabe 29.08.2026, gleiches
+// Muster wie AKT: Z-Score gegen Liga-Mittelwert/Streuung, tanh-Mapping auf
+// 50-99, Peak 75 = Liga-Durchschnitt). Eigene Funktion statt drei identischer
+// Kopien - bewusst getrennt von computeAktScore, um den dort bereits
+// gereviewten Code nicht anzufassen (gleiche Formel, kein Verhaltensunterschied).
+function computeLeagueRelativeScore(zScore) {
+    if (!Number.isFinite(zScore)) return NEUTRAL_CARD_SCORE;
+    return Math.max(50, Math.min(99, Math.round(74.5 + 24.5 * Math.tanh(zScore))));
 }
 
-// TIM (Verkaufsgespuer): durchschnittlicher saleTimingProfit pro Verkauf.
-// Anders als PRO/OVP/KAD/AKT hat dieser Wert keine vorgegebene Referenzskala
-// aus dem urspruenglichen Scoring-Modell (dort nur ein kleines Zusatzgewicht,
-// kein eigener Bonus mit fester Spannbreite) - per tanh() statt linearer
-// Streckung gemappt, damit auch sehr hohe Betraege (teure/volatile Spieler)
-// nicht sofort alle bei 99 landen und die Karte noch differenziert.
+// KAD (Kaderstaerke & Risiko): liga-relativ statt fixer 20-99-Streckung
+// (Owner-Vorgabe 29.08.2026). Bleibt im ersten Durchlauf neutral, final im
+// zweiten Durchlauf (siehe computeLeagueRelativeScore, Ende von run()).
+function computeKadScore(squadReadiness, squadRiskPenalty) {
+    if (squadReadiness === null) return NEUTRAL_CARD_SCORE;
+    return NEUTRAL_CARD_SCORE;
+}
+
+// TIM (Verkaufsgespuer): liga-relativ statt fixer tanh-Streckung um einen
+// globalen Fixwert (Owner-Vorgabe 29.08.2026). Bleibt im ersten Durchlauf
+// neutral, final im zweiten Durchlauf (siehe computeLeagueRelativeScore,
+// Ende von run()).
 function computeTimScore(saleTimingProfit, saleTimingSampleSize) {
     if (saleTimingSampleSize <= 0) return NEUTRAL_CARD_SCORE;
-    const avgTiming = saleTimingProfit / saleTimingSampleSize;
-    return clampCardScore(50 + Math.tanh(avgTiming / 900000) * 45);
+    return NEUTRAL_CARD_SCORE;
 }
 
 // Kartenstufe (Bronze/Silber/Gold) aus der bestehenden 5-stufigen Bewertung
@@ -751,7 +762,7 @@ function run() {
                     league: leagueCode(l.name),
 
                     // FIFA-Karten-Attribute (0-99), sechs statt der frueheren drei
-                    // Teilscores - siehe computeXxxScore-Funktionen weiter oben. OVP/AKT
+                    // Teilscores - siehe computeXxxScore-Funktionen weiter oben. Alle 6
                     // sind hier noch Platzhalter (neutral 50) - werden im zweiten Durchlauf
                     // nach der Liga-weiten Vergleichsrunde final gesetzt (siehe Ende von run()).
                     pro: computeProScore(profitBonus, weightedTradeWeight > 0),
@@ -865,7 +876,8 @@ function run() {
         });
     }
 
-    // --- Zweiter Durchlauf: Liga-relative Bewertung fuer OVP und AKT ---
+    // --- Zweiter Durchlauf: Liga-relative Bewertung fuer alle 6 Kartenwerte
+    // (PRO/OVP/PKT/AKT/KAD/TIM, Owner-Vorgabe 29.08.2026) ---
     // Muss NACH dem ersten Durchlauf laufen, weil dafuer alle Liga-Mitglieder
     // bereits berechnet sein muessen (Prozentrang braucht die komplette
     // Vergleichsgruppe). Pro Liga getrennt, damit sich Manager nur mit ihren
@@ -943,6 +955,95 @@ function run() {
                     score,
                 });
                 ratings[uid].pkt = score;
+            });
+
+            // PRO (Profit): liga-relativ wie PKT/OVP/AKT (Owner-Vorgabe 29.08.2026).
+            // Z-Score des gewichteten Durchschnittsgewinns gegen Mittelwert/Streuung
+            // der Liga - kein Log-Transform (anders als AKT), da Profit negativ sein
+            // kann. Nur unter Managern mit echt vorliegenden gewichteten Trades
+            // vergleichen; ohne Trades bleibt neutral.
+            const proMembers = memberUids.filter(uid => ratings[uid].calculation.pro.weightedAverageProfit != null);
+            const proValues = proMembers.map(uid => ratings[uid].calculation.pro.weightedAverageProfit);
+            const proMean = proValues.length > 0 ? proValues.reduce((a, b) => a + b, 0) / proValues.length : 0;
+            const proStd = proValues.length > 1
+                ? Math.sqrt(proValues.reduce((s, v) => s + (v - proMean) ** 2, 0) / (proValues.length - 1))
+                : 0;
+            const proRanked = [...proValues].sort((a, b) => b - a);
+            memberUids.forEach(uid => {
+                const avgProfit = ratings[uid].calculation.pro.weightedAverageProfit;
+                if (avgProfit == null) return; // bleibt neutral (Platzhalter aus erstem Durchlauf)
+                const zScore = proStd > 1e-9 ? (avgProfit - proMean) / proStd : 0;
+                const percentile = percentileRank(avgProfit, proValues, true);
+                const score = computeLeagueRelativeScore(zScore);
+                Object.assign(ratings[uid].calculation.pro, {
+                    leaguePercentile: percentile,
+                    leagueRank: proRanked.indexOf(avgProfit) + 1,
+                    leagueSize: proValues.length,
+                    leagueMean: proMean,
+                    leagueStd: proStd,
+                    zScore,
+                    score,
+                });
+                ratings[uid].pro = score;
+            });
+
+            // KAD (Kaderstaerke & Risiko): liga-relativ wie PKT/OVP/AKT (Owner-Vorgabe
+            // 29.08.2026). Z-Score des squadRiskPenalty (0 = top, negativ = schlechter)
+            // gegen Mittelwert/Streuung der Liga. Nur unter Managern mit echten
+            // Kaderdaten vergleichen (squadReadiness !== null); ohne Kaderdaten bleibt
+            // neutral (identisch zur bisherigen Gate-Logik).
+            const kadMembers = memberUids.filter(uid => ratings[uid].calculation.kad.squadReadiness !== null);
+            const kadValues = kadMembers.map(uid => ratings[uid].calculation.kad.squadRiskPenalty);
+            const kadMean = kadValues.length > 0 ? kadValues.reduce((a, b) => a + b, 0) / kadValues.length : 0;
+            const kadStd = kadValues.length > 1
+                ? Math.sqrt(kadValues.reduce((s, v) => s + (v - kadMean) ** 2, 0) / (kadValues.length - 1))
+                : 0;
+            const kadRanked = [...kadValues].sort((a, b) => b - a);
+            memberUids.forEach(uid => {
+                if (ratings[uid].calculation.kad.squadReadiness === null) return; // bleibt neutral
+                const penalty = ratings[uid].calculation.kad.squadRiskPenalty;
+                const zScore = kadStd > 1e-9 ? (penalty - kadMean) / kadStd : 0;
+                const percentile = percentileRank(penalty, kadValues, true);
+                const score = computeLeagueRelativeScore(zScore);
+                Object.assign(ratings[uid].calculation.kad, {
+                    leaguePercentile: percentile,
+                    leagueRank: kadRanked.indexOf(penalty) + 1,
+                    leagueSize: kadValues.length,
+                    leagueMean: kadMean,
+                    leagueStd: kadStd,
+                    zScore,
+                    score,
+                });
+                ratings[uid].kad = score;
+            });
+
+            // TIM (Verkaufsgespuer): liga-relativ wie PKT/OVP/AKT (Owner-Vorgabe
+            // 29.08.2026). Z-Score des durchschnittlichen Verkaufs-Timing-Profits
+            // gegen Mittelwert/Streuung der Liga. Nur unter Managern mit echten
+            // Verkaufs-Stichproben vergleichen; ohne Verkaeufe bleibt neutral.
+            const timMembers = memberUids.filter(uid => ratings[uid].calculation.tim.averageTimingProfit != null);
+            const timValues = timMembers.map(uid => ratings[uid].calculation.tim.averageTimingProfit);
+            const timMean = timValues.length > 0 ? timValues.reduce((a, b) => a + b, 0) / timValues.length : 0;
+            const timStd = timValues.length > 1
+                ? Math.sqrt(timValues.reduce((s, v) => s + (v - timMean) ** 2, 0) / (timValues.length - 1))
+                : 0;
+            const timRanked = [...timValues].sort((a, b) => b - a);
+            memberUids.forEach(uid => {
+                const avgTiming = ratings[uid].calculation.tim.averageTimingProfit;
+                if (avgTiming == null) return; // bleibt neutral (Platzhalter aus erstem Durchlauf)
+                const zScore = timStd > 1e-9 ? (avgTiming - timMean) / timStd : 0;
+                const percentile = percentileRank(avgTiming, timValues, true);
+                const score = computeLeagueRelativeScore(zScore);
+                Object.assign(ratings[uid].calculation.tim, {
+                    leaguePercentile: percentile,
+                    leagueRank: timRanked.indexOf(avgTiming) + 1,
+                    leagueSize: timValues.length,
+                    leagueMean: timMean,
+                    leagueStd: timStd,
+                    zScore,
+                    score,
+                });
+                ratings[uid].tim = score;
             });
         });
     }
