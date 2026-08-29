@@ -33,7 +33,7 @@ const ManagerRatingBadge = ({ kickbaseId }) => {
     <Link
       to="/account/manager-rating"
       className="relative flex items-center justify-center shrink-0 hover:scale-105 active:scale-95 transition-transform"
-      style={{ width: '33px', height: '52px' }}
+      style={{ width: '26px', height: '42px' }}
     >
       <svg viewBox={BADGE_VIEWBOX} className="w-full h-full block" style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
         <defs>
