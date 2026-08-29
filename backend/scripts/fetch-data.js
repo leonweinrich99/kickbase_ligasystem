@@ -31,13 +31,14 @@ async function run() {
             console.error(`Could not parse spieltag-${currentMatchday - 1}.json`);
         }
     } else {
-        // Fallback zu data.json falls kein Snapshot des vorherigen Spieltags da ist
-        console.log(`No snapshot for MD ${currentMatchday - 1} found. Falling back to data.json.`);
-        if (fs.existsSync(dataPath)) {
-            try {
-                previousData = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
-            } catch (e) {}
-        }
+        // Kein gefrorener Snapshot des vorherigen Spieltags (z.B. Spieltag 1, es gibt
+        // kein "Spieltag 0"). previousData bleibt null - transformIndependentLeagues
+        // behandelt das als Basis 0 fuer alle Manager (siehe prevMap.get(u.i) || 0).
+        // FRUEHER fiel dieser Zweig auf data.json zurueck - die wird aber bei JEDEM
+        // Fetch ueberschrieben, ist also keine gefrorene Basis, sondern wanderte bei
+        // jedem weiteren Fetch am selben Spieltag mit (Bug: "Spieltagspunkte" zeigten
+        // nur noch die Differenz zum letzten Fetch statt zur echten Spieltag-Summe).
+        console.log(`No snapshot for MD ${currentMatchday - 1} found. Using baseline 0 (previousData stays null).`);
     }
 
     // 4. Daten transformieren
