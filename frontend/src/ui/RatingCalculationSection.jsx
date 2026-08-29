@@ -199,7 +199,10 @@ export default function RatingCalculationSection({ calculation, ovpLeaguePeers, 
                 label="Ø der Liga"
               />
               <FactorChip value={pkt.points.toLocaleString('de-DE')} label="Liga-Punkte" />
-              <FactorChip value={fmtEUR(pkt.totalSpent)} label="Investierte Summe" />
+              <FactorChip
+                value={fmtEUR(pkt.ppmBasis === 'squadValue' ? pkt.managerSquadValue : pkt.totalSpent)}
+                label={pkt.ppmBasis === 'squadValue' ? 'Aktueller Kaderwert' : 'Investierte Summe (Fallback)'}
+              />
               <LeagueCompareBar percentile={pkt.leaguePercentile} rank={pkt.leagueRank} total={pkt.leagueSize} accent={pktAccent} />
               <LeaguePeerList peers={pktLeaguePeers} formatValue={fmtNum1} />
             </FactorGrid>
