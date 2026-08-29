@@ -113,6 +113,32 @@ function loadManagerSquads() {
     return map;
 }
 
+// Liest den aktuellen Marktwert (Kaderwert) pro Manager aus advisor-data.json
+// Rückgabe: Map(managerId -> summe(marketValue aller Spieler im Kader))
+// Fallback auf 0 wenn Daten fehlen, wird später durch totalSpent ersetzt.
+function loadManagerSquadValues() {
+    const advisorPath = path.join(__dirname, '../../frontend/public/advisor-data.json');
+    const map = new Map();
+    try {
+        if (fs.existsSync(advisorPath)) {
+            const advisorData = JSON.parse(fs.readFileSync(advisorPath, 'utf8'));
+            Object.values(advisorData.leagues || {}).forEach(league => {
+                Object.entries(league.managerSquads || {}).forEach(([managerId, squad]) => {
+                    const squadValue = (squad || []).reduce((sum, player) => {
+                        return sum + (typeof player.marketValue === 'number' && player.marketValue > 0 ? player.marketValue : 0);
+                    }, 0);
+                    if (squadValue > 0) {
+                        map.set(String(managerId), squadValue);
+                    }
+                });
+            });
+        }
+    } catch (e) {
+        console.warn('Konnte Kaderwert aus advisor-data.json nicht lesen:', e.message);
+    }
+    return map;
+}
+
 // --- Realistische Startelf-Wahrscheinlichkeit (statt reiner Kopfzahl) ---
 // computeSquadReadiness (squadRules.js) zaehlt jeden Spieler in der richtigen
 // Position einfach als "1" - ob der Spieler bei seinem echten Verein
@@ -450,6 +476,7 @@ function run() {
 
     const mvHistory = loadMarketValueHistory();
     const managerSquads = loadManagerSquads();
+    const managerSquadValues = loadManagerSquadValues();
 
     // Referenzwert für "Marktwert zum Zeitpunkt X": bevorzugt die ECHTE Historie aus dem
     // Trading Advisor, danach ein evtl. gespeicherter Snapshot am Transfer selbst,
@@ -665,9 +692,19 @@ function run() {
                 const totalProfit = realizedProfit + unrealizedProfit + orphanSaleProfit;
 
                 let userPoints = parseInt(u.points.replace(/\./g, '')) || 0;
+
+                // PPM-Basis: bevorzugt der aktuelle Kaderwert (summe(marketValue) der
+                // Spieler im Kader, aus advisor-data.json) statt der historischen
+                // Investitionssumme (totalSpent) - Owner-Vorgabe 29.08.2026. So misst PPM
+                // "Punkte pro Million AKTUELLEM Marktwert" statt "... eingesetztem Kapital".
+                // Fallback auf totalSpent, wenn kein Kaderwert vorliegt (z.B. Advisor-Daten
+                // fehlen); ppmBasis macht die tatsaechlich genutzte Basis transparent.
+                const managerSquadValue = managerSquadValues.get(String(uid)) || 0;
+                const ppmBasis = managerSquadValue > 0 ? 'squadValue' : 'totalSpent';
+                const ppmDenominator = managerSquadValue > 0 ? managerSquadValue : totalSpent;
                 let ppm = 0;
-                if (totalSpent > 0 && userPoints > 0) {
-                    ppm = userPoints / (totalSpent / 1000000);
+                if (ppmDenominator > 0 && userPoints > 0) {
+                    ppm = userPoints / (ppmDenominator / 1000000);
                 }
 
                 // Kader-Vollständigkeit & Budget: unabhängig vom bisherigen Trading-Erfolg -
@@ -786,6 +823,8 @@ function run() {
                             score: computePktScore(ppm, userPoints > 0),
                             points: userPoints,
                             totalSpent,
+                            managerSquadValue: managerSquadValue > 0 ? managerSquadValue : null,
+                            ppmBasis,
                             ppm: userPoints > 0 ? ppm : null,
                             perfBonus,
                         },
