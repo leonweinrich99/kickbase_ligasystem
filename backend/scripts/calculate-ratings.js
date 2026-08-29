@@ -284,12 +284,16 @@ function computePktScore(ppm, hasPoints) {
     return clampCardScore((ppm / 3) * 99);
 }
 
-// AKT (Marktaktivitaet): ebenfalls Prozentrang unter den Liga-Kollegen (mehr
-// Transaktionen als andere = besser) statt eines fixen Referenzwerts von 20 -
-// final gesetzt im zweiten Durchlauf, siehe computeOvpScore.
-function computeAktScore(percentile) {
-    if (percentile == null) return NEUTRAL_CARD_SCORE;
-    return clampCardScore(1 + (percentile / 100) * 98);
+// AKT (Marktaktivitaet): Glockenkurve statt linearem Prozentrang (Owner-Vorgabe
+// 29.08.2026). Basis ist die Transaktionszahl pro Manager (Kaeufe+Verkaufe),
+// log-transformiert (log(x+1)) gegen die Rechtsschiefe vieler Einzel-Transaktionen.
+// Pro Liga wird der z-Score gegen Mittelwert/Streuung der Liga gebildet und per
+// tanh auf eine Glockenkurve mit Peak 75 (Liga-Durchschnitt, z=0) und den
+// Saettigungsgrenzen 50 (sehr wenig gehandelt, z->-inf) bis 99 (sehr viel
+// gehandelt, z->+inf) abgebildet - final gesetzt im zweiten Durchlauf.
+function computeAktScore(zScore) {
+    if (!Number.isFinite(zScore)) return NEUTRAL_CARD_SCORE;
+    return Math.max(50, Math.min(99, Math.round(74.5 + 24.5 * Math.tanh(zScore))));
 }
 
 // KAD (Kaderstaerke & Risiko): squadRiskPenalty reicht von -20 (schlecht) bis 0 (top) ->
@@ -849,17 +853,31 @@ function run() {
         data.leagues.forEach(l => {
             const memberUids = l.users.filter(isRealManager).map(u => u.id || u.i).filter(uid => ratings[uid]);
 
-            // AKT: mehr Transaktionen als die Liga-Kollegen = besser.
+            // AKT: Glockenkurve auf Basis des Liga-Durchschnitts (Owner-Vorgabe
+            // 29.08.2026) - log-transformierte Transaktionszahlen, z-Score gegen
+            // Mittelwert/Streuung der Liga, tanh-Mapping auf 50-99 (Peak 75).
+            // leaguePercentile bleibt als reine Anzeige-Info fuer die Liga-Vergleichs-
+            // Leiste im Frontend erhalten, treibt aber nicht mehr den Score.
             const aktValues = memberUids.map(uid => ratings[uid].calculation.akt.totalTransactions);
+            const aktLogValues = aktValues.map(x => Math.log((x || 0) + 1));
+            const aktMean = aktLogValues.length > 0 ? aktLogValues.reduce((a, b) => a + b, 0) / aktLogValues.length : 0;
+            const aktStd = aktLogValues.length > 1
+                ? Math.sqrt(aktLogValues.reduce((s, v) => s + (v - aktMean) ** 2, 0) / (aktLogValues.length - 1))
+                : 0;
             const aktRanked = [...aktValues].sort((a, b) => b - a);
             memberUids.forEach(uid => {
                 const totalTransactions = ratings[uid].calculation.akt.totalTransactions;
+                const logX = Math.log((totalTransactions || 0) + 1);
+                const zScore = aktStd > 1e-9 ? (logX - aktMean) / aktStd : 0;
                 const percentile = percentileRank(totalTransactions, aktValues, true);
-                const score = computeAktScore(percentile);
+                const score = computeAktScore(zScore);
                 Object.assign(ratings[uid].calculation.akt, {
                     leaguePercentile: percentile,
                     leagueRank: aktRanked.indexOf(totalTransactions) + 1,
                     leagueSize: aktValues.length,
+                    leagueMean: aktMean,
+                    leagueStd: aktStd,
+                    zScore,
                     score,
                 });
                 ratings[uid].akt = score;
