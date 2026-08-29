@@ -139,9 +139,12 @@ export default function RatingCalculationSection({ calculation, ovpLeaguePeers, 
   const toggle = (key) => setOpenKey((cur) => (cur === key ? null : key));
 
   const { pro, ovp, pkt, akt, kad, tim } = calculation;
+  const proAccent = TIER_ACCENT[scoreToTier(pro.score)];
   const ovpAccent = TIER_ACCENT[scoreToTier(ovp.score)];
   const aktAccent = TIER_ACCENT[scoreToTier(akt.score)];
   const pktAccent = TIER_ACCENT[scoreToTier(pkt.score)];
+  const kadAccent = TIER_ACCENT[scoreToTier(kad.score)];
+  const timAccent = TIER_ACCENT[scoreToTier(tim.score)];
 
   return (
     <div>
@@ -163,6 +166,7 @@ export default function RatingCalculationSection({ calculation, ovpLeaguePeers, 
               <FactorChip value={pro.openPositions} label="Offene Positionen" />
               <FactorChip value={pro.orphanSales} label="Kaderverkäufe" />
               {pro.saleTimingSampleSize > 0 && <FactorChip value={pro.saleTimingSampleSize} label="Verkaufszeitpunkte" />}
+              <LeagueCompareBar percentile={pro.leaguePercentile} rank={pro.leagueRank} total={pro.leagueSize} accent={proAccent} />
             </FactorGrid>
           )}
         />
@@ -240,6 +244,7 @@ export default function RatingCalculationSection({ calculation, ovpLeaguePeers, 
               )}
               <FactorChip value={fmtEUR(kad.budget)} label="Budget" />
               <FactorChip value={`${fmtNum1(Math.abs(kad.squadRiskPenalty))} / 20`} label="Kader-Risiko" />
+              <LeagueCompareBar percentile={kad.leaguePercentile} rank={kad.leagueRank} total={kad.leagueSize} accent={kadAccent} />
             </FactorGrid>
           )}
         />
@@ -259,6 +264,7 @@ export default function RatingCalculationSection({ calculation, ovpLeaguePeers, 
                 highlight
               />
               <FactorChip value={tim.sampleSize} label="Bewertete Verkäufe" />
+              <LeagueCompareBar percentile={tim.leaguePercentile} rank={tim.leagueRank} total={tim.leagueSize} accent={timAccent} />
             </FactorGrid>
           )}
         />
