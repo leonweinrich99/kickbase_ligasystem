@@ -297,10 +297,12 @@ function computePktScore(ppm, hasPoints) {
 // laut Owner-Vorgabe 29.08.2026: Liga-Durchschnitt (Verhaeltnis 1) ergibt 75,
 // die Haelfte des Liga-Mittelwerts ergibt 50 ("50 ist schon schlecht"), das
 // Doppelte ergibt 99 (Saettigung). So misst die Karte, wie stark man relativ zu
-// den eigenen Liga-Kollegen spielt, statt an einem globalen Fixwert.
+// den eigenen Liga-Kollegen spielt, statt an einem globalen Fixwert. Wie AKT ist
+// der Score auf 50-99 gefloort: kein Wert verlaesst den Rahmen 50-99, schlechte
+// PPM (Verhaeltnis < 0.5) landet am gewollten Boden 50 statt darunter.
 function computePktScoreFromMean(ppm, leagueMeanPpm) {
     if (!(ppm > 0) || !(leagueMeanPpm > 0)) return NEUTRAL_CARD_SCORE;
-    return clampCardScore(25 + 50 * (ppm / leagueMeanPpm));
+    return clampCardScore(Math.max(50, 25 + 50 * (ppm / leagueMeanPpm)));
 }
 
 // AKT (Marktaktivitaet): Glockenkurve statt linearem Prozentrang (Owner-Vorgabe
