@@ -24,8 +24,13 @@ const PositionRow = ({ players }) => {
             <div key={p.id} className={`relative flex flex-col items-center group ${containerSize}`}>
               {/* Spieler-Bild - abgerundetes Rechteck statt Kreis, damit der
                   Bildausschnitt (top-orientiert) das Gesicht nicht mehr an
-                  den Raendern abschneidet (Owner-Wunsch 30.08., Issue 3edfc346) */}
-              <div className={`${baseSize} rounded-lg bg-[#202020] overflow-hidden flex items-center justify-center shadow-lg relative`}>
+                  den Raendern abschneidet (Owner-Wunsch 30.08., Issue 3edfc346).
+                  Kein Hintergrund-Kasten mehr, wenn ein Foto da ist - die
+                  Kickbase-PNGs sind transparent geschnitten und sollen frei
+                  auf dem Seitenhintergrund schweben (Issue 24ae1537). Nur der
+                  Initialen-Fallback (kein imagePath) behaelt den dunklen
+                  Hintergrund fuer ausreichend Textkontrast. */}
+              <div className={`${baseSize} rounded-lg ${p.imagePath ? '' : 'bg-[#202020]'} overflow-hidden flex items-center justify-center shadow-lg relative`}>
               {p.imagePath ? (
                 <img
                   src={`https://kickbase.b-cdn.net/${p.imagePath}`}
