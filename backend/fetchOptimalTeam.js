@@ -265,7 +265,7 @@ async function fetchOptimalTeam(force = true) {
             optimize: "points",
             opType: "max",
             constraints: {
-                budget: { max: 250000000 },
+                budget: { max: 150000000 },
                 total_players: { equal: 11 },
                 pos_1: { equal: 1 },
                 pos_2: { min: 3, max: 5 },
