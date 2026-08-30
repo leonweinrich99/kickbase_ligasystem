@@ -1,8 +1,8 @@
 {
   "matchday": 1,
-  "totalPoints": 2746,
-  "totalBudget": 242697954,
-  "timestamp": "2026-08-30T06:52:30.662Z",
+  "totalPoints": 2455,
+  "totalBudget": 147055138,
+  "timestamp": "2026-08-30T06:56:34.028Z",
   "lineup": [
     {
       "id": "1883",
@@ -16,15 +16,26 @@
       "teamName": "M'gladbach"
     },
     {
-      "id": "1991",
-      "teamId": 2,
-      "name": "Upamecano",
-      "lastName": "Upamecano",
+      "id": "11186",
+      "teamId": 4,
+      "name": "Maluze",
+      "lastName": "Maluze",
       "position": 2,
-      "marketValue": 33194644,
-      "points": 275,
-      "imagePath": "content/file/13835e113e4f40d986f924b517690435.png",
-      "teamName": "Bayern"
+      "marketValue": 500000,
+      "points": 184,
+      "imagePath": "content/file/41180e5bf4d046fbb3c24268c49459cb.png",
+      "teamName": "Frankfurt"
+    },
+    {
+      "id": "6197",
+      "teamId": 29,
+      "name": "Curda",
+      "lastName": "Curda",
+      "position": 2,
+      "marketValue": 9216963,
+      "points": 188,
+      "imagePath": "content/file/ba195e9442954a30a3835950c99832a5.png",
+      "teamName": "Paderborn"
     },
     {
       "id": "4598",
@@ -47,28 +58,6 @@
       "points": 258,
       "imagePath": "content/file/b9dfbb26ed9347b9a1585f29718c9d76.png",
       "teamName": "Union Berlin"
-    },
-    {
-      "id": "2141",
-      "teamId": 43,
-      "name": "Baku",
-      "lastName": "Baku",
-      "position": 2,
-      "marketValue": 18475223,
-      "points": 234,
-      "imagePath": "content/file/938a124759354a928af165b155e6925a.png",
-      "teamName": "Leipzig"
-    },
-    {
-      "id": "1685",
-      "teamId": 2,
-      "name": "Kimmich",
-      "lastName": "Kimmich",
-      "position": 3,
-      "marketValue": 59897665,
-      "points": 330,
-      "imagePath": "content/file/b41a70e2188a4c72aa165cfc7606c3e9.png",
-      "teamName": "Bayern"
     },
     {
       "id": "6080",
@@ -124,6 +113,17 @@
       "points": 238,
       "imagePath": "content/file/fab92b426a354aacae1fe7f26e0e6ab0.png",
       "teamName": "Köln"
+    },
+    {
+      "id": "10113",
+      "teamId": 43,
+      "name": "Gomis",
+      "lastName": "Gomis",
+      "position": 4,
+      "marketValue": 6207753,
+      "points": 176,
+      "imagePath": "content/file/6fdc632f20f64bac905749a9c2b23a86.png",
+      "teamName": "Leipzig"
     }
   ]
 }
