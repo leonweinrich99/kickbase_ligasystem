@@ -732,15 +732,9 @@ function run() {
                 const squadReadiness = squadInfo ? computeRealisticSquadReadiness(squadInfo.players, playerMap, squadInfo.total) : null;
                 const squadRiskPenalty = computeSquadRiskPenalty(squadReadiness, budget);
 
-                // --- SCORING MODELL (Basis 50) ---
-                let baseScore = 50;
-
-                // 1. Aktivität (bis zu +15 Punkte)
-                // Zählt jetzt ALLE Transaktionen (Käufe + Verkäufe, auch Kaderverkäufe),
-                // nicht nur Käufe - wer viel am Markt agiert, sammelt Pluspunkte.
-                let actBonus = Math.min(15, (totalTransactions / 20) * 15);
-
-                // 2. Profit Score (-20 bis +25 Punkte)
+                // Profit Score (-20 bis +25 Punkte) - fliesst NICHT mehr in die
+                // Gesamtwertung ein (siehe unten), wird aber weiterhin fuer die PRO-Karte
+                // gebraucht (computeProScore-Aufruf + calculation.pro.profitBonus-Anzeige).
                 // Basiert auf dem GEWICHTETEN Durchschnittsgewinn (siehe SCORE_WEIGHTS):
                 // abgeschlossene Trades zählen voll, Zwangsverkäufe (250-Punkte-Regel) und
                 // offene Positionen gedämpft, damit ein einzelner Glücks-/Pflichtverkauf
@@ -751,49 +745,27 @@ function run() {
                     profitBonus = Math.max(-20, Math.min(25, profitBonus));
                 }
 
-                // 3. Overpay-Bonus/-Malus (-10 bis +10 Punkte)
-                // Da Underpay verboten ist, liegt JEDER Kauf bei/über Marktwert - "Overpay"
-                // ist also der Normalfall und keine Regelverletzung. Bewertet wird relativ zu
-                // einer fairen Referenzprämie (REFERENCE_OVERPAY_RATIO): nah am Marktwert
-                // eingekauft = Bonus, exzessive Bieterkriege = Malus.
-                let overpayBonus = 0;
-                if (overpayRatios.length > 0) {
-                    overpayBonus = ((REFERENCE_OVERPAY_RATIO - avgOverpayRatio) / REFERENCE_OVERPAY_RATIO) * 10;
-                    overpayBonus = Math.max(-10, Math.min(10, overpayBonus));
-                }
-
-                // 4. Performance / PPM (bis zu +10 Punkte)
+                // Performance / PPM - fliesst NICHT mehr in die Gesamtwertung ein, wird aber
+                // weiterhin fuer calculation.pkt.perfBonus (Anzeige) gebraucht.
                 let perfBonus = 0;
                 if (userPoints > 0) {
                     perfBonus = Math.min(10, (ppm / 3) * 10);
                 }
 
-                // 5. Kaderrisiko (-20 bis 0 Punkte)
-                // Unvollständiger Kader UND/ODER Kader voller Spieler mit realistisch
-                // niedriger Startelf-Chance (siehe computeRealisticSquadReadiness, nutzt
-                // Kickbases eigene Startelf-Wahrscheinlichkeit je Spieler) sowie
-                // negatives/knappes Budget - siehe computeSquadRiskPenalty. Wird NICHT
-                // bewertet, wenn keine Kaderdaten vorliegen (squadReadiness === null).
-                let totalScore = Math.round(baseScore + actBonus + profitBonus + overpayBonus + perfBonus + squadRiskPenalty);
-                totalScore = Math.max(0, Math.min(100, totalScore));
-
-                // Kleine kosmetische Anpassung: Wer noch keine abgeschlossenen Trades hat,
-                // aber aktiv Positionen aufgebaut hat, wird fürs Scouting honoriert.
-                const scoutingBonus = (completedTrades === 0 && openPositions > 5) ? 5 : 0;
-                totalScore += scoutingBonus;
-                totalScore = Math.max(0, Math.min(100, totalScore));
-
-                // Stufen in normaler Medaillen-Reihenfolge (Amateur < Bronze < Silber < Gold < Elite) -
-                // vorher lag "Gold" fälschlich UNTER "Silber", was bei jedem Vergleich verwirrte.
-                let level = 'Bronze';
-                if (totalScore >= 90) level = 'Elite';
-                else if (totalScore >= 75) level = 'Gold';
-                else if (totalScore >= 60) level = 'Silber';
-                else if (totalScore < 45) level = 'Amateur';
+                // Gesamtwertung (ratings[uid].score/level/cardTier): einfacher Durchschnitt
+                // der 6 finalen Kartenwerte statt eines eigenen Bonus-Modells (Owner-Vorgabe
+                // 29.08.2026, "mache einfach den Durchschnitt", Issue 7c948567). Da PRO/KAD/
+                // TIM erst im ZWEITEN Durchlauf (liga-relativ, Ende von run()) final gesetzt
+                // werden, MUSS diese Berechnung dort passieren, nicht hier im ersten
+                // Durchlauf - sonst dieselbe Race-artige Inkonsistenz wie in Issue c94c39b3
+                // (Score aus Zwischenstand statt Endstand). Hier nur Platzhalter, echte
+                // Werte am Ende von run() (siehe "Gesamtwertung" im zweiten Durchlauf).
+                const score = NEUTRAL_CARD_SCORE;
+                const level = 'Bronze';
 
                 ratings[uid] = {
                     name: u.name,
-                    score: totalScore,
+                    score,
                     level,
                     cardTier: computeCardTier(level),
                     league: leagueCode(l.name),
@@ -857,16 +829,6 @@ function run() {
                             score: computeTimScore(saleTimingProfit, saleTimingSampleSize),
                             sampleSize: saleTimingSampleSize,
                             averageTimingProfit: saleTimingSampleSize > 0 ? (saleTimingProfit / saleTimingSampleSize) : null,
-                        },
-                        overall: {
-                            baseScore,
-                            activityBonus: actBonus,
-                            profitBonus,
-                            overpayBonus,
-                            performanceBonus: perfBonus,
-                            squadRiskPenalty,
-                            scoutingBonus,
-                            finalScore: totalScore,
                         },
                     },
 
@@ -1083,6 +1045,28 @@ function run() {
                     score,
                 });
                 ratings[uid].tim = score;
+            });
+
+            // Gesamtwertung: einfacher Durchschnitt der 6 finalen Kartenwerte statt
+            // eines eigenen Bonus-Modells (Owner-Vorgabe 29.08.2026, Issue 7c948567).
+            // Muss HIER laufen, NACH den obigen PRO/OVP/PKT/AKT/KAD/TIM-Bloecken -
+            // zu diesem Zeitpunkt sind fuer jeden Manager in memberUids alle 6 Werte
+            // final (liga-relativ), nicht mehr die Platzhalter aus dem ersten
+            // Durchlauf. Level-Schwellen unveraendert (90/75/60/45).
+            memberUids.forEach(uid => {
+                const r = ratings[uid];
+                const avgScore = (r.pro + r.ovp + r.pkt + r.akt + r.kad + r.tim) / 6;
+                const finalScore = Math.round(avgScore);
+
+                let level = 'Bronze';
+                if (finalScore >= 90) level = 'Elite';
+                else if (finalScore >= 75) level = 'Gold';
+                else if (finalScore >= 60) level = 'Silber';
+                else if (finalScore < 45) level = 'Amateur';
+
+                r.score = finalScore;
+                r.level = level;
+                r.cardTier = computeCardTier(level);
             });
         });
     }
