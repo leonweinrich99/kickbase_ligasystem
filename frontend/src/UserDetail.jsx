@@ -11,6 +11,10 @@ import {
 import { useBackNavigation } from './useBackNavigation';
 import { BackButton } from './ui/CloseButton';
 import ManagerAvatar from './ui/ManagerAvatar';
+import PlayerPhotoCard from './ui/PlayerPhotoCard';
+
+// Gleiche Positions-Labels/Reihenfolge wie AccountStats.jsx/Advisor.jsx.
+const POSITION_LABELS = { TW: 'Torwart', ABW: 'Abwehr', MF: 'Mittelfeld', ST: 'Sturm' };
 
 const calculatePerformanceScore = (points, avg, opt, max) => {
   if (points <= 0) return 1.0;
@@ -182,6 +186,49 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
     fetchData();
   }, [id, dataBase, mode]);
 
+  // Kader des angezeigten Managers (Issue e6beecd8/acccf545) - separater,
+  // unabhaengiger Ladevorgang von der Punkte-Historie oben, damit ein
+  // langsamer/fehlender Kader-Abruf nicht die restliche Seite blockiert.
+  // Nur im Live-Modus: advisor-data.json existiert nur fuer die laufende
+  // Saison, nicht fuers eingefrorene Archiv.
+  const [advisorData, setAdvisorData] = useState(null);
+  useEffect(() => {
+    if (mode === 'archive') return;
+    fetch(`${dataBase}/advisor-data.json?t=${Date.now()}`)
+      .then((res) => res.json())
+      .then((json) => setAdvisorData(json))
+      .catch(() => setAdvisorData(null));
+  }, [dataBase, mode]);
+
+  // Gleiches Join-Muster wie AccountStats.jsx::KaderTab: managerId (userData.id)
+  // entspricht 1:1 dem Key in managerSquads, unabhaengig davon in welcher der
+  // 3 Ligen der Manager spielt - deshalb ueber alle Ligen suchen statt eine
+  // feste Liga anzunehmen.
+  const squad = useMemo(() => {
+    if (!advisorData || !userData) return null;
+    for (const league of Object.values(advisorData.leagues || {})) {
+      const found = league.managerSquads?.[userData.id];
+      if (found?.length) return found;
+    }
+    return null;
+  }, [advisorData, userData]);
+
+  // Nach Position gruppiert (TW -> ABW -> MF -> ST, wie auf dem Spielfeld),
+  // aber mit variabler Spielerzahl pro Reihe statt der festen 11er-Aufstellung
+  // der Optimalen Elf - ein Kader hat i.d.R. 15-20 Spieler, keine feste Formation.
+  const squadByPosition = useMemo(() => {
+    if (!squad) return [];
+    const order = ['TW', 'ABW', 'MF', 'ST'];
+    return order
+      .map((pos) => ({
+        position: pos,
+        players: squad
+          .filter((p) => p.position === pos)
+          .sort((a, b) => (b.marketValue || 0) - (a.marketValue || 0)),
+      }))
+      .filter((g) => g.players.length > 0);
+  }, [squad]);
+
   const historyWithScores = useMemo(() => {
     return history.map(h => ({
       ...h,
@@ -346,6 +393,41 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
             </div>
           )}
         </div>
+
+        {/* Kader des angezeigten Managers (Issue e6beecd8/acccf545) - im
+            Kartenstil der Optimalen Elf (OptimalTeam.jsx::PositionRow), aber
+            mit variabler Spielerzahl pro Position statt fester 11er-Formation.
+            "Startelf" ist mangels Datenquelle nicht darstellbar (siehe Issue);
+            stattdessen der komplette Kader, wahrscheinliche Stammspieler
+            (startElfProbability >= 0.5) optisch hervorgehoben, sobald diese
+            Modell-Daten mal befuellt sind (aktuell noch durchgehend leer). */}
+        {squadByPosition.length > 0 && (
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-white mb-4">Kader</h3>
+            <div className="space-y-5">
+              {squadByPosition.map((group) => (
+                <div key={group.position}>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-[#8b92a5] mb-2.5">
+                    {POSITION_LABELS[group.position] || group.position}
+                  </div>
+                  <div className="flex flex-wrap gap-x-2 gap-y-4">
+                    {group.players.map((p) => (
+                      <PlayerPhotoCard
+                        key={p.playerId}
+                        imagePath={p.imagePath}
+                        name={p.name}
+                        displayName={p.name}
+                        badgeValue={p.lastPoints != null ? Math.round(p.lastPoints) : null}
+                        marketValue={p.marketValue}
+                        highlighted={p.startElfProbability != null && p.startElfProbability >= 0.5}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Liga-Zonen-Info (Archiv) bzw. schlichte Liga-Zeile - kein Card-Rahmen mehr, nur ein Akzentstreifen */}
         {mode === 'archive' ? (
