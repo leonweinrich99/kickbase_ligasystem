@@ -400,31 +400,52 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
             "Startelf" ist mangels Datenquelle nicht darstellbar (siehe Issue);
             stattdessen der komplette Kader, wahrscheinliche Stammspieler
             (startElfProbability >= 0.5) optisch hervorgehoben, sobald diese
-            Modell-Daten mal befuellt sind (aktuell noch durchgehend leer). */}
+            Modell-Daten mal befuellt sind (aktuell noch durchgehend leer).
+            Pitch-Hintergrund/-Linien 1:1 aus OptimalTeam.jsx uebernommen
+            (Issue 243354d1) - bewusst OHNE "justify-between h-full" wie dort:
+            ein Kader hat variabel bis zu ~20 Spieler (mehrzeilig bei MF/ABW),
+            "justify-between" wuerde bei kurzen Kadern (9 Spieler) die
+            Positionsgruppen unnoetig weit auseinanderziehen. min-h-[400px]
+            sorgt trotzdem fuer eine Mindesthoehe, damit die dekorativen
+            Linien (Halbfeld + Mittelkreis, absolut positioniert relativ zur
+            tatsaechlichen Boxhoehe) bei kleinen Kadern nicht gestaucht wirken. */}
         {squadByPosition.length > 0 && (
           <div className="mb-8">
             <h3 className="text-lg font-semibold text-white mb-4">Kader</h3>
-            <div className="space-y-5">
-              {squadByPosition.map((group) => (
-                <div key={group.position}>
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-[#8b92a5] mb-2.5">
-                    {POSITION_LABELS[group.position] || group.position}
-                  </div>
-                  <div className="flex flex-wrap gap-x-2 gap-y-4">
-                    {group.players.map((p) => (
-                      <PlayerPhotoCard
-                        key={p.playerId}
-                        imagePath={p.imagePath}
-                        name={p.name}
-                        displayName={p.name}
-                        badgeValue={p.lastPoints != null ? Math.round(p.lastPoints) : null}
-                        marketValue={p.marketValue}
-                        highlighted={p.startElfProbability != null && p.startElfProbability >= 0.5}
-                      />
-                    ))}
-                  </div>
+            <div
+              className="rounded-2xl overflow-hidden relative min-h-[400px] py-8"
+              style={{ backgroundImage: 'radial-gradient(circle at center, #171717 0%, #0a0a0a 100%)' }}
+            >
+              <div className="w-full max-w-md mx-auto relative">
+                {/* Pitch lines background - rein dekorativ, keine neuen Daten */}
+                <div className="absolute inset-0 pointer-events-none opacity-5 border-2 border-white rounded-lg m-4">
+                  <div className="absolute top-1/2 left-0 w-full h-[1px] bg-white"></div>
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 border border-white rounded-full"></div>
                 </div>
-              ))}
+
+                <div className="space-y-5 relative z-10 px-4">
+                  {squadByPosition.map((group) => (
+                    <div key={group.position}>
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-[#8b92a5] mb-2.5">
+                        {POSITION_LABELS[group.position] || group.position}
+                      </div>
+                      <div className="flex flex-wrap gap-x-2 gap-y-4">
+                        {group.players.map((p) => (
+                          <PlayerPhotoCard
+                            key={p.playerId}
+                            imagePath={p.imagePath}
+                            name={p.name}
+                            displayName={p.name}
+                            badgeValue={p.lastPoints != null ? Math.round(p.lastPoints) : null}
+                            marketValue={p.marketValue}
+                            highlighted={p.startElfProbability != null && p.startElfProbability >= 0.5}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         )}
