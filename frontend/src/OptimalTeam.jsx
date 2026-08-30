@@ -25,7 +25,7 @@ const PositionRow = ({ players }) => {
               {/* Spieler-Bild - abgerundetes Rechteck statt Kreis, damit der
                   Bildausschnitt (top-orientiert) das Gesicht nicht mehr an
                   den Raendern abschneidet (Owner-Wunsch 30.08., Issue 3edfc346) */}
-              <div className={`${baseSize} rounded-lg bg-[#202020] border-2 border-[#404040] overflow-hidden flex items-center justify-center shadow-lg relative group-hover:border-[#ff5c3e] transition-colors`}>
+              <div className={`${baseSize} rounded-lg bg-[#202020] overflow-hidden flex items-center justify-center shadow-lg relative`}>
               {p.imagePath ? (
                 <img
                   src={`https://kickbase.b-cdn.net/${p.imagePath}`}
