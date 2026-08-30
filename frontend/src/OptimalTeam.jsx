@@ -201,7 +201,7 @@ const OptimalTeam = ({ dataBase = '', routeBase = '' }) => {
                   <div className="text-[10px] uppercase tracking-widest text-[#8b92a5] font-black">Budget</div>
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-sm font-black text-white leading-none">{(data.totalBudget / 1000000).toFixed(1)} Mio.</span>
-                    <span className="text-[10px] text-gray-500 font-bold">/ 250</span>
+                    <span className="text-[10px] text-gray-500 font-bold">/ 150</span>
                   </div>
                 </div>
               </div>
