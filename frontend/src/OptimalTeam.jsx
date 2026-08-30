@@ -22,20 +22,28 @@ const PositionRow = ({ players }) => {
 
           return (
             <div key={p.id} className={`relative flex flex-col items-center group ${containerSize}`}>
-              {/* Spieler-Bild */}
-              <div className={`${baseSize} rounded-full bg-[#202020] border-2 border-[#404040] overflow-hidden flex items-center justify-center shadow-lg relative group-hover:border-[#ff5c3e] transition-colors`}>
+              {/* Spieler-Bild - abgerundetes Rechteck statt Kreis, damit der
+                  Bildausschnitt (top-orientiert) das Gesicht nicht mehr an
+                  den Raendern abschneidet (Owner-Wunsch 30.08., Issue 3edfc346).
+                  Kein Hintergrund-Kasten mehr, wenn ein Foto da ist - die
+                  Kickbase-PNGs sind transparent geschnitten und sollen frei
+                  auf dem Seitenhintergrund schweben (Issue 24ae1537). Nur der
+                  Initialen-Fallback (kein imagePath) behaelt den dunklen
+                  Hintergrund fuer ausreichend Textkontrast. */}
+              <div className={`${baseSize} rounded-lg ${p.imagePath ? '' : 'bg-[#202020]'} overflow-hidden flex items-center justify-center shadow-lg relative`}>
               {p.imagePath ? (
                 <img
                   src={`https://kickbase.b-cdn.net/${p.imagePath}`}
                   alt={p.name}
-                  className="w-full h-full object-cover scale-110 mt-2"
+                  className="w-full h-full object-cover object-top"
                   onError={(e) => { e.target.style.display = 'none'; }}
                 />
               ) : (
                 <div className="text-gray-500 font-bold text-xs uppercase">{p.name.substring(0, 2)}</div>
               )}
-              {/* Punkte-Badge - Exakt im Zentrum (mittig mittig) */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-green-500 text-white text-[11px] font-black px-2 py-1 rounded-lg border-2 border-[#202020] shadow-xl flex items-center justify-center min-w-[32px] z-20">
+              {/* Punkte-Badge - untere rechte Ecke statt Bildmitte, damit das
+                  Gesicht frei sichtbar bleibt (Owner-Wunsch 30.08.) */}
+              <div className="absolute -bottom-1.5 -right-1.5 bg-green-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-md border-2 border-[#202020] shadow-xl flex items-center justify-center min-w-[26px] z-20">
                 {p.points}
               </div>
             </div>
