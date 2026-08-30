@@ -1,19 +1,19 @@
 {
   "matchday": 1,
-  "totalPoints": 2455,
-  "totalBudget": 147055138,
-  "timestamp": "2026-08-30T06:56:34.028Z",
+  "totalPoints": 2861,
+  "totalBudget": 148897739,
+  "timestamp": "2026-08-30T19:44:51.337Z",
   "lineup": [
     {
-      "id": "1883",
-      "teamId": 15,
-      "name": "Nicolas",
-      "lastName": "Nicolas",
+      "id": "2195",
+      "teamId": 13,
+      "name": "Dahmen",
+      "lastName": "Dahmen",
       "position": 1,
-      "marketValue": 18314448,
-      "points": 194,
-      "imagePath": "content/file/02e615fb0e3043649fe830816e2860ba.png",
-      "teamName": "M'gladbach"
+      "marketValue": 16281894,
+      "points": 224,
+      "imagePath": "content/file/78075846ec2d4f2eaeef6be38fdb6681.png",
+      "teamName": "Augsburg"
     },
     {
       "id": "11186",
@@ -25,17 +25,6 @@
       "points": 184,
       "imagePath": "content/file/41180e5bf4d046fbb3c24268c49459cb.png",
       "teamName": "Frankfurt"
-    },
-    {
-      "id": "6197",
-      "teamId": 29,
-      "name": "Curda",
-      "lastName": "Curda",
-      "position": 2,
-      "marketValue": 9216963,
-      "points": 188,
-      "imagePath": "content/file/ba195e9442954a30a3835950c99832a5.png",
-      "teamName": "Paderborn"
     },
     {
       "id": "4598",
@@ -60,6 +49,17 @@
       "teamName": "Union Berlin"
     },
     {
+      "id": "2141",
+      "teamId": 43,
+      "name": "Baku",
+      "lastName": "Baku",
+      "position": 2,
+      "marketValue": 18475223,
+      "points": 234,
+      "imagePath": "content/file/938a124759354a928af165b155e6925a.png",
+      "teamName": "Leipzig"
+    },
+    {
       "id": "6080",
       "teamId": 2,
       "name": "Pavlović",
@@ -71,26 +71,26 @@
       "teamName": "Bayern"
     },
     {
-      "id": "2897",
-      "teamId": 43,
-      "name": "Reitz",
-      "lastName": "Reitz",
+      "id": "11006",
+      "teamId": 5,
+      "name": "Suzuki",
+      "lastName": "Suzuki",
       "position": 3,
-      "marketValue": 12916555,
-      "points": 208,
-      "imagePath": "content/file/4186115eb899498fbec64508ec48475c.png",
-      "teamName": "Leipzig"
+      "marketValue": 14514355,
+      "points": 395,
+      "imagePath": "content/file/b6f12e7f20704297b8205da224ce56f1.png",
+      "teamName": "Freiburg"
     },
     {
-      "id": "9507",
-      "teamId": 43,
-      "name": "Nusa",
-      "lastName": "Nusa",
+      "id": "1809",
+      "teamId": 13,
+      "name": "Wolf",
+      "lastName": "Wolf",
       "position": 3,
-      "marketValue": 26061183,
-      "points": 227,
-      "imagePath": "content/file/9a7ea9c911e04f9e9cf0fa6c4b57ca54.png",
-      "teamName": "Leipzig"
+      "marketValue": 5443782,
+      "points": 253,
+      "imagePath": "content/file/a1f80afaec424464a483185498e81a2e.png",
+      "teamName": "Augsburg"
     },
     {
       "id": "10004",
@@ -104,6 +104,17 @@
       "teamName": "Frankfurt"
     },
     {
+      "id": "3304",
+      "teamId": 5,
+      "name": "Matanović",
+      "lastName": "Matanović",
+      "position": 4,
+      "marketValue": 19844249,
+      "points": 293,
+      "imagePath": "content/file/6bb42fe3c2da4e1e9f8ad8dc25f1cc85.png",
+      "teamName": "Freiburg"
+    },
+    {
       "id": "16945",
       "teamId": 28,
       "name": "Dallinga",
@@ -113,17 +124,6 @@
       "points": 238,
       "imagePath": "content/file/fab92b426a354aacae1fe7f26e0e6ab0.png",
       "teamName": "Köln"
-    },
-    {
-      "id": "10113",
-      "teamId": 43,
-      "name": "Gomis",
-      "lastName": "Gomis",
-      "position": 4,
-      "marketValue": 6207753,
-      "points": 176,
-      "imagePath": "content/file/6fdc632f20f64bac905749a9c2b23a86.png",
-      "teamName": "Leipzig"
     }
   ]
 }
