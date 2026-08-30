@@ -242,7 +242,10 @@ async function fetchOptimalTeam(force = true) {
                         }
                         
                         p.points = points;
-                        p.imagePath = p.id;
+                        // War faelschlich die Player-ID (kein Bildpfad, 404 auf die CDN-URL,
+                        // siehe Issue 91fcb36f) - echtes Bildfeld wie im Trading Advisor
+                        // (backend/advisor/kickbase_api/player.py::image_path).
+                        p.imagePath = pData.profileBig || pData.profile || pData.pim;
                         p.teamName = pData.tn || "Unknown";
                     }
                 } catch (e) {}

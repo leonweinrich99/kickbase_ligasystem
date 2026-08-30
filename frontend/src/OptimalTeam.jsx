@@ -26,7 +26,7 @@ const PositionRow = ({ players }) => {
               <div className={`${baseSize} rounded-full bg-[#202020] border-2 border-[#404040] overflow-hidden flex items-center justify-center shadow-lg relative group-hover:border-[#ff5c3e] transition-colors`}>
               {p.imagePath ? (
                 <img
-                  src={`https://cdn.kickbase.com/files/players/${p.imagePath}/1`}
+                  src={`https://kickbase.b-cdn.net/${p.imagePath}`}
                   alt={p.name}
                   className="w-full h-full object-cover scale-110 mt-2"
                   onError={(e) => { e.target.style.display = 'none'; }}
