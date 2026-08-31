@@ -13,6 +13,7 @@ import { BackButton } from './ui/CloseButton';
 import ManagerAvatar from './ui/ManagerAvatar';
 import PlayerPhotoCard from './ui/PlayerPhotoCard';
 import PositionRow from './ui/PositionRow';
+import { PlayerDetailView } from './Advisor';
 
 // Gleiche Positions-Labels/Reihenfolge wie AccountStats.jsx/Advisor.jsx.
 const POSITION_LABELS = { TW: 'Torwart', ABW: 'Abwehr', MF: 'Mittelfeld', ST: 'Sturm' };
@@ -207,6 +208,26 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
       .then((json) => setStartelfData(json))
       .catch(() => setStartelfData(null));
   }, [dataBase, mode, currentMatchday]);
+
+  const [selectedPlayer, setSelectedPlayer] = useState(null);
+
+  const getFullPlayer = (playerId) => {
+    if (!advisorData || !advisorData.leagues) return null;
+    for (const lName in advisorData.leagues) {
+      const league = advisorData.leagues[lName];
+      if (league.managerSquads) {
+        for (const mId in league.managerSquads) {
+          const found = league.managerSquads[mId].find(p => String(p.playerId) === String(playerId));
+          if (found) return found;
+        }
+      }
+      if (league.marketData) {
+        const foundMarket = league.marketData.find(p => String(p.playerId) === String(playerId));
+        if (foundMarket) return foundMarket;
+      }
+    }
+    return null;
+  };
 
   // Gleiches Join-Muster wie AccountStats.jsx::KaderTab: managerId (userData.id)
   // entspricht 1:1 dem Key in managerSquads, unabhaengig davon in welcher der
@@ -456,12 +477,17 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                     const aw = lineup.filter(p => p.position === 2);
                     const tw = lineup.filter(p => p.position === 1);
 
+                    const handlePlayerClick = (pid) => {
+                      const fullPlayer = getFullPlayer(pid);
+                      if (fullPlayer) setSelectedPlayer(fullPlayer);
+                    };
+
                     return (
                       <>
-                        <PositionRow players={st} />
-                        <PositionRow players={mf} />
-                        <PositionRow players={aw} />
-                        <PositionRow players={tw} />
+                        <PositionRow players={st} onPlayerClick={handlePlayerClick} />
+                        <PositionRow players={mf} onPlayerClick={handlePlayerClick} />
+                        <PositionRow players={aw} onPlayerClick={handlePlayerClick} />
+                        <PositionRow players={tw} onPlayerClick={handlePlayerClick} />
                       </>
                     );
                   })()}
@@ -498,6 +524,10 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                             badgeValue={p.lastPoints != null ? Math.round(p.lastPoints) : null}
                             marketValue={p.marketValue}
                             highlighted={p.startElfProbability != null && p.startElfProbability >= 0.5}
+                            onClick={() => {
+                              const fp = getFullPlayer(p.playerId);
+                              if (fp) setSelectedPlayer(fp);
+                            }}
                           />
                         ))}
                       </div>
@@ -723,6 +753,15 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
           </div>
         </div>
       </div>
+
+      {selectedPlayer && (
+        <PlayerDetailView
+          player={selectedPlayer}
+          onClose={() => setSelectedPlayer(null)}
+          isFavorite={false}
+          onToggleFavorite={() => {}}
+        />
+      )}
     </div>
   );
 };

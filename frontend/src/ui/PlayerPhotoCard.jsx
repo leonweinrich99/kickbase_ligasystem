@@ -6,8 +6,11 @@ import React from 'react';
 // denselben Kartenstil nutzen kann statt ihn zu duplizieren. Groesse/Zeilen-
 // Layout bleibt Sache des jeweiligen Aufrufers (Optimale Elf: feste 11er-
 // Reihen, Kader: variable Groesse pro Position).
-const PlayerPhotoCard = ({ imagePath, name, displayName, badgeValue, marketValue, baseSize = 'w-14 h-14 sm:w-16 sm:h-16', containerSize = 'w-[75px] sm:w-[90px]', highlighted = false }) => (
-  <div className={`relative flex flex-col items-center group ${containerSize}`}>
+const PlayerPhotoCard = ({ imagePath, name, displayName, badgeValue, marketValue, baseSize = 'w-14 h-14 sm:w-16 sm:h-16', containerSize = 'w-[75px] sm:w-[90px]', highlighted = false, onClick }) => (
+  <div 
+    className={`relative flex flex-col items-center group ${containerSize} ${onClick ? 'cursor-pointer hover:scale-105 transition-transform' : ''}`}
+    onClick={onClick}
+  >
     <div className={`${baseSize} rounded-lg ${imagePath ? '' : 'bg-[#202020]'} overflow-hidden flex items-center justify-center shadow-lg relative ${highlighted ? 'ring-2 ring-[#ff5c3e]' : ''}`}>
       {imagePath ? (
         <img

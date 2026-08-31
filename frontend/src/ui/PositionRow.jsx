@@ -4,7 +4,7 @@ import PlayerPhotoCard from './PlayerPhotoCard';
 // Eine Formationsreihe (z.B. "Sturm" oder "Abwehr") aus Spieler-Foto-Karten -
 // extrahiert aus OptimalTeam.jsx, damit UserDetail.jsx (Startelf-Anzeige,
 // Issue 9a0d78ba) denselben Zeilen-Stil nutzen kann statt ihn zu duplizieren.
-const PositionRow = ({ players }) => {
+const PositionRow = ({ players, onPlayerClick }) => {
   if (!players || players.length === 0) return null;
   return (
     <div className="flex flex-col items-center mb-4 last:mb-0 w-full z-10">
@@ -25,6 +25,7 @@ const PositionRow = ({ players }) => {
               marketValue={p.marketValue}
               baseSize={baseSize}
               containerSize={containerSize}
+              onClick={() => onPlayerClick && onPlayerClick(p.id)}
             />
           );
         })}

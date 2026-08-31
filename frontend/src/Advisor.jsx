@@ -559,7 +559,7 @@ const generateAIReasoning = (player) => {
   return sentences.join(" ");
 };
 
-const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, onToggleFavorite }) => {
+export const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, onToggleFavorite }) => {
   const fullBaseHistory = normalizeHistory(player.history);
   const [timeRange, setTimeRange] = useState('3m');
   
