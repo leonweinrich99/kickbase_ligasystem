@@ -46,20 +46,15 @@ async function reconstructForMatchday(targetMatchdayStr) {
                     body: JSON.stringify({ em: account.email, loy: false, pass: account.pass, rep: {} })
                 });
                 const loginData = await loginRes.json();
-                if (loginData.err) {
-                    console.error(`Login failed for ${account.email}: ${loginData.errMsg}`);
-                    continue;
-                }
+                if (loginData.err) continue;
                 
                 const curToken = loginData.tkn;
-                const curUserId = loginData.us.i || loginData.us.id;
 
                 const leaguesRes = await fetch('https://api.kickbase.com/v4/leagues', {
                     headers: { Authorization: `Bearer ${curToken}` }
                 });
                 const leaguesData = await leaguesRes.json();
                 
-                // MATCHING LOGIC IDENTICAL TO kickbase.js
                 const leaguesList = leaguesData?.it || leaguesData?.lins || leaguesData?.leagues || (Array.isArray(leaguesData) ? leaguesData : []);
                 
                 let foundId = null;
@@ -77,15 +72,19 @@ async function reconstructForMatchday(targetMatchdayStr) {
                 if (foundId) {
                     leagueId = foundId;
                     token = curToken;
-                    userId = curUserId;
-                    loggedIn = true;
-                    console.log(`Found league ${leagueDef.name} with account ${account.email}`);
-                    break;
-                } else {
-                    console.log(`League ${leagueDef.name} not found with account ${account.email}`);
+                    
+                    // We need any user in this league to fetch teamcenter. Fetch the ranking to get users.
+                    const rankingRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/ranking`, { headers: { Authorization: `Bearer ${token}` } });
+                    const rankingData = await rankingRes.json();
+                    const users = rankingData.us || [];
+                    if (users.length > 0) {
+                        userId = users[0].i || users[0].id;
+                        loggedIn = true;
+                        break;
+                    }
                 }
             } catch (e) {
-                console.error(`Error testing account ${account.email}:`, e);
+                // Ignore and try next account
             }
         }
 
