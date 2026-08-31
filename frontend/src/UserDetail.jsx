@@ -213,6 +213,9 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
 
   const getFullPlayer = (playerId) => {
     if (!advisorData || !advisorData.leagues) return 'LOADING';
+    
+    // Zuerst in allen Ligen (Kader & Markt) suchen, da dort oft noch
+    // kontextbezogene Zusatzdaten (wie owner) liegen könnten.
     for (const lName in advisorData.leagues) {
       const league = advisorData.leagues[lName];
       if (league.managerSquads) {
@@ -226,6 +229,13 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
         if (foundMarket) return foundMarket;
       }
     }
+    
+    // Fallback: In der globalen Spieler-Datenbank suchen (für verkaufte Spieler)
+    if (advisorData.players) {
+      const foundGlobal = advisorData.players.find(p => String(p.playerId) === String(playerId));
+      if (foundGlobal) return foundGlobal;
+    }
+    
     return null;
   };
 
