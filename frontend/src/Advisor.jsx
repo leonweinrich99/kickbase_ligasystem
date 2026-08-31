@@ -6,7 +6,7 @@ import { useAuth } from './AuthContext';
 import { useBackNavigation } from './useBackNavigation';
 import { useFavorites } from './useFavorites';
 import PageHeader from './ui/PageHeader';
-import CloseButton from './ui/CloseButton';
+import CloseButton, { BackButton } from './ui/CloseButton';
 import StatTile from './ui/StatTile';
 import { countPositions, missingPositions, estimateReserveForMissingPositions } from './squadRules';
 
@@ -644,15 +644,7 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, 
     <div className="w-full bg-[#000000] min-h-screen relative flex flex-col pb-10">
       {/* Header mit Zurueck-Button (Page-Look) */}
       <div className="sticky top-0 z-50 bg-[#000000]/90 backdrop-blur-md px-4 sm:px-6 py-4 flex items-center justify-between border-b border-[#2e2e2e]/50">
-        <button
-          onClick={onClose}
-          className="flex items-center gap-2 text-[#8b92a5] hover:text-white transition-colors"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="15 18 9 12 15 6"></polyline>
-          </svg>
-          <span className="font-bold text-sm">Zurück</span>
-        </button>
+        <BackButton onClick={onClose} />
         {onToggleFavorite && (
           <button
             onClick={() => onToggleFavorite(player.playerId)}

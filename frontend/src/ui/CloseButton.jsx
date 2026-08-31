@@ -26,10 +26,12 @@ export function BackButton({ onClick, label = 'Zurück', className = '' }) {
   return (
     <button
       onClick={onClick}
-      className={`group flex items-center gap-3 bg-[#171717] border border-[#2e2e2e] px-4 py-2 rounded-xl text-[#8b92a5] hover:text-white transition-all shrink-0 ${className}`}
+      className={`group flex items-center gap-2 text-[#8b92a5] hover:text-white transition-colors ${className}`}
     >
-      <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-      <span className="text-xs font-bold uppercase tracking-wider">{label}</span>
+      <svg className="group-hover:-translate-x-1 transition-transform" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+      <span className="font-bold text-sm">{label}</span>
     </button>
   );
 }
