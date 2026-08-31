@@ -46,7 +46,10 @@ async function reconstructForMatchday(targetMatchdayStr) {
                     body: JSON.stringify({ em: account.email, loy: false, pass: account.pass, rep: {} })
                 });
                 const loginData = await loginRes.json();
-                if (loginData.err) continue;
+                if (loginData.err) {
+                    console.error(`Login failed for ${account.email}: ${loginData.errMsg}`);
+                    continue;
+                }
                 
                 const curToken = loginData.tkn;
                 const curUserId = loginData.us.i || loginData.us.id;
@@ -64,7 +67,7 @@ async function reconstructForMatchday(targetMatchdayStr) {
                     const lName = (l.n || l.name).toLowerCase();
                     const leagueTokens = lName.match(/[a-z0-9]+/g) || [];
                     
-                    const isMatch = needleTokens.length > 0 && needleTokens.every(token => leagueTokens.includes(token));
+                    const isMatch = needleTokens.length > 0 && needleTokens.every(t => leagueTokens.includes(t));
                     if (isMatch || lName.includes(leagueNameContains.toLowerCase())) {
                         foundId = l.i || l.id;
                         break;
@@ -76,10 +79,13 @@ async function reconstructForMatchday(targetMatchdayStr) {
                     token = curToken;
                     userId = curUserId;
                     loggedIn = true;
+                    console.log(`Found league ${leagueDef.name} with account ${account.email}`);
                     break;
+                } else {
+                    console.log(`League ${leagueDef.name} not found with account ${account.email}`);
                 }
             } catch (e) {
-                // Ignore and try next account
+                console.error(`Error testing account ${account.email}:`, e);
             }
         }
 
