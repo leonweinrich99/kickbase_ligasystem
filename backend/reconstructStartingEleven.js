@@ -167,22 +167,44 @@ async function reconstructForMatchday(targetMatchdayStr) {
                 const squadIds = Array.from(currentSquads.get(mId) || []);
                 const squadWithPoints = squadIds.map(pId => {
                     const playerFull = allPlayersMap.get(pId);
-                    if (!playerFull) return null;
                     
-                    let pos = playerFull.pos || playerFull.p || 0;
+                    // Fallback to transfer history if player was removed from Kickbase database
+                    const transferFallback = !playerFull ? transfers.find(t => String(t.playerId) === pId) : null;
+                    if (!playerFull && !transferFallback) return null;
+                    
+                    let pos = playerFull ? (playerFull.pos || playerFull.p || 0) : 0;
                     if (pos > 10) pos = (pos % 10) || 0;
-                    const name = `${playerFull.fn ? playerFull.fn + ' ' : ''}${playerFull.ln || playerFull.n || ''}`.trim();
+                    
+                    let name = pId;
+                    let lastName = pId;
+                    let teamId = "0";
+                    let marketValue = 0;
+                    let imagePath = "";
+                    let teamName = "Unknown";
+                    
+                    if (playerFull) {
+                        name = `${playerFull.fn ? playerFull.fn + ' ' : ''}${playerFull.ln || playerFull.n || ''}`.trim();
+                        lastName = playerFull.ln || playerFull.n || name;
+                        teamId = playerFull.tid || playerFull.teamId;
+                        marketValue = playerFull.mv || playerFull.marketValue || 0;
+                        imagePath = playerFull.profileBig || playerFull.profile || playerFull.pim;
+                        teamName = playerFull.tn || playerFull.teamName || "Unknown";
+                    } else if (transferFallback) {
+                        name = transferFallback.playerName;
+                        lastName = transferFallback.playerName;
+                        marketValue = transferFallback.marketValueAtTimeOfTransfer || transferFallback.price || 0;
+                    }
 
                     return {
                         id: String(pId),
-                        teamId: playerFull.tid || playerFull.teamId,
+                        teamId: teamId,
                         name: name,
-                        lastName: playerFull.ln || playerFull.n || name,
+                        lastName: lastName,
                         position: pos,
-                        marketValue: playerFull.mv || playerFull.marketValue || 0,
+                        marketValue: marketValue,
                         points: playerPoints.get(pId) || 0,
-                        imagePath: playerFull.profileBig || playerFull.profile || playerFull.pim,
-                        teamName: playerFull.tn || playerFull.teamName || "Unknown"
+                        imagePath: imagePath,
+                        teamName: teamName
                     };
                 }).filter(Boolean);
 
