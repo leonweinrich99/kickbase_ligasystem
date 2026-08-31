@@ -1,6 +1,6 @@
 {
   "matchday": 1,
-  "timestamp": "2026-08-31T08:10:35.256Z",
+  "timestamp": "2026-08-31T08:55:37.302Z",
   "managers": {
     "1630703": {
       "pointsMatchday": 816,
@@ -1392,6 +1392,17 @@
       "pointsMatchday": -405,
       "lineup": [
         {
+          "id": "14893",
+          "teamId": "0",
+          "name": "Damjanovic",
+          "lastName": "Damjanovic",
+          "position": 0,
+          "marketValue": 7916327,
+          "points": 0,
+          "imagePath": "",
+          "teamName": "Unknown"
+        },
+        {
           "id": "14917",
           "teamId": "40",
           "name": "Zeno Van den Bosch",
@@ -1423,17 +1434,6 @@
           "points": 5,
           "imagePath": "content/file/29d28defc06541cdb2d6e020dc443ca1.png",
           "teamName": "Frankfurt"
-        },
-        {
-          "id": "15181",
-          "teamId": "15",
-          "name": "Jan Leszczynski",
-          "lastName": "Leszczynski",
-          "position": 2,
-          "marketValue": 6068893,
-          "points": 0,
-          "imagePath": "content/file/43eddfa24a0f4db3a737bf045f96d849.png",
-          "teamName": "M'gladbach"
         },
         {
           "id": "2854",
@@ -1840,6 +1840,17 @@
     "3639851": {
       "pointsMatchday": 471,
       "lineup": [
+        {
+          "id": "3450",
+          "teamId": "10",
+          "name": "Markus Kolke",
+          "lastName": "Kolke",
+          "position": 1,
+          "marketValue": 500000,
+          "points": 0,
+          "imagePath": "content/file/8e62a66ca620435fa877b6e0ed662c0b.png",
+          "teamName": "Bremen"
+        },
         {
           "id": "14917",
           "teamId": "40",
@@ -2826,6 +2837,17 @@
     "3901400": {
       "pointsMatchday": 348,
       "lineup": [
+        {
+          "id": "2852",
+          "teamId": "14",
+          "name": "Luca Philipp",
+          "lastName": "Philipp",
+          "position": 1,
+          "marketValue": 500000,
+          "points": 0,
+          "imagePath": "content/file/e45a165d68934e8e8a2bbc33ecbbbc96.png",
+          "teamName": "Hoffenheim"
+        },
         {
           "id": "3543",
           "teamId": "2",
