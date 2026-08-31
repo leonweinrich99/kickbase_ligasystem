@@ -11,6 +11,11 @@ import {
 import { useBackNavigation } from './useBackNavigation';
 import { BackButton } from './ui/CloseButton';
 import ManagerAvatar from './ui/ManagerAvatar';
+import PlayerPhotoCard from './ui/PlayerPhotoCard';
+import PositionRow from './ui/PositionRow';
+
+// Gleiche Positions-Labels/Reihenfolge wie AccountStats.jsx/Advisor.jsx.
+const POSITION_LABELS = { TW: 'Torwart', ABW: 'Abwehr', MF: 'Mittelfeld', ST: 'Sturm' };
 
 const calculatePerformanceScore = (points, avg, opt, max) => {
   if (points <= 0) return 1.0;
@@ -48,6 +53,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
   const [thresholds, setThresholds] = useState(null);
   const [showAverage, setShowAverage] = useState(false);
   const [showOptimal, setShowOptimal] = useState(false);
+  const [currentMatchday, setCurrentMatchday] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -62,6 +68,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
 
         const latestData = await latestRes.json();
         const indexData = await indexRes.json();
+        setCurrentMatchday(latestData.matchday);
 
         const allUsersFlat = latestData.leagues.flatMap(l => l.users.map(u => ({...u, leagueColor: l.color, leagueName: l.name}))).sort((a,b) => a.rank - b.rank);
         setAllUsers(allUsersFlat);
@@ -159,14 +166,14 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
             }
 
             historyResults.push({
-                matchday: latestData.matchday,
-                points: currentPoints,
-                pointsMatchday: currentMatchdayPoints,
-                rank: foundUser.rank,
-                budget: parseInt(foundUser.estimatedBudget.replace(/[^0-9]/g, '')) || 0,
-                averagePoints: latestAvg,
-                maxPoints: latestMax,
-                optimalPoints
+              matchday: latestData.matchday,
+              points: currentPoints,
+              pointsMatchday: currentMatchdayPoints,
+              rank: foundUser.rank,
+              budget: parseInt(foundUser.estimatedBudget.replace(/[^0-9]/g, '')) || 0,
+              averagePoints: latestAvg,
+              maxPoints: latestMax,
+              optimalPoints
             });
         }
 
@@ -181,6 +188,54 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
 
     fetchData();
   }, [id, dataBase, mode]);
+
+  const [advisorData, setAdvisorData] = useState(null);
+  const [startelfData, setStartelfData] = useState(null);
+  
+  useEffect(() => {
+    if (mode === 'archive') return;
+    fetch(`${dataBase}/advisor-data.json?t=${Date.now()}`)
+      .then((res) => res.json())
+      .then((json) => setAdvisorData(json))
+      .catch(() => setAdvisorData(null));
+  }, [dataBase, mode]);
+
+  useEffect(() => {
+    if (mode === 'archive' || !currentMatchday) return;
+    fetch(`${dataBase}/history/startelf-md${currentMatchday}.json?t=${Date.now()}`)
+      .then((res) => res.json())
+      .then((json) => setStartelfData(json))
+      .catch(() => setStartelfData(null));
+  }, [dataBase, mode, currentMatchday]);
+
+  // Gleiches Join-Muster wie AccountStats.jsx::KaderTab: managerId (userData.id)
+  // entspricht 1:1 dem Key in managerSquads, unabhaengig davon in welcher der
+  // 3 Ligen der Manager spielt - deshalb ueber alle Ligen suchen statt eine
+  // feste Liga anzunehmen.
+  const squad = useMemo(() => {
+    if (!advisorData || !userData) return null;
+    for (const league of Object.values(advisorData.leagues || {})) {
+      const found = league.managerSquads?.[userData.id];
+      if (found?.length) return found;
+    }
+    return null;
+  }, [advisorData, userData]);
+
+  // Nach Position gruppiert (TW -> ABW -> MF -> ST, wie auf dem Spielfeld),
+  // aber mit variabler Spielerzahl pro Reihe statt der festen 11er-Aufstellung
+  // der Optimalen Elf - ein Kader hat i.d.R. 15-20 Spieler, keine feste Formation.
+  const squadByPosition = useMemo(() => {
+    if (!squad) return [];
+    const order = ['TW', 'ABW', 'MF', 'ST'];
+    return order
+      .map((pos) => ({
+        position: pos,
+        players: squad
+          .filter((p) => p.position === pos)
+          .sort((a, b) => (b.marketValue || 0) - (a.marketValue || 0)),
+      }))
+      .filter((g) => g.players.length > 0);
+  }, [squad]);
 
   const historyWithScores = useMemo(() => {
     return history.map(h => ({
@@ -346,6 +401,87 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
             </div>
           )}
         </div>
+
+        {startelfData?.managers?.[userData.id] ? (
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <h3 className="text-lg font-semibold text-white">Startelf</h3>
+              <span className="text-[10px] font-bold uppercase tracking-widest bg-green-500/20 text-green-500 px-2 py-0.5 rounded-full">
+                Verifiziert
+              </span>
+            </div>
+            <div
+              className="rounded-2xl overflow-hidden relative min-h-[400px] flex flex-col justify-center py-8"
+              style={{ backgroundImage: 'radial-gradient(circle at center, #171717 0%, #0a0a0a 100%)' }}
+            >
+              <div className="w-full max-w-md mx-auto relative flex flex-col justify-between h-full">
+                {/* Pitch lines background - rein dekorativ */}
+                <div className="absolute inset-0 pointer-events-none opacity-5 border-2 border-white rounded-lg m-4">
+                  <div className="absolute top-1/2 left-0 w-full h-[1px] bg-white"></div>
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 border border-white rounded-full"></div>
+                </div>
+
+                <div className="relative z-10 w-full px-2 h-full flex flex-col justify-between">
+                  {(() => {
+                    const lineup = startelfData.managers[userData.id].lineup;
+                    const st = lineup.filter(p => p.position === 4);
+                    const mf = lineup.filter(p => p.position === 3);
+                    const aw = lineup.filter(p => p.position === 2);
+                    const tw = lineup.filter(p => p.position === 1);
+
+                    return (
+                      <>
+                        <PositionRow players={st} />
+                        <PositionRow players={mf} />
+                        <PositionRow players={aw} />
+                        <PositionRow players={tw} />
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : squadByPosition.length > 0 && (
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-white mb-4">Kader</h3>
+            <div
+              className="rounded-2xl overflow-hidden relative min-h-[400px] py-8"
+              style={{ backgroundImage: 'radial-gradient(circle at center, #171717 0%, #0a0a0a 100%)' }}
+            >
+              <div className="w-full max-w-md mx-auto relative">
+                {/* Pitch lines background - rein dekorativ, keine neuen Daten */}
+                <div className="absolute inset-0 pointer-events-none opacity-5 border-2 border-white rounded-lg m-4">
+                  <div className="absolute top-1/2 left-0 w-full h-[1px] bg-white"></div>
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 border border-white rounded-full"></div>
+                </div>
+
+                <div className="space-y-5 relative z-10 px-4">
+                  {squadByPosition.map((group) => (
+                    <div key={group.position}>
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-[#8b92a5] mb-2.5">
+                        {POSITION_LABELS[group.position] || group.position}
+                      </div>
+                      <div className="flex flex-wrap gap-x-2 gap-y-4">
+                        {group.players.map((p) => (
+                          <PlayerPhotoCard
+                            key={p.playerId}
+                            imagePath={p.imagePath}
+                            name={p.name}
+                            displayName={p.name}
+                            badgeValue={p.lastPoints != null ? Math.round(p.lastPoints) : null}
+                            marketValue={p.marketValue}
+                            highlighted={p.startElfProbability != null && p.startElfProbability >= 0.5}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Liga-Zonen-Info (Archiv) bzw. schlichte Liga-Zeile - kein Card-Rahmen mehr, nur ein Akzentstreifen */}
         {mode === 'archive' ? (

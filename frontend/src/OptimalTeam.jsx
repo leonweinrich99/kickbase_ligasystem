@@ -3,67 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Trophy, Wallet, Star, SearchX } from 'lucide-react';
 import { useBackNavigation } from './useBackNavigation';
 import { BackButton } from './ui/CloseButton';
+import PositionRow from './ui/PositionRow';
 
 // Vollbild-Seite (eigene Route) statt Overlay-Modal - gleiche Design-Strategie
 // wie UserDetail/CompareView: sticky Header mit Zurueck-Button, Inhalt direkt
 // darunter, kein Backdrop/Card-Rahmen mehr. Der Spieltag steckt in der URL
 // (":matchday"), damit die Seite per Browser-Back/Deep-Link funktioniert.
-
-const PositionRow = ({ players }) => {
-  if (!players || players.length === 0) return null;
-  return (
-    <div className="flex flex-col items-center mb-4 last:mb-0 w-full z-10">
-      <div className="flex justify-center items-center flex-nowrap gap-1 sm:gap-4 w-full px-2 overflow-visible">
-        {players.map(p => {
-          // Dynamische Größe basierend auf Anzahl der Spieler in der Reihe
-          const itemCount = players.length;
-          const baseSize = itemCount > 4 ? "w-12 h-12 sm:w-14 sm:h-14" : "w-14 h-14 sm:w-16 sm:h-16";
-          const containerSize = itemCount > 4 ? "w-[65px] sm:w-[80px]" : "w-[75px] sm:w-[90px]";
-
-          return (
-            <div key={p.id} className={`relative flex flex-col items-center group ${containerSize}`}>
-              {/* Spieler-Bild - abgerundetes Rechteck statt Kreis, damit der
-                  Bildausschnitt (top-orientiert) das Gesicht nicht mehr an
-                  den Raendern abschneidet (Owner-Wunsch 30.08., Issue 3edfc346).
-                  Kein Hintergrund-Kasten mehr, wenn ein Foto da ist - die
-                  Kickbase-PNGs sind transparent geschnitten und sollen frei
-                  auf dem Seitenhintergrund schweben (Issue 24ae1537). Nur der
-                  Initialen-Fallback (kein imagePath) behaelt den dunklen
-                  Hintergrund fuer ausreichend Textkontrast. */}
-              <div className={`${baseSize} rounded-lg ${p.imagePath ? '' : 'bg-[#202020]'} overflow-hidden flex items-center justify-center shadow-lg relative`}>
-              {p.imagePath ? (
-                <img
-                  src={`https://kickbase.b-cdn.net/${p.imagePath}`}
-                  alt={p.name}
-                  className="w-full h-full object-cover object-top"
-                  onError={(e) => { e.target.style.display = 'none'; }}
-                />
-              ) : (
-                <div className="text-gray-500 font-bold text-xs uppercase">{p.name.substring(0, 2)}</div>
-              )}
-              {/* Punkte-Badge - untere rechte Ecke statt Bildmitte, damit das
-                  Gesicht frei sichtbar bleibt (Owner-Wunsch 30.08.) */}
-              <div className="absolute -bottom-1.5 -right-1.5 bg-green-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-md border-2 border-[#202020] shadow-xl flex items-center justify-center min-w-[26px] z-20">
-                {p.points}
-              </div>
-            </div>
-
-            {/* Name & Wert */}
-            <div className="mt-2 text-center w-full">
-              <div className="text-[10px] sm:text-[11px] font-bold text-white truncate w-full shadow-sm" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
-                {p.lastName || p.name}
-              </div>
-              <div className="text-[8px] sm:text-[9px] font-bold text-[#8b92a5] whitespace-nowrap bg-[#171717]/80 px-1 rounded-sm inline-block mt-0.5">
-                {(p.marketValue / 1000000).toFixed(1)} Mio
-              </div>
-            </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
 
 const OptimalTeam = ({ dataBase = '', routeBase = '' }) => {
   const { matchday: matchdayParam } = useParams();
