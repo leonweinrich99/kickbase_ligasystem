@@ -473,13 +473,18 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                     }
 
                     const st = lineup.filter(p => p.position === 4);
-                    const mf = lineup.filter(p => p.position === 3);
+                    const mf = lineup.filter(p => p.position === 3 || p.position === 0);
                     const aw = lineup.filter(p => p.position === 2);
                     const tw = lineup.filter(p => p.position === 1);
 
                     const handlePlayerClick = (pid) => {
+                      if (pid && pid.toString().startsWith('dummy-')) return;
                       const fullPlayer = getFullPlayer(pid);
-                      if (fullPlayer) setSelectedPlayer(fullPlayer);
+                      if (fullPlayer) {
+                        setSelectedPlayer(fullPlayer);
+                      } else {
+                        alert('Keine detaillierten Prognose-Daten für diesen Spieler gefunden (vermutlich verkauft).');
+                      }
                     };
 
                     return (
@@ -526,7 +531,11 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                             highlighted={p.startElfProbability != null && p.startElfProbability >= 0.5}
                             onClick={() => {
                               const fp = getFullPlayer(p.playerId);
-                              if (fp) setSelectedPlayer(fp);
+                              if (fp) {
+                                setSelectedPlayer(fp);
+                              } else {
+                                alert('Keine detaillierten Prognose-Daten für diesen Spieler gefunden.');
+                              }
                             }}
                           />
                         ))}
