@@ -7,6 +7,48 @@ const ALL_PLAYERS_PATH = path.join(__dirname, '../frontend/public/history/all_pl
 const TRANSFERS_PATH = path.join(__dirname, '../frontend/public/history/transfers.json');
 
 const posMap = { "TW": 1, "ABW": 2, "MF": 3, "ST": 4 };
+const WEEKDAY_NUM = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+
+// Kickbase sperrt den Transfermarkt fuer den kompletten Spieltag ab Freitag
+// 20:30 Uhr (deutsche Ortszeit) - NICHT erst zum individuellen Match-Kickoff
+// (Owner-Bestaetigung 31.08.2026: "freitag ist der cutoff"). Wandelt einen
+// beliebigen Referenz-Zeitpunkt des Spieltags (z.B. den Kickoff des ersten
+// bekannten Matches) in den Freitag-20:30-Sperrzeitpunkt DERSELBEN Woche um -
+// per Intl.DateTimeFormat mit "Europe/Berlin", damit die Sommer-/Winterzeit-
+// Umstellung automatisch korrekt beruecksichtigt wird (keine manuelle
+// UTC+1/+2-Fallunterscheidung noetig).
+function getBerlinDateParts(date) {
+    const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Europe/Berlin', year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short',
+    }).formatToParts(date);
+    const map = {};
+    parts.forEach(p => { map[p.type] = p.value; });
+    return { year: +map.year, month: +map.month, day: +map.day, weekday: map.weekday };
+}
+
+function berlinWallTimeToUTC(year, month, day, hour, minute) {
+    const guess = new Date(Date.UTC(year, month - 1, day, hour, minute));
+    const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Europe/Berlin', hourCycle: 'h23',
+        year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
+    }).formatToParts(guess);
+    const map = {};
+    parts.forEach(p => { map[p.type] = p.value; });
+    const berlinGuess = new Date(Date.UTC(+map.year, +map.month - 1, +map.day, +map.hour, +map.minute));
+    const diff = berlinGuess.getTime() - guess.getTime();
+    return new Date(guess.getTime() - diff);
+}
+
+function fridayCutoffBerlin(refDateIso) {
+    const refDate = new Date(refDateIso);
+    const bp = getBerlinDateParts(refDate);
+    const dow = WEEKDAY_NUM[bp.weekday];
+    const daysBack = (dow - 5 + 7) % 7; // Abstand zum letzten Freitag (0, falls refDate selbst Freitag ist)
+    const fridayNoonUTC = new Date(Date.UTC(bp.year, bp.month - 1, bp.day, 12, 0));
+    fridayNoonUTC.setUTCDate(fridayNoonUTC.getUTCDate() - daysBack);
+    const fp = getBerlinDateParts(fridayNoonUTC);
+    return berlinWallTimeToUTC(fp.year, fp.month, fp.day, 20, 30);
+}
 
 function getCombinations(arr, k) {
     if (k === 0) return [[]];
@@ -28,21 +70,23 @@ function reconstructForMatchday(mdStr) {
     const allPlayers = JSON.parse(fs.readFileSync(ALL_PLAYERS_PATH, 'utf8'));
     const transfers = JSON.parse(fs.readFileSync(TRANSFERS_PATH, 'utf8'));
     
-    let kickoffTimestamp = null;
+    let referenceTimestamp = null;
     for (const p of allPlayers) {
         if (p.performance && p.performance.it && p.performance.it.length > 0) {
             const currentSeason = p.performance.it[p.performance.it.length - 1];
             if (currentSeason.ph) {
                 const mdEntry = currentSeason.ph.find(entry => entry.day === targetMatchday);
                 if (mdEntry && mdEntry.md) {
-                    kickoffTimestamp = mdEntry.md;
+                    referenceTimestamp = mdEntry.md;
                     break;
                 }
             }
         }
     }
-    if (!kickoffTimestamp) return;
-    const kickoffMs = new Date(kickoffTimestamp).getTime();
+    if (!referenceTimestamp) return;
+    // Transfersperre ist Freitag 20:30 (deutsche Ortszeit) DERSELBEN Woche wie
+    // der Spieltag, nicht der individuelle Match-Kickoff (siehe Kommentar oben).
+    const kickoffMs = fridayCutoffBerlin(referenceTimestamp).getTime();
     
     const allPlayersMap = new Map();
     for (const p of allPlayers) allPlayersMap.set(String(p.i || p.id), p);
