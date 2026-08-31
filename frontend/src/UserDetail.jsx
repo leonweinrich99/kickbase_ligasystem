@@ -411,17 +411,16 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
               </span>
             </div>
             <div
-              className="rounded-2xl overflow-hidden relative min-h-[400px] flex flex-col justify-center py-8"
-              style={{ backgroundImage: 'radial-gradient(circle at center, #171717 0%, #0a0a0a 100%)' }}
+              className="rounded-2xl overflow-hidden relative min-h-[500px] sm:min-h-[600px] flex flex-col justify-center py-6 sm:py-8 mt-4 shadow-2xl"
+              style={{ backgroundImage: 'radial-gradient(circle at center, #1a1a1a 0%, #050505 100%)' }}
             >
-              <div className="w-full max-w-md mx-auto relative flex flex-col justify-between h-full">
-                {/* Pitch lines background - rein dekorativ */}
-                <div className="absolute inset-0 pointer-events-none opacity-5 border-2 border-white rounded-lg m-4">
-                  <div className="absolute top-1/2 left-0 w-full h-[1px] bg-white"></div>
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 border border-white rounded-full"></div>
-                </div>
+              {/* Pitch Background - dekorative Feldlinien */}
+              <div className="absolute inset-0 pointer-events-none opacity-5 border border-white rounded-lg m-4 sm:m-6">
+                <div className="absolute top-1/2 left-0 w-full h-[1px] bg-white"></div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 sm:w-32 sm:h-32 border border-white rounded-full"></div>
+              </div>
 
-                <div className="relative z-10 w-full px-2 h-full flex flex-col justify-between">
+              <div className="relative z-10 w-full px-2 sm:px-4 h-full flex flex-col justify-between">
                   {(() => {
                     const lineup = startelfData.managers[userData.id].lineup;
                     const st = lineup.filter(p => p.position === 4);
@@ -438,7 +437,6 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                       </>
                     );
                   })()}
-                </div>
               </div>
             </div>
           </div>
