@@ -560,6 +560,18 @@ const generateAIReasoning = (player) => {
 };
 
 export const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, onToggleFavorite }) => {
+  useEffect(() => {
+    // Scrollposition speichern
+    const scrollY = window.scrollY;
+    // Ganz nach oben scrollen fuer das Detailfenster
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    
+    // Beim Schliessen/Unmounten alte Position wiederherstellen
+    return () => {
+      window.scrollTo({ top: scrollY, left: 0, behavior: 'instant' });
+    };
+  }, []);
+
   const fullBaseHistory = normalizeHistory(player.history);
   const [timeRange, setTimeRange] = useState('3m');
   
