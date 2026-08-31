@@ -168,10 +168,35 @@ def join_current_squad(token, league_id, today_df_results, manager_id=None):
     # denselben String-Typ bringen, bevor gemerged wird.
     today_df_results = today_df_results.copy()
     today_df_results["player_id"] = today_df_results["player_id"].astype(str)
-    squad_df["i"] = squad_df["i"].astype(str)
 
-    merged_df = pd.merge(today_df_results, squad_df, left_on="player_id", right_on="i").drop(columns=["i"])
-    merged_df = merged_df.rename(columns=_CONTEXT_RENAME_MAP)
+    # WICHTIGER BUGFIX: how="left" statt "inner"!
+    # Eingefrorene Spieler (wie Wechsel ins Ausland/3. Liga) fehlen oft in den 
+    # Team-Profilen und damit im today_df_results. Ein "inner" Join loescht 
+    # diese Spieler klammheimlich aus dem Kader des Managers!
+    merged_squad_df = pd.merge(
+        squad_df,
+        today_df_results,
+        left_on="i",
+        right_on="player_id",
+        how="left"
+    )
+
+    # Da "left" join, koennen Prognose-Werte nun NaN sein fuer eingefrorene Spieler.
+    # Wir fuellen numerische Werte mit 0.
+    numeric_cols = ["mv", "predicted_mv_target", "predicted_mv_target_3d", "predicted_mv_target_7d", "total_value_change", "p", "season_points"]
+    for col in numeric_cols:
+        if col in merged_squad_df.columns:
+            merged_squad_df[col] = merged_squad_df[col].fillna(0)
+    
+    if "first_name" not in merged_squad_df.columns or "last_name" not in merged_squad_df.columns:
+        if "first_name_x" in merged_squad_df.columns:
+            merged_squad_df["first_name"] = merged_squad_df["first_name_x"].fillna("")
+            merged_squad_df["last_name"] = merged_squad_df["last_name_x"].fillna("")
+            # Clean up suffixes
+            merged_squad_df = merged_squad_df.drop(columns=[c for c in merged_squad_df.columns if c.endswith("_x") or c.endswith("_y")])
+
+    merged_df = merged_squad_df.rename(columns=_CONTEXT_RENAME_MAP)
+    merged_df["player_id"] = merged_df["player_id"].fillna(merged_df["i"])
 
     for col in _BASE_RESULT_COLUMNS:
         if col not in merged_df.columns:
@@ -197,7 +222,7 @@ def join_current_market(token, league_id, today_df_results):
     today_df_results["player_id"] = today_df_results["player_id"].astype(str)
     market_df["i"] = market_df["i"].astype(str)
 
-    bid_df = pd.merge(today_df_results, market_df, left_on="player_id", right_on="i").drop(columns=["i"])
+    bid_df = pd.merge(today_df_results, market_df, left_on="player_id", right_on="i")
 
     if "exs" in bid_df.columns:
         bid_df["hours_to_exp"] = np.round((bid_df["exs"] / 3600), 2)
