@@ -12,6 +12,7 @@ import { useBackNavigation } from './useBackNavigation';
 import { BackButton } from './ui/CloseButton';
 import ManagerAvatar from './ui/ManagerAvatar';
 import PlayerPhotoCard from './ui/PlayerPhotoCard';
+import PositionRow from './ui/PositionRow';
 
 // Gleiche Positions-Labels/Reihenfolge wie AccountStats.jsx/Advisor.jsx.
 const POSITION_LABELS = { TW: 'Torwart', ABW: 'Abwehr', MF: 'Mittelfeld', ST: 'Sturm' };
@@ -52,6 +53,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
   const [thresholds, setThresholds] = useState(null);
   const [showAverage, setShowAverage] = useState(false);
   const [showOptimal, setShowOptimal] = useState(false);
+  const [currentMatchday, setCurrentMatchday] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -66,6 +68,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
 
         const latestData = await latestRes.json();
         const indexData = await indexRes.json();
+        setCurrentMatchday(latestData.matchday);
 
         const allUsersFlat = latestData.leagues.flatMap(l => l.users.map(u => ({...u, leagueColor: l.color, leagueName: l.name}))).sort((a,b) => a.rank - b.rank);
         setAllUsers(allUsersFlat);
@@ -163,14 +166,14 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
             }
 
             historyResults.push({
-                matchday: latestData.matchday,
-                points: currentPoints,
-                pointsMatchday: currentMatchdayPoints,
-                rank: foundUser.rank,
-                budget: parseInt(foundUser.estimatedBudget.replace(/[^0-9]/g, '')) || 0,
-                averagePoints: latestAvg,
-                maxPoints: latestMax,
-                optimalPoints
+              matchday: latestData.matchday,
+              points: currentPoints,
+              pointsMatchday: currentMatchdayPoints,
+              rank: foundUser.rank,
+              budget: parseInt(foundUser.estimatedBudget.replace(/[^0-9]/g, '')) || 0,
+              averagePoints: latestAvg,
+              maxPoints: latestMax,
+              optimalPoints
             });
         }
 
@@ -186,12 +189,9 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
     fetchData();
   }, [id, dataBase, mode]);
 
-  // Kader des angezeigten Managers (Issue e6beecd8/acccf545) - separater,
-  // unabhaengiger Ladevorgang von der Punkte-Historie oben, damit ein
-  // langsamer/fehlender Kader-Abruf nicht die restliche Seite blockiert.
-  // Nur im Live-Modus: advisor-data.json existiert nur fuer die laufende
-  // Saison, nicht fuers eingefrorene Archiv.
   const [advisorData, setAdvisorData] = useState(null);
+  const [startelfData, setStartelfData] = useState(null);
+  
   useEffect(() => {
     if (mode === 'archive') return;
     fetch(`${dataBase}/advisor-data.json?t=${Date.now()}`)
@@ -199,6 +199,14 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
       .then((json) => setAdvisorData(json))
       .catch(() => setAdvisorData(null));
   }, [dataBase, mode]);
+
+  useEffect(() => {
+    if (mode === 'archive' || !currentMatchday) return;
+    fetch(`${dataBase}/history/startelf-md${currentMatchday}.json?t=${Date.now()}`)
+      .then((res) => res.json())
+      .then((json) => setStartelfData(json))
+      .catch(() => setStartelfData(null));
+  }, [dataBase, mode, currentMatchday]);
 
   // Gleiches Join-Muster wie AccountStats.jsx::KaderTab: managerId (userData.id)
   // entspricht 1:1 dem Key in managerSquads, unabhaengig davon in welcher der
@@ -394,22 +402,47 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
           )}
         </div>
 
-        {/* Kader des angezeigten Managers (Issue e6beecd8/acccf545) - im
-            Kartenstil der Optimalen Elf (OptimalTeam.jsx::PositionRow), aber
-            mit variabler Spielerzahl pro Position statt fester 11er-Formation.
-            "Startelf" ist mangels Datenquelle nicht darstellbar (siehe Issue);
-            stattdessen der komplette Kader, wahrscheinliche Stammspieler
-            (startElfProbability >= 0.5) optisch hervorgehoben, sobald diese
-            Modell-Daten mal befuellt sind (aktuell noch durchgehend leer).
-            Pitch-Hintergrund/-Linien 1:1 aus OptimalTeam.jsx uebernommen
-            (Issue 243354d1) - bewusst OHNE "justify-between h-full" wie dort:
-            ein Kader hat variabel bis zu ~20 Spieler (mehrzeilig bei MF/ABW),
-            "justify-between" wuerde bei kurzen Kadern (9 Spieler) die
-            Positionsgruppen unnoetig weit auseinanderziehen. min-h-[400px]
-            sorgt trotzdem fuer eine Mindesthoehe, damit die dekorativen
-            Linien (Halbfeld + Mittelkreis, absolut positioniert relativ zur
-            tatsaechlichen Boxhoehe) bei kleinen Kadern nicht gestaucht wirken. */}
-        {squadByPosition.length > 0 && (
+        {startelfData?.managers?.[userData.id] ? (
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <h3 className="text-lg font-semibold text-white">Startelf</h3>
+              <span className="text-[10px] font-bold uppercase tracking-widest bg-green-500/20 text-green-500 px-2 py-0.5 rounded-full">
+                Verifiziert
+              </span>
+            </div>
+            <div
+              className="rounded-2xl overflow-hidden relative min-h-[400px] flex flex-col justify-center py-8"
+              style={{ backgroundImage: 'radial-gradient(circle at center, #171717 0%, #0a0a0a 100%)' }}
+            >
+              <div className="w-full max-w-md mx-auto relative flex flex-col justify-between h-full">
+                {/* Pitch lines background - rein dekorativ */}
+                <div className="absolute inset-0 pointer-events-none opacity-5 border-2 border-white rounded-lg m-4">
+                  <div className="absolute top-1/2 left-0 w-full h-[1px] bg-white"></div>
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 border border-white rounded-full"></div>
+                </div>
+
+                <div className="relative z-10 w-full px-2 h-full flex flex-col justify-between">
+                  {(() => {
+                    const lineup = startelfData.managers[userData.id].lineup;
+                    const st = lineup.filter(p => p.position === 4);
+                    const mf = lineup.filter(p => p.position === 3);
+                    const aw = lineup.filter(p => p.position === 2);
+                    const tw = lineup.filter(p => p.position === 1);
+
+                    return (
+                      <>
+                        <PositionRow players={st} />
+                        <PositionRow players={mf} />
+                        <PositionRow players={aw} />
+                        <PositionRow players={tw} />
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : squadByPosition.length > 0 && (
           <div className="mb-8">
             <h3 className="text-lg font-semibold text-white mb-4">Kader</h3>
             <div
