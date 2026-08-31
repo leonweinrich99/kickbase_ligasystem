@@ -34,6 +34,9 @@ async function reconstructForMatchday(targetMatchdayStr) {
         let userId = null;
         let leagueId = null;
 
+        const leagueNameContains = leagueDef.name;
+        const needleTokens = leagueNameContains.toLowerCase().match(/[a-z0-9]+/g) || [];
+
         // Try to login with accounts until we find one that has the league
         for (const account of accounts) {
             try {
@@ -44,18 +47,34 @@ async function reconstructForMatchday(targetMatchdayStr) {
                 });
                 const loginData = await loginRes.json();
                 if (loginData.err) continue;
-                token = loginData.tkn;
-                userId = loginData.us.i || loginData.us.id;
+                
+                const curToken = loginData.tkn;
+                const curUserId = loginData.us.i || loginData.us.id;
 
                 const leaguesRes = await fetch('https://api.kickbase.com/v4/leagues', {
-                    headers: { Authorization: `Bearer ${token}` }
+                    headers: { Authorization: `Bearer ${curToken}` }
                 });
                 const leaguesData = await leaguesRes.json();
-                const leagues = leaguesData.lins || leaguesData.leagues || [];
-                const matchedLeague = leagues.find(l => (l.n || l.name || "").toLowerCase().includes(leagueDef.name.toLowerCase()));
                 
-                if (matchedLeague) {
-                    leagueId = matchedLeague.i || matchedLeague.id;
+                // MATCHING LOGIC IDENTICAL TO kickbase.js
+                const leaguesList = leaguesData?.it || leaguesData?.lins || leaguesData?.leagues || (Array.isArray(leaguesData) ? leaguesData : []);
+                
+                let foundId = null;
+                for (const l of leaguesList) {
+                    const lName = (l.n || l.name).toLowerCase();
+                    const leagueTokens = lName.match(/[a-z0-9]+/g) || [];
+                    
+                    const isMatch = needleTokens.length > 0 && needleTokens.every(token => leagueTokens.includes(token));
+                    if (isMatch || lName.includes(leagueNameContains.toLowerCase())) {
+                        foundId = l.i || l.id;
+                        break;
+                    }
+                }
+                
+                if (foundId) {
+                    leagueId = foundId;
+                    token = curToken;
+                    userId = curUserId;
                     loggedIn = true;
                     break;
                 }
