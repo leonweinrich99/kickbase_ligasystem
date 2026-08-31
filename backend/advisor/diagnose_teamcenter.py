@@ -17,24 +17,30 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from kickbase_api.config import BASE_URL, get_json_with_token
-from kickbase_api.league import get_league_id
 from kickbase_api.manager import get_managers
-from kickbase_api.user import login
+from run_advisor import login_all_accounts, find_league_across_accounts, env_or_default
 
 
 def main():
-    email = os.environ.get("KICKBASE_EMAIL")
-    password = os.environ.get("KICKBASE_PASS")
-    league_name = os.environ.get("KICKBASE_LEAGUE_1_NAME")
-    if not email or not password or not league_name:
-        print("[FEHLER] KICKBASE_EMAIL/KICKBASE_PASS/KICKBASE_LEAGUE_1_NAME nicht gesetzt.")
+    league_name = env_or_default("KICKBASE_LEAGUE_1_NAME", None)
+    if not league_name:
+        print("[FEHLER] KICKBASE_LEAGUE_1_NAME nicht gesetzt.")
         sys.exit(1)
 
-    print(f"[LOG] Login als {email} ...")
-    token = login(email, password)
+    print("[LOG] Logge bei Kickbase ein (alle konfigurierten Accounts)...")
+    sessions = login_all_accounts()
+    if not sessions:
+        print("[FEHLER] Kein Account konnte sich einloggen.")
+        sys.exit(1)
 
-    league_id = get_league_id(token, league_name)
-    print(f"[LOG] Liga '{league_name}' -> ID {league_id}")
+    all_known_leagues = sorted({l["name"] for s in sessions for l in s["leagues"]})
+    print(f"[LOG] Bekannte Ligen ueber alle Accounts: {all_known_leagues}")
+
+    token, league_id, owner_email = find_league_across_accounts(sessions, league_name)
+    if not league_id:
+        print(f"[FEHLER] Keine Liga mit Namen '{league_name}' in irgendeinem Account gefunden.")
+        sys.exit(1)
+    print(f"[LOG] Liga '{league_name}' -> ID {league_id} (Account {owner_email})")
 
     managers = get_managers(token, league_id)
     print(f"[LOG] {len(managers)} Manager in der Liga gefunden: {[m[0] for m in managers]}")
