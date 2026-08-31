@@ -422,7 +422,35 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
 
               <div className="relative z-10 w-full px-2 sm:px-4 h-full flex flex-col justify-between">
                   {(() => {
-                    const lineup = startelfData.managers[userData.id].lineup;
+                    const lineup = [...startelfData.managers[userData.id].lineup];
+                    
+                    let twCount = lineup.filter(p => p.position === 1).length;
+                    let awCount = lineup.filter(p => p.position === 2).length;
+                    let mfCount = lineup.filter(p => p.position === 3).length;
+                    let stCount = lineup.filter(p => p.position === 4).length;
+                    
+                    let dummyIndex = 1;
+                    while (lineup.length < 11) {
+                      const dummy = {
+                        id: 'dummy-' + dummyIndex++,
+                        isDummy: true,
+                        name: 'Unbekannt',
+                        lastName: 'Unbekannt',
+                        points: 0,
+                        marketValue: 0,
+                        imagePath: null
+                      };
+                      
+                      if (twCount < 1) { dummy.position = 1; twCount++; }
+                      else if (awCount < 3) { dummy.position = 2; awCount++; }
+                      else if (mfCount < 3) { dummy.position = 3; mfCount++; }
+                      else if (stCount < 2) { dummy.position = 4; stCount++; }
+                      else if (mfCount < 5) { dummy.position = 3; mfCount++; }
+                      else { dummy.position = 4; stCount++; }
+                      
+                      lineup.push(dummy);
+                    }
+
                     const st = lineup.filter(p => p.position === 4);
                     const mf = lineup.filter(p => p.position === 3);
                     const aw = lineup.filter(p => p.position === 2);
