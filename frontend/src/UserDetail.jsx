@@ -438,9 +438,6 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-4">
               <h3 className="text-lg font-semibold text-white">Startelf</h3>
-              <span className="text-[10px] font-bold uppercase tracking-widest bg-green-500/20 text-green-500 px-2 py-0.5 rounded-full">
-                Verifiziert
-              </span>
             </div>
             <div
               className="rounded-2xl overflow-hidden relative min-h-[500px] sm:min-h-[600px] flex flex-col justify-center py-6 sm:py-8 mt-4 shadow-2xl"
