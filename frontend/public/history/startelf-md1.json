@@ -1,10 +1,21 @@
 {
   "matchday": 1,
-  "timestamp": "2026-08-31T08:02:13.302Z",
+  "timestamp": "2026-08-31T08:10:35.256Z",
   "managers": {
     "1630703": {
       "pointsMatchday": 816,
       "lineup": [
+        {
+          "id": "3350",
+          "teamId": "0",
+          "name": "Keidel",
+          "lastName": "Keidel",
+          "position": 0,
+          "marketValue": 5187400,
+          "points": 0,
+          "imagePath": "",
+          "teamName": "Unknown"
+        },
         {
           "id": "1580",
           "teamId": "28",
@@ -114,23 +125,34 @@
           "points": 52,
           "imagePath": "content/file/a70373665abe402993add63ac96b77de.png",
           "teamName": "Hoffenheim"
-        },
-        {
-          "id": "10530",
-          "teamId": "43",
-          "name": "Conrad Harder",
-          "lastName": "Harder",
-          "position": 4,
-          "marketValue": 4534927,
-          "points": 40,
-          "imagePath": "content/file/7d0496d9d3724c988218a9414f2b1a51.png",
-          "teamName": "Leipzig"
         }
       ]
     },
     "2479430": {
       "pointsMatchday": 859,
       "lineup": [
+        {
+          "id": "6148",
+          "teamId": "0",
+          "name": "Pinckert",
+          "lastName": "Pinckert",
+          "position": 0,
+          "marketValue": 9939968,
+          "points": 0,
+          "imagePath": "",
+          "teamName": "Unknown"
+        },
+        {
+          "id": "9995",
+          "teamId": "0",
+          "name": "Mokwa",
+          "lastName": "Mokwa",
+          "position": 0,
+          "marketValue": 3808940,
+          "points": 0,
+          "imagePath": "",
+          "teamName": "Unknown"
+        },
         {
           "id": "1863",
           "teamId": "6",
@@ -141,17 +163,6 @@
           "points": 97,
           "imagePath": "content/file/25bb5ce570244f8296d6e817316ad707.png",
           "teamName": "Hamburg"
-        },
-        {
-          "id": "1728",
-          "teamId": "43",
-          "name": "Örjan Nyland",
-          "lastName": "Nyland",
-          "position": 1,
-          "marketValue": 3574933,
-          "points": 0,
-          "imagePath": "content/file/361c8899e8db48868bb66d49e2cd4d2d.png",
-          "teamName": "Leipzig"
         },
         {
           "id": "3129",
@@ -174,17 +185,6 @@
           "points": 0,
           "imagePath": "content/file/6b31cba3484c46c98c5575fe4f79b349.png",
           "teamName": "Hamburg"
-        },
-        {
-          "id": "7469",
-          "teamId": "10",
-          "name": "Julián Malatini",
-          "lastName": "Malatini",
-          "position": 2,
-          "marketValue": 3163651,
-          "points": 0,
-          "imagePath": "content/file/af2e51f752864218aed53729ddc7056e.png",
-          "teamName": "Bremen"
         },
         {
           "id": "8274",
@@ -762,6 +762,17 @@
       "pointsMatchday": 1140,
       "lineup": [
         {
+          "id": "2928",
+          "teamId": "0",
+          "name": "Petkov",
+          "lastName": "Petkov",
+          "position": 0,
+          "marketValue": 11649309,
+          "points": 0,
+          "imagePath": "",
+          "teamName": "Unknown"
+        },
+        {
           "id": "3419",
           "teamId": "40",
           "name": "Matheo Raab",
@@ -877,6 +888,28 @@
       "pointsMatchday": 747,
       "lineup": [
         {
+          "id": "3350",
+          "teamId": "0",
+          "name": "Keidel",
+          "lastName": "Keidel",
+          "position": 0,
+          "marketValue": 5187400,
+          "points": 0,
+          "imagePath": "",
+          "teamName": "Unknown"
+        },
+        {
+          "id": "11253",
+          "teamId": "0",
+          "name": "Mickelson",
+          "lastName": "Mickelson",
+          "position": 0,
+          "marketValue": 4679306,
+          "points": 0,
+          "imagePath": "",
+          "teamName": "Unknown"
+        },
+        {
           "id": "3218",
           "teamId": "5",
           "name": "Mio Backhaus",
@@ -974,28 +1007,6 @@
           "points": 41,
           "imagePath": "content/file/7b147e15dd4b4df4bddb50f00fa8ce4e.png",
           "teamName": "Hamburg"
-        },
-        {
-          "id": "13629",
-          "teamId": "40",
-          "name": "Linus Güther",
-          "lastName": "Güther",
-          "position": 3,
-          "marketValue": 3128633,
-          "points": 0,
-          "imagePath": "content/file/d92375c9bb9640858ef3fa4deebadf84.png",
-          "teamName": "Union Berlin"
-        },
-        {
-          "id": "2749",
-          "teamId": "29",
-          "name": "Steffen Tigges",
-          "lastName": "Tigges",
-          "position": 4,
-          "marketValue": 3709026,
-          "points": 28,
-          "imagePath": "content/file/10d7abeb491e42818537662e1ceba8d1.png",
-          "teamName": "Paderborn"
         }
       ]
     },
@@ -1129,6 +1140,17 @@
       "pointsMatchday": 442,
       "lineup": [
         {
+          "id": "6158",
+          "teamId": "0",
+          "name": "Schnellbacher",
+          "lastName": "Schnellbacher",
+          "position": 0,
+          "marketValue": 6492208,
+          "points": 0,
+          "imagePath": "",
+          "teamName": "Unknown"
+        },
+        {
           "id": "1580",
           "teamId": "28",
           "name": "Marvin Schwäbe",
@@ -1243,6 +1265,17 @@
     "3511512": {
       "pointsMatchday": 541,
       "lineup": [
+        {
+          "id": "9384",
+          "teamId": "0",
+          "name": "Darvich",
+          "lastName": "Darvich",
+          "position": 0,
+          "marketValue": 6620088,
+          "points": 0,
+          "imagePath": "",
+          "teamName": "Unknown"
+        },
         {
           "id": "4",
           "teamId": "7",
@@ -1556,6 +1589,17 @@
       "pointsMatchday": 735,
       "lineup": [
         {
+          "id": "6290",
+          "teamId": "0",
+          "name": "Bätzner",
+          "lastName": "Bätzner",
+          "position": 0,
+          "marketValue": 851446,
+          "points": 0,
+          "imagePath": "",
+          "teamName": "Unknown"
+        },
+        {
           "id": "237",
           "teamId": "2",
           "name": "Manuel Neuer",
@@ -1670,6 +1714,28 @@
     "3607127": {
       "pointsMatchday": 1032,
       "lineup": [
+        {
+          "id": "6160",
+          "teamId": "0",
+          "name": "Kristof",
+          "lastName": "Kristof",
+          "position": 0,
+          "marketValue": 13094443,
+          "points": 0,
+          "imagePath": "",
+          "teamName": "Unknown"
+        },
+        {
+          "id": "3350",
+          "teamId": "0",
+          "name": "Keidel",
+          "lastName": "Keidel",
+          "position": 0,
+          "marketValue": 5187400,
+          "points": 0,
+          "imagePath": "",
+          "teamName": "Unknown"
+        },
         {
           "id": "6209",
           "teamId": "5",
@@ -2256,6 +2322,17 @@
     "3779246": {
       "pointsMatchday": 703,
       "lineup": [
+        {
+          "id": "9384",
+          "teamId": "0",
+          "name": "Darvich",
+          "lastName": "Darvich",
+          "position": 0,
+          "marketValue": 6620088,
+          "points": 0,
+          "imagePath": "",
+          "teamName": "Unknown"
+        },
         {
           "id": "2237",
           "teamId": "9",
