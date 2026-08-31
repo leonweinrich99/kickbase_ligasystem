@@ -2,7 +2,7 @@
   "matchday": 1,
   "totalPoints": 2846,
   "totalBudget": 146175102,
-  "timestamp": "2026-08-30T23:25:15.955Z",
+  "timestamp": "2026-08-31T05:37:41.684Z",
   "lineup": [
     {
       "id": "2195",
@@ -60,6 +60,17 @@
       "teamName": "Union Berlin"
     },
     {
+      "id": "1809",
+      "teamId": "13",
+      "name": "Marius Wolf",
+      "lastName": "Wolf",
+      "position": 3,
+      "marketValue": 5770646,
+      "points": 253,
+      "imagePath": "content/file/a1f80afaec424464a483185498e81a2e.png",
+      "teamName": "Augsburg"
+    },
+    {
       "id": "11006",
       "teamId": 5,
       "name": "Suzuki",
@@ -69,17 +80,6 @@
       "points": 395,
       "imagePath": "content/file/b6f12e7f20704297b8205da224ce56f1.png",
       "teamName": "Freiburg"
-    },
-    {
-      "id": "1809",
-      "teamId": 13,
-      "name": "Wolf",
-      "lastName": "Wolf",
-      "position": 3,
-      "marketValue": 5770646,
-      "points": 253,
-      "imagePath": "content/file/a1f80afaec424464a483185498e81a2e.png",
-      "teamName": "Augsburg"
     },
     {
       "id": "2897",
