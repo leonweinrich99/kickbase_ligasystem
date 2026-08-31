@@ -75,28 +75,66 @@ async function reconstructForMatchday(targetMatchdayStr) {
         for (const u of l.users) nameToId.set(u.name.toLowerCase(), String(u.id));
     }
 
-    // 2. Build current squads
-    const currentSquads = new Map();
-    for (const lName in advisorData.leagues) {
-        for (const mId in advisorData.leagues[lName].managerSquads) {
-            const players = advisorData.leagues[lName].managerSquads[mId];
-            const ids = new Set(players.map(p => String(p.playerId || p.id)));
-            currentSquads.set(String(mId), ids);
+    // 2. Build current squads (use snapshot if available, else current advisorData)
+    const snapshotPath = path.join(__dirname, `../frontend/public/history/kickoff-squads/md${targetMatchday}.json`);
+    let currentSquads = new Map();
+    let baseTime = null;
+
+    if (fs.existsSync(snapshotPath)) {
+        console.log(`[LOG] Found kickoff snapshot for Matchday ${targetMatchday}, using it as base.`);
+        const snapshotData = JSON.parse(fs.readFileSync(snapshotPath, 'utf8'));
+        baseTime = new Date(snapshotData.timestamp).getTime();
+        for (const mId in snapshotData.squads) {
+            currentSquads.set(String(mId), new Set(snapshotData.squads[mId]));
+        }
+    } else {
+        console.log(`[LOG] No kickoff snapshot found. Winding back from current LIVE squads.`);
+        baseTime = Date.now();
+        for (const lName in advisorData.leagues) {
+            for (const mId in advisorData.leagues[lName].managerSquads) {
+                const players = advisorData.leagues[lName].managerSquads[mId];
+                const ids = new Set(players.map(p => String(p.playerId || p.id)));
+                currentSquads.set(String(mId), ids);
+            }
         }
     }
 
-    // 3. Wind back transfers
+    // 3. Wind back/forward transfers between baseTime and Kickoff
     const sortedTransfers = transfers.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     for (const t of sortedTransfers) {
-        if (new Date(t.date).getTime() <= minKo) continue; 
-        const pId = String(t.playerId);
-        if (t.buyerName) {
-            const bId = nameToId.get(t.buyerName.toLowerCase());
-            if (bId && currentSquads.has(bId)) currentSquads.get(bId).delete(pId);
-        }
-        if (t.sellerName) {
-            const sId = nameToId.get(t.sellerName.toLowerCase());
-            if (sId && currentSquads.has(sId)) currentSquads.get(sId).add(pId);
+        const tTime = new Date(t.date).getTime();
+        
+        // If snapshot is older than kickoff, we might need to wind FORWARD
+        // But our snapshot logic always stops snapshotting AT kickoff.
+        // So the snapshot is either strictly <= minKo, or it's LIVE (Date.now()).
+        
+        if (baseTime > minKo) {
+            // Winding BACK from a future time to kickoff
+            if (tTime <= minKo || tTime > baseTime) continue; 
+            const pId = String(t.playerId);
+            if (t.buyerName) {
+                const bId = nameToId.get(t.buyerName.toLowerCase());
+                if (bId && currentSquads.has(bId)) currentSquads.get(bId).delete(pId);
+            }
+            if (t.sellerName) {
+                const sId = nameToId.get(t.sellerName.toLowerCase());
+                if (sId && currentSquads.has(sId)) currentSquads.get(sId).add(pId);
+            }
+        } else {
+            // Snapshot was taken before kickoff, we need to wind FORWARD to kickoff
+            if (tTime <= baseTime || tTime > minKo) continue;
+            const pId = String(t.playerId);
+            if (t.buyerName) {
+                const bId = nameToId.get(t.buyerName.toLowerCase());
+                if (bId) {
+                    if (!currentSquads.has(bId)) currentSquads.set(bId, new Set());
+                    currentSquads.get(bId).add(pId); // Winding FORWARD: buyer gets the player
+                }
+            }
+            if (t.sellerName) {
+                const sId = nameToId.get(t.sellerName.toLowerCase());
+                if (sId && currentSquads.has(sId)) currentSquads.get(sId).delete(pId); // Winding FORWARD: seller loses the player
+            }
         }
     }
 

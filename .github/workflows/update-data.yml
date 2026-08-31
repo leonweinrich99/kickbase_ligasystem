@@ -48,6 +48,7 @@ jobs:
         run: |
           node scripts/fetch-data.js
           node scripts/fetch-transfers.js
+          node scripts/snapshot-kickoff.js
           node scripts/calculate-ratings.js
           node scripts/fetch-manager-images.js
         env:
