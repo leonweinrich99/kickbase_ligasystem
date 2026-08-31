@@ -7,37 +7,109 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 const DATA_PATH = path.join(__dirname, '../frontend/public/data.json');
 const ALL_PLAYERS_PATH = path.join(__dirname, '../frontend/public/history/all_players.json');
+const ADVISOR_DATA_PATH = path.join(__dirname, '../frontend/public/advisor-data.json');
+const TRANSFERS_PATH = path.join(__dirname, '../frontend/public/history/transfers.json');
+
+// Find subset summing to target
+function findSubset(players, target) {
+    let best = null;
+    function backtrack(index, currentSum, currentSubset) {
+        if (currentSubset.length > 11) return;
+        const penalty = (11 - currentSubset.length) * 100;
+        if (currentSum - penalty === target) {
+            if (!best || currentSubset.length > best.length) {
+                best = [...currentSubset];
+            }
+        }
+        if (index >= players.length) return;
+        
+        currentSubset.push(players[index]);
+        backtrack(index + 1, currentSum + players[index].points, currentSubset);
+        currentSubset.pop();
+        
+        backtrack(index + 1, currentSum, currentSubset);
+    }
+    backtrack(0, 0, []);
+    return best;
+}
 
 async function reconstructForMatchday(targetMatchdayStr) {
     const targetMatchday = parseInt(targetMatchdayStr, 10);
-    console.log(`[LOG] Starting true Startelf fetching for Matchday ${targetMatchday} via teamcenter...`);
+    console.log(`[LOG] Starting true Startelf reconstruction for Matchday ${targetMatchday}...`);
     const outputPath = path.join(__dirname, `../frontend/public/history/startelf-md${targetMatchday}.json`);
 
     const dataJson = JSON.parse(fs.readFileSync(DATA_PATH, 'utf8'));
     const allPlayers = JSON.parse(fs.readFileSync(ALL_PLAYERS_PATH, 'utf8'));
+    const advisorData = JSON.parse(fs.readFileSync(ADVISOR_DATA_PATH, 'utf8'));
+    const transfers = JSON.parse(fs.readFileSync(TRANSFERS_PATH, 'utf8'));
 
+    // 1. Find global kickoff for this matchday
+    let minKo = Infinity;
     const allPlayersMap = new Map();
-    for (const p of allPlayers) allPlayersMap.set(String(p.i || p.id), p);
-
-    const accounts = getConfiguredKickbaseAccounts();
-    if (accounts.length === 0) {
-        console.error("No Kickbase accounts configured.");
+    const playerPoints = new Map();
+    for (const p of allPlayers) {
+        const pId = String(p.i || p.id);
+        allPlayersMap.set(pId, p);
+        if (p.performance?.it?.length > 0) {
+            const currentSeason = p.performance.it[p.performance.it.length - 1];
+            if (currentSeason.ph) {
+                const mdEntry = currentSeason.ph.find(e => e.day === targetMatchday);
+                if (mdEntry) {
+                    if (mdEntry.md) {
+                        const ts = new Date(mdEntry.md).getTime();
+                        if (ts < minKo) minKo = ts;
+                    }
+                    if (mdEntry.p !== undefined) playerPoints.set(pId, mdEntry.p);
+                }
+            }
+        }
+    }
+    if (minKo === Infinity) {
+        console.error("Could not determine global kickoff cutoff.");
         return;
     }
+    console.log(`Global kickoff cutoff for Matchday ${targetMatchday}: ${new Date(minKo).toISOString()}`);
 
+    const nameToId = new Map();
+    for (const l of dataJson.leagues) {
+        for (const u of l.users) nameToId.set(u.name.toLowerCase(), String(u.id));
+    }
+
+    // 2. Build current squads
+    const currentSquads = new Map();
+    for (const lName in advisorData.leagues) {
+        for (const mId in advisorData.leagues[lName].managerSquads) {
+            const players = advisorData.leagues[lName].managerSquads[mId];
+            const ids = new Set(players.map(p => String(p.playerId || p.id)));
+            currentSquads.set(String(mId), ids);
+        }
+    }
+
+    // 3. Wind back transfers
+    const sortedTransfers = transfers.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    for (const t of sortedTransfers) {
+        if (new Date(t.date).getTime() <= minKo) continue; 
+        const pId = String(t.playerId);
+        if (t.buyerName) {
+            const bId = nameToId.get(t.buyerName.toLowerCase());
+            if (bId && currentSquads.has(bId)) currentSquads.get(bId).delete(pId);
+        }
+        if (t.sellerName) {
+            const sId = nameToId.get(t.sellerName.toLowerCase());
+            if (sId && currentSquads.has(sId)) currentSquads.get(sId).add(pId);
+        }
+    }
+
+    // 4. Fetch manager points from teamcenter using kickbase API
+    const accounts = getConfiguredKickbaseAccounts();
     const resultManagers = {};
     let passedCount = 0;
 
     for (const leagueDef of LEAGUE_DEFS) {
-        let loggedIn = false;
-        let token = null;
-        let userId = null;
-        let leagueId = null;
-
+        let loggedIn = false, token = null, userId = null, leagueId = null;
         const leagueNameContains = leagueDef.name;
         const needleTokens = leagueNameContains.toLowerCase().match(/[a-z0-9]+/g) || [];
 
-        // Try to login with accounts until we find one that has the league
         for (const account of accounts) {
             try {
                 const loginRes = await fetch('https://api.kickbase.com/v4/user/login', {
@@ -48,20 +120,16 @@ async function reconstructForMatchday(targetMatchdayStr) {
                 const loginData = await loginRes.json();
                 if (loginData.err) continue;
                 
-                const curToken = loginData.tkn;
-
                 const leaguesRes = await fetch('https://api.kickbase.com/v4/leagues', {
-                    headers: { Authorization: `Bearer ${curToken}` }
+                    headers: { Authorization: `Bearer ${loginData.tkn}` }
                 });
                 const leaguesData = await leaguesRes.json();
-                
                 const leaguesList = leaguesData?.it || leaguesData?.lins || leaguesData?.leagues || (Array.isArray(leaguesData) ? leaguesData : []);
                 
                 let foundId = null;
                 for (const l of leaguesList) {
                     const lName = (l.n || l.name).toLowerCase();
                     const leagueTokens = lName.match(/[a-z0-9]+/g) || [];
-                    
                     const isMatch = needleTokens.length > 0 && needleTokens.every(t => leagueTokens.includes(t));
                     if (isMatch || lName.includes(leagueNameContains.toLowerCase())) {
                         foundId = l.i || l.id;
@@ -71,30 +139,20 @@ async function reconstructForMatchday(targetMatchdayStr) {
                 
                 if (foundId) {
                     leagueId = foundId;
-                    token = curToken;
-                    
-                    // We need any user in this league to fetch teamcenter. Fetch the ranking to get users.
+                    token = loginData.tkn;
                     const rankingRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/ranking`, { headers: { Authorization: `Bearer ${token}` } });
                     const rankingData = await rankingRes.json();
-                    const users = rankingData.us || [];
-                    if (users.length > 0) {
-                        userId = users[0].i || users[0].id;
+                    if (rankingData.us && rankingData.us.length > 0) {
+                        userId = rankingData.us[0].i || rankingData.us[0].id;
                         loggedIn = true;
                         break;
                     }
                 }
-            } catch (e) {
-                // Ignore and try next account
-            }
+            } catch (e) {}
         }
 
-        if (!loggedIn) {
-            console.error(`Could not find league ${leagueDef.name} with any configured account.`);
-            continue;
-        }
+        if (!loggedIn) continue;
 
-        console.log(`[LOG] Fetching teamcenter for League: ${leagueDef.name} (LeagueID: ${leagueId}, UserID: ${userId}) for Matchday ${targetMatchday}`);
-        
         try {
             const tcRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/users/${userId}/teamcenter?dayNumber=${targetMatchday}`, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -104,53 +162,62 @@ async function reconstructForMatchday(targetMatchdayStr) {
 
             for (const u of users) {
                 const mId = String(u.i);
-                const mName = u.unm;
                 const mPoints = u.mdp || 0;
-                const lineupIds = u.lp || [];
-
-                if (lineupIds.length === 0) continue; // Not set or not loaded
-
-                const finalLineup = [];
-                for (const pId of lineupIds) {
-                    const playerFull = allPlayersMap.get(String(pId));
-                    if (!playerFull) continue;
-
-                    let mdPoints = 0;
-                    if (playerFull.performance && playerFull.performance.it && playerFull.performance.it.length > 0) {
-                        const currentSeason = playerFull.performance.it[playerFull.performance.it.length - 1];
-                        if (currentSeason.ph) {
-                            const mdEntry = currentSeason.ph.find(e => e.day === targetMatchday);
-                            if (mdEntry && mdEntry.p !== undefined) {
-                                mdPoints = mdEntry.p;
-                            }
-                        }
-                    }
-
+                
+                const squadIds = Array.from(currentSquads.get(mId) || []);
+                const squadWithPoints = squadIds.map(pId => {
+                    const playerFull = allPlayersMap.get(pId);
+                    if (!playerFull) return null;
+                    
                     let pos = playerFull.pos || playerFull.p || 0;
                     if (pos > 10) pos = (pos % 10) || 0;
-
                     const name = `${playerFull.fn ? playerFull.fn + ' ' : ''}${playerFull.ln || playerFull.n || ''}`.trim();
-                    const imagePath = playerFull.profileBig || playerFull.profile || playerFull.pim;
 
-                    finalLineup.push({
+                    return {
                         id: String(pId),
                         teamId: playerFull.tid || playerFull.teamId,
                         name: name,
                         lastName: playerFull.ln || playerFull.n || name,
                         position: pos,
                         marketValue: playerFull.mv || playerFull.marketValue || 0,
-                        points: mdPoints,
-                        imagePath: imagePath,
+                        points: playerPoints.get(pId) || 0,
+                        imagePath: playerFull.profileBig || playerFull.profile || playerFull.pim,
                         teamName: playerFull.tn || playerFull.teamName || "Unknown"
-                    });
+                    };
+                }).filter(Boolean);
+
+                // Sort by market value so subset sum prefers expensive players if tied
+                squadWithPoints.sort((a, b) => b.marketValue - a.marketValue);
+                
+                let lineup = findSubset(squadWithPoints, mPoints);
+                
+                if (!lineup && squadWithPoints.length <= 11) {
+                    // Fallback to all if somehow points dont perfectly match (e.g. offline transfer changes?)
+                    lineup = squadWithPoints;
+                } else if (!lineup) {
+                    // Try without empty spot penalty (in case league disabled it)
+                    function findSubsetNoPenalty(players, target) {
+                        let best = null;
+                        function backtrack(index, currentSum, currentSubset) {
+                            if (currentSubset.length > 11) return;
+                            if (currentSum === target && (!best || currentSubset.length > best.length)) best = [...currentSubset];
+                            if (index >= players.length) return;
+                            currentSubset.push(players[index]);
+                            backtrack(index + 1, currentSum + players[index].points, currentSubset);
+                            currentSubset.pop();
+                            backtrack(index + 1, currentSum, currentSubset);
+                        }
+                        backtrack(0, 0, []);
+                        return best;
+                    }
+                    lineup = findSubsetNoPenalty(squadWithPoints, mPoints) || squadWithPoints.slice(0, 11);
                 }
 
-                // Sort by position (1 = Torwart, 2 = Abwehr, 3 = Mittelfeld, 4 = Sturm)
-                finalLineup.sort((a, b) => a.position - b.position);
+                lineup.sort((a, b) => a.position - b.position);
 
-                resultManagers[mId] = { pointsMatchday: mPoints, lineup: finalLineup };
+                resultManagers[mId] = { pointsMatchday: mPoints, lineup: lineup };
                 passedCount++;
-                console.log(`[PASS] Manager: ${mName} (ID: ${mId}), Lineup-Size: ${finalLineup.length}, Points: ${mPoints}`);
+                console.log(`[PASS] Manager: ${u.unm} (ID: ${mId}), Matchday points: ${mPoints} -> Reconstructed lineup size: ${lineup.length}`);
             }
         } catch (e) {
             console.error(`Error fetching teamcenter for league ${leagueDef.name}: ${e.message}`);
