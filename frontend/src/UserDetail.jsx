@@ -309,6 +309,17 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
     );
   }
 
+  if (selectedPlayer) {
+    return (
+      <PlayerDetailView
+        player={selectedPlayer}
+        onClose={() => setSelectedPlayer(null)}
+        isFavorite={false}
+        onToggleFavorite={() => {}}
+      />
+    );
+  }
+
   return (
     <div className="w-full bg-[#000000] min-h-screen relative flex flex-col pb-10">
       {/* Modal: Gegner fuer Head-to-Head auswaehlen */}
@@ -762,15 +773,6 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
           </div>
         </div>
       </div>
-
-      {selectedPlayer && (
-        <PlayerDetailView
-          player={selectedPlayer}
-          onClose={() => setSelectedPlayer(null)}
-          isFavorite={false}
-          onToggleFavorite={() => {}}
-        />
-      )}
     </div>
   );
 };
