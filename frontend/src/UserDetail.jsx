@@ -212,7 +212,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
 
   const getFullPlayer = (playerId) => {
-    if (!advisorData || !advisorData.leagues) return null;
+    if (!advisorData || !advisorData.leagues) return 'LOADING';
     for (const lName in advisorData.leagues) {
       const league = advisorData.leagues[lName];
       if (league.managerSquads) {
@@ -491,7 +491,9 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                     const handlePlayerClick = (pid) => {
                       if (pid && pid.toString().startsWith('dummy-')) return;
                       const fullPlayer = getFullPlayer(pid);
-                      if (fullPlayer) {
+                      if (fullPlayer === 'LOADING') {
+                        alert('Spielerdaten werden noch geladen. Bitte in wenigen Sekunden nochmal probieren.');
+                      } else if (fullPlayer) {
                         setSelectedPlayer(fullPlayer);
                       } else {
                         alert('Keine detaillierten Prognose-Daten für diesen Spieler gefunden (vermutlich verkauft).');
@@ -542,7 +544,9 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                             highlighted={p.startElfProbability != null && p.startElfProbability >= 0.5}
                             onClick={() => {
                               const fp = getFullPlayer(p.playerId);
-                              if (fp) {
+                              if (fp === 'LOADING') {
+                                alert('Spielerdaten werden noch geladen. Bitte in wenigen Sekunden nochmal probieren.');
+                              } else if (fp) {
                                 setSelectedPlayer(fp);
                               } else {
                                 alert('Keine detaillierten Prognose-Daten für diesen Spieler gefunden.');
