@@ -5,6 +5,15 @@ on:
     - cron: '0 21 * * 0,1,5,6' # Läuft nur Fr, Sa, Mo, So um 21:00 UTC (Sonntag=0)
   workflow_dispatch:
 
+# Gleicher Concurrency-Guard wie in update-data.yml (siehe dortiger Kommentar,
+# Issue c94c39b3): verhindert, dass zwei fast gleichzeitig getriggerte Laeufe
+# (z.B. Cron + manueller workflow_dispatch) beim "git pull --rebase -X ours"
+# im Push-Schritt die komplett neu generierten History-Dateien zeilenweise
+# zusammenmischen statt sauber eine Version zu uebernehmen.
+concurrency:
+  group: update-optimal-team
+  cancel-in-progress: true
+
 jobs:
   update-team:
     runs-on: ubuntu-latest
