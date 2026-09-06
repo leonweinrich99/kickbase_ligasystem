@@ -1,8 +1,8 @@
 {
   "matchday": 2,
-  "totalPoints": 2606,
-  "totalBudget": 149291078,
-  "timestamp": "2026-09-05T22:48:45.151Z",
+  "totalPoints": 2933,
+  "totalBudget": 147496088,
+  "timestamp": "2026-09-06T22:54:57.069Z",
   "lineup": [
     {
       "id": "9513",
@@ -10,21 +10,10 @@
       "name": "Hein",
       "lastName": "Hein",
       "position": 1,
-      "marketValue": 12152630,
+      "marketValue": 12080477,
       "points": 141,
       "imagePath": "content/file/0342913c28ed45b18f310732f9b90b16.png",
       "teamName": "Bremen"
-    },
-    {
-      "id": "3759",
-      "teamId": 7,
-      "name": "Gutiérrez",
-      "lastName": "Gutiérrez",
-      "position": 2,
-      "marketValue": 22150001,
-      "points": 281,
-      "imagePath": "content/file/e1b364b32dcc44539649cf1c88d0eba9.png",
-      "teamName": "Leverkusen"
     },
     {
       "id": "14241",
@@ -32,7 +21,7 @@
       "name": "Medina",
       "lastName": "Medina",
       "position": 2,
-      "marketValue": 8720431,
+      "marketValue": 9093763,
       "points": 241,
       "imagePath": "content/file/a59d86f8dc644a43babfe89f615d199f.png",
       "teamName": "Leverkusen"
@@ -43,21 +32,21 @@
       "name": "Vagnoman",
       "lastName": "Vagnoman",
       "position": 2,
-      "marketValue": 8870147,
+      "marketValue": 9275955,
       "points": 275,
       "imagePath": "content/file/c0ddab007ad34b48b3efcfa3cb66ef4d.png",
       "teamName": "Stuttgart"
     },
     {
-      "id": "2141",
-      "teamId": 43,
-      "name": "Baku",
-      "lastName": "Baku",
+      "id": "2232",
+      "teamId": 18,
+      "name": "Mwene",
+      "lastName": "Mwene",
       "position": 2,
-      "marketValue": 20012983,
-      "points": 242,
-      "imagePath": "content/file/938a124759354a928af165b155e6925a.png",
-      "teamName": "Leipzig"
+      "marketValue": 10907942,
+      "points": 303,
+      "imagePath": "content/file/90c9ea6f2e3c49fd8dc4455a289facd0.png",
+      "teamName": "Mainz"
     },
     {
       "id": "1645",
@@ -65,10 +54,21 @@
       "name": "Eggestein",
       "lastName": "Eggestein",
       "position": 3,
-      "marketValue": 17055067,
+      "marketValue": 17228777,
       "points": 237,
       "imagePath": "content/file/7b762754c912496287f84b3c38b24a82.png",
       "teamName": "Freiburg"
+    },
+    {
+      "id": "6061",
+      "teamId": 7,
+      "name": "Maza",
+      "lastName": "Maza",
+      "position": 3,
+      "marketValue": 30394294,
+      "points": 321,
+      "imagePath": "content/file/7ff9728d20544b96a1fe698af86f9f2f.png",
+      "teamName": "Leverkusen"
     },
     {
       "id": "11956",
@@ -76,21 +76,10 @@
       "name": "Fernández",
       "lastName": "Fernández",
       "position": 3,
-      "marketValue": 10669717,
+      "marketValue": 10832164,
       "points": 231,
       "imagePath": "content/file/2c37f7daf46f4c9693ffa9ef33ff980b.png",
       "teamName": "Leverkusen"
-    },
-    {
-      "id": "1671",
-      "teamId": 9,
-      "name": "Prömel",
-      "lastName": "Prömel",
-      "position": 3,
-      "marketValue": 15488020,
-      "points": 223,
-      "imagePath": "content/file/08b903ec758e4ca3be71c96efaf7d324.png",
-      "teamName": "Stuttgart"
     },
     {
       "id": "7721",
@@ -98,7 +87,7 @@
       "name": "Grüll",
       "lastName": "Grüll",
       "position": 3,
-      "marketValue": 6738855,
+      "marketValue": 7057588,
       "points": 289,
       "imagePath": "content/file/73071b81354346399a14dd6431d4e823.png",
       "teamName": "Bremen"
@@ -109,21 +98,32 @@
       "name": "Bolin",
       "lastName": "Bolin",
       "position": 3,
-      "marketValue": 11534636,
+      "marketValue": 11700702,
       "points": 281,
       "imagePath": "content/file/7f789e6ac2c84d5b878ec36c44b31dc2.png",
       "teamName": "M'gladbach"
     },
     {
-      "id": "2854",
-      "teamId": 9,
-      "name": "Demirović",
-      "lastName": "Demirović",
+      "id": "2030",
+      "teamId": 18,
+      "name": "Tietz",
+      "lastName": "Tietz",
       "position": 4,
-      "marketValue": 15898591,
-      "points": 165,
-      "imagePath": "content/file/80dff151ca80494294c4872fe9d6d725.png",
-      "teamName": "Stuttgart"
+      "marketValue": 15491930,
+      "points": 316,
+      "imagePath": "content/file/2acf94096d5443fcb6d70524c93fb74e.png",
+      "teamName": "Mainz"
+    },
+    {
+      "id": "2646",
+      "teamId": 18,
+      "name": "Becker",
+      "lastName": "Becker",
+      "position": 4,
+      "marketValue": 13432496,
+      "points": 298,
+      "imagePath": "content/file/e279d94dff1f46ea8a7f16ea6656528c.png",
+      "teamName": "Mainz"
     }
   ]
 }
