@@ -1,10 +1,21 @@
 {
   "matchday": 2,
-  "timestamp": "2026-09-06T22:49:16.960Z",
+  "timestamp": "2026-09-07T23:21:56.153Z",
   "managers": {
     "1630703": {
-      "pointsMatchday": 791,
+      "pointsMatchday": 734,
       "lineup": [
+        {
+          "id": "7441",
+          "teamId": "0",
+          "name": "Campbell",
+          "lastName": "Campbell",
+          "position": 0,
+          "marketValue": 9926919,
+          "points": 0,
+          "imagePath": "",
+          "teamName": "Unknown"
+        },
         {
           "id": "3350",
           "teamId": "0",
@@ -22,7 +33,7 @@
           "name": "Marvin Schwäbe",
           "lastName": "Schwäbe",
           "position": 1,
-          "marketValue": 15585315,
+          "marketValue": 15646706,
           "points": 109,
           "imagePath": "content/file/2708fddc28474a2299885f3eb69be6bc.png",
           "teamName": "Köln"
@@ -33,7 +44,7 @@
           "name": "Joane Gadou",
           "lastName": "Gadou",
           "position": 2,
-          "marketValue": 25650966,
+          "marketValue": 25659495,
           "points": 64,
           "imagePath": "content/file/48c386df17604a3cbfeaffff6bdffae7.png",
           "teamName": "Dortmund"
@@ -44,10 +55,21 @@
           "name": "Felix Uduokhai",
           "lastName": "Uduokhai",
           "position": 2,
-          "marketValue": 5089475,
+          "marketValue": 5323381,
           "points": 75,
           "imagePath": "content/file/e407afb596ac48f2bab3f2f63a37f2c2.png",
           "teamName": "Union Berlin"
+        },
+        {
+          "id": "16378",
+          "teamId": "3",
+          "name": "Konstantinos Karetsas",
+          "lastName": "Karetsas",
+          "position": 3,
+          "marketValue": 26272848,
+          "points": 35,
+          "imagePath": "content/file/f4e89a3523cb47e09c5be6702baec885.png",
+          "teamName": "Dortmund"
         },
         {
           "id": "6176",
@@ -55,7 +77,7 @@
           "name": "Nicolas Seiwald",
           "lastName": "Seiwald",
           "position": 3,
-          "marketValue": 18921319,
+          "marketValue": 18959690,
           "points": 54,
           "imagePath": "content/file/5320dfb79fb348369e61599e552840b0.png",
           "teamName": "Leipzig"
@@ -66,20 +88,20 @@
           "name": "Nicolas Kühn",
           "lastName": "Kühn",
           "position": 3,
-          "marketValue": 6857713,
+          "marketValue": 6743030,
           "points": 21,
           "imagePath": "content/file/1b20e25d138a411aa09e746b44660051.png",
           "teamName": "M'gladbach"
         },
         {
-          "id": "7417",
+          "id": "8351",
           "teamId": "4",
-          "name": "Noël Aséko",
-          "lastName": "Aséko",
+          "name": "Oscar Højlund",
+          "lastName": "Højlund",
           "position": 3,
-          "marketValue": 4505011,
+          "marketValue": 4639845,
           "points": 0,
-          "imagePath": "content/file/4c3b212857824d74bed5f3922ab26e64.png",
+          "imagePath": "content/file/9f25f3c48efd47488db3f0fea31226bc.png",
           "teamName": "Frankfurt"
         },
         {
@@ -88,7 +110,7 @@
           "name": "Christopher Nkunku",
           "lastName": "Nkunku",
           "position": 4,
-          "marketValue": 25749551,
+          "marketValue": 25844366,
           "points": 76,
           "imagePath": "content/file/bf619920e0d34e138aa57fe52dbcde21.png",
           "teamName": "Leipzig"
@@ -99,26 +121,15 @@
           "name": "Afonso Moreira",
           "lastName": "Moreira",
           "position": 4,
-          "marketValue": 24418396,
+          "marketValue": 24206314,
           "points": 133,
           "imagePath": "content/file/91b4b5c394a1464f98589ffa59af5aec.png",
           "teamName": "Leverkusen"
-        },
-        {
-          "id": "3027",
-          "teamId": "29",
-          "name": "Marvin Pieringer",
-          "lastName": "Pieringer",
-          "position": 4,
-          "marketValue": 3838891,
-          "points": 21,
-          "imagePath": "content/file/599aac2ada574e618a4b2ef6956cd9b3.png",
-          "teamName": "Paderborn"
         }
       ]
     },
     "2479430": {
-      "pointsMatchday": 438,
+      "pointsMatchday": 493,
       "lineup": [
         {
           "id": "6148",
@@ -137,8 +148,8 @@
           "name": "Daniel Heuer Fernandes",
           "lastName": "Heuer Fernandes",
           "position": 1,
-          "marketValue": 14284825,
-          "points": 0,
+          "marketValue": 14011863,
+          "points": 48,
           "imagePath": "content/file/25bb5ce570244f8296d6e817316ad707.png",
           "teamName": "Hamburg"
         },
@@ -148,7 +159,7 @@
           "name": "Ko Itakura",
           "lastName": "Itakura",
           "position": 2,
-          "marketValue": 12093804,
+          "marketValue": 11689334,
           "points": -8,
           "imagePath": "content/file/4b21780a283045729069fef7f989f200.png",
           "teamName": "M'gladbach"
@@ -159,7 +170,7 @@
           "name": "Laurin Curda",
           "lastName": "Curda",
           "position": 2,
-          "marketValue": 10621199,
+          "marketValue": 10689246,
           "points": 1,
           "imagePath": "content/file/ba195e9442954a30a3835950c99832a5.png",
           "teamName": "Paderborn"
@@ -170,7 +181,7 @@
           "name": "Miro Muheim",
           "lastName": "Muheim",
           "position": 2,
-          "marketValue": 4545725,
+          "marketValue": 4450062,
           "points": 0,
           "imagePath": "content/file/6b31cba3484c46c98c5575fe4f79b349.png",
           "teamName": "Hamburg"
@@ -181,7 +192,7 @@
           "name": "Franck Honorat",
           "lastName": "Honorat",
           "position": 3,
-          "marketValue": 9531524,
+          "marketValue": 9867977,
           "points": 142,
           "imagePath": "content/file/ba369ac3889a4ce98a51468fb3f7c14b.png",
           "teamName": "M'gladbach"
@@ -192,8 +203,8 @@
           "name": "Ayoube Amaimouni",
           "lastName": "Amaimouni",
           "position": 3,
-          "marketValue": 7975016,
-          "points": 0,
+          "marketValue": 8168270,
+          "points": 9,
           "imagePath": "content/file/5f68ec42f258435a8233881431dc3c75.png",
           "teamName": "Frankfurt"
         },
@@ -203,7 +214,7 @@
           "name": "Jonas Hofmann",
           "lastName": "Hofmann",
           "position": 3,
-          "marketValue": 3411443,
+          "marketValue": 3701596,
           "points": 0,
           "imagePath": "content/file/328114051c1e42df84e2a6ac3e93cf42.png",
           "teamName": "Leverkusen"
@@ -214,7 +225,7 @@
           "name": "Ismael Saibari",
           "lastName": "Saibari",
           "position": 4,
-          "marketValue": 30494019,
+          "marketValue": 30494927,
           "points": 39,
           "imagePath": "content/file/a8113275ef93446185b8dd4966df1834.png",
           "teamName": "Bayern"
@@ -225,7 +236,7 @@
           "name": "Moussa Diaby",
           "lastName": "Diaby",
           "position": 4,
-          "marketValue": 25485712,
+          "marketValue": 25508764,
           "points": 47,
           "imagePath": "content/file/488ec35e9ff84260ac5ff526d6a9cd67.png",
           "teamName": "Leverkusen"
@@ -236,7 +247,7 @@
           "name": "Thijs Dallinga",
           "lastName": "Dallinga",
           "position": 4,
-          "marketValue": 7606202,
+          "marketValue": 7748075,
           "points": 0,
           "imagePath": "content/file/fab92b426a354aacae1fe7f26e0e6ab0.png",
           "teamName": "Köln"
@@ -244,7 +255,7 @@
       ]
     },
     "2492332": {
-      "pointsMatchday": 520,
+      "pointsMatchday": 587,
       "lineup": [
         {
           "id": "7441",
@@ -252,7 +263,7 @@
           "name": "Campbell",
           "lastName": "Campbell",
           "position": 0,
-          "marketValue": 10500000,
+          "marketValue": 9926919,
           "points": 0,
           "imagePath": "",
           "teamName": "Unknown"
@@ -274,7 +285,7 @@
           "name": "Karl Hein",
           "lastName": "Hein",
           "position": 1,
-          "marketValue": 12152630,
+          "marketValue": 12080477,
           "points": 141,
           "imagePath": "content/file/0342913c28ed45b18f310732f9b90b16.png",
           "teamName": "Bremen"
@@ -285,7 +296,7 @@
           "name": "Vladimír Coufal",
           "lastName": "Coufal",
           "position": 2,
-          "marketValue": 25606990,
+          "marketValue": 25600966,
           "points": 142,
           "imagePath": "content/file/3b2c057d49604e74af1ea35ac7411a4a.png",
           "teamName": "Hoffenheim"
@@ -296,8 +307,8 @@
           "name": "Elias Baum",
           "lastName": "Baum",
           "position": 2,
-          "marketValue": 13387849,
-          "points": 0,
+          "marketValue": 13576285,
+          "points": -8,
           "imagePath": "content/file/0f3d607126284679ac5bc7ee81f890ad.png",
           "teamName": "Frankfurt"
         },
@@ -307,7 +318,7 @@
           "name": "Joey Veerman",
           "lastName": "Veerman",
           "position": 3,
-          "marketValue": 16808879,
+          "marketValue": 16424252,
           "points": 77,
           "imagePath": "content/file/529a765a8c184857a82fa881408360cf.png",
           "teamName": "Dortmund"
@@ -318,7 +329,7 @@
           "name": "Yannik Engelhardt",
           "lastName": "Engelhardt",
           "position": 3,
-          "marketValue": 11736164,
+          "marketValue": 11768299,
           "points": 54,
           "imagePath": "content/file/026c80a428ef428ba28a09167853739e.png",
           "teamName": "Freiburg"
@@ -329,8 +340,8 @@
           "name": "Ayoube Amaimouni",
           "lastName": "Amaimouni",
           "position": 3,
-          "marketValue": 7975016,
-          "points": 0,
+          "marketValue": 8168270,
+          "points": 9,
           "imagePath": "content/file/5f68ec42f258435a8233881431dc3c75.png",
           "teamName": "Frankfurt"
         },
@@ -340,7 +351,7 @@
           "name": "Michel Aebischer",
           "lastName": "Aebischer",
           "position": 3,
-          "marketValue": 4764832,
+          "marketValue": 4656268,
           "points": -12,
           "imagePath": "content/file/53d3916429e94e6c8ea54b7c96c1fd91.png",
           "teamName": "Union Berlin"
@@ -351,7 +362,7 @@
           "name": "Ismael Saibari",
           "lastName": "Saibari",
           "position": 4,
-          "marketValue": 30494019,
+          "marketValue": 30494927,
           "points": 39,
           "imagePath": "content/file/a8113275ef93446185b8dd4966df1834.png",
           "teamName": "Bayern"
@@ -362,7 +373,7 @@
           "name": "Lucas Höler",
           "lastName": "Höler",
           "position": 4,
-          "marketValue": 5313646,
+          "marketValue": 4875910,
           "points": 0,
           "imagePath": "content/file/fd6c0b5e138c4a7382c1f0eade49e3f9.png",
           "teamName": "Freiburg"
@@ -370,7 +381,7 @@
       ]
     },
     "2582689": {
-      "pointsMatchday": 794,
+      "pointsMatchday": 805,
       "lineup": [
         {
           "id": "2195",
@@ -378,8 +389,8 @@
           "name": "Finn Dahmen",
           "lastName": "Dahmen",
           "position": 1,
-          "marketValue": 16294126,
-          "points": 0,
+          "marketValue": 16347176,
+          "points": 174,
           "imagePath": "content/file/78075846ec2d4f2eaeef6be38fdb6681.png",
           "teamName": "Augsburg"
         },
@@ -389,7 +400,7 @@
           "name": "Kevin Diks",
           "lastName": "Diks",
           "position": 2,
-          "marketValue": 16607775,
+          "marketValue": 15921809,
           "points": 53,
           "imagePath": "content/file/2963465030854dafa3b90fbfd15f4a89.png",
           "teamName": "M'gladbach"
@@ -400,8 +411,8 @@
           "name": "Zakaria El Ouahdi",
           "lastName": "El Ouahdi",
           "position": 2,
-          "marketValue": 10549992,
-          "points": 0,
+          "marketValue": 10655731,
+          "points": -24,
           "imagePath": "content/file/e5706256ea604e1aa6d6a9c833629782.png",
           "teamName": "Hamburg"
         },
@@ -411,8 +422,8 @@
           "name": "Sebastiaan Bornauw",
           "lastName": "Bornauw",
           "position": 2,
-          "marketValue": 9982392,
-          "points": 0,
+          "marketValue": 9759293,
+          "points": 35,
           "imagePath": "content/file/06472f6d8eb24eccaeae4898fa81b045.png",
           "teamName": "Hamburg"
         },
@@ -422,7 +433,7 @@
           "name": "Nyamekye Awortwie-Grant",
           "lastName": "Awortwie-Grant",
           "position": 2,
-          "marketValue": 1503273,
+          "marketValue": 1322305,
           "points": 0,
           "imagePath": "content/file/6b0e71018bd542b0b17a0e0a3e9058ac.png",
           "teamName": "Paderborn"
@@ -433,7 +444,7 @@
           "name": "Ibrahim Maza",
           "lastName": "Maza",
           "position": 3,
-          "marketValue": 30309562,
+          "marketValue": 30394294,
           "points": 321,
           "imagePath": "content/file/7ff9728d20544b96a1fe698af86f9f2f.png",
           "teamName": "Leverkusen"
@@ -444,8 +455,8 @@
           "name": "Albert Grønbæk",
           "lastName": "Grønbæk",
           "position": 3,
-          "marketValue": 13017782,
-          "points": 0,
+          "marketValue": 12883323,
+          "points": -8,
           "imagePath": "content/file/02b24cefd3da410ca1d4639a2fb7ccac.png",
           "teamName": "Hamburg"
         },
@@ -455,7 +466,7 @@
           "name": "Ísak Jóhannesson",
           "lastName": "Jóhannesson",
           "position": 3,
-          "marketValue": 11244944,
+          "marketValue": 11375627,
           "points": 20,
           "imagePath": "content/file/2922eb48335343ccb79b49b03af03818.png",
           "teamName": "Köln"
@@ -466,7 +477,7 @@
           "name": "Kevin Stöger",
           "lastName": "Stöger",
           "position": 3,
-          "marketValue": 9285290,
+          "marketValue": 8742413,
           "points": 0,
           "imagePath": "content/file/ec9e6d0723944f8d846da3ac937cd7b3.png",
           "teamName": "M'gladbach"
@@ -477,7 +488,7 @@
           "name": "Tim Kleindienst",
           "lastName": "Kleindienst",
           "position": 4,
-          "marketValue": 19366730,
+          "marketValue": 19142130,
           "points": 94,
           "imagePath": "content/file/c5a005a8dbaa4237a4d0cb0304ac67a0.png",
           "teamName": "M'gladbach"
@@ -488,7 +499,7 @@
           "name": "Tim Lemperle",
           "lastName": "Lemperle",
           "position": 4,
-          "marketValue": 11379084,
+          "marketValue": 11583159,
           "points": 129,
           "imagePath": "content/file/531648f7c8e7446883243fb819e94d82.png",
           "teamName": "Hoffenheim"
@@ -496,7 +507,7 @@
       ]
     },
     "2651349": {
-      "pointsMatchday": 659,
+      "pointsMatchday": 641,
       "lineup": [
         {
           "id": "1883",
@@ -504,7 +515,7 @@
           "name": "Moritz Nicolas",
           "lastName": "Nicolas",
           "position": 1,
-          "marketValue": 18220542,
+          "marketValue": 18200824,
           "points": 146,
           "imagePath": "content/file/02e615fb0e3043649fe830816e2860ba.png",
           "teamName": "M'gladbach"
@@ -515,7 +526,7 @@
           "name": "David Raum",
           "lastName": "Raum",
           "position": 2,
-          "marketValue": 34820453,
+          "marketValue": 34847486,
           "points": 104,
           "imagePath": "content/file/ff40a7c5554548ee8a8a51168c408d77.png",
           "teamName": "Leipzig"
@@ -526,8 +537,8 @@
           "name": "Chrislain Matsima",
           "lastName": "Matsima",
           "position": 2,
-          "marketValue": 14399505,
-          "points": 0,
+          "marketValue": 14542066,
+          "points": 171,
           "imagePath": "content/file/0337794cdbe74c759f6ea4c6ac9c796b.png",
           "teamName": "Augsburg"
         },
@@ -537,7 +548,7 @@
           "name": "Emre Can",
           "lastName": "Can",
           "position": 2,
-          "marketValue": 2034197,
+          "marketValue": 1882830,
           "points": 0,
           "imagePath": "content/file/fe3cc9ba92274b29890b3d2888584906.png",
           "teamName": "Dortmund"
@@ -548,7 +559,7 @@
           "name": "Adrian Gantenbein",
           "lastName": "Gantenbein",
           "position": 2,
-          "marketValue": 930293,
+          "marketValue": 789486,
           "points": 0,
           "imagePath": "content/file/20ff107cb10149319ad76cc948de9e70.png",
           "teamName": "Schalke"
@@ -559,7 +570,7 @@
           "name": "Michael Olise",
           "lastName": "Olise",
           "position": 3,
-          "marketValue": 65026334,
+          "marketValue": 65037725,
           "points": 125,
           "imagePath": "content/file/2d1bffc491014bb582c5d1c622b0ee37.png",
           "teamName": "Bayern"
@@ -570,7 +581,7 @@
           "name": "Jan-Niklas Beste",
           "lastName": "Beste",
           "position": 3,
-          "marketValue": 13511786,
+          "marketValue": 13670456,
           "points": 97,
           "imagePath": "content/file/50008e312d584e419fc78f1d54151bc3.png",
           "teamName": "Freiburg"
@@ -581,7 +592,7 @@
           "name": "Ezechiel Banzuzi",
           "lastName": "Banzuzi",
           "position": 3,
-          "marketValue": 11593433,
+          "marketValue": 11725954,
           "points": 25,
           "imagePath": "content/file/a9c36464a61049d0b9acd73d6c4e9c96.png",
           "teamName": "Leipzig"
@@ -592,7 +603,7 @@
           "name": "Tom Baack",
           "lastName": "Baack",
           "position": 3,
-          "marketValue": 2356470,
+          "marketValue": 2197728,
           "points": 0,
           "imagePath": "content/file/e009e7eb6946411f8f86641cb56174fe.png",
           "teamName": "Paderborn"
@@ -603,7 +614,7 @@
           "name": "Marin Ljubicic",
           "lastName": "Ljubicic",
           "position": 4,
-          "marketValue": 5494634,
+          "marketValue": 5082691,
           "points": -9,
           "imagePath": "content/file/fcb660bdc74f41ef85fd3f45ac56962e.png",
           "teamName": "Union Berlin"
@@ -614,7 +625,7 @@
           "name": "Yussuf Poulsen",
           "lastName": "Poulsen",
           "position": 4,
-          "marketValue": 1635200,
+          "marketValue": 1505047,
           "points": 0,
           "imagePath": "content/file/b3e645c3a34347808d97e722fcbe2ced.png",
           "teamName": "Hamburg"
@@ -622,7 +633,7 @@
       ]
     },
     "2926287": {
-      "pointsMatchday": 865,
+      "pointsMatchday": 955,
       "lineup": [
         {
           "id": "3026",
@@ -641,21 +652,10 @@
           "name": "Fabian Bredlow",
           "lastName": "Bredlow",
           "position": 1,
-          "marketValue": 12380126,
+          "marketValue": 12500507,
           "points": 136,
           "imagePath": "content/file/9c66b1c555ae45aea1e62e700f53f3e9.png",
           "teamName": "Stuttgart"
-        },
-        {
-          "id": "3759",
-          "teamId": "7",
-          "name": "Miguel Gutiérrez",
-          "lastName": "Gutiérrez",
-          "position": 2,
-          "marketValue": 22150001,
-          "points": 281,
-          "imagePath": "content/file/e1b364b32dcc44539649cf1c88d0eba9.png",
-          "teamName": "Leverkusen"
         },
         {
           "id": "7325",
@@ -663,8 +663,8 @@
           "name": "Elias Baum",
           "lastName": "Baum",
           "position": 2,
-          "marketValue": 13387849,
-          "points": 0,
+          "marketValue": 13576285,
+          "points": -8,
           "imagePath": "content/file/0f3d607126284679ac5bc7ee81f890ad.png",
           "teamName": "Frankfurt"
         },
@@ -674,7 +674,7 @@
           "name": "Kim Minjae",
           "lastName": "Minjae",
           "position": 2,
-          "marketValue": 12237277,
+          "marketValue": 12369133,
           "points": 0,
           "imagePath": "content/file/4df81f5e57ca4e278fb6bc229ed6e05d.png",
           "teamName": "Bayern"
@@ -685,7 +685,7 @@
           "name": "Jahmai Simpson-Pusey",
           "lastName": "Simpson-Pusey",
           "position": 2,
-          "marketValue": 10888813,
+          "marketValue": 10643479,
           "points": 74,
           "imagePath": "content/file/f83f61dc46de468bb38cb6a9d9f51205.png",
           "teamName": "Köln"
@@ -696,7 +696,7 @@
           "name": "Moussa Ndiaye",
           "lastName": "Ndiaye",
           "position": 2,
-          "marketValue": 2842258,
+          "marketValue": 3146659,
           "points": 0,
           "imagePath": "content/file/066179dad78f4ab3ac05e77c965aeb07.png",
           "teamName": "Bremen"
@@ -707,7 +707,7 @@
           "name": "Konstantinos Karetsas",
           "lastName": "Karetsas",
           "position": 3,
-          "marketValue": 26178679,
+          "marketValue": 26272848,
           "points": 35,
           "imagePath": "content/file/f4e89a3523cb47e09c5be6702baec885.png",
           "teamName": "Dortmund"
@@ -718,10 +718,21 @@
           "name": "Tom Krauß",
           "lastName": "Krauß",
           "position": 3,
-          "marketValue": 9054567,
+          "marketValue": 8784839,
           "points": 43,
           "imagePath": "content/file/55c214adfaba4a839c1bb19ad5a5f8ed.png",
           "teamName": "Köln"
+        },
+        {
+          "id": "12314",
+          "teamId": "2",
+          "name": "Bara Sapoko Ndiaye",
+          "lastName": "Ndiaye",
+          "position": 3,
+          "marketValue": 1479093,
+          "points": 0,
+          "imagePath": "content/file/68a7688ebea44fc49865d84afbf17a38.png",
+          "teamName": "Bayern"
         },
         {
           "id": "15199",
@@ -729,7 +740,7 @@
           "name": "Afonso Moreira",
           "lastName": "Moreira",
           "position": 4,
-          "marketValue": 24418396,
+          "marketValue": 24206314,
           "points": 133,
           "imagePath": "content/file/91b4b5c394a1464f98589ffa59af5aec.png",
           "teamName": "Leverkusen"
@@ -740,15 +751,15 @@
           "name": "Ransford Königsdörffer",
           "lastName": "Königsdörffer",
           "position": 4,
-          "marketValue": 4651054,
-          "points": 0,
+          "marketValue": 4600756,
+          "points": 132,
           "imagePath": "content/file/4f3abfff728148fda062801c5af46204.png",
           "teamName": "Mainz"
         }
       ]
     },
     "2934339": {
-      "pointsMatchday": 1232,
+      "pointsMatchday": 1214,
       "lineup": [
         {
           "id": "2928",
@@ -762,23 +773,12 @@
           "teamName": "Unknown"
         },
         {
-          "id": "9513",
-          "teamId": "10",
-          "name": "Karl Hein",
-          "lastName": "Hein",
-          "position": 1,
-          "marketValue": 12152630,
-          "points": 141,
-          "imagePath": "content/file/0342913c28ed45b18f310732f9b90b16.png",
-          "teamName": "Bremen"
-        },
-        {
           "id": "3419",
           "teamId": "40",
           "name": "Matheo Raab",
           "lastName": "Raab",
           "position": 1,
-          "marketValue": 6157748,
+          "marketValue": 5664113,
           "points": 0,
           "imagePath": "content/file/6f65c492a85a491b94cd3b8a37bae6f8.png",
           "teamName": "Union Berlin"
@@ -789,7 +789,7 @@
           "name": "Daniel Svensson",
           "lastName": "Svensson",
           "position": 2,
-          "marketValue": 18419835,
+          "marketValue": 18662688,
           "points": 127,
           "imagePath": "content/file/da063055c5d14c798dd8d7427fb2a48f.png",
           "teamName": "Dortmund"
@@ -800,7 +800,7 @@
           "name": "Alphonso Davies",
           "lastName": "Davies",
           "position": 2,
-          "marketValue": 13820777,
+          "marketValue": 14089870,
           "points": 203,
           "imagePath": "content/file/1321be6fb58f47b592a91f17f6b2bf68.png",
           "teamName": "Bayern"
@@ -811,7 +811,7 @@
           "name": "Tom Rothe",
           "lastName": "Rothe",
           "position": 2,
-          "marketValue": 10278512,
+          "marketValue": 9874688,
           "points": 32,
           "imagePath": "content/file/82917858d1a74a7f90a2d9dfca456b71.png",
           "teamName": "Union Berlin"
@@ -822,21 +822,10 @@
           "name": "Nadiem Amiri",
           "lastName": "Amiri",
           "position": 3,
-          "marketValue": 34681800,
-          "points": 0,
+          "marketValue": 34732320,
+          "points": 175,
           "imagePath": "content/file/7d4c71e7f54e4886a93df87cf4f3987c.png",
           "teamName": "Mainz"
-        },
-        {
-          "id": "6061",
-          "teamId": "7",
-          "name": "Ibrahim Maza",
-          "lastName": "Maza",
-          "position": 3,
-          "marketValue": 30309562,
-          "points": 321,
-          "imagePath": "content/file/7ff9728d20544b96a1fe698af86f9f2f.png",
-          "teamName": "Leverkusen"
         },
         {
           "id": "11162",
@@ -844,7 +833,7 @@
           "name": "Leon Avdullahu",
           "lastName": "Avdullahu",
           "position": 3,
-          "marketValue": 16443440,
+          "marketValue": 16432207,
           "points": 136,
           "imagePath": "content/file/805fdf4f3bec4018a1ff6bc85cc95546.png",
           "teamName": "Hoffenheim"
@@ -855,10 +844,21 @@
           "name": "Laurin Ulrich",
           "lastName": "Ulrich",
           "position": 3,
-          "marketValue": 7981067,
+          "marketValue": 7640698,
           "points": 82,
           "imagePath": "content/file/48e50490d07242cb9b0ecf6bcdc688f2.png",
           "teamName": "Paderborn"
+        },
+        {
+          "id": "7781",
+          "teamId": "9",
+          "name": "Leo Sauer",
+          "lastName": "Sauer",
+          "position": 3,
+          "marketValue": 3300953,
+          "points": 43,
+          "imagePath": "content/file/79854e5f8e024f4cac5b935b26f557ef.png",
+          "teamName": "Stuttgart"
         },
         {
           "id": "2855",
@@ -866,7 +866,7 @@
           "name": "Ragnar Ache",
           "lastName": "Ache",
           "position": 4,
-          "marketValue": 15474394,
+          "marketValue": 15096847,
           "points": 15,
           "imagePath": "content/file/659aab812d23451ba8e47f520a7d0754.png",
           "teamName": "Köln"
@@ -874,7 +874,7 @@
       ]
     },
     "2934402": {
-      "pointsMatchday": 1361,
+      "pointsMatchday": 1340,
       "lineup": [
         {
           "id": "3350",
@@ -893,21 +893,10 @@
           "name": "Mio Backhaus",
           "lastName": "Backhaus",
           "position": 1,
-          "marketValue": 15228708,
+          "marketValue": 15092881,
           "points": 140,
           "imagePath": "content/file/5b9a29bca41244bb8c7e691643d00e7d.png",
           "teamName": "Freiburg"
-        },
-        {
-          "id": "3759",
-          "teamId": "7",
-          "name": "Miguel Gutiérrez",
-          "lastName": "Gutiérrez",
-          "position": 2,
-          "marketValue": 22150001,
-          "points": 281,
-          "imagePath": "content/file/e1b364b32dcc44539649cf1c88d0eba9.png",
-          "teamName": "Leverkusen"
         },
         {
           "id": "7282",
@@ -915,7 +904,7 @@
           "name": "Olivier Deman",
           "lastName": "Deman",
           "position": 2,
-          "marketValue": 8822502,
+          "marketValue": 8935942,
           "points": 162,
           "imagePath": "content/file/581d084f390f47a38c3d2d35085fb1e4.png",
           "teamName": "Bremen"
@@ -926,7 +915,7 @@
           "name": "Konstantinos Karetsas",
           "lastName": "Karetsas",
           "position": 3,
-          "marketValue": 26178679,
+          "marketValue": 26272848,
           "points": 35,
           "imagePath": "content/file/f4e89a3523cb47e09c5be6702baec885.png",
           "teamName": "Dortmund"
@@ -937,7 +926,7 @@
           "name": "Said El Mala",
           "lastName": "El Mala",
           "position": 3,
-          "marketValue": 25396257,
+          "marketValue": 25274510,
           "points": 0,
           "imagePath": "content/file/f56e6d60e40c49189c830fb4ff65d4bf.png",
           "teamName": "Köln"
@@ -948,7 +937,7 @@
           "name": "Maximilian Eggestein",
           "lastName": "Eggestein",
           "position": 3,
-          "marketValue": 17055067,
+          "marketValue": 17228777,
           "points": 237,
           "imagePath": "content/file/7b762754c912496287f84b3c38b24a82.png",
           "teamName": "Freiburg"
@@ -959,8 +948,8 @@
           "name": "Raphael Onyedika",
           "lastName": "Onyedika",
           "position": 3,
-          "marketValue": 13833794,
-          "points": 0,
+          "marketValue": 13453995,
+          "points": 97,
           "imagePath": "content/file/4413ed18fac54a58a6e94d858ea72074.png",
           "teamName": "Frankfurt"
         },
@@ -970,8 +959,8 @@
           "name": "Robin Fellhauer",
           "lastName": "Fellhauer",
           "position": 3,
-          "marketValue": 9809535,
-          "points": 0,
+          "marketValue": 9644777,
+          "points": 150,
           "imagePath": "content/file/c458283e0fd243beb4cd2bd270cbfb54.png",
           "teamName": "Augsburg"
         },
@@ -981,7 +970,7 @@
           "name": "Bakery Jatta",
           "lastName": "Jatta",
           "position": 3,
-          "marketValue": 7535742,
+          "marketValue": 7100306,
           "points": 0,
           "imagePath": "content/file/7b147e15dd4b4df4bddb50f00fa8ce4e.png",
           "teamName": "Hamburg"
@@ -992,15 +981,26 @@
           "name": "Rodrigo Ribeiro",
           "lastName": "Ribeiro",
           "position": 4,
-          "marketValue": 4598790,
-          "points": 0,
+          "marketValue": 4899602,
+          "points": 28,
           "imagePath": "content/file/7d60acf2c66d45288438f5f879775e01.png",
           "teamName": "Augsburg"
+        },
+        {
+          "id": "2749",
+          "teamId": "29",
+          "name": "Steffen Tigges",
+          "lastName": "Tigges",
+          "position": 4,
+          "marketValue": 4323069,
+          "points": 32,
+          "imagePath": "content/file/10d7abeb491e42818537662e1ceba8d1.png",
+          "teamName": "Paderborn"
         }
       ]
     },
     "3283685": {
-      "pointsMatchday": 1109,
+      "pointsMatchday": 1099,
       "lineup": [
         {
           "id": "3019",
@@ -1008,8 +1008,8 @@
           "name": "Noah Atubolu",
           "lastName": "Atubolu",
           "position": 1,
-          "marketValue": 12798291,
-          "points": 0,
+          "marketValue": 13042735,
+          "points": 46,
           "imagePath": "content/file/1a428dbd61524b48bb209d1ebee4ac6d.png",
           "teamName": "Frankfurt"
         },
@@ -1019,7 +1019,7 @@
           "name": "David Raum",
           "lastName": "Raum",
           "position": 2,
-          "marketValue": 34820453,
+          "marketValue": 34847486,
           "points": 104,
           "imagePath": "content/file/ff40a7c5554548ee8a8a51168c408d77.png",
           "teamName": "Leipzig"
@@ -1030,8 +1030,8 @@
           "name": "Chrislain Matsima",
           "lastName": "Matsima",
           "position": 2,
-          "marketValue": 14399505,
-          "points": 0,
+          "marketValue": 14542066,
+          "points": 171,
           "imagePath": "content/file/0337794cdbe74c759f6ea4c6ac9c796b.png",
           "teamName": "Augsburg"
         },
@@ -1041,7 +1041,7 @@
           "name": "Tom Rothe",
           "lastName": "Rothe",
           "position": 2,
-          "marketValue": 10278512,
+          "marketValue": 9874688,
           "points": 32,
           "imagePath": "content/file/82917858d1a74a7f90a2d9dfca456b71.png",
           "teamName": "Union Berlin"
@@ -1052,7 +1052,7 @@
           "name": "Tjark Scheller",
           "lastName": "Scheller",
           "position": 2,
-          "marketValue": 7985378,
+          "marketValue": 8306207,
           "points": 66,
           "imagePath": "content/file/06f63d14a0f4493faf04f78ea6aa5f10.png",
           "teamName": "Paderborn"
@@ -1063,7 +1063,7 @@
           "name": "Mattes Hansen",
           "lastName": "Hansen",
           "position": 2,
-          "marketValue": 4992620,
+          "marketValue": 5322685,
           "points": 67,
           "imagePath": "content/file/c747e1ad35ed44f4afbc5de1075d8bf1.png",
           "teamName": "Paderborn"
@@ -1074,8 +1074,8 @@
           "name": "Fabian Rieder",
           "lastName": "Rieder",
           "position": 3,
-          "marketValue": 16092623,
-          "points": 0,
+          "marketValue": 16219657,
+          "points": 213,
           "imagePath": "content/file/bdc22db52af641168bf48d012401bd6b.png",
           "teamName": "Augsburg"
         },
@@ -1085,7 +1085,7 @@
           "name": "Yannik Engelhardt",
           "lastName": "Engelhardt",
           "position": 3,
-          "marketValue": 11736164,
+          "marketValue": 11768299,
           "points": 54,
           "imagePath": "content/file/026c80a428ef428ba28a09167853739e.png",
           "teamName": "Freiburg"
@@ -1096,7 +1096,7 @@
           "name": "Alessio Castro-Montes",
           "lastName": "Castro-Montes",
           "position": 3,
-          "marketValue": 9806359,
+          "marketValue": 9560702,
           "points": 58,
           "imagePath": "content/file/4df59c76b9024563892682f996043056.png",
           "teamName": "Köln"
@@ -1107,7 +1107,7 @@
           "name": "Bakery Jatta",
           "lastName": "Jatta",
           "position": 3,
-          "marketValue": 7535742,
+          "marketValue": 7100306,
           "points": 0,
           "imagePath": "content/file/7b147e15dd4b4df4bddb50f00fa8ce4e.png",
           "teamName": "Hamburg"
@@ -1118,23 +1118,34 @@
           "name": "Sheraldo Becker",
           "lastName": "Becker",
           "position": 4,
-          "marketValue": 13658960,
-          "points": 0,
+          "marketValue": 13432496,
+          "points": 298,
           "imagePath": "content/file/e279d94dff1f46ea8a7f16ea6656528c.png",
           "teamName": "Mainz"
         }
       ]
     },
     "3397700": {
-      "pointsMatchday": 235,
+      "pointsMatchday": 207,
       "lineup": [
+        {
+          "id": "7493",
+          "teamId": "0",
+          "name": "Vermeeren",
+          "lastName": "Vermeeren",
+          "position": 0,
+          "marketValue": 4009225,
+          "points": 0,
+          "imagePath": "",
+          "teamName": "Unknown"
+        },
         {
           "id": "1580",
           "teamId": "28",
           "name": "Marvin Schwäbe",
           "lastName": "Schwäbe",
           "position": 1,
-          "marketValue": 15585315,
+          "marketValue": 15646706,
           "points": 109,
           "imagePath": "content/file/2708fddc28474a2299885f3eb69be6bc.png",
           "teamName": "Köln"
@@ -1145,10 +1156,21 @@
           "name": "Lukeba Castello Jr.",
           "lastName": "Castello Jr.",
           "position": 2,
-          "marketValue": 20793706,
+          "marketValue": 20840498,
           "points": 0,
           "imagePath": "content/file/52117c9891144d3998de1b87b91ca123.png",
           "teamName": "Leipzig"
+        },
+        {
+          "id": "4563",
+          "teamId": "7",
+          "name": "Loïc Badé",
+          "lastName": "Badé",
+          "position": 2,
+          "marketValue": 11007461,
+          "points": 45,
+          "imagePath": "content/file/80f11505e8d445ae827aefe485b1c4c7.png",
+          "teamName": "Leverkusen"
         },
         {
           "id": "4598",
@@ -1156,7 +1178,7 @@
           "name": "Josip Juranović",
           "lastName": "Juranović",
           "position": 2,
-          "marketValue": 10556816,
+          "marketValue": 10715128,
           "points": 15,
           "imagePath": "content/file/17ce8593891544bbae052579071e5c45.png",
           "teamName": "Union Berlin"
@@ -1167,7 +1189,7 @@
           "name": "Jamie Leweling",
           "lastName": "Leweling",
           "position": 3,
-          "marketValue": 21190003,
+          "marketValue": 20625752,
           "points": 21,
           "imagePath": "content/file/c9e7ad1b174e48d8aaf075b0bc0bb13d.png",
           "teamName": "Stuttgart"
@@ -1178,10 +1200,21 @@
           "name": "Grischa Prömel",
           "lastName": "Prömel",
           "position": 3,
-          "marketValue": 15488020,
+          "marketValue": 15703848,
           "points": 223,
           "imagePath": "content/file/08b903ec758e4ca3be71c96efaf7d324.png",
           "teamName": "Stuttgart"
+        },
+        {
+          "id": "3187",
+          "teamId": "40",
+          "name": "András Schäfer",
+          "lastName": "Schäfer",
+          "position": 3,
+          "marketValue": 4370174,
+          "points": -8,
+          "imagePath": "content/file/433f8b676b6b4b898ad3ede98e20f79d.png",
+          "teamName": "Union Berlin"
         },
         {
           "id": "3143",
@@ -1189,7 +1222,7 @@
           "name": "Kristijan Jakić",
           "lastName": "Jakić",
           "position": 3,
-          "marketValue": 4161077,
+          "marketValue": 4002883,
           "points": 0,
           "imagePath": "content/file/e10151863bbf44bab60284439ee3e070.png",
           "teamName": "Augsburg"
@@ -1200,7 +1233,7 @@
           "name": "Patrik Schick",
           "lastName": "Schick",
           "position": 4,
-          "marketValue": 29783535,
+          "marketValue": 29871443,
           "points": 267,
           "imagePath": "content/file/9f0daa3f23514ac7a72c46ba81396a95.png",
           "teamName": "Leverkusen"
@@ -1208,7 +1241,7 @@
       ]
     },
     "3511512": {
-      "pointsMatchday": 693,
+      "pointsMatchday": 710,
       "lineup": [
         {
           "id": "9384",
@@ -1227,8 +1260,8 @@
           "name": "Daniel Heuer Fernandes",
           "lastName": "Heuer Fernandes",
           "position": 1,
-          "marketValue": 14284825,
-          "points": 0,
+          "marketValue": 14011863,
+          "points": 48,
           "imagePath": "content/file/25bb5ce570244f8296d6e817316ad707.png",
           "teamName": "Hamburg"
         },
@@ -1238,7 +1271,7 @@
           "name": "Jahmai Simpson-Pusey",
           "lastName": "Simpson-Pusey",
           "position": 2,
-          "marketValue": 10888813,
+          "marketValue": 10643479,
           "points": 74,
           "imagePath": "content/file/f83f61dc46de468bb38cb6a9d9f51205.png",
           "teamName": "Köln"
@@ -1249,7 +1282,7 @@
           "name": "Timo Becker",
           "lastName": "Becker",
           "position": 2,
-          "marketValue": 8926803,
+          "marketValue": 8733642,
           "points": 95,
           "imagePath": "content/file/f1cc618a8f9e4121bc762da081feea87.png",
           "teamName": "Schalke"
@@ -1260,7 +1293,7 @@
           "name": "Miro Muheim",
           "lastName": "Muheim",
           "position": 2,
-          "marketValue": 4545725,
+          "marketValue": 4450062,
           "points": 0,
           "imagePath": "content/file/6b31cba3484c46c98c5575fe4f79b349.png",
           "teamName": "Hamburg"
@@ -1271,7 +1304,7 @@
           "name": "Jeremiaha Maluze",
           "lastName": "Maluze",
           "position": 2,
-          "marketValue": 3583195,
+          "marketValue": 3892091,
           "points": 0,
           "imagePath": "content/file/41180e5bf4d046fbb3c24268c49459cb.png",
           "teamName": "Frankfurt"
@@ -1282,8 +1315,8 @@
           "name": "Can Uzun",
           "lastName": "Uzun",
           "position": 3,
-          "marketValue": 28928708,
-          "points": 0,
+          "marketValue": 28898966,
+          "points": 48,
           "imagePath": "content/file/d508a06c367e48b4a6ad92a95ee8612d.png",
           "teamName": "Frankfurt"
         },
@@ -1293,7 +1326,7 @@
           "name": "Felix Nmecha",
           "lastName": "Nmecha",
           "position": 3,
-          "marketValue": 28160747,
+          "marketValue": 28192011,
           "points": 51,
           "imagePath": "content/file/f83b3a24df594aaf81be1d58da773656.png",
           "teamName": "Dortmund"
@@ -1304,7 +1337,7 @@
           "name": "Philipp Sander",
           "lastName": "Sander",
           "position": 3,
-          "marketValue": 10919455,
+          "marketValue": 10455601,
           "points": 106,
           "imagePath": "content/file/fb578835ac86440a8189e44877f9bcc8.png",
           "teamName": "M'gladbach"
@@ -1315,7 +1348,7 @@
           "name": "Adam Daghim",
           "lastName": "Daghim",
           "position": 4,
-          "marketValue": 10122975,
+          "marketValue": 10301904,
           "points": 139,
           "imagePath": "content/file/1919dcbd4fb6447aad155fb3c72f3e38.png",
           "teamName": "Hoffenheim"
@@ -1326,15 +1359,15 @@
           "name": "Ransford Königsdörffer",
           "lastName": "Königsdörffer",
           "position": 4,
-          "marketValue": 4651054,
-          "points": 0,
+          "marketValue": 4600756,
+          "points": 132,
           "imagePath": "content/file/4f3abfff728148fda062801c5af46204.png",
           "teamName": "Mainz"
         }
       ]
     },
     "3533606": {
-      "pointsMatchday": -268,
+      "pointsMatchday": -270,
       "lineup": [
         {
           "id": "14893",
@@ -1348,26 +1381,26 @@
           "teamName": "Unknown"
         },
         {
-          "id": "14917",
-          "teamId": "40",
-          "name": "Zeno Van den Bosch",
-          "lastName": "Van den Bosch",
-          "position": 2,
-          "marketValue": 10572915,
-          "points": 9,
-          "imagePath": "content/file/f19174a181cb4b18a6fb28116d085029.png",
-          "teamName": "Union Berlin"
-        },
-        {
           "id": "12284",
           "teamId": "4",
           "name": "Keita Kosugi",
           "lastName": "Kosugi",
           "position": 2,
-          "marketValue": 10549536,
-          "points": 0,
+          "marketValue": 10106381,
+          "points": 57,
           "imagePath": "content/file/4626c41eb1dd44d5b36bfde09dc9f229.png",
           "teamName": "Frankfurt"
+        },
+        {
+          "id": "14917",
+          "teamId": "40",
+          "name": "Zeno Van den Bosch",
+          "lastName": "Van den Bosch",
+          "position": 2,
+          "marketValue": 9964895,
+          "points": 9,
+          "imagePath": "content/file/f19174a181cb4b18a6fb28116d085029.png",
+          "teamName": "Union Berlin"
         },
         {
           "id": "15589",
@@ -1375,7 +1408,7 @@
           "name": "Otávio",
           "lastName": "Otávio",
           "position": 2,
-          "marketValue": 7409403,
+          "marketValue": 7026780,
           "points": 0,
           "imagePath": "content/file/29d28defc06541cdb2d6e020dc443ca1.png",
           "teamName": "Frankfurt"
@@ -1386,21 +1419,10 @@
           "name": "Arthur",
           "lastName": "Arthur",
           "position": 2,
-          "marketValue": 5432252,
+          "marketValue": 5758441,
           "points": 49,
           "imagePath": "content/file/a28a9e98bd2945ceb8e30bed14cd51f9.png",
           "teamName": "Bremen"
-        },
-        {
-          "id": "15181",
-          "teamId": "15",
-          "name": "Jan Leszczynski",
-          "lastName": "Leszczynski",
-          "position": 2,
-          "marketValue": 4632647,
-          "points": 1,
-          "imagePath": "content/file/43eddfa24a0f4db3a737bf045f96d849.png",
-          "teamName": "M'gladbach"
         },
         {
           "id": "4446",
@@ -1408,32 +1430,10 @@
           "name": "Aljoscha Kemlein",
           "lastName": "Kemlein",
           "position": 3,
-          "marketValue": 8331182,
+          "marketValue": 8040075,
           "points": 15,
           "imagePath": "content/file/2dc45e5315ff4262a38925af69a6e745.png",
           "teamName": "Union Berlin"
-        },
-        {
-          "id": "10048",
-          "teamId": "29",
-          "name": "Luka Duric",
-          "lastName": "Duric",
-          "position": 3,
-          "marketValue": 2212777,
-          "points": 0,
-          "imagePath": "content/file/fdce53ba9bff4a39b30dda997ad991ee.png",
-          "teamName": "Paderborn"
-        },
-        {
-          "id": "2854",
-          "teamId": "9",
-          "name": "Ermedin Demirović",
-          "lastName": "Demirović",
-          "position": 4,
-          "marketValue": 15898591,
-          "points": 165,
-          "imagePath": "content/file/80dff151ca80494294c4872fe9d6d725.png",
-          "teamName": "Stuttgart"
         },
         {
           "id": "1012",
@@ -1441,7 +1441,7 @@
           "name": "Edin Džeko",
           "lastName": "Džeko",
           "position": 4,
-          "marketValue": 7671097,
+          "marketValue": 7321942,
           "points": 0,
           "imagePath": "content/file/31e382a514fb4fd0a7b6bf028b56f839.png",
           "teamName": "Schalke"
@@ -1449,7 +1449,7 @@
       ]
     },
     "3606931": {
-      "pointsMatchday": 671,
+      "pointsMatchday": 687,
       "lineup": [
         {
           "id": "2977",
@@ -1457,7 +1457,7 @@
           "name": "Nahuel Noll",
           "lastName": "Noll",
           "position": 1,
-          "marketValue": 13105405,
+          "marketValue": 13120032,
           "points": 98,
           "imagePath": "content/file/48b2c904ac8c41fdaa5c9503ba6e81ca.png",
           "teamName": "Paderborn"
@@ -1479,7 +1479,7 @@
           "name": "Albian Hajdari",
           "lastName": "Hajdari",
           "position": 2,
-          "marketValue": 16033188,
+          "marketValue": 15442176,
           "points": -12,
           "imagePath": "content/file/0f60a3cd21c94cc4913d13f811e532a9.png",
           "teamName": "Hoffenheim"
@@ -1490,21 +1490,10 @@
           "name": "Luka Lochoshvili",
           "lastName": "Lochoshvili",
           "position": 2,
-          "marketValue": 10811151,
+          "marketValue": 10851364,
           "points": 29,
           "imagePath": "content/file/f6faf6be6d674e898fbfa189b9c2ad5c.png",
           "teamName": "Köln"
-        },
-        {
-          "id": "2232",
-          "teamId": "18",
-          "name": "Philipp Mwene",
-          "lastName": "Mwene",
-          "position": 2,
-          "marketValue": 10804267,
-          "points": 0,
-          "imagePath": "content/file/90c9ea6f2e3c49fd8dc4455a289facd0.png",
-          "teamName": "Mainz"
         },
         {
           "id": "11186",
@@ -1512,7 +1501,7 @@
           "name": "Jeremiaha Maluze",
           "lastName": "Maluze",
           "position": 2,
-          "marketValue": 3583195,
+          "marketValue": 3892091,
           "points": 0,
           "imagePath": "content/file/41180e5bf4d046fbb3c24268c49459cb.png",
           "teamName": "Frankfurt"
@@ -1523,7 +1512,7 @@
           "name": "Antonio Nusa",
           "lastName": "Nusa",
           "position": 3,
-          "marketValue": 26845565,
+          "marketValue": 26925059,
           "points": 65,
           "imagePath": "content/file/9a7ea9c911e04f9e9cf0fa6c4b57ca54.png",
           "teamName": "Leipzig"
@@ -1534,7 +1523,7 @@
           "name": "Wouter Burger",
           "lastName": "Burger",
           "position": 3,
-          "marketValue": 21889376,
+          "marketValue": 21315833,
           "points": 56,
           "imagePath": "content/file/50a59d7c22f64565b2f31bba1dfae5bd.png",
           "teamName": "Hoffenheim"
@@ -1545,8 +1534,8 @@
           "name": "Raphael Onyedika",
           "lastName": "Onyedika",
           "position": 3,
-          "marketValue": 13833794,
-          "points": 0,
+          "marketValue": 13453995,
+          "points": 97,
           "imagePath": "content/file/4413ed18fac54a58a6e94d858ea72074.png",
           "teamName": "Frankfurt"
         },
@@ -1556,10 +1545,21 @@
           "name": "Mathieu Nguefack",
           "lastName": "Nguefack",
           "position": 3,
-          "marketValue": 2553068,
+          "marketValue": 2768582,
           "points": 42,
           "imagePath": "content/file/e571de447a2c48c996992e7b729aeb55.png",
           "teamName": "M'gladbach"
+        },
+        {
+          "id": "15472",
+          "teamId": "6",
+          "name": "Patson Daka",
+          "lastName": "Daka",
+          "position": 4,
+          "marketValue": 9787642,
+          "points": -7,
+          "imagePath": "content/file/218db4a2d0cb4f89be008597b2e2d9a7.png",
+          "teamName": "Hamburg"
         },
         {
           "id": "6172",
@@ -1567,7 +1567,7 @@
           "name": "Junior Adamu",
           "lastName": "Adamu",
           "position": 4,
-          "marketValue": 6517638,
+          "marketValue": 6136348,
           "points": 0,
           "imagePath": "content/file/61eaae6121e34a598bac55925001ce96.png",
           "teamName": "Schalke"
@@ -1575,7 +1575,7 @@
       ]
     },
     "3607082": {
-      "pointsMatchday": 763,
+      "pointsMatchday": 773,
       "lineup": [
         {
           "id": "237",
@@ -1583,7 +1583,7 @@
           "name": "Manuel Neuer",
           "lastName": "Neuer",
           "position": 1,
-          "marketValue": 14613643,
+          "marketValue": 14678563,
           "points": 98,
           "imagePath": "content/file/bf993bb6d6914136b11177795c5f77a9.png",
           "teamName": "Bayern"
@@ -1594,7 +1594,7 @@
           "name": "Waldemar Anton",
           "lastName": "Anton",
           "position": 2,
-          "marketValue": 33740638,
+          "marketValue": 33762008,
           "points": 288,
           "imagePath": "content/file/5cbbbb34725b43dba3f7f4f6835b98f0.png",
           "teamName": "Dortmund"
@@ -1605,7 +1605,7 @@
           "name": "Ozan Kabak",
           "lastName": "Kabak",
           "position": 2,
-          "marketValue": 23567971,
+          "marketValue": 23626508,
           "points": 62,
           "imagePath": "content/file/61c84298d75b4e86b4f46a133f91f33d.png",
           "teamName": "Hoffenheim"
@@ -1616,7 +1616,7 @@
           "name": "Arthur",
           "lastName": "Arthur",
           "position": 2,
-          "marketValue": 5432252,
+          "marketValue": 5758441,
           "points": 49,
           "imagePath": "content/file/a28a9e98bd2945ceb8e30bed14cd51f9.png",
           "teamName": "Bremen"
@@ -1627,7 +1627,7 @@
           "name": "Bruno Ogbus",
           "lastName": "Ogbus",
           "position": 2,
-          "marketValue": 2967735,
+          "marketValue": 3179115,
           "points": 0,
           "imagePath": "content/file/e64737da07c343e9a8027194fa943078.png",
           "teamName": "Freiburg"
@@ -1638,7 +1638,7 @@
           "name": "Derrick Köhn",
           "lastName": "Köhn",
           "position": 2,
-          "marketValue": 1497508,
+          "marketValue": 1671824,
           "points": 0,
           "imagePath": "content/file/336162df73db46fdb0d35c73c0928582.png",
           "teamName": "Union Berlin"
@@ -1649,7 +1649,7 @@
           "name": "Aleix García",
           "lastName": "García",
           "position": 3,
-          "marketValue": 38748060,
+          "marketValue": 38752933,
           "points": 225,
           "imagePath": "content/file/3de0ab19c54f4523a5bf21f686259db0.png",
           "teamName": "Leverkusen"
@@ -1660,9 +1660,20 @@
           "name": "Nicolas Seiwald",
           "lastName": "Seiwald",
           "position": 3,
-          "marketValue": 18921319,
+          "marketValue": 18959690,
           "points": 54,
           "imagePath": "content/file/5320dfb79fb348369e61599e552840b0.png",
+          "teamName": "Leipzig"
+        },
+        {
+          "id": "11008",
+          "teamId": "43",
+          "name": "Ezechiel Banzuzi",
+          "lastName": "Banzuzi",
+          "position": 3,
+          "marketValue": 11725954,
+          "points": 25,
+          "imagePath": "content/file/a9c36464a61049d0b9acd73d6c4e9c96.png",
           "teamName": "Leipzig"
         },
         {
@@ -1671,7 +1682,7 @@
           "name": "Eliesse Ben Seghir",
           "lastName": "Ben Seghir",
           "position": 3,
-          "marketValue": 2854331,
+          "marketValue": 3021849,
           "points": 0,
           "imagePath": "content/file/83c0ccd07e1e42d0ac339779564cd1f4.png",
           "teamName": "Leverkusen"
@@ -1682,26 +1693,15 @@
           "name": "Guiu",
           "lastName": "Guiu",
           "position": 4,
-          "marketValue": 10516540,
+          "marketValue": 10454331,
           "points": -13,
           "imagePath": "content/file/89d3dea2dc2f4834a2c84a269d63745f.png",
           "teamName": "Leipzig"
-        },
-        {
-          "id": "10120",
-          "teamId": "6",
-          "name": "Alexander Røssing-Lelesiit",
-          "lastName": "Røssing-Lelesiit",
-          "position": 4,
-          "marketValue": 819961,
-          "points": 0,
-          "imagePath": "content/file/1e0140e6053349279a689f6bac4fdc91.png",
-          "teamName": "Hamburg"
         }
       ]
     },
     "3607127": {
-      "pointsMatchday": 998,
+      "pointsMatchday": 982,
       "lineup": [
         {
           "id": "3350",
@@ -1720,7 +1720,7 @@
           "name": "Mark Flekken",
           "lastName": "Flekken",
           "position": 1,
-          "marketValue": 13962571,
+          "marketValue": 13870913,
           "points": 115,
           "imagePath": "content/file/98ea8901b970421b88f6a41a3137142f.png",
           "teamName": "Leverkusen"
@@ -1731,7 +1731,7 @@
           "name": "Joane Gadou",
           "lastName": "Gadou",
           "position": 2,
-          "marketValue": 25650966,
+          "marketValue": 25659495,
           "points": 64,
           "imagePath": "content/file/48c386df17604a3cbfeaffff6bdffae7.png",
           "teamName": "Dortmund"
@@ -1742,7 +1742,7 @@
           "name": "Daniel Svensson",
           "lastName": "Svensson",
           "position": 2,
-          "marketValue": 18419835,
+          "marketValue": 18662688,
           "points": 127,
           "imagePath": "content/file/da063055c5d14c798dd8d7427fb2a48f.png",
           "teamName": "Dortmund"
@@ -1753,8 +1753,8 @@
           "name": "Hennes Behrens",
           "lastName": "Behrens",
           "position": 2,
-          "marketValue": 12232006,
-          "points": 0,
+          "marketValue": 12309599,
+          "points": 93,
           "imagePath": "content/file/18dac711dedc44698522f7c499401190.png",
           "teamName": "Augsburg"
         },
@@ -1764,7 +1764,7 @@
           "name": "Jordy Makengo",
           "lastName": "Makengo",
           "position": 2,
-          "marketValue": 8380279,
+          "marketValue": 8704283,
           "points": 123,
           "imagePath": "content/file/fd0567aa1f2a49ac97f7b4bdc6aa87a7.png",
           "teamName": "Freiburg"
@@ -1775,8 +1775,8 @@
           "name": "Nadiem Amiri",
           "lastName": "Amiri",
           "position": 3,
-          "marketValue": 34681800,
-          "points": 0,
+          "marketValue": 34732320,
+          "points": 175,
           "imagePath": "content/file/7d4c71e7f54e4886a93df87cf4f3987c.png",
           "teamName": "Mainz"
         },
@@ -1786,7 +1786,7 @@
           "name": "Brajan Gruda",
           "lastName": "Gruda",
           "position": 3,
-          "marketValue": 21711740,
+          "marketValue": 21719677,
           "points": 0,
           "imagePath": "content/file/fc98ceda9d134bd09d5526a600465611.png",
           "teamName": "Leipzig"
@@ -1797,8 +1797,8 @@
           "name": "Ayoube Amaimouni",
           "lastName": "Amaimouni",
           "position": 3,
-          "marketValue": 7975016,
-          "points": 0,
+          "marketValue": 8168270,
+          "points": 9,
           "imagePath": "content/file/5f68ec42f258435a8233881431dc3c75.png",
           "teamName": "Frankfurt"
         },
@@ -1808,7 +1808,7 @@
           "name": "Atakan Karazor",
           "lastName": "Karazor",
           "position": 3,
-          "marketValue": 3863508,
+          "marketValue": 3737281,
           "points": 0,
           "imagePath": "content/file/219e2119996649e0846de7d6cd41906d.png",
           "teamName": "Stuttgart"
@@ -1819,7 +1819,7 @@
           "name": "Dzenan Pejcinovic",
           "lastName": "Pejcinovic",
           "position": 4,
-          "marketValue": 11260044,
+          "marketValue": 11414232,
           "points": 93,
           "imagePath": "content/file/dce6b383ea96472faf6e2059c30593a9.png",
           "teamName": "Stuttgart"
@@ -1827,7 +1827,7 @@
       ]
     },
     "3639851": {
-      "pointsMatchday": 1223,
+      "pointsMatchday": 1319,
       "lineup": [
         {
           "id": "859",
@@ -1841,12 +1841,23 @@
           "teamName": "Unknown"
         },
         {
+          "id": "3450",
+          "teamId": "10",
+          "name": "Markus Kolke",
+          "lastName": "Kolke",
+          "position": 1,
+          "marketValue": 500000,
+          "points": 0,
+          "imagePath": "content/file/8e62a66ca620435fa877b6e0ed662c0b.png",
+          "teamName": "Bremen"
+        },
+        {
           "id": "2141",
           "teamId": "43",
           "name": "Ridle  Baku",
           "lastName": "Baku",
           "position": 2,
-          "marketValue": 20012983,
+          "marketValue": 20252336,
           "points": 242,
           "imagePath": "content/file/938a124759354a928af165b155e6925a.png",
           "teamName": "Leipzig"
@@ -1857,7 +1868,7 @@
           "name": "Fabio Chiarodia",
           "lastName": "Chiarodia",
           "position": 2,
-          "marketValue": 3671638,
+          "marketValue": 3494835,
           "points": 0,
           "imagePath": "content/file/b20e95c99c5c414dba98788ce536d7ad.png",
           "teamName": "M'gladbach"
@@ -1868,21 +1879,10 @@
           "name": "Koki Machida",
           "lastName": "Machida",
           "position": 2,
-          "marketValue": 2841881,
+          "marketValue": 2980119,
           "points": 0,
           "imagePath": "content/file/80f0a50727b54ea5a90a99a754cc7a6c.png",
           "teamName": "Hoffenheim"
-        },
-        {
-          "id": "6081",
-          "teamId": "4",
-          "name": "Can Uzun",
-          "lastName": "Uzun",
-          "position": 3,
-          "marketValue": 28928708,
-          "points": 0,
-          "imagePath": "content/file/d508a06c367e48b4a6ad92a95ee8612d.png",
-          "teamName": "Frankfurt"
         },
         {
           "id": "2476",
@@ -1890,8 +1890,8 @@
           "name": "Jae-Sung Lee",
           "lastName": "Lee",
           "position": 3,
-          "marketValue": 12933997,
-          "points": 0,
+          "marketValue": 13026329,
+          "points": 172,
           "imagePath": "content/file/b0241527f3d94a8c976c749e2004944d.png",
           "teamName": "Mainz"
         },
@@ -1901,7 +1901,7 @@
           "name": "Ezequiél Fernández",
           "lastName": "Fernández",
           "position": 3,
-          "marketValue": 10669717,
+          "marketValue": 10832164,
           "points": 231,
           "imagePath": "content/file/2c37f7daf46f4c9693ffa9ef33ff980b.png",
           "teamName": "Leverkusen"
@@ -1912,8 +1912,8 @@
           "name": "Arijon Ibrahimović",
           "lastName": "Ibrahimović",
           "position": 3,
-          "marketValue": 5566514,
-          "points": 0,
+          "marketValue": 5865167,
+          "points": 110,
           "imagePath": "content/file/0101c31264db4c379d811e76b8c784b4.png",
           "teamName": "Augsburg"
         },
@@ -1923,10 +1923,21 @@
           "name": "Jonas Hofmann",
           "lastName": "Hofmann",
           "position": 3,
-          "marketValue": 3411443,
+          "marketValue": 3701596,
           "points": 0,
           "imagePath": "content/file/328114051c1e42df84e2a6ac3e93cf42.png",
           "teamName": "Leverkusen"
+        },
+        {
+          "id": "2261",
+          "teamId": "15",
+          "name": "Florian Neuhaus",
+          "lastName": "Neuhaus",
+          "position": 3,
+          "marketValue": 2766547,
+          "points": 0,
+          "imagePath": "content/file/0244f54c08f14d5e98d1ec66bd2bca77.png",
+          "teamName": "M'gladbach"
         },
         {
           "id": "14251",
@@ -1934,26 +1945,15 @@
           "name": "Ismael Saibari",
           "lastName": "Saibari",
           "position": 4,
-          "marketValue": 30494019,
+          "marketValue": 30494927,
           "points": 39,
           "imagePath": "content/file/a8113275ef93446185b8dd4966df1834.png",
           "teamName": "Bayern"
-        },
-        {
-          "id": "2030",
-          "teamId": "18",
-          "name": "Phillip Tietz",
-          "lastName": "Tietz",
-          "position": 4,
-          "marketValue": 15412667,
-          "points": 0,
-          "imagePath": "content/file/2acf94096d5443fcb6d70524c93fb74e.png",
-          "teamName": "Mainz"
         }
       ]
     },
     "3646277": {
-      "pointsMatchday": 1269,
+      "pointsMatchday": 1290,
       "lineup": [
         {
           "id": "1873",
@@ -1961,7 +1961,7 @@
           "name": "Gregor Kobel",
           "lastName": "Kobel",
           "position": 1,
-          "marketValue": 20697015,
+          "marketValue": 20554578,
           "points": 141,
           "imagePath": "content/file/f2d4753d2676442bb38580d0b59a6293.png",
           "teamName": "Dortmund"
@@ -1972,8 +1972,8 @@
           "name": "Anthony Caci",
           "lastName": "Caci",
           "position": 2,
-          "marketValue": 12421159,
-          "points": 0,
+          "marketValue": 12542263,
+          "points": 92,
           "imagePath": "content/file/5bb349b2622049a7aa73a59edcec1781.png",
           "teamName": "Mainz"
         },
@@ -1983,7 +1983,7 @@
           "name": "Laurin Curda",
           "lastName": "Curda",
           "position": 2,
-          "marketValue": 10621199,
+          "marketValue": 10689246,
           "points": 1,
           "imagePath": "content/file/ba195e9442954a30a3835950c99832a5.png",
           "teamName": "Paderborn"
@@ -1994,7 +1994,7 @@
           "name": "Jordy Makengo",
           "lastName": "Makengo",
           "position": 2,
-          "marketValue": 8380279,
+          "marketValue": 8704283,
           "points": 123,
           "imagePath": "content/file/fd0567aa1f2a49ac97f7b4bdc6aa87a7.png",
           "teamName": "Freiburg"
@@ -2005,8 +2005,8 @@
           "name": "Jae-Sung Lee",
           "lastName": "Lee",
           "position": 3,
-          "marketValue": 12933997,
-          "points": 0,
+          "marketValue": 13026329,
+          "points": 172,
           "imagePath": "content/file/b0241527f3d94a8c976c749e2004944d.png",
           "teamName": "Mainz"
         },
@@ -2016,7 +2016,7 @@
           "name": "Ezequiél Fernández",
           "lastName": "Fernández",
           "position": 3,
-          "marketValue": 10669717,
+          "marketValue": 10832164,
           "points": 231,
           "imagePath": "content/file/2c37f7daf46f4c9693ffa9ef33ff980b.png",
           "teamName": "Leverkusen"
@@ -2027,7 +2027,7 @@
           "name": "Patrick Wimmer",
           "lastName": "Wimmer",
           "position": 3,
-          "marketValue": 10358759,
+          "marketValue": 10054433,
           "points": 13,
           "imagePath": "content/file/a1e6985ea5b8487ca2db9c16a66eafe7.png",
           "teamName": "Hoffenheim"
@@ -2038,21 +2038,21 @@
           "name": "Arijon Ibrahimović",
           "lastName": "Ibrahimović",
           "position": 3,
-          "marketValue": 5566514,
-          "points": 0,
+          "marketValue": 5865167,
+          "points": 110,
           "imagePath": "content/file/0101c31264db4c379d811e76b8c784b4.png",
           "teamName": "Augsburg"
         },
         {
-          "id": "2030",
-          "teamId": "18",
-          "name": "Phillip Tietz",
-          "lastName": "Tietz",
-          "position": 4,
-          "marketValue": 15412667,
-          "points": 0,
-          "imagePath": "content/file/2acf94096d5443fcb6d70524c93fb74e.png",
-          "teamName": "Mainz"
+          "id": "2491",
+          "teamId": "40",
+          "name": "Tim Skarke",
+          "lastName": "Skarke",
+          "position": 3,
+          "marketValue": 5516073,
+          "points": 8,
+          "imagePath": "content/file/530ba96741b943798d9be4d5dcc151f5.png",
+          "teamName": "Union Berlin"
         },
         {
           "id": "608",
@@ -2060,7 +2060,7 @@
           "name": "Niclas Füllkrug",
           "lastName": "Füllkrug",
           "position": 4,
-          "marketValue": 12623795,
+          "marketValue": 12709523,
           "points": 140,
           "imagePath": "content/file/b83a0c4ef29b40d99020bb11e9e1bc7f.png",
           "teamName": "Bremen"
@@ -2071,7 +2071,7 @@
           "name": "Linton Maina",
           "lastName": "Maina",
           "position": 4,
-          "marketValue": 7493044,
+          "marketValue": 7612603,
           "points": 32,
           "imagePath": "content/file/54aad91024e84cf59b75e3c363775d71.png",
           "teamName": "Köln"
@@ -2079,7 +2079,7 @@
       ]
     },
     "3650803": {
-      "pointsMatchday": 628,
+      "pointsMatchday": 706,
       "lineup": [
         {
           "id": "2977",
@@ -2087,7 +2087,7 @@
           "name": "Nahuel Noll",
           "lastName": "Noll",
           "position": 1,
-          "marketValue": 13105405,
+          "marketValue": 13120032,
           "points": 98,
           "imagePath": "content/file/48b2c904ac8c41fdaa5c9503ba6e81ca.png",
           "teamName": "Paderborn"
@@ -2098,7 +2098,7 @@
           "name": "Nathaniel Brown",
           "lastName": "Brown",
           "position": 2,
-          "marketValue": 29338764,
+          "marketValue": 28880655,
           "points": 76,
           "imagePath": "content/file/4dd49322843644839bb43182b3a8b68b.png",
           "teamName": "Bayern"
@@ -2109,8 +2109,8 @@
           "name": "Elias Baum",
           "lastName": "Baum",
           "position": 2,
-          "marketValue": 13387849,
-          "points": 0,
+          "marketValue": 13576285,
+          "points": -8,
           "imagePath": "content/file/0f3d607126284679ac5bc7ee81f890ad.png",
           "teamName": "Frankfurt"
         },
@@ -2120,7 +2120,7 @@
           "name": "Filippo Mane",
           "lastName": "Mane",
           "position": 2,
-          "marketValue": 5805145,
+          "marketValue": 5348574,
           "points": 46,
           "imagePath": "content/file/c944b500e3224366ad9e5a494a84ee47.png",
           "teamName": "Dortmund"
@@ -2131,8 +2131,8 @@
           "name": "Can Uzun",
           "lastName": "Uzun",
           "position": 3,
-          "marketValue": 28928708,
-          "points": 0,
+          "marketValue": 28898966,
+          "points": 48,
           "imagePath": "content/file/d508a06c367e48b4a6ad92a95ee8612d.png",
           "teamName": "Frankfurt"
         },
@@ -2142,7 +2142,7 @@
           "name": "Maximilian Eggestein",
           "lastName": "Eggestein",
           "position": 3,
-          "marketValue": 17055067,
+          "marketValue": 17228777,
           "points": 237,
           "imagePath": "content/file/7b762754c912496287f84b3c38b24a82.png",
           "teamName": "Freiburg"
@@ -2153,8 +2153,8 @@
           "name": "Albert Grønbæk",
           "lastName": "Grønbæk",
           "position": 3,
-          "marketValue": 13017782,
-          "points": 0,
+          "marketValue": 12883323,
+          "points": -8,
           "imagePath": "content/file/02b24cefd3da410ca1d4639a2fb7ccac.png",
           "teamName": "Hamburg"
         },
@@ -2164,7 +2164,7 @@
           "name": "Derry Scherhant",
           "lastName": "Scherhant",
           "position": 3,
-          "marketValue": 9975532,
+          "marketValue": 10332917,
           "points": 121,
           "imagePath": "content/file/bef26d4942154c3483dbb80207a36d4d.png",
           "teamName": "Freiburg"
@@ -2175,7 +2175,7 @@
           "name": "Kristijan Jakić",
           "lastName": "Jakić",
           "position": 3,
-          "marketValue": 4161077,
+          "marketValue": 4002883,
           "points": 0,
           "imagePath": "content/file/e10151863bbf44bab60284439ee3e070.png",
           "teamName": "Augsburg"
@@ -2186,7 +2186,7 @@
           "name": "Dariusz Stalmach",
           "lastName": "Stalmach",
           "position": 3,
-          "marketValue": 3341268,
+          "marketValue": 3648414,
           "points": 25,
           "imagePath": "content/file/24197523c05b4e17ac6e922264265d37.png",
           "teamName": "Bremen"
@@ -2197,7 +2197,7 @@
           "name": "Max Moerstedt",
           "lastName": "Moerstedt",
           "position": 4,
-          "marketValue": 5073391,
+          "marketValue": 4768514,
           "points": -7,
           "imagePath": "content/file/901ac71d98064e48b7b250786d8ac1d2.png",
           "teamName": "Hoffenheim"
@@ -2205,7 +2205,7 @@
       ]
     },
     "3694149": {
-      "pointsMatchday": 504,
+      "pointsMatchday": 477,
       "lineup": [
         {
           "id": "2195",
@@ -2213,8 +2213,8 @@
           "name": "Finn Dahmen",
           "lastName": "Dahmen",
           "position": 1,
-          "marketValue": 16294126,
-          "points": 0,
+          "marketValue": 16347176,
+          "points": 174,
           "imagePath": "content/file/78075846ec2d4f2eaeef6be38fdb6681.png",
           "teamName": "Augsburg"
         },
@@ -2224,7 +2224,7 @@
           "name": "Albian Hajdari",
           "lastName": "Hajdari",
           "position": 2,
-          "marketValue": 16033188,
+          "marketValue": 15442176,
           "points": -12,
           "imagePath": "content/file/0f60a3cd21c94cc4913d13f811e532a9.png",
           "teamName": "Hoffenheim"
@@ -2235,7 +2235,7 @@
           "name": "Josip Juranović",
           "lastName": "Juranović",
           "position": 2,
-          "marketValue": 10556816,
+          "marketValue": 10715128,
           "points": 15,
           "imagePath": "content/file/17ce8593891544bbae052579071e5c45.png",
           "teamName": "Union Berlin"
@@ -2246,8 +2246,8 @@
           "name": "Keita Kosugi",
           "lastName": "Kosugi",
           "position": 2,
-          "marketValue": 10549536,
-          "points": 0,
+          "marketValue": 10106381,
+          "points": 57,
           "imagePath": "content/file/4626c41eb1dd44d5b36bfde09dc9f229.png",
           "teamName": "Frankfurt"
         },
@@ -2257,8 +2257,8 @@
           "name": "Stefan Posch",
           "lastName": "Posch",
           "position": 2,
-          "marketValue": 8637472,
-          "points": 0,
+          "marketValue": 8440317,
+          "points": 125,
           "imagePath": "content/file/890290d8b9bd491fb3c624f1c57d47bd.png",
           "teamName": "Mainz"
         },
@@ -2268,7 +2268,7 @@
           "name": "Mattes Hansen",
           "lastName": "Hansen",
           "position": 2,
-          "marketValue": 4992620,
+          "marketValue": 5322685,
           "points": 67,
           "imagePath": "content/file/c747e1ad35ed44f4afbc5de1075d8bf1.png",
           "teamName": "Paderborn"
@@ -2279,7 +2279,7 @@
           "name": "Leon Avdullahu",
           "lastName": "Avdullahu",
           "position": 3,
-          "marketValue": 16443440,
+          "marketValue": 16432207,
           "points": 136,
           "imagePath": "content/file/805fdf4f3bec4018a1ff6bc85cc95546.png",
           "teamName": "Hoffenheim"
@@ -2290,7 +2290,7 @@
           "name": "Adil Aouchiche",
           "lastName": "Aouchiche",
           "position": 3,
-          "marketValue": 11814658,
+          "marketValue": 11473133,
           "points": 84,
           "imagePath": "content/file/8ac09c4f6e974d80a4bc1aff9ad6768d.png",
           "teamName": "Schalke"
@@ -2301,7 +2301,7 @@
           "name": "Alessio Castro-Montes",
           "lastName": "Castro-Montes",
           "position": 3,
-          "marketValue": 9806359,
+          "marketValue": 9560702,
           "points": 58,
           "imagePath": "content/file/4df59c76b9024563892682f996043056.png",
           "teamName": "Köln"
@@ -2309,7 +2309,7 @@
       ]
     },
     "3779246": {
-      "pointsMatchday": 465,
+      "pointsMatchday": 360,
       "lineup": [
         {
           "id": "2237",
@@ -2317,7 +2317,7 @@
           "name": "Fabian Bredlow",
           "lastName": "Bredlow",
           "position": 1,
-          "marketValue": 12380126,
+          "marketValue": 12500507,
           "points": 136,
           "imagePath": "content/file/9c66b1c555ae45aea1e62e700f53f3e9.png",
           "teamName": "Stuttgart"
@@ -2328,7 +2328,7 @@
           "name": "Leopold Querfeld",
           "lastName": "Querfeld",
           "position": 2,
-          "marketValue": 15194858,
+          "marketValue": 15072818,
           "points": 0,
           "imagePath": "content/file/b9dfbb26ed9347b9a1585f29718c9d76.png",
           "teamName": "Union Berlin"
@@ -2339,7 +2339,7 @@
           "name": "Amos Pieper",
           "lastName": "Pieper",
           "position": 2,
-          "marketValue": 11870006,
+          "marketValue": 11960578,
           "points": 105,
           "imagePath": "content/file/32262c6e17164fd1a62ee34e358e2540.png",
           "teamName": "Bremen"
@@ -2350,10 +2350,21 @@
           "name": "Ramon Hendriks",
           "lastName": "Hendriks",
           "position": 2,
-          "marketValue": 9594480,
+          "marketValue": 9397754,
           "points": 53,
           "imagePath": "content/file/105193e4d2f8459290802db43899091e.png",
           "teamName": "Stuttgart"
+        },
+        {
+          "id": "17179",
+          "teamId": "18",
+          "name": "Rael-Tshimbela Nakuzola",
+          "lastName": "Nakuzola",
+          "position": 2,
+          "marketValue": 1929020,
+          "points": 23,
+          "imagePath": "content/file/6c0a23ba3672480f9163c215c36670c8.png",
+          "teamName": "Mainz"
         },
         {
           "id": "4596",
@@ -2361,7 +2372,7 @@
           "name": "Brajan Gruda",
           "lastName": "Gruda",
           "position": 3,
-          "marketValue": 21711740,
+          "marketValue": 21719677,
           "points": 0,
           "imagePath": "content/file/fc98ceda9d134bd09d5526a600465611.png",
           "teamName": "Leipzig"
@@ -2372,7 +2383,7 @@
           "name": "Christoph Baumgartner",
           "lastName": "Baumgartner",
           "position": 3,
-          "marketValue": 12230036,
+          "marketValue": 11818962,
           "points": 0,
           "imagePath": "content/file/de86594ccecb4a7899a87cdd662e1a9c.png",
           "teamName": "Leipzig"
@@ -2383,7 +2394,7 @@
           "name": "Patrick Wimmer",
           "lastName": "Wimmer",
           "position": 3,
-          "marketValue": 10358759,
+          "marketValue": 10054433,
           "points": 13,
           "imagePath": "content/file/a1e6985ea5b8487ca2db9c16a66eafe7.png",
           "teamName": "Hoffenheim"
@@ -2394,7 +2405,7 @@
           "name": "Gabriel Vidović",
           "lastName": "Vidović",
           "position": 3,
-          "marketValue": 8373531,
+          "marketValue": 8238332,
           "points": 3,
           "imagePath": "content/file/cbf9ad550a164e0392e43ae723e2d83d.png",
           "teamName": "Paderborn"
@@ -2405,7 +2416,7 @@
           "name": "Patrik Schick",
           "lastName": "Schick",
           "position": 4,
-          "marketValue": 29783535,
+          "marketValue": 29871443,
           "points": 267,
           "imagePath": "content/file/9f0daa3f23514ac7a72c46ba81396a95.png",
           "teamName": "Leverkusen"
@@ -2416,7 +2427,7 @@
           "name": "Bambasé Conté",
           "lastName": "Conté",
           "position": 4,
-          "marketValue": 9456481,
+          "marketValue": 9631050,
           "points": -12,
           "imagePath": "content/file/fa595ccc62ce4fdeafca00ccfc95088b.png",
           "teamName": "Hoffenheim"
@@ -2424,7 +2435,7 @@
       ]
     },
     "3792325": {
-      "pointsMatchday": 1069,
+      "pointsMatchday": 1077,
       "lineup": [
         {
           "id": "2195",
@@ -2432,8 +2443,8 @@
           "name": "Finn Dahmen",
           "lastName": "Dahmen",
           "position": 1,
-          "marketValue": 16294126,
-          "points": 0,
+          "marketValue": 16347176,
+          "points": 174,
           "imagePath": "content/file/78075846ec2d4f2eaeef6be38fdb6681.png",
           "teamName": "Augsburg"
         },
@@ -2443,7 +2454,7 @@
           "name": "Willi Orban",
           "lastName": "Orban",
           "position": 2,
-          "marketValue": 30432834,
+          "marketValue": 30377902,
           "points": 116,
           "imagePath": "content/file/1f7999ae3a674c74ac9b8d4f00ed1028.png",
           "teamName": "Leipzig"
@@ -2454,7 +2465,7 @@
           "name": "Loïc Badé",
           "lastName": "Badé",
           "position": 2,
-          "marketValue": 11618703,
+          "marketValue": 11007461,
           "points": 45,
           "imagePath": "content/file/80f11505e8d445ae827aefe485b1c4c7.png",
           "teamName": "Leverkusen"
@@ -2465,7 +2476,7 @@
           "name": "Josip Juranović",
           "lastName": "Juranović",
           "position": 2,
-          "marketValue": 10556816,
+          "marketValue": 10715128,
           "points": 15,
           "imagePath": "content/file/17ce8593891544bbae052579071e5c45.png",
           "teamName": "Union Berlin"
@@ -2476,7 +2487,7 @@
           "name": "Jordy Makengo",
           "lastName": "Makengo",
           "position": 2,
-          "marketValue": 8380279,
+          "marketValue": 8704283,
           "points": 123,
           "imagePath": "content/file/fd0567aa1f2a49ac97f7b4bdc6aa87a7.png",
           "teamName": "Freiburg"
@@ -2487,7 +2498,7 @@
           "name": "Antonio Nusa",
           "lastName": "Nusa",
           "position": 3,
-          "marketValue": 26845565,
+          "marketValue": 26925059,
           "points": 65,
           "imagePath": "content/file/9a7ea9c911e04f9e9cf0fa6c4b57ca54.png",
           "teamName": "Leipzig"
@@ -2498,8 +2509,8 @@
           "name": "Kaishu Sano",
           "lastName": "Sano",
           "position": 3,
-          "marketValue": 17777904,
-          "points": 0,
+          "marketValue": 17901574,
+          "points": 169,
           "imagePath": "content/file/aa2bb0e7fba5493db89b7b6646147ddc.png",
           "teamName": "Mainz"
         },
@@ -2509,7 +2520,7 @@
           "name": "Grischa Prömel",
           "lastName": "Prömel",
           "position": 3,
-          "marketValue": 15488020,
+          "marketValue": 15703848,
           "points": 223,
           "imagePath": "content/file/08b903ec758e4ca3be71c96efaf7d324.png",
           "teamName": "Stuttgart"
@@ -2520,7 +2531,7 @@
           "name": "Kevin Stöger",
           "lastName": "Stöger",
           "position": 3,
-          "marketValue": 9285290,
+          "marketValue": 8742413,
           "points": 0,
           "imagePath": "content/file/ec9e6d0723944f8d846da3ac937cd7b3.png",
           "teamName": "M'gladbach"
@@ -2531,7 +2542,7 @@
           "name": "Nathan Tella",
           "lastName": "Tella",
           "position": 3,
-          "marketValue": 4904032,
+          "marketValue": 4762021,
           "points": 0,
           "imagePath": "content/file/e0df07546d38465080767efd17a0898e.png",
           "teamName": "Leverkusen"
@@ -2542,7 +2553,7 @@
           "name": "Adam Daghim",
           "lastName": "Daghim",
           "position": 4,
-          "marketValue": 10122975,
+          "marketValue": 10301904,
           "points": 139,
           "imagePath": "content/file/1919dcbd4fb6447aad155fb3c72f3e38.png",
           "teamName": "Hoffenheim"
@@ -2550,7 +2561,7 @@
       ]
     },
     "3849633": {
-      "pointsMatchday": 657,
+      "pointsMatchday": 666,
       "lineup": [
         {
           "id": "8227",
@@ -2558,10 +2569,21 @@
           "name": "Maarten Vandevoordt",
           "lastName": "Vandevoordt",
           "position": 1,
-          "marketValue": 17418620,
+          "marketValue": 17393862,
           "points": 37,
           "imagePath": "content/file/1aa808600ddb4c5b9883e7caedba5966.png",
           "teamName": "Leipzig"
+        },
+        {
+          "id": "2373",
+          "teamId": "14",
+          "name": "Ozan Kabak",
+          "lastName": "Kabak",
+          "position": 2,
+          "marketValue": 23626508,
+          "points": 62,
+          "imagePath": "content/file/61c84298d75b4e86b4f46a133f91f33d.png",
+          "teamName": "Hoffenheim"
         },
         {
           "id": "17285",
@@ -2569,8 +2591,8 @@
           "name": "Lilian Brassier",
           "lastName": "Brassier",
           "position": 2,
-          "marketValue": 12260597,
-          "points": 0,
+          "marketValue": 12404120,
+          "points": 80,
           "imagePath": "content/file/9ee0a3622cb8465089f59da17d232a32.png",
           "teamName": "Frankfurt"
         },
@@ -2580,8 +2602,8 @@
           "name": "Zakaria El Ouahdi",
           "lastName": "El Ouahdi",
           "position": 2,
-          "marketValue": 10549992,
-          "points": 0,
+          "marketValue": 10655731,
+          "points": -24,
           "imagePath": "content/file/e5706256ea604e1aa6d6a9c833629782.png",
           "teamName": "Hamburg"
         },
@@ -2591,7 +2613,7 @@
           "name": "Niklas Stark",
           "lastName": "Stark",
           "position": 2,
-          "marketValue": 2997137,
+          "marketValue": 3115378,
           "points": 0,
           "imagePath": "content/file/47d350de3ba7487dad6fff58c11b5910.png",
           "teamName": "Bremen"
@@ -2602,7 +2624,7 @@
           "name": "Aleix García",
           "lastName": "García",
           "position": 3,
-          "marketValue": 38748060,
+          "marketValue": 38752933,
           "points": 225,
           "imagePath": "content/file/3de0ab19c54f4523a5bf21f686259db0.png",
           "teamName": "Leverkusen"
@@ -2613,8 +2635,8 @@
           "name": "Albert Grønbæk",
           "lastName": "Grønbæk",
           "position": 3,
-          "marketValue": 13017782,
-          "points": 0,
+          "marketValue": 12883323,
+          "points": -8,
           "imagePath": "content/file/02b24cefd3da410ca1d4639a2fb7ccac.png",
           "teamName": "Hamburg"
         },
@@ -2624,7 +2646,7 @@
           "name": "Mathieu Nguefack",
           "lastName": "Nguefack",
           "position": 3,
-          "marketValue": 2553068,
+          "marketValue": 2768582,
           "points": 42,
           "imagePath": "content/file/e571de447a2c48c996992e7b729aeb55.png",
           "teamName": "M'gladbach"
@@ -2635,7 +2657,7 @@
           "name": "Christopher Nkunku",
           "lastName": "Nkunku",
           "position": 4,
-          "marketValue": 25749551,
+          "marketValue": 25844366,
           "points": 76,
           "imagePath": "content/file/bf619920e0d34e138aa57fe52dbcde21.png",
           "teamName": "Leipzig"
@@ -2646,8 +2668,8 @@
           "name": "Michael Gregoritsch",
           "lastName": "Gregoritsch",
           "position": 4,
-          "marketValue": 12164007,
-          "points": 0,
+          "marketValue": 12349683,
+          "points": 74,
           "imagePath": "content/file/90d8bfeb702e4fc9a12b70e61d1cada3.png",
           "teamName": "Augsburg"
         },
@@ -2657,7 +2679,7 @@
           "name": "Dzenan Pejcinovic",
           "lastName": "Pejcinovic",
           "position": 4,
-          "marketValue": 11260044,
+          "marketValue": 11414232,
           "points": 93,
           "imagePath": "content/file/dce6b383ea96472faf6e2059c30593a9.png",
           "teamName": "Stuttgart"
@@ -2665,7 +2687,7 @@
       ]
     },
     "3850715": {
-      "pointsMatchday": 1329,
+      "pointsMatchday": 1416,
       "lineup": [
         {
           "id": "2237",
@@ -2673,7 +2695,7 @@
           "name": "Fabian Bredlow",
           "lastName": "Bredlow",
           "position": 1,
-          "marketValue": 12380126,
+          "marketValue": 12500507,
           "points": 136,
           "imagePath": "content/file/9c66b1c555ae45aea1e62e700f53f3e9.png",
           "teamName": "Stuttgart"
@@ -2684,8 +2706,8 @@
           "name": "Fabio Gruber",
           "lastName": "Gruber",
           "position": 2,
-          "marketValue": 11638929,
-          "points": 0,
+          "marketValue": 11742998,
+          "points": 171,
           "imagePath": "content/file/278ee138191a434c98f6a644a68e553c.png",
           "teamName": "Mainz"
         },
@@ -2695,8 +2717,8 @@
           "name": "Philipp Mwene",
           "lastName": "Mwene",
           "position": 2,
-          "marketValue": 10804267,
-          "points": 0,
+          "marketValue": 10907942,
+          "points": 303,
           "imagePath": "content/file/90c9ea6f2e3c49fd8dc4455a289facd0.png",
           "teamName": "Mainz"
         },
@@ -2706,8 +2728,8 @@
           "name": "Calvin Brackelmann",
           "lastName": "Brackelmann",
           "position": 2,
-          "marketValue": 6645730,
-          "points": 0,
+          "marketValue": 7008440,
+          "points": 81,
           "imagePath": "content/file/e13f320cbaad4bad96143f969d2cf434.png",
           "teamName": "Augsburg"
         },
@@ -2717,7 +2739,7 @@
           "name": "Michael Olise",
           "lastName": "Olise",
           "position": 3,
-          "marketValue": 65026334,
+          "marketValue": 65037725,
           "points": 125,
           "imagePath": "content/file/2d1bffc491014bb582c5d1c622b0ee37.png",
           "teamName": "Bayern"
@@ -2728,7 +2750,7 @@
           "name": "Ibrahim Maza",
           "lastName": "Maza",
           "position": 3,
-          "marketValue": 30309562,
+          "marketValue": 30394294,
           "points": 321,
           "imagePath": "content/file/7ff9728d20544b96a1fe698af86f9f2f.png",
           "teamName": "Leverkusen"
@@ -2739,7 +2761,7 @@
           "name": "Neil El Aynaoui",
           "lastName": "El Aynaoui",
           "position": 3,
-          "marketValue": 14972852,
+          "marketValue": 14759795,
           "points": 46,
           "imagePath": "content/file/ae7c14cb829b461a81b00042ef20e8c6.png",
           "teamName": "Leipzig"
@@ -2750,7 +2772,7 @@
           "name": "Ezechiel Banzuzi",
           "lastName": "Banzuzi",
           "position": 3,
-          "marketValue": 11593433,
+          "marketValue": 11725954,
           "points": 25,
           "imagePath": "content/file/a9c36464a61049d0b9acd73d6c4e9c96.png",
           "teamName": "Leipzig"
@@ -2761,21 +2783,10 @@
           "name": "Marius Wolf",
           "lastName": "Wolf",
           "position": 3,
-          "marketValue": 7865387,
-          "points": 0,
+          "marketValue": 8197273,
+          "points": 81,
           "imagePath": "content/file/a1f80afaec424464a483185498e81a2e.png",
           "teamName": "Augsburg"
-        },
-        {
-          "id": "14300",
-          "teamId": "28",
-          "name": "Paul Okon-Engstler",
-          "lastName": "Okon-Engstler",
-          "position": 3,
-          "marketValue": 4450565,
-          "points": 19,
-          "imagePath": "content/file/cfde74fcc93247699da56f08049928c0.png",
-          "teamName": "Köln"
         },
         {
           "id": "3027",
@@ -2783,7 +2794,7 @@
           "name": "Marvin Pieringer",
           "lastName": "Pieringer",
           "position": 4,
-          "marketValue": 3838891,
+          "marketValue": 4025232,
           "points": 21,
           "imagePath": "content/file/599aac2ada574e618a4b2ef6956cd9b3.png",
           "teamName": "Paderborn"
@@ -2791,7 +2802,7 @@
       ]
     },
     "3901400": {
-      "pointsMatchday": 1128,
+      "pointsMatchday": 1153,
       "lineup": [
         {
           "id": "7441",
@@ -2799,7 +2810,7 @@
           "name": "Campbell",
           "lastName": "Campbell",
           "position": 0,
-          "marketValue": 10500000,
+          "marketValue": 9926919,
           "points": 0,
           "imagePath": "",
           "teamName": "Unknown"
@@ -2832,20 +2843,9 @@
           "name": "Finn Jeltsch",
           "lastName": "Jeltsch",
           "position": 2,
-          "marketValue": 16076871,
+          "marketValue": 16231309,
           "points": 184,
           "imagePath": "content/file/256dbc8d5e474b4caea5b04904175a7d.png",
-          "teamName": "Stuttgart"
-        },
-        {
-          "id": "2199",
-          "teamId": "9",
-          "name": "Josha Vagnoman",
-          "lastName": "Vagnoman",
-          "position": 2,
-          "marketValue": 8870147,
-          "points": 275,
-          "imagePath": "content/file/c0ddab007ad34b48b3efcfa3cb66ef4d.png",
           "teamName": "Stuttgart"
         },
         {
@@ -2854,7 +2854,7 @@
           "name": "Lukas Ullrich",
           "lastName": "Ullrich",
           "position": 2,
-          "marketValue": 7132046,
+          "marketValue": 6789454,
           "points": 63,
           "imagePath": "content/file/27f19d9713034a05b1a7dedcb527f48d.png",
           "teamName": "M'gladbach"
@@ -2865,7 +2865,7 @@
           "name": "Aleksandar Pavlović",
           "lastName": "Pavlović",
           "position": 3,
-          "marketValue": 33364654,
+          "marketValue": 33455307,
           "points": 170,
           "imagePath": "content/file/958c27ad7cf943a8b9e380f72fdc5b4f.png",
           "teamName": "Bayern"
@@ -2876,7 +2876,7 @@
           "name": "Maximilian Eggestein",
           "lastName": "Eggestein",
           "position": 3,
-          "marketValue": 17055067,
+          "marketValue": 17228777,
           "points": 237,
           "imagePath": "content/file/7b762754c912496287f84b3c38b24a82.png",
           "teamName": "Freiburg"
@@ -2887,7 +2887,7 @@
           "name": "Ragnar Ache",
           "lastName": "Ache",
           "position": 4,
-          "marketValue": 15474394,
+          "marketValue": 15096847,
           "points": 15,
           "imagePath": "content/file/659aab812d23451ba8e47f520a7d0754.png",
           "teamName": "Köln"
@@ -2898,7 +2898,7 @@
           "name": "Niclas Füllkrug",
           "lastName": "Füllkrug",
           "position": 4,
-          "marketValue": 12623795,
+          "marketValue": 12709523,
           "points": 140,
           "imagePath": "content/file/b83a0c4ef29b40d99020bb11e9e1bc7f.png",
           "teamName": "Bremen"
@@ -2909,7 +2909,7 @@
           "name": "Marin Ljubicic",
           "lastName": "Ljubicic",
           "position": 4,
-          "marketValue": 5494634,
+          "marketValue": 5082691,
           "points": -9,
           "imagePath": "content/file/fcb660bdc74f41ef85fd3f45ac56962e.png",
           "teamName": "Union Berlin"
@@ -2917,7 +2917,7 @@
       ]
     },
     "3905417": {
-      "pointsMatchday": 1261,
+      "pointsMatchday": 1241,
       "lineup": [
         {
           "id": "1580",
@@ -2925,7 +2925,7 @@
           "name": "Marvin Schwäbe",
           "lastName": "Schwäbe",
           "position": 1,
-          "marketValue": 15585315,
+          "marketValue": 15646706,
           "points": 109,
           "imagePath": "content/file/2708fddc28474a2299885f3eb69be6bc.png",
           "teamName": "Köln"
@@ -2936,7 +2936,7 @@
           "name": "Finn Jeltsch",
           "lastName": "Jeltsch",
           "position": 2,
-          "marketValue": 16076871,
+          "marketValue": 16231309,
           "points": 184,
           "imagePath": "content/file/256dbc8d5e474b4caea5b04904175a7d.png",
           "teamName": "Stuttgart"
@@ -2947,7 +2947,7 @@
           "name": "Philipp Lienhart",
           "lastName": "Lienhart",
           "position": 2,
-          "marketValue": 13740963,
+          "marketValue": 13827094,
           "points": 94,
           "imagePath": "content/file/748f11f6c0294a41850137ab1c162436.png",
           "teamName": "Freiburg"
@@ -2958,7 +2958,7 @@
           "name": "Amos Pieper",
           "lastName": "Pieper",
           "position": 2,
-          "marketValue": 11870006,
+          "marketValue": 11960578,
           "points": 105,
           "imagePath": "content/file/32262c6e17164fd1a62ee34e358e2540.png",
           "teamName": "Bremen"
@@ -2969,8 +2969,8 @@
           "name": "Noahkai Banks",
           "lastName": "Banks",
           "position": 2,
-          "marketValue": 9063093,
-          "points": 0,
+          "marketValue": 9406033,
+          "points": 133,
           "imagePath": "content/file/eee3a63f6cd84553ac20c6854134da5c.png",
           "teamName": "Augsburg"
         },
@@ -2980,8 +2980,8 @@
           "name": "Kaishu Sano",
           "lastName": "Sano",
           "position": 3,
-          "marketValue": 17777904,
-          "points": 0,
+          "marketValue": 17901574,
+          "points": 169,
           "imagePath": "content/file/aa2bb0e7fba5493db89b7b6646147ddc.png",
           "teamName": "Mainz"
         },
@@ -2991,7 +2991,7 @@
           "name": "Jan-Niklas Beste",
           "lastName": "Beste",
           "position": 3,
-          "marketValue": 13511786,
+          "marketValue": 13670456,
           "points": 97,
           "imagePath": "content/file/50008e312d584e419fc78f1d54151bc3.png",
           "teamName": "Freiburg"
@@ -3002,7 +3002,7 @@
           "name": "Serge Gnabry",
           "lastName": "Gnabry",
           "position": 3,
-          "marketValue": 12286739,
+          "marketValue": 12330138,
           "points": 0,
           "imagePath": "content/file/0a28d7fc999e415eb4aba7e837b0384c.png",
           "teamName": "Bayern"
@@ -3013,7 +3013,7 @@
           "name": "Eliesse Ben Seghir",
           "lastName": "Ben Seghir",
           "position": 3,
-          "marketValue": 2854331,
+          "marketValue": 3021849,
           "points": 0,
           "imagePath": "content/file/83c0ccd07e1e42d0ac339779564cd1f4.png",
           "teamName": "Leverkusen"
@@ -3024,7 +3024,7 @@
           "name": "Serhou Guirassy",
           "lastName": "Guirassy",
           "position": 4,
-          "marketValue": 30623276,
+          "marketValue": 30734524,
           "points": 246,
           "imagePath": "content/file/f60de765e2e34fce8747b78399dca305.png",
           "teamName": "Dortmund"
@@ -3035,7 +3035,7 @@
           "name": "Fábio Silva",
           "lastName": "Fábio Silva",
           "position": 4,
-          "marketValue": 7759332,
+          "marketValue": 8001104,
           "points": 124,
           "imagePath": "content/file/2aaeda6f5123438e95f1958a10ce0058.png",
           "teamName": "Dortmund"
@@ -3043,29 +3043,29 @@
       ]
     },
     "3906287": {
-      "pointsMatchday": 431,
+      "pointsMatchday": 428,
       "lineup": [
-        {
-          "id": "3419",
-          "teamId": "40",
-          "name": "Matheo Raab",
-          "lastName": "Raab",
-          "position": 1,
-          "marketValue": 6157748,
-          "points": 0,
-          "imagePath": "content/file/6f65c492a85a491b94cd3b8a37bae6f8.png",
-          "teamName": "Union Berlin"
-        },
         {
           "id": "6085",
           "teamId": "9",
           "name": "Dennis Seimen",
           "lastName": "Seimen",
           "position": 1,
-          "marketValue": 6081356,
+          "marketValue": 6017933,
           "points": 0,
           "imagePath": "content/file/6d05c64ea8014ede879dd27ed387ef4e.png",
           "teamName": "Stuttgart"
+        },
+        {
+          "id": "3419",
+          "teamId": "40",
+          "name": "Matheo Raab",
+          "lastName": "Raab",
+          "position": 1,
+          "marketValue": 5664113,
+          "points": 0,
+          "imagePath": "content/file/6f65c492a85a491b94cd3b8a37bae6f8.png",
+          "teamName": "Union Berlin"
         },
         {
           "id": "4563",
@@ -3073,7 +3073,7 @@
           "name": "Loïc Badé",
           "lastName": "Badé",
           "position": 2,
-          "marketValue": 11618703,
+          "marketValue": 11007461,
           "points": 45,
           "imagePath": "content/file/80f11505e8d445ae827aefe485b1c4c7.png",
           "teamName": "Leverkusen"
@@ -3084,7 +3084,7 @@
           "name": "Zeno Van den Bosch",
           "lastName": "Van den Bosch",
           "position": 2,
-          "marketValue": 10572915,
+          "marketValue": 9964895,
           "points": 9,
           "imagePath": "content/file/f19174a181cb4b18a6fb28116d085029.png",
           "teamName": "Union Berlin"
@@ -3095,7 +3095,7 @@
           "name": "Mats Rots",
           "lastName": "Rots",
           "position": 2,
-          "marketValue": 7383837,
+          "marketValue": 7435345,
           "points": 113,
           "imagePath": "content/file/d96dc40ca1674b38aef03dff83ae8ab0.png",
           "teamName": "Hoffenheim"
@@ -3106,8 +3106,8 @@
           "name": "Fabian Rieder",
           "lastName": "Rieder",
           "position": 3,
-          "marketValue": 16092623,
-          "points": 0,
+          "marketValue": 16219657,
+          "points": 213,
           "imagePath": "content/file/bdc22db52af641168bf48d012401bd6b.png",
           "teamName": "Augsburg"
         },
@@ -3117,21 +3117,10 @@
           "name": "Albert Sambi Lokonga",
           "lastName": "Sambi Lokonga",
           "position": 3,
-          "marketValue": 9771142,
+          "marketValue": 9775944,
           "points": 0,
           "imagePath": "content/file/c9c716c7e03d47078ca74b707b1577a9.png",
           "teamName": "Hamburg"
-        },
-        {
-          "id": "2074",
-          "teamId": "15",
-          "name": "Robin Hack",
-          "lastName": "Hack",
-          "position": 3,
-          "marketValue": 9184088,
-          "points": -22,
-          "imagePath": "content/file/05225d0ae1a74293a432710302565e54.png",
-          "teamName": "M'gladbach"
         },
         {
           "id": "2358",
@@ -3139,10 +3128,21 @@
           "name": "Tom Krauß",
           "lastName": "Krauß",
           "position": 3,
-          "marketValue": 9054567,
+          "marketValue": 8784839,
           "points": 43,
           "imagePath": "content/file/55c214adfaba4a839c1bb19ad5a5f8ed.png",
           "teamName": "Köln"
+        },
+        {
+          "id": "2074",
+          "teamId": "15",
+          "name": "Robin Hack",
+          "lastName": "Hack",
+          "position": 3,
+          "marketValue": 8734440,
+          "points": -22,
+          "imagePath": "content/file/05225d0ae1a74293a432710302565e54.png",
+          "teamName": "M'gladbach"
         },
         {
           "id": "15472",
@@ -3150,8 +3150,8 @@
           "name": "Patson Daka",
           "lastName": "Daka",
           "position": 4,
-          "marketValue": 10579641,
-          "points": 0,
+          "marketValue": 9787642,
+          "points": -7,
           "imagePath": "content/file/218db4a2d0cb4f89be008597b2e2d9a7.png",
           "teamName": "Hamburg"
         },
@@ -3161,7 +3161,7 @@
           "name": "Edin Džeko",
           "lastName": "Džeko",
           "position": 4,
-          "marketValue": 7671097,
+          "marketValue": 7321942,
           "points": 0,
           "imagePath": "content/file/31e382a514fb4fd0a7b6bf028b56f839.png",
           "teamName": "Schalke"
@@ -3169,7 +3169,7 @@
       ]
     },
     "3906724": {
-      "pointsMatchday": 883,
+      "pointsMatchday": 893,
       "lineup": [
         {
           "id": "8227",
@@ -3177,10 +3177,21 @@
           "name": "Maarten Vandevoordt",
           "lastName": "Vandevoordt",
           "position": 1,
-          "marketValue": 17418620,
+          "marketValue": 17393862,
           "points": 37,
           "imagePath": "content/file/1aa808600ddb4c5b9883e7caedba5966.png",
           "teamName": "Leipzig"
+        },
+        {
+          "id": "2536",
+          "teamId": "28",
+          "name": "Matthias Köbbing",
+          "lastName": "Köbbing",
+          "position": 1,
+          "marketValue": 500000,
+          "points": 0,
+          "imagePath": "content/file/d7d4847201364186986efefd11b55766.png",
+          "teamName": "Köln"
         },
         {
           "id": "2395",
@@ -3188,21 +3199,10 @@
           "name": "Julian Ryerson",
           "lastName": "Ryerson",
           "position": 2,
-          "marketValue": 25910423,
+          "marketValue": 25637022,
           "points": 103,
           "imagePath": "content/file/2998191f5e674fecb9ddf7762821ebc5.png",
           "teamName": "Dortmund"
-        },
-        {
-          "id": "3759",
-          "teamId": "7",
-          "name": "Miguel Gutiérrez",
-          "lastName": "Gutiérrez",
-          "position": 2,
-          "marketValue": 22150001,
-          "points": 281,
-          "imagePath": "content/file/e1b364b32dcc44539649cf1c88d0eba9.png",
-          "teamName": "Leverkusen"
         },
         {
           "id": "8001",
@@ -3210,21 +3210,10 @@
           "name": "Luka Lochoshvili",
           "lastName": "Lochoshvili",
           "position": 2,
-          "marketValue": 10811151,
+          "marketValue": 10851364,
           "points": 29,
           "imagePath": "content/file/f6faf6be6d674e898fbfa189b9c2ad5c.png",
           "teamName": "Köln"
-        },
-        {
-          "id": "11186",
-          "teamId": "4",
-          "name": "Jeremiaha Maluze",
-          "lastName": "Maluze",
-          "position": 2,
-          "marketValue": 3583195,
-          "points": 0,
-          "imagePath": "content/file/41180e5bf4d046fbb3c24268c49459cb.png",
-          "teamName": "Frankfurt"
         },
         {
           "id": "16369",
@@ -3232,8 +3221,8 @@
           "name": "Raphael Onyedika",
           "lastName": "Onyedika",
           "position": 3,
-          "marketValue": 13833794,
-          "points": 0,
+          "marketValue": 13453995,
+          "points": 97,
           "imagePath": "content/file/4413ed18fac54a58a6e94d858ea72074.png",
           "teamName": "Frankfurt"
         },
@@ -3243,8 +3232,8 @@
           "name": "Jae-Sung Lee",
           "lastName": "Lee",
           "position": 3,
-          "marketValue": 12933997,
-          "points": 0,
+          "marketValue": 13026329,
+          "points": 172,
           "imagePath": "content/file/b0241527f3d94a8c976c749e2004944d.png",
           "teamName": "Mainz"
         },
@@ -3254,7 +3243,7 @@
           "name": "Philipp Sander",
           "lastName": "Sander",
           "position": 3,
-          "marketValue": 10919455,
+          "marketValue": 10455601,
           "points": 106,
           "imagePath": "content/file/fb578835ac86440a8189e44877f9bcc8.png",
           "teamName": "M'gladbach"
@@ -3265,10 +3254,21 @@
           "name": "Santiago Castañeda",
           "lastName": "Castañeda",
           "position": 3,
-          "marketValue": 9177209,
+          "marketValue": 9406105,
           "points": 64,
           "imagePath": "content/file/37ddcd7042414ce59c844f52d87ee300.png",
           "teamName": "Paderborn"
+        },
+        {
+          "id": "16564",
+          "teamId": "15",
+          "name": "Mathieu Nguefack",
+          "lastName": "Nguefack",
+          "position": 3,
+          "marketValue": 2768582,
+          "points": 42,
+          "imagePath": "content/file/e571de447a2c48c996992e7b729aeb55.png",
+          "teamName": "M'gladbach"
         },
         {
           "id": "12763",
@@ -3276,7 +3276,7 @@
           "name": "Emmanuel Latte Lath",
           "lastName": "Latte Lath",
           "position": 4,
-          "marketValue": 10617072,
+          "marketValue": 10039751,
           "points": -16,
           "imagePath": "content/file/d94f619b8cda4f03a559f3b3b10c2ffc.png",
           "teamName": "Union Berlin"
@@ -3287,7 +3287,7 @@
           "name": "Tidiam Gomis",
           "lastName": "Gomis",
           "position": 4,
-          "marketValue": 8824817,
+          "marketValue": 9134370,
           "points": 10,
           "imagePath": "content/file/6fdc632f20f64bac905749a9c2b23a86.png",
           "teamName": "Leipzig"
@@ -3299,7 +3299,7 @@
       "lineup": []
     },
     "4097257": {
-      "pointsMatchday": 489,
+      "pointsMatchday": 458,
       "lineup": [
         {
           "id": "1590",
@@ -3307,7 +3307,7 @@
           "name": "Robin Zentner",
           "lastName": "Zentner",
           "position": 1,
-          "marketValue": 14854026,
+          "marketValue": 14811242,
           "points": 0,
           "imagePath": "content/file/dad81a3053174c60b16a47385173f2d5.png",
           "teamName": "Mainz"
@@ -3318,8 +3318,8 @@
           "name": "Robin Koch",
           "lastName": "Koch",
           "position": 2,
-          "marketValue": 24261761,
-          "points": 0,
+          "marketValue": 24322132,
+          "points": 148,
           "imagePath": "content/file/9ec4a1262fb84d21b3b5458cc97f9cf3.png",
           "teamName": "Frankfurt"
         },
@@ -3329,7 +3329,7 @@
           "name": "Lukeba Castello Jr.",
           "lastName": "Castello Jr.",
           "position": 2,
-          "marketValue": 20793706,
+          "marketValue": 20840498,
           "points": 0,
           "imagePath": "content/file/52117c9891144d3998de1b87b91ca123.png",
           "teamName": "Leipzig"
@@ -3340,7 +3340,7 @@
           "name": "Nikola Katic",
           "lastName": "Katic",
           "position": 2,
-          "marketValue": 10779255,
+          "marketValue": 10566897,
           "points": 113,
           "imagePath": "content/file/74d1dd6590234bdb8e0d4bd266d6c531.png",
           "teamName": "Schalke"
@@ -3351,7 +3351,7 @@
           "name": "Lucas Vázquez",
           "lastName": "Vázquez",
           "position": 2,
-          "marketValue": 7584473,
+          "marketValue": 7155238,
           "points": 28,
           "imagePath": "content/file/1636c5905fe44210aa3526352673cb13.png",
           "teamName": "Leverkusen"
@@ -3362,8 +3362,8 @@
           "name": "Nicolai Remberg",
           "lastName": "Remberg",
           "position": 3,
-          "marketValue": 10341278,
-          "points": 0,
+          "marketValue": 9869896,
+          "points": -9,
           "imagePath": "content/file/8838a772b69f4284a8f34b1d63f406d8.png",
           "teamName": "Hamburg"
         },
@@ -3373,7 +3373,7 @@
           "name": "Ludovit Reis",
           "lastName": "Reis",
           "position": 3,
-          "marketValue": 8703224,
+          "marketValue": 8898648,
           "points": 107,
           "imagePath": "content/file/4b8927aad68d467b96d281d272a77f35.png",
           "teamName": "Bremen"
@@ -3384,7 +3384,7 @@
           "name": "Laurin Ulrich",
           "lastName": "Ulrich",
           "position": 3,
-          "marketValue": 7981067,
+          "marketValue": 7640698,
           "points": 82,
           "imagePath": "content/file/48e50490d07242cb9b0ecf6bcdc688f2.png",
           "teamName": "Paderborn"
@@ -3395,7 +3395,7 @@
           "name": "Kastriot Imeri",
           "lastName": "Imeri",
           "position": 3,
-          "marketValue": 3821652,
+          "marketValue": 3638198,
           "points": 0,
           "imagePath": "content/file/35e95c83657447b79b7b77f552c56abb.png",
           "teamName": "Union Berlin"
@@ -3406,7 +3406,7 @@
           "name": "Thijs Dallinga",
           "lastName": "Dallinga",
           "position": 4,
-          "marketValue": 7606202,
+          "marketValue": 7748075,
           "points": 0,
           "imagePath": "content/file/fab92b426a354aacae1fe7f26e0e6ab0.png",
           "teamName": "Köln"
@@ -3417,7 +3417,7 @@
           "name": "Keisuke Goto",
           "lastName": "Goto",
           "position": 4,
-          "marketValue": 3532064,
+          "marketValue": 3433650,
           "points": 20,
           "imagePath": "content/file/51c1a52f7444432aab2f7b125fe5ac33.png",
           "teamName": "Freiburg"
