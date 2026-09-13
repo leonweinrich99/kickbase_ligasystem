@@ -1,8 +1,8 @@
 {
   "matchday": 3,
-  "totalPoints": 2863,
-  "totalBudget": 149402153,
-  "timestamp": "2026-09-12T22:58:33.803Z",
+  "totalPoints": 2899,
+  "totalBudget": 148754583,
+  "timestamp": "2026-09-13T23:07:48.700Z",
   "lineup": [
     {
       "id": "9513",
@@ -10,7 +10,7 @@
       "name": "Hein",
       "lastName": "Hein",
       "position": 1,
-      "marketValue": 12112222,
+      "marketValue": 12178420,
       "points": 219,
       "imagePath": "content/file/0342913c28ed45b18f310732f9b90b16.png",
       "teamName": "Bremen"
@@ -21,21 +21,10 @@
       "name": "Maluze",
       "lastName": "Maluze",
       "position": 2,
-      "marketValue": 4715564,
+      "marketValue": 4964345,
       "points": 202,
       "imagePath": "content/file/41180e5bf4d046fbb3c24268c49459cb.png",
       "teamName": "Frankfurt"
-    },
-    {
-      "id": "49",
-      "teamId": 5,
-      "name": "Ginter",
-      "lastName": "Ginter",
-      "position": 2,
-      "marketValue": 26897959,
-      "points": 322,
-      "imagePath": "content/file/a8c1cfae192947a6b91e1c32238cf2d6.png",
-      "teamName": "Freiburg"
     },
     {
       "id": "7215",
@@ -43,7 +32,7 @@
       "name": "Makengo",
       "lastName": "Makengo",
       "position": 2,
-      "marketValue": 10265568,
+      "marketValue": 10455155,
       "points": 276,
       "imagePath": "content/file/fd0567aa1f2a49ac97f7b4bdc6aa87a7.png",
       "teamName": "Freiburg"
@@ -54,7 +43,7 @@
       "name": "Wöber",
       "lastName": "Wöber",
       "position": 2,
-      "marketValue": 1780311,
+      "marketValue": 1999207,
       "points": 173,
       "imagePath": "content/file/aa8759270ae54b79851feea4f7769c01.png",
       "teamName": "Schalke"
@@ -65,21 +54,10 @@
       "name": "Katic",
       "lastName": "Katic",
       "position": 2,
-      "marketValue": 10846930,
+      "marketValue": 11073626,
       "points": 198,
       "imagePath": "content/file/74d1dd6590234bdb8e0d4bd266d6c531.png",
       "teamName": "Schalke"
-    },
-    {
-      "id": "3069",
-      "teamId": 3,
-      "name": "Nmecha",
-      "lastName": "Nmecha",
-      "position": 3,
-      "marketValue": 25430076,
-      "points": 270,
-      "imagePath": "content/file/f83b3a24df594aaf81be1d58da773656.png",
-      "teamName": "Dortmund"
     },
     {
       "id": "6081",
@@ -87,7 +65,7 @@
       "name": "Uzun",
       "lastName": "Uzun",
       "position": 3,
-      "marketValue": 25385101,
+      "marketValue": 25436528,
       "points": 279,
       "imagePath": "content/file/d508a06c367e48b4a6ad92a95ee8612d.png",
       "teamName": "Frankfurt"
@@ -98,9 +76,31 @@
       "name": "Engelhardt",
       "lastName": "Engelhardt",
       "position": 3,
-      "marketValue": 10736408,
+      "marketValue": 10868740,
       "points": 399,
       "imagePath": "content/file/026c80a428ef428ba28a09167853739e.png",
+      "teamName": "Freiburg"
+    },
+    {
+      "id": "9507",
+      "teamId": 43,
+      "name": "Nusa",
+      "lastName": "Nusa",
+      "position": 3,
+      "marketValue": 27250379,
+      "points": 340,
+      "imagePath": "content/file/9a7ea9c911e04f9e9cf0fa6c4b57ca54.png",
+      "teamName": "Leipzig"
+    },
+    {
+      "id": "3304",
+      "teamId": 5,
+      "name": "Matanović",
+      "lastName": "Matanović",
+      "position": 4,
+      "marketValue": 22820225,
+      "points": 288,
+      "imagePath": "content/file/6bb42fe3c2da4e1e9f8ad8dc25f1cc85.png",
       "teamName": "Freiburg"
     },
     {
@@ -109,7 +109,7 @@
       "name": "Gregoritsch",
       "lastName": "Gregoritsch",
       "position": 4,
-      "marketValue": 13457178,
+      "marketValue": 13721933,
       "points": 255,
       "imagePath": "content/file/90d8bfeb702e4fc9a12b70e61d1cada3.png",
       "teamName": "Augsburg"
@@ -120,7 +120,7 @@
       "name": "Hložek",
       "lastName": "Hložek",
       "position": 4,
-      "marketValue": 7774836,
+      "marketValue": 7986025,
       "points": 270,
       "imagePath": "content/file/a70373665abe402993add63ac96b77de.png",
       "teamName": "Hoffenheim"
