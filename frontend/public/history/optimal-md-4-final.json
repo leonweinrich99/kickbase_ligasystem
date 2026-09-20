@@ -1,8 +1,8 @@
 {
   "matchday": 4,
-  "totalPoints": 2668,
-  "totalBudget": 149850851,
-  "timestamp": "2026-09-19T22:54:20.061Z",
+  "totalPoints": 2732,
+  "totalBudget": 148730986,
+  "timestamp": "2026-09-20T23:11:36.035Z",
   "lineup": [
     {
       "id": "237",
@@ -10,7 +10,7 @@
       "name": "Neuer",
       "lastName": "Neuer",
       "position": 1,
-      "marketValue": 12345926,
+      "marketValue": 12321706,
       "points": 199,
       "imagePath": "content/file/bf993bb6d6914136b11177795c5f77a9.png",
       "teamName": "Bayern"
@@ -21,7 +21,7 @@
       "name": "Davies",
       "lastName": "Davies",
       "position": 2,
-      "marketValue": 16999781,
+      "marketValue": 17232565,
       "points": 320,
       "imagePath": "content/file/1321be6fb58f47b592a91f17f6b2bf68.png",
       "teamName": "Bayern"
@@ -32,21 +32,10 @@
       "name": "Capaldo",
       "lastName": "Capaldo",
       "position": 2,
-      "marketValue": 6609500,
+      "marketValue": 6647580,
       "points": 218,
       "imagePath": "content/file/bb8ff3d0932d47bd9d7fa4a4f38068ef.png",
       "teamName": "Hamburg"
-    },
-    {
-      "id": "4333",
-      "teamId": 15,
-      "name": "Ullrich",
-      "lastName": "Ullrich",
-      "position": 2,
-      "marketValue": 4498518,
-      "points": 143,
-      "imagePath": "content/file/27f19d9713034a05b1a7dedcb527f48d.png",
-      "teamName": "M'gladbach"
     },
     {
       "id": "1540",
@@ -54,7 +43,7 @@
       "name": "Da Costa",
       "lastName": "Da Costa",
       "position": 2,
-      "marketValue": 7284661,
+      "marketValue": 7103608,
       "points": 168,
       "imagePath": "content/file/d7479cd684eb4636932e2e5651e92411.png",
       "teamName": "Mainz"
@@ -65,7 +54,7 @@
       "name": "Olise",
       "lastName": "Olise",
       "position": 3,
-      "marketValue": 64920865,
+      "marketValue": 64938734,
       "points": 664,
       "imagePath": "content/file/2d1bffc491014bb582c5d1c622b0ee37.png",
       "teamName": "Bayern"
@@ -76,21 +65,10 @@
       "name": "Scherhant",
       "lastName": "Scherhant",
       "position": 3,
-      "marketValue": 12799749,
+      "marketValue": 13040400,
       "points": 248,
       "imagePath": "content/file/bef26d4942154c3483dbb80207a36d4d.png",
       "teamName": "Freiburg"
-    },
-    {
-      "id": "9605",
-      "teamId": 6,
-      "name": "Grønbæk",
-      "lastName": "Grønbæk",
-      "position": 3,
-      "marketValue": 7709073,
-      "points": 177,
-      "imagePath": "content/file/02b24cefd3da410ca1d4639a2fb7ccac.png",
-      "teamName": "Hamburg"
     },
     {
       "id": "7721",
@@ -98,10 +76,21 @@
       "name": "Grüll",
       "lastName": "Grüll",
       "position": 3,
-      "marketValue": 11149764,
+      "marketValue": 11403096,
       "points": 253,
       "imagePath": "content/file/73071b81354346399a14dd6431d4e823.png",
       "teamName": "Bremen"
+    },
+    {
+      "id": "8292",
+      "teamId": 29,
+      "name": "Castañeda",
+      "lastName": "Castañeda",
+      "position": 3,
+      "marketValue": 8483868,
+      "points": 239,
+      "imagePath": "content/file/37ddcd7042414ce59c844f52d87ee300.png",
+      "teamName": "Paderborn"
     },
     {
       "id": "1865",
@@ -109,21 +98,32 @@
       "name": "Poulsen",
       "lastName": "Poulsen",
       "position": 4,
-      "marketValue": 947999,
+      "marketValue": 1320709,
       "points": 134,
       "imagePath": "content/file/b3e645c3a34347808d97e722fcbe2ced.png",
       "teamName": "Hamburg"
     },
     {
-      "id": "9540",
-      "teamId": 15,
-      "name": "Lidberg",
-      "lastName": "Lidberg",
+      "id": "2749",
+      "teamId": 29,
+      "name": "Tigges",
+      "lastName": "Tigges",
       "position": 4,
-      "marketValue": 4585015,
-      "points": 144,
-      "imagePath": "content/file/b759181ffa3546828a627f5efb974b06.png",
-      "teamName": "M'gladbach"
+      "marketValue": 2701222,
+      "points": 150,
+      "imagePath": "content/file/10d7abeb491e42818537662e1ceba8d1.png",
+      "teamName": "Paderborn"
+    },
+    {
+      "id": "3336",
+      "teamId": 29,
+      "name": "Marino",
+      "lastName": "Marino",
+      "position": 4,
+      "marketValue": 3537498,
+      "points": 139,
+      "imagePath": "content/file/197aeeb1c0994cb68e398212e6941782.png",
+      "teamName": "Paderborn"
     }
   ]
 }
