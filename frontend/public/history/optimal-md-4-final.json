@@ -1,8 +1,8 @@
 {
   "matchday": 4,
   "totalPoints": 2627,
-  "totalBudget": 149335363,
-  "timestamp": "2026-10-03T00:24:13.228Z",
+  "totalBudget": 149143657,
+  "timestamp": "2026-10-03T23:46:26.529Z",
   "lineup": [
     {
       "id": "237",
@@ -10,7 +10,7 @@
       "name": "Neuer",
       "lastName": "Neuer",
       "position": 1,
-      "marketValue": 12737109,
+      "marketValue": 12791085,
       "points": 186,
       "imagePath": "content/file/bf993bb6d6914136b11177795c5f77a9.png",
       "teamName": "Bayern"
@@ -21,7 +21,7 @@
       "name": "Davies",
       "lastName": "Davies",
       "position": 2,
-      "marketValue": 19154860,
+      "marketValue": 19333991,
       "points": 320,
       "imagePath": "content/file/1321be6fb58f47b592a91f17f6b2bf68.png",
       "teamName": "Bayern"
@@ -32,7 +32,7 @@
       "name": "Capaldo",
       "lastName": "Capaldo",
       "position": 2,
-      "marketValue": 9140575,
+      "marketValue": 9350122,
       "points": 206,
       "imagePath": "content/file/bb8ff3d0932d47bd9d7fa4a4f38068ef.png",
       "teamName": "Hamburg"
@@ -43,21 +43,21 @@
       "name": "Gutiérrez",
       "lastName": "Gutiérrez",
       "position": 2,
-      "marketValue": 25480491,
+      "marketValue": 25543886,
       "points": 309,
       "imagePath": "content/file/e1b364b32dcc44539649cf1c88d0eba9.png",
       "teamName": "Leverkusen"
     },
     {
-      "id": "8872",
-      "teamId": 29,
-      "name": "Sticker",
-      "lastName": "Sticker",
+      "id": "1540",
+      "teamId": 18,
+      "name": "Da Costa",
+      "lastName": "Da Costa",
       "position": 2,
-      "marketValue": 500000,
-      "points": 116,
-      "imagePath": "content/file/74f3dad539cd4e30aabca849e8e8bc64.png",
-      "teamName": "Paderborn"
+      "marketValue": 4702505,
+      "points": 168,
+      "imagePath": "content/file/d7479cd684eb4636932e2e5651e92411.png",
+      "teamName": "Mainz"
     },
     {
       "id": "2804",
@@ -65,21 +65,10 @@
       "name": "Musiala",
       "lastName": "Musiala",
       "position": 3,
-      "marketValue": 20761916,
+      "marketValue": 20279559,
       "points": 333,
       "imagePath": "content/file/02ac203768a94e169fa6c6b87130a94e.png",
       "teamName": "Bayern"
-    },
-    {
-      "id": "4335",
-      "teamId": 5,
-      "name": "Scherhant",
-      "lastName": "Scherhant",
-      "position": 3,
-      "marketValue": 15153950,
-      "points": 238,
-      "imagePath": "content/file/bef26d4942154c3483dbb80207a36d4d.png",
-      "teamName": "Freiburg"
     },
     {
       "id": "9605",
@@ -87,7 +76,7 @@
       "name": "Grønbæk",
       "lastName": "Grønbæk",
       "position": 3,
-      "marketValue": 5808409,
+      "marketValue": 5474494,
       "points": 170,
       "imagePath": "content/file/02b24cefd3da410ca1d4639a2fb7ccac.png",
       "teamName": "Hamburg"
@@ -98,9 +87,20 @@
       "name": "Grüll",
       "lastName": "Grüll",
       "position": 3,
-      "marketValue": 12992347,
+      "marketValue": 13035640,
       "points": 266,
       "imagePath": "content/file/73071b81354346399a14dd6431d4e823.png",
+      "teamName": "Bremen"
+    },
+    {
+      "id": "17288",
+      "teamId": 10,
+      "name": "Regeer",
+      "lastName": "Regeer",
+      "position": 3,
+      "marketValue": 10780583,
+      "points": 186,
+      "imagePath": "content/file/f4b7ace177bb4699aad8c93d93c91829.png",
       "teamName": "Bremen"
     },
     {
@@ -109,7 +109,7 @@
       "name": "Castañeda",
       "lastName": "Castañeda",
       "position": 3,
-      "marketValue": 10065069,
+      "marketValue": 10270537,
       "points": 235,
       "imagePath": "content/file/37ddcd7042414ce59c844f52d87ee300.png",
       "teamName": "Paderborn"
@@ -120,7 +120,7 @@
       "name": "Becker",
       "lastName": "Becker",
       "position": 4,
-      "marketValue": 17540637,
+      "marketValue": 17581255,
       "points": 248,
       "imagePath": "content/file/e279d94dff1f46ea8a7f16ea6656528c.png",
       "teamName": "Mainz"
