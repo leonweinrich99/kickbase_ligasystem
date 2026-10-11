@@ -14,7 +14,9 @@
 // (siehe pokal-data.json meta.roundSchedule, z.B. Sechzehntelfinale = BL-Spieltag 5).
 // Eine Runde wird ausgewertet, sobald ihr Rundendatum mind. 3 Tage zurückliegt
 // (Puffer für den Fr-Mo-Spieltag) UND Kickbase den Spieltag nicht mehr als
-// laufend ("cur") markiert. Das Skript läuft täglich (update-pokal-results.yml).
+// laufend ("cur") markiert. Bis dahin werden bei jedem Lauf vorläufige Punkte
+// (match.provisional = true, ohne Sieger) eingetragen. Das Skript läuft täglich
+// (update-pokal-results.yml).
 //
 // Unentschieden werden NICHT automatisch aufgelöst (winner bleibt null) - dafür
 // gibt es aktuell keine festgelegte Regel. Solche Fälle werden klar geloggt.
@@ -191,7 +193,22 @@ async function run() {
         evaluationDate.setDate(evaluationDate.getDate() + EVALUATION_BUFFER_DAYS);
 
         if (today < evaluationDate) {
-            console.log(`${round.scheduleName} (BL-Spieltag ${day}) noch nicht beendet - Auswertung ab ${evaluationDate.toLocaleDateString('de-DE')}.`);
+            // Spieltag läuft (oder hat noch nicht begonnen): vorläufige Punkte
+            // eintragen, sobald Kickbase welche liefert - ohne Sieger.
+            let liveCount = 0;
+            round.keys.forEach(key => {
+                (pokalData[key] || []).forEach(match => {
+                    if (match.winner || isPlaceholderName(match.p1) || isPlaceholderName(match.p2)) return;
+                    const p1Live = pointsByName[match.p1]?.[day]?.mdp;
+                    const p2Live = pointsByName[match.p2]?.[day]?.mdp;
+                    if (p1Live == null && p2Live == null) return;
+                    match.score1 = p1Live ?? 0;
+                    match.score2 = p2Live ?? 0;
+                    match.provisional = true;
+                    liveCount++;
+                });
+            });
+            console.log(`${round.scheduleName} (BL-Spieltag ${day}) noch nicht beendet - ${liveCount} Duelle mit vorläufigen Punkten, finale Auswertung ab ${evaluationDate.toLocaleDateString('de-DE')}.`);
             return;
         }
 
@@ -210,6 +227,7 @@ async function run() {
 
                 match.score1 = p1Points;
                 match.score2 = p2Points;
+                delete match.provisional;
 
                 if (p1Points === p2Points) {
                     console.warn(`⚠ ${match.id}: ${match.p1} vs ${match.p2} steht ${p1Points}:${p2Points} - UNENTSCHIEDEN, Sieger muss manuell eingetragen werden.`);

@@ -64,6 +64,9 @@ const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}
           <span className="text-gray-600 mx-0.5">:</span>
           <span className={isWinner2 ? 'text-green-400' : 'text-gray-500'}>{score2Display}</span>
         </div>
+        {match.provisional && hasResult && (
+          <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wide text-amber-400/80 leading-none">vorläufig</span>
+        )}
       </div>
 
       {/* Spieler 2 (rechts): Name links daneben, Avatar aussen an der
