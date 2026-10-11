@@ -34,7 +34,8 @@ const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}
   const isMember1 = pokalMembers && !isPlaceholderName(match.p1) && pokalMembers.has(match.p1);
   const isMember2 = pokalMembers && !isPlaceholderName(match.p2) && pokalMembers.has(match.p2);
 
-  const hasResult = Boolean(match.winner) || (match.score1 || 0) > 0 || (match.score2 || 0) > 0;
+  // Auch negative Spieltagspunkte (z.B. -626) sind ein echtes Ergebnis.
+  const hasResult = Boolean(match.winner) || Boolean(match.provisional) || (match.score1 || 0) !== 0 || (match.score2 || 0) !== 0;
   const score1Display = hasResult ? (match.score1 ?? 0) : '–';
   const score2Display = hasResult ? (match.score2 ?? 0) : '–';
 
