@@ -219,6 +219,32 @@ async function run() {
                 const p1Points = matchdayPoints(match.p1, day);
                 const p2Points = matchdayPoints(match.p2, day);
 
+                // Nichtantritt: Wer der Pokal-Liga nie beigetreten ist, verliert
+                // kampflos - auch wenn der Gegner Minuspunkte geholt hat.
+                const p1Member = match.p1 in pointsByName;
+                const p2Member = match.p2 in pointsByName;
+                if (p1Member !== p2Member) {
+                    const memberPoints = p1Member ? p1Points : p2Points;
+                    if (memberPoints == null) {
+                        console.warn(`⚠ ${match.id}: Spieltag ${day} für "${p1Member ? match.p1 : match.p2}" noch nicht final - übersprungen.`);
+                        missingDataCount++;
+                        return;
+                    }
+                    match.score1 = p1Member ? memberPoints : 0;
+                    match.score2 = p2Member ? memberPoints : 0;
+                    match.winner = p1Member ? 1 : 2;
+                    match.walkover = true;
+                    delete match.provisional;
+                    const winnerName = p1Member ? match.p1 : match.p2;
+                    resolvedCount++;
+                    console.log(`✓ ${match.id}: ${winnerName} zieht kampflos weiter (Nichtantritt von "${p1Member ? match.p2 : match.p1}").`);
+                    const placeholder = winnerPlaceholders[match.id];
+                    if (placeholder && propagateWinner(pokalData, placeholder, winnerName)) {
+                        console.log(`  -> als "${placeholder}" in der nächsten Runde eingetragen.`);
+                    }
+                    return;
+                }
+
                 if (p1Points == null || p2Points == null) {
                     console.warn(`⚠ ${match.id}: Keine finalen Spieltag-${day}-Punkte für "${match.p1}" oder "${match.p2}" in Pokal-Liga "${POKAL_LEAGUE_NAME}" (nicht Mitglied, Name abweichend oder Spieltag läuft noch) - übersprungen.`);
                     missingDataCount++;
