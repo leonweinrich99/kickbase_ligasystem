@@ -395,6 +395,7 @@ module.exports = {
     fetchIndependentLeaguesData,
     fetchSingleLeagueData,
     getConfiguredKickbaseAccounts,
+    loadExcludedManagerNames,
     LEAGUE_DEFS
 };
 

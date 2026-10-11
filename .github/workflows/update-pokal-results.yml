@@ -1,13 +1,11 @@
 name: Update Pokal-Ergebnisse
 
 # Wertet die Pokal-Duelle aus, sobald ein Pokal-Spieltag final abgerechnet ist.
-# Das eigentliche Timing steuert das Skript SELBST anhand der in pokal-data.json
-# hinterlegten Rundendaten (meta.roundSchedule) - nicht anhand von Kickbases
-# eigenem, mehrdeutigem "aktueller Spieltag"-Zähler. Deshalb läuft dieser
-# Workflow bewusst TÄGLICH: vor jeder Pokal-Runde sichert er laufend die
-# Vergleichsbasis (Punktestand VOR dem Spieltag), nach Ablauf der Runde
-# (Rundendatum + 3 Tage Puffer für den Fr-Mo-Spieltag) wertet er sie aus.
-# Details siehe Kommentar in backend/scripts/fetch-pokal-arena.js.
+# Das Timing steuert das Skript SELBST anhand der in pokal-data.json hinterlegten
+# Rundendaten (meta.roundSchedule): Rundendatum + 3 Tage Puffer für den
+# Fr-Mo-Spieltag. Die Punkte kommen pro Manager und Spieltag direkt von Kickbase,
+# daher läuft der Workflow täglich und wertet jede fällige Runde aus.
+# Details (Spielmodus gpm=4, Punkte pro Manager) siehe Kommentar in backend/scripts/fetch-pokal-arena.js.
 on:
   schedule:
     - cron: '0 6 * * *' # täglich 06:00 UTC
@@ -51,7 +49,7 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git fetch origin main
           git checkout main
-          git add frontend/public/pokal-data.json frontend/public/history/_pokal_points_snapshot.json frontend/public/history/pokal-league-members.json
+          git add frontend/public/pokal-data.json frontend/public/history/pokal-league-members.json
           git commit -m "Automatisches Update: Pokal-Ergebnisse [skip ci]" || echo "Keine Änderungen zu commiten"
           git pull origin main --rebase -X ours || true
           git push origin main

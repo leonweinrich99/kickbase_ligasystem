@@ -2,34 +2,31 @@
 // Pokal-Teilnehmer gemeinsam stehen) die Spieltagspunkte und trägt sie in die
 // laufenden Pokal-Duelle (pokal-data.json) ein.
 //
-// Kickbase liefert über die Ranking-API nur die KUMULIERTE Saison-Gesamtpunktzahl
-// (u.sp), keine "Punkte nur für diesen Spieltag". Deshalb braucht dieses Skript
-// einen Punktestand von VOR dem jeweiligen Pokal-Spieltag als Vergleichsbasis.
+// WICHTIG: Die Pokal-Liga läuft in einem anderen Kickbase-Spielmodus (gpm=4) als
+// LIGA1-3 (gpm=1). In diesem Modus liefert /leagues/<id>/ranking IMMER eine leere
+// "us"-Liste (seit Saisonstart 26/27, vorher kamen dort noch Daten) - auch mit
+// ?dayNumber=N. Deshalb holen wir die Teilnehmer über /settings/managers und die
+// Punkte PRO SPIELTAG direkt pro Manager über /managers/<uid>/performance
+// (Feld it[].it[].mdp je "day"). Ein Vorher-Punktestand als Vergleichsbasis ist
+// damit nicht mehr nötig - jede Runde kann auch nachträglich ausgewertet werden.
 //
-// WICHTIG: Der erste Pokal-Spieltag ist NICHT der erste Bundesliga-Spieltag
+// Timing: Der erste Pokal-Spieltag ist NICHT der erste Bundesliga-Spieltag
 // (siehe pokal-data.json meta.roundSchedule, z.B. Sechzehntelfinale = BL-Spieltag 5).
-// Wir nutzen deshalb NICHT Kickbases eigenen (mehrdeutigen) "aktueller Spieltag"-
-// Zähler als Zeitsteuerung, sondern die bereits hinterlegten Kalenderdaten pro
-// Runde (roundSchedule[...].date):
-//   - Liegt "heute" VOR dem Rundendatum: Punktestand als Vergleichsbasis für
-//     diese Runde sichern (wird bei jedem Lauf aufgefrischt, bis die Runde beginnt).
-//   - Liegt "heute" mind. 3 Tage NACH dem Rundendatum (Puffer für Fr-Mo-Spieltag):
-//     Runde auswerten, sofern eine Vergleichsbasis vorhanden ist.
-//   - Dazwischen (Spieltag läuft gerade): nichts tun, abwarten.
-// Das Skript sollte daher regelmäßig laufen (siehe update-pokal-results.yml),
-// nicht nur einmal am vermuteten Auswertungstag.
+// Eine Runde wird ausgewertet, sobald ihr Rundendatum mind. 3 Tage zurückliegt
+// (Puffer für den Fr-Mo-Spieltag) UND Kickbase den Spieltag nicht mehr als
+// laufend ("cur") markiert. Das Skript läuft täglich (update-pokal-results.yml).
 //
 // Unentschieden werden NICHT automatisch aufgelöst (winner bleibt null) - dafür
 // gibt es aktuell keine festgelegte Regel. Solche Fälle werden klar geloggt.
 
 const fs = require('fs');
 const path = require('path');
-const { fetchSingleLeagueData, getConfiguredKickbaseAccounts } = require('../kickbase');
+const { getConfiguredKickbaseAccounts, loadExcludedManagerNames } = require('../kickbase');
 
 const POKAL_LEAGUE_NAME = process.env.KICKBASE_LEAGUE_POKAL_NAME || 'Pokal';
 const POKAL_DATA_PATH = path.join(__dirname, '../../frontend/public/pokal-data.json');
-const SNAPSHOT_PATH = path.join(__dirname, '../../frontend/public/history/_pokal_points_snapshot.json');
 const MEMBERS_PATH = path.join(__dirname, '../../frontend/public/history/pokal-league-members.json');
+const API_BASE = 'https://api.kickbase.com/v4';
 const EVALUATION_BUFFER_DAYS = 3; // Bundesliga-Spieltage laufen Fr-Mo, daher 3 Tage Puffer ab dem Rundendatum
 
 // Jeder Rundenblock: seine beiden Bracket-Hälften, der Schlüssel in
@@ -52,37 +49,59 @@ function parseGermanDate(str) {
     return new Date(year, month - 1, day);
 }
 
-function loadSnapshots() {
-    try {
-        if (fs.existsSync(SNAPSHOT_PATH)) return JSON.parse(fs.readFileSync(SNAPSHOT_PATH, 'utf8'));
-    } catch (e) {
-        console.warn('Konnte Pokal-Punkte-Snapshot nicht lesen:', e.message);
-    }
-    return {};
+async function kickbaseGet(url, token) {
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) throw new Error(`HTTP ${res.status} bei ${url}`);
+    return res.json();
 }
 
-function saveSnapshots(snapshots) {
-    fs.writeFileSync(SNAPSHOT_PATH, JSON.stringify(snapshots, null, 2));
+async function loginAndFindPokalLeague(email, pass) {
+    const loginRes = await fetch(`${API_BASE}/user/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ em: email, loy: false, pass, rep: {} })
+    });
+    const loginData = await loginRes.json();
+    if (!loginData.tkn) return null;
+
+    const leaguesData = await kickbaseGet(`${API_BASE}/leagues`, loginData.tkn);
+    const league = (leaguesData?.lins || []).find(l => (l.n || '').toLowerCase() === POKAL_LEAGUE_NAME.toLowerCase());
+    return league ? { token: loginData.tkn, leagueId: league.i } : null;
 }
 
-async function fetchPokalLeaguePoints() {
+// Liefert { managerName: { [day]: { mdp, cur } } } für alle echten Pokal-Teilnehmer.
+async function fetchPokalMatchdayPoints() {
     const accounts = getConfiguredKickbaseAccounts();
     if (accounts.length === 0) {
         throw new Error('Kein Kickbase-Account konfiguriert (KICKBASE_EMAIL.../PASS... fehlen).');
     }
 
-    let lastError = null;
+    let session = null;
     for (const account of accounts) {
-        const result = await fetchSingleLeagueData(account.email, account.pass, POKAL_LEAGUE_NAME);
-        if (!result.error) {
-            console.log(`Pokal-Liga "${POKAL_LEAGUE_NAME}" gefunden über Account ${account.email}, ${result.users.length} Teilnehmer.`);
-            const points = {};
-            result.users.forEach(u => { points[u.n] = u.sp || 0; });
-            return points;
-        }
-        lastError = result.error;
+        session = await loginAndFindPokalLeague(account.email, account.pass);
+        if (session) break;
     }
-    throw new Error(`Pokal-Liga "${POKAL_LEAGUE_NAME}" in keinem konfigurierten Account gefunden. Letzter Fehler: ${lastError}`);
+    if (!session) throw new Error(`Pokal-Liga "${POKAL_LEAGUE_NAME}" in keinem konfigurierten Account gefunden.`);
+
+    const { token, leagueId } = session;
+    const excluded = loadExcludedManagerNames();
+    const managersData = await kickbaseGet(`${API_BASE}/leagues/${leagueId}/settings/managers`, token);
+    const managers = (managersData.us || []).filter(u => !excluded.includes(u.n));
+    if (managers.length === 0) {
+        throw new Error(`Pokal-Liga "${POKAL_LEAGUE_NAME}" (ID ${leagueId}) liefert 0 Teilnehmer - API-Antwort prüfen.`);
+    }
+    console.log(`Pokal-Liga "${POKAL_LEAGUE_NAME}" (ID ${leagueId}) gefunden, ${managers.length} Teilnehmer.`);
+
+    const pointsByName = {};
+    for (const manager of managers) {
+        const perf = await kickbaseGet(`${API_BASE}/leagues/${leagueId}/managers/${manager.i}/performance`, token);
+        // Ein Eintrag pro Saison - der letzte ist die laufende.
+        const season = (perf.it || [])[(perf.it || []).length - 1];
+        const days = {};
+        (season?.it || []).forEach(d => { days[d.day] = { mdp: d.mdp, cur: !!d.cur }; });
+        pointsByName[manager.n] = days;
+    }
+    return pointsByName;
 }
 
 // Für jede Match-ID: Platzhalter-String, den eine SPÄTERE Runde für ihren Sieger
@@ -124,7 +143,7 @@ async function run() {
     const pokalData = JSON.parse(fs.readFileSync(POKAL_DATA_PATH, 'utf8'));
     const roundSchedule = pokalData.meta?.roundSchedule || {};
 
-    const currentPoints = await fetchPokalLeaguePoints();
+    const pointsByName = await fetchPokalMatchdayPoints();
 
     // Für den grünen Haken im Pokal-Bracket (Pokal.jsx): welche Namen sind
     // TATSÄCHLICH schon Mitglied der Kickbase-Liga "Pokal"? Wird bei JEDEM Lauf
@@ -132,18 +151,24 @@ async function run() {
     fs.writeFileSync(MEMBERS_PATH, JSON.stringify({
         updatedAt: new Date().toISOString(),
         leagueName: POKAL_LEAGUE_NAME,
-        members: Object.keys(currentPoints).sort()
+        members: Object.keys(pointsByName).sort()
     }, null, 2));
 
-    const snapshots = loadSnapshots(); // { "<matchday>": { name: points, capturedAt } }
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     const winnerPlaceholders = buildWinnerPlaceholders(pokalData);
-    let snapshotsChanged = false;
     let resolvedCount = 0;
     let tieCount = 0;
     let missingDataCount = 0;
+
+    // Spieltagspunkte eines Managers. Spieltag vorbei, aber kein mdp -> keine
+    // Aufstellung/0 Punkte. null = (noch) keine verwertbaren Daten.
+    const matchdayPoints = (name, day) => {
+        const entry = pointsByName[name]?.[day];
+        if (!entry || entry.cur) return null;
+        return entry.mdp ?? 0;
+    };
 
     ROUND_SEQUENCE.forEach(round => {
         const schedule = roundSchedule[round.scheduleName];
@@ -151,28 +176,12 @@ async function run() {
             console.warn(`⚠ Keine roundSchedule-Angabe für "${round.scheduleName}" gefunden - übersprungen.`);
             return;
         }
-        const matchday = String(schedule.matchday);
-        const roundDate = parseGermanDate(schedule.date);
-        const evaluationDate = new Date(roundDate);
+        const day = schedule.matchday;
+        const evaluationDate = parseGermanDate(schedule.date);
         evaluationDate.setDate(evaluationDate.getDate() + EVALUATION_BUFFER_DAYS);
 
-        if (today < roundDate) {
-            // Vor dem Spieltag: Vergleichsbasis sichern/auffrischen.
-            snapshots[matchday] = { points: currentPoints, capturedAt: new Date().toISOString() };
-            snapshotsChanged = true;
-            return;
-        }
-
         if (today < evaluationDate) {
-            // Spieltag läuft gerade (im Puffer-Fenster) - abwarten, nichts anfassen.
-            console.log(`${round.scheduleName} (BL-Spieltag ${schedule.matchday}) läuft gerade oder ist zu frisch beendet - noch nicht auswerten.`);
-            return;
-        }
-
-        // Auswertungs-Fenster erreicht.
-        const baseline = snapshots[matchday]?.points;
-        if (!baseline) {
-            console.warn(`⚠ ${round.scheduleName} (BL-Spieltag ${schedule.matchday}) ist vorbei, aber es gibt keine Vergleichsbasis von VOR dem Spieltag - kann nicht ausgewertet werden. Das Skript muss vor diesem Spieltag mindestens einmal gelaufen sein.`);
+            console.log(`${round.scheduleName} (BL-Spieltag ${day}) noch nicht beendet - Auswertung ab ${evaluationDate.toLocaleDateString('de-DE')}.`);
             return;
         }
 
@@ -180,19 +189,14 @@ async function run() {
             (pokalData[key] || []).forEach(match => {
                 if (match.winner || isPlaceholderName(match.p1) || isPlaceholderName(match.p2)) return;
 
-                const p1Base = baseline[match.p1];
-                const p2Base = baseline[match.p2];
-                const p1Now = currentPoints[match.p1];
-                const p2Now = currentPoints[match.p2];
+                const p1Points = matchdayPoints(match.p1, day);
+                const p2Points = matchdayPoints(match.p2, day);
 
-                if (p1Now == null || p2Now == null || p1Base == null || p2Base == null) {
-                    console.warn(`⚠ ${match.id}: "${match.p1}" oder "${match.p2}" nicht in Pokal-Liga "${POKAL_LEAGUE_NAME}" gefunden (weder jetzt noch in der Vergleichsbasis) - übersprungen.`);
+                if (p1Points == null || p2Points == null) {
+                    console.warn(`⚠ ${match.id}: Keine finalen Spieltag-${day}-Punkte für "${match.p1}" oder "${match.p2}" in Pokal-Liga "${POKAL_LEAGUE_NAME}" (nicht Mitglied, Name abweichend oder Spieltag läuft noch) - übersprungen.`);
                     missingDataCount++;
                     return;
                 }
-
-                const p1Points = p1Now - p1Base;
-                const p2Points = p2Now - p2Base;
 
                 match.score1 = p1Points;
                 match.score2 = p2Points;
@@ -217,9 +221,8 @@ async function run() {
     });
 
     fs.writeFileSync(POKAL_DATA_PATH, JSON.stringify(pokalData, null, 2));
-    if (snapshotsChanged) saveSnapshots(snapshots);
 
-    console.log(`\nFertig: ${resolvedCount} Duelle ausgewertet, ${tieCount} Unentschieden (manuell prüfen), ${missingDataCount} mit fehlenden Namen.`);
+    console.log(`\nFertig: ${resolvedCount} Duelle ausgewertet, ${tieCount} Unentschieden (manuell prüfen), ${missingDataCount} ohne Daten.`);
 }
 
 run().catch(err => {
