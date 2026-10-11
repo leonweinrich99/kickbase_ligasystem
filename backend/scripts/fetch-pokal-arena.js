@@ -85,8 +85,18 @@ async function fetchPokalMatchdayPoints() {
 
     const { token, leagueId } = session;
     const excluded = loadExcludedManagerNames();
-    const managersData = await kickbaseGet(`${API_BASE}/leagues/${leagueId}/settings/managers`, token);
-    const managers = (managersData.us || []).filter(u => !excluded.includes(u.n));
+    // /settings/managers liefert max. 25 Einträge pro Seite (tc = Gesamtzahl),
+    // weitere Seiten über ?start=N - sonst fehlen alphabetisch hintere Manager.
+    const allManagers = [];
+    let total = Infinity;
+    while (allManagers.length < total) {
+        const page = await kickbaseGet(`${API_BASE}/leagues/${leagueId}/settings/managers?start=${allManagers.length}`, token);
+        const pageUsers = page.us || [];
+        if (pageUsers.length === 0) break;
+        allManagers.push(...pageUsers);
+        total = page.tc ?? allManagers.length;
+    }
+    const managers = allManagers.filter(u => !excluded.includes(u.n));
     if (managers.length === 0) {
         throw new Error(`Pokal-Liga "${POKAL_LEAGUE_NAME}" (ID ${leagueId}) liefert 0 Teilnehmer - API-Antwort prüfen.`);
     }
