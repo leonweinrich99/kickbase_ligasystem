@@ -38,33 +38,23 @@ for suffix in ["", "_2", "_3", "_4"]:
     if em and pw:
         accounts.append((suffix or "_1", em, pw))
 
-for label, em, pw in accounts:
-    print(f"\n=================== Account {label} ===================")
-    try:
-        token = login(em, pw)
-    except Exception as e:
-        print("Login fehlgeschlagen:", e)
-        continue
-
-    _, leagues = get(f"{BASE_URL}/leagues", token)
-    leagues_list = leagues.get("lins") or leagues.get("leagues") or [] if isinstance(leagues, dict) else []
-    for l in leagues_list:
-        print(f"Liga: {l.get('n')!r} id={l.get('i')} | weitere Keys: { {k: v for k, v in l.items() if k not in ('n', 'i')} }")
-
-    for l in leagues_list:
-        name, lid = l.get("n") or "", l.get("i")
-        if "pokal" not in name.lower() and "liga 1" not in name.lower():
-            continue
-        print(f"\n######## {name} ({lid}) ########")
-        for ep in [
-            "ranking",
-            "ranking?dayNumber=5",
-            "ranking?dayNumber=6",
-            "overview",
-            "me",
-            "settings",
-            "settings/managers",
-            "activitiesFeed?start=0",
-        ]:
-            status, body = get(f"{BASE_URL}/leagues/{lid}/{ep}", token)
-            summarize(f"{name} /{ep}", status, body)
+# Runde 2: Pokal (gpm=4) liefert kein Ranking - Punkte pro Manager suchen.
+label, em, pw = [a for a in accounts if a[0] == "_4"][0]
+token = login(em, pw)
+_, leagues = get(f"{BASE_URL}/leagues", token)
+lid = next(l["i"] for l in leagues["lins"] if l["n"] == "Pokal")
+_, managers = get(f"{BASE_URL}/leagues/{lid}/settings/managers", token)
+sample = [u for u in managers["us"] if u["n"] != "Admin"][:2]
+for u in sample:
+    uid = u["i"]
+    print(f"\n######## Manager {u['n']} ({uid}) ########")
+    for ep in [
+        f"managers/{uid}/dashboard",
+        f"managers/{uid}/performance",
+        f"users/{uid}/teamcenter?dayNumber=4",
+        f"users/{uid}/teamcenter?dayNumber=5",
+        f"users/{uid}/stats",
+        f"ranking?dayNumber=4",
+    ]:
+        status, body = get(f"{BASE_URL}/leagues/{lid}/{ep}", token)
+        summarize(f"Pokal /{ep}", status, body, limit=2500)
