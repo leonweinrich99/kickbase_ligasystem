@@ -1,8 +1,8 @@
 {
   "matchday": 5,
-  "totalPoints": 2967,
-  "totalBudget": 147757722,
-  "timestamp": "2026-10-11T00:14:54.637Z",
+  "totalPoints": 2980,
+  "totalBudget": 147920081,
+  "timestamp": "2026-10-12T00:28:37.739Z",
   "lineup": [
     {
       "id": "8227",
@@ -10,7 +10,7 @@
       "name": "Vandevoordt",
       "lastName": "Vandevoordt",
       "position": 1,
-      "marketValue": 16411197,
+      "marketValue": 16480627,
       "points": 335,
       "imagePath": "content/file/1aa808600ddb4c5b9883e7caedba5966.png",
       "teamName": "Leipzig"
@@ -21,7 +21,7 @@
       "name": "Schlotterbeck",
       "lastName": "Schlotterbeck",
       "position": 2,
-      "marketValue": 27690366,
+      "marketValue": 27765268,
       "points": 284,
       "imagePath": "content/file/bc913364cbca4d48b0393c36b9f01728.png",
       "teamName": "Dortmund"
@@ -32,7 +32,7 @@
       "name": "Muheim",
       "lastName": "Muheim",
       "position": 2,
-      "marketValue": 1011586,
+      "marketValue": 1329052,
       "points": 243,
       "imagePath": "content/file/6b31cba3484c46c98c5575fe4f79b349.png",
       "teamName": "Hamburg"
@@ -43,7 +43,7 @@
       "name": "Andrich",
       "lastName": "Andrich",
       "position": 2,
-      "marketValue": 5095507,
+      "marketValue": 5136113,
       "points": 228,
       "imagePath": "content/file/0cdcdb27004443c09d112462f32ace2c.png",
       "teamName": "Leverkusen"
@@ -54,7 +54,7 @@
       "name": "Caci",
       "lastName": "Caci",
       "position": 2,
-      "marketValue": 9389000,
+      "marketValue": 9693312,
       "points": 311,
       "imagePath": "content/file/5bb349b2622049a7aa73a59edcec1781.png",
       "teamName": "Mainz"
@@ -65,7 +65,7 @@
       "name": "Führich",
       "lastName": "Führich",
       "position": 3,
-      "marketValue": 17604888,
+      "marketValue": 17804939,
       "points": 230,
       "imagePath": "content/file/9a804bbfd5e14d84a33ca8e11ba3feb7.png",
       "teamName": "Stuttgart"
@@ -76,21 +76,32 @@
       "name": "Stiller",
       "lastName": "Stiller",
       "position": 3,
-      "marketValue": 27345918,
+      "marketValue": 27422065,
       "points": 273,
       "imagePath": "content/file/11b094668fbf453fa70c2bcce7ffa8e8.png",
       "teamName": "Stuttgart"
     },
     {
-      "id": "8381",
-      "teamId": 40,
-      "name": "Burcu",
-      "lastName": "Burcu",
+      "id": "3281",
+      "teamId": 10,
+      "name": "Reis",
+      "lastName": "Reis",
       "position": 3,
-      "marketValue": 1559817,
-      "points": 175,
-      "imagePath": "content/file/9ee1048c9191462c82b58e23f1dbf647.png",
-      "teamName": "Union Berlin"
+      "marketValue": 6846251,
+      "points": 198,
+      "imagePath": "content/file/4b8927aad68d467b96d281d272a77f35.png",
+      "teamName": "Bremen"
+    },
+    {
+      "id": "7219",
+      "teamId": 28,
+      "name": "Jóhannesson",
+      "lastName": "Jóhannesson",
+      "position": 3,
+      "marketValue": 4176160,
+      "points": 195,
+      "imagePath": "content/file/2922eb48335343ccb79b49b03af03818.png",
+      "teamName": "Köln"
     },
     {
       "id": "11008",
@@ -98,21 +109,10 @@
       "name": "Banzuzi",
       "lastName": "Banzuzi",
       "position": 3,
-      "marketValue": 6945154,
+      "marketValue": 7224196,
       "points": 275,
       "imagePath": "content/file/a9c36464a61049d0b9acd73d6c4e9c96.png",
       "teamName": "Leipzig"
-    },
-    {
-      "id": "3204",
-      "teamId": 14,
-      "name": "Conté",
-      "lastName": "Conté",
-      "position": 4,
-      "marketValue": 10847920,
-      "points": 205,
-      "imagePath": "content/file/fa595ccc62ce4fdeafca00ccfc95088b.png",
-      "teamName": "Hoffenheim"
     },
     {
       "id": "2687",
@@ -120,7 +120,7 @@
       "name": "Nkunku",
       "lastName": "Nkunku",
       "position": 4,
-      "marketValue": 23856369,
+      "marketValue": 24042098,
       "points": 408,
       "imagePath": "content/file/bf619920e0d34e138aa57fe52dbcde21.png",
       "teamName": "Leipzig"
