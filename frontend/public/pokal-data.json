@@ -14,18 +14,17 @@
       "p1": "Curl3z",
       "p2": "Sebastian",
       "score1": 0,
-      "score2": -626,
-      "winner": null,
-      "provisional": true
+      "score2": -627,
+      "winner": 2,
+      "walkover": true
     },
     {
       "id": "m3",
       "p1": "DeinHomieEnobi",
       "p2": "Geißbock",
-      "score1": 1412,
-      "score2": 1304,
-      "winner": null,
-      "provisional": true
+      "score1": 1495,
+      "score2": 1289,
+      "winner": 1
     },
     {
       "id": "m4",
@@ -40,19 +39,18 @@
       "id": "m5",
       "p1": "Leon Weinrich",
       "p2": "Fynn",
-      "score1": 1234,
-      "score2": 1205,
-      "winner": null,
-      "provisional": true
+      "score1": 1238,
+      "score2": 1230,
+      "winner": 1
     },
     {
       "id": "m6",
       "p1": "Wat Mamba",
       "p2": "casper",
-      "score1": 1188,
-      "score2": 1333,
-      "winner": null,
-      "provisional": true
+      "score1": 0,
+      "score2": 1365,
+      "winner": 2,
+      "walkover": true
     },
     {
       "id": "m7",
@@ -67,10 +65,9 @@
       "id": "m8",
       "p1": "leongarcon",
       "p2": "Marci",
-      "score1": 1197,
-      "score2": 1104,
-      "winner": null,
-      "provisional": true
+      "score1": 1198,
+      "score2": 1078,
+      "winner": 1
     }
   ],
   "roundOf32Right": [
@@ -78,10 +75,9 @@
       "id": "m9",
       "p1": "JulianD47",
       "p2": "kushler",
-      "score1": 1295,
+      "score1": 1318,
       "score2": 0,
-      "winner": null,
-      "provisional": true
+      "winner": 1
     },
     {
       "id": "m10",
@@ -96,69 +92,65 @@
       "id": "m11",
       "p1": "Ansgar Trinkmann",
       "p2": "KönigMichi",
-      "score1": 1466,
-      "score2": 890,
-      "winner": null,
-      "provisional": true
+      "score1": 1479,
+      "score2": 951,
+      "winner": 1
     },
     {
       "id": "m12",
       "p1": "J0tt",
       "p2": "Flocke",
-      "score1": 1468,
+      "score1": 1418,
       "score2": 0,
-      "winner": null,
-      "provisional": true
+      "winner": 1
     },
     {
       "id": "m13",
       "p1": "Mo6",
       "p2": "tjalf",
-      "score1": 1383,
-      "score2": 1275,
-      "winner": null,
-      "provisional": true
+      "score1": 1368,
+      "score2": 1292,
+      "winner": 1
     },
     {
       "id": "m14",
       "p1": "thep",
       "p2": "Puliester",
       "score1": 0,
-      "score2": 1355,
-      "winner": null,
-      "provisional": true
+      "score2": 1398,
+      "winner": 2,
+      "walkover": true
     },
     {
       "id": "m15",
       "p1": "AchtSieben",
       "p2": "franzi__j",
-      "score1": 1170,
-      "score2": 875,
-      "winner": null,
-      "provisional": true
+      "score1": 1173,
+      "score2": 894,
+      "winner": 1
     },
     {
       "id": "m16",
       "p1": "Stomping Tantrum",
       "p2": "CarlCarlsenCarlsen",
-      "score1": 1004,
+      "score1": 1027,
       "score2": 0,
-      "winner": null,
-      "provisional": true
+      "winner": 1,
+      "walkover": true
     }
   ],
   "roundOf16Left": [
     {
       "id": "m17",
       "p1": "Justin",
-      "p2": "Sieger SF2",
+      "p2": "Sebastian",
       "score1": 0,
       "score2": 0,
       "winner": null
     },
     {
       "id": "m18",
-      "p1": "Sieger SF3",
+      "p1": "DeinHomieEnobi",
       "p2": "Vinnie JR",
       "score1": 0,
       "score2": 0,
@@ -166,8 +158,8 @@
     },
     {
       "id": "m19",
-      "p1": "Sieger SF5",
-      "p2": "Sieger SF6",
+      "p1": "Leon Weinrich",
+      "p2": "casper",
       "score1": 0,
       "score2": 0,
       "winner": null
@@ -175,7 +167,7 @@
     {
       "id": "m20",
       "p1": "Blake",
-      "p2": "Sieger SF8",
+      "p2": "leongarcon",
       "score1": 0,
       "score2": 0,
       "winner": null
@@ -184,7 +176,7 @@
   "roundOf16Right": [
     {
       "id": "m21",
-      "p1": "Sieger SF9",
+      "p1": "JulianD47",
       "p2": "Esel",
       "score1": 0,
       "score2": 0,
@@ -192,24 +184,24 @@
     },
     {
       "id": "m22",
-      "p1": "Sieger SF11",
-      "p2": "Sieger SF12",
+      "p1": "Ansgar Trinkmann",
+      "p2": "J0tt",
       "score1": 0,
       "score2": 0,
       "winner": null
     },
     {
       "id": "m23",
-      "p1": "Sieger SF13",
-      "p2": "Sieger SF14",
+      "p1": "Mo6",
+      "p2": "Puliester",
       "score1": 0,
       "score2": 0,
       "winner": null
     },
     {
       "id": "m24",
-      "p1": "Sieger SF15",
-      "p2": "Sieger SF16",
+      "p1": "AchtSieben",
+      "p2": "Stomping Tantrum",
       "score1": 0,
       "score2": 0,
       "winner": null
