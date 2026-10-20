@@ -1,8 +1,8 @@
 {
   "matchday": 6,
-  "totalPoints": 2552,
-  "totalBudget": 148151668,
-  "timestamp": "2026-10-18T23:00:57.221Z",
+  "totalPoints": 2525,
+  "totalBudget": 146491787,
+  "timestamp": "2026-10-20T00:15:47.996Z",
   "lineup": [
     {
       "id": "2977",
@@ -10,21 +10,10 @@
       "name": "Noll",
       "lastName": "Noll",
       "position": 1,
-      "marketValue": 14287655,
-      "points": 266,
+      "marketValue": 14339345,
+      "points": 210,
       "imagePath": "content/file/48b2c904ac8c41fdaa5c9503ba6e81ca.png",
       "teamName": "Paderborn"
-    },
-    {
-      "id": "17285",
-      "teamId": 4,
-      "name": "Brassier",
-      "lastName": "Brassier",
-      "position": 2,
-      "marketValue": 15818451,
-      "points": 188,
-      "imagePath": "content/file/951b525cdfe04feaba0ac1724d5faf27.png",
-      "teamName": "Frankfurt"
     },
     {
       "id": "2725",
@@ -32,8 +21,8 @@
       "name": "Bornauw",
       "lastName": "Bornauw",
       "position": 2,
-      "marketValue": 6467157,
-      "points": 186,
+      "marketValue": 6522717,
+      "points": 198,
       "imagePath": "content/file/06472f6d8eb24eccaeae4898fa81b045.png",
       "teamName": "Hamburg"
     },
@@ -43,8 +32,8 @@
       "name": "Muheim",
       "lastName": "Muheim",
       "position": 2,
-      "marketValue": 4594371,
-      "points": 201,
+      "marketValue": 5131588,
+      "points": 202,
       "imagePath": "content/file/6b31cba3484c46c98c5575fe4f79b349.png",
       "teamName": "Hamburg"
     },
@@ -54,10 +43,21 @@
       "name": "Omari",
       "lastName": "Omari",
       "position": 2,
-      "marketValue": 4004032,
-      "points": 136,
+      "marketValue": 4380975,
+      "points": 140,
       "imagePath": "content/file/6565bd5f9c14426aad721f006cf6f971.png",
       "teamName": "Hamburg"
+    },
+    {
+      "id": "10049",
+      "teamId": 13,
+      "name": "Behrens",
+      "lastName": "Behrens",
+      "position": 2,
+      "marketValue": 12127427,
+      "points": 178,
+      "imagePath": "content/file/18dac711dedc44698522f7c499401190.png",
+      "teamName": "Augsburg"
     },
     {
       "id": "7277",
@@ -65,8 +65,8 @@
       "name": "Chaïbi",
       "lastName": "Chaïbi",
       "position": 3,
-      "marketValue": 3823151,
-      "points": 146,
+      "marketValue": 4239481,
+      "points": 139,
       "imagePath": "content/file/774d9ee4bd994b9dae8672fbf45215fe.png",
       "teamName": "Frankfurt"
     },
@@ -76,8 +76,8 @@
       "name": "Maza",
       "lastName": "Maza",
       "position": 3,
-      "marketValue": 31168623,
-      "points": 224,
+      "marketValue": 31237948,
+      "points": 239,
       "imagePath": "content/file/7ff9728d20544b96a1fe698af86f9f2f.png",
       "teamName": "Leverkusen"
     },
@@ -87,8 +87,8 @@
       "name": "Prass",
       "lastName": "Prass",
       "position": 3,
-      "marketValue": 3756748,
-      "points": 281,
+      "marketValue": 3811934,
+      "points": 279,
       "imagePath": "content/file/f9e6ef6646eb4d248d5ce3ee24abda2d.png",
       "teamName": "Hoffenheim"
     },
@@ -98,8 +98,8 @@
       "name": "Díaz",
       "lastName": "Díaz",
       "position": 4,
-      "marketValue": 47443899,
-      "points": 530,
+      "marketValue": 47542256,
+      "points": 525,
       "imagePath": "content/file/43b93afe59614450a4de3fd8e08c486b.png",
       "teamName": "Bayern"
     },
@@ -109,8 +109,8 @@
       "name": "Conté",
       "lastName": "Conté",
       "position": 4,
-      "marketValue": 12507963,
-      "points": 236,
+      "marketValue": 12763843,
+      "points": 256,
       "imagePath": "content/file/fa595ccc62ce4fdeafca00ccfc95088b.png",
       "teamName": "Hoffenheim"
     },
@@ -120,8 +120,8 @@
       "name": "Tigges",
       "lastName": "Tigges",
       "position": 4,
-      "marketValue": 4279618,
-      "points": 158,
+      "marketValue": 4394273,
+      "points": 159,
       "imagePath": "content/file/10d7abeb491e42818537662e1ceba8d1.png",
       "teamName": "Paderborn"
     }
