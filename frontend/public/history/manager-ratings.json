@@ -14,7 +14,7 @@
     "calculation": {
       "pro": {
         "score": 88,
-        "weightedAverageProfit": 626536.4331382865,
+        "weightedAverageProfit": 626481.1852166514,
         "completedTrades": 66,
         "openPositions": 16,
         "orphanSales": 15,
@@ -23,9 +23,9 @@
         "leaguePercentile": 81.25,
         "leagueRank": 2,
         "leagueSize": 8,
-        "leagueMean": 360542.76055847335,
-        "leagueStd": 449596.72880136676,
-        "zScore": 0.5916272417927888
+        "leagueMean": 359901.0000709153,
+        "leagueStd": 449189.4385773955,
+        "zScore": 0.5934693967650003
       },
       "ovp": {
         "score": 66,
@@ -37,16 +37,16 @@
       },
       "pkt": {
         "score": 68,
-        "points": 5488,
+        "points": 5551,
         "totalSpent": 1050903328,
         "managerSquadValue": 186416149,
         "ppmBasis": "squadValue",
-        "ppm": 29.43950955665327,
+        "ppm": 29.777463110237303,
         "perfBonus": 10,
         "leaguePercentile": 18.75,
         "leagueRank": 7,
         "leagueSize": 8,
-        "leagueMeanPpm": 34.113266073928656
+        "leagueMeanPpm": 34.604425969597614
       },
       "akt": {
         "score": 92,
@@ -56,9 +56,9 @@
         "leaguePercentile": 81.25,
         "leagueRank": 2,
         "leagueSize": 8,
-        "leagueMean": 4.755146011157855,
-        "leagueStd": 0.3971718426086095,
-        "zScore": 0.8679377027390291
+        "leagueMean": 4.756192042366671,
+        "leagueStd": 0.397255024456398,
+        "zScore": 0.865122816074663
       },
       "kad": {
         "score": 81,
@@ -70,9 +70,9 @@
         "leaguePercentile": 56.25,
         "leagueRank": 4,
         "leagueSize": 8,
-        "leagueMean": -7.299999999999998,
+        "leagueMean": -7.3,
         "leagueStd": 1.8731181032095734,
-        "zScore": 0.2669345831121129
+        "zScore": 0.2669345831121138
       },
       "tim": {
         "score": 67,
@@ -81,9 +81,9 @@
         "leaguePercentile": 43.75,
         "leagueRank": 5,
         "leagueSize": 8,
-        "leagueMean": 1074511.5873413454,
+        "leagueMean": 1074511.5873413451,
         "leagueStd": 463764.4387937968,
-        "zScore": -0.3089867788648681
+        "zScore": -0.3089867788648676
       }
     },
     "totalProfit": 43538563,
@@ -94,14 +94,14 @@
     "forcedRealizedProfit": -4583135,
     "openPositions": 16,
     "unrealizedProfit": -3595707,
-    "openPositionsAvgAgeDays": 16.84889129050926,
+    "openPositionsAvgAgeDays": 16.956716440972222,
     "orphanSales": 15,
     "orphanSaleProfit": 28151996,
     "forcedOrphanSales": 0,
     "totalTransactions": 163,
     "totalOverpay": 70109929,
     "avgOverpayRatio": 0.25128518992489707,
-    "ppm": 29.43950955665327,
+    "ppm": 29.777463110237303,
     "bestTrade": {
       "name": "Enzo Leopold",
       "profit": 14187576,
@@ -137,7 +137,7 @@
     "calculation": {
       "pro": {
         "score": 51,
-        "weightedAverageProfit": -473383.10299660213,
+        "weightedAverageProfit": -473128.4847317018,
         "completedTrades": 23,
         "openPositions": 13,
         "orphanSales": 15,
@@ -146,9 +146,9 @@
         "leaguePercentile": 6.25,
         "leagueRank": 8,
         "leagueSize": 8,
-        "leagueMean": 360542.76055847335,
-        "leagueStd": 449596.72880136676,
-        "zScore": -1.8548308075513302
+        "leagueMean": 359901.0000709153,
+        "leagueStd": 449189.4385773955,
+        "zScore": -1.854517077340156
       },
       "ovp": {
         "score": 54,
@@ -160,16 +160,16 @@
       },
       "pkt": {
         "score": 77,
-        "points": 3652,
+        "points": 3711,
         "totalSpent": 292610231,
         "managerSquadValue": 102749482,
         "ppmBasis": "squadValue",
-        "ppm": 35.54275825935551,
+        "ppm": 36.11697039990917,
         "perfBonus": 10,
         "leaguePercentile": 68.75,
         "leagueRank": 3,
         "leagueSize": 8,
-        "leagueMeanPpm": 34.113266073928656
+        "leagueMeanPpm": 34.604425969597614
       },
       "akt": {
         "score": 55,
@@ -179,9 +179,9 @@
         "leaguePercentile": 18.75,
         "leagueRank": 7,
         "leagueSize": 8,
-        "leagueMean": 4.755146011157855,
-        "leagueStd": 0.3971718426086095,
-        "zScore": -1.1019358642018138
+        "leagueMean": 4.756192042366671,
+        "leagueStd": 0.397255024456398,
+        "zScore": -1.1043382759744347
       },
       "kad": {
         "score": 85,
@@ -193,9 +193,9 @@
         "leaguePercentile": 68.75,
         "leagueRank": 3,
         "leagueSize": 8,
-        "leagueMean": -7.299999999999998,
+        "leagueMean": -7.3,
         "leagueStd": 1.8731181032095734,
-        "zScore": 0.4804822496018028
+        "zScore": 0.48048224960180375
       },
       "tim": {
         "score": 51,
@@ -204,9 +204,9 @@
         "leaguePercentile": 6.25,
         "leagueRank": 8,
         "leagueSize": 8,
-        "leagueMean": 1074511.5873413454,
+        "leagueMean": 1074511.5873413451,
         "leagueStd": 463764.4387937968,
-        "zScore": -1.9737448890440126
+        "zScore": -1.973744889044012
       }
     },
     "totalProfit": -37976764,
@@ -217,14 +217,14 @@
     "forcedRealizedProfit": 0,
     "openPositions": 13,
     "unrealizedProfit": -25097184,
-    "openPositionsAvgAgeDays": 34.09668952457265,
+    "openPositionsAvgAgeDays": 34.204514663461545,
     "orphanSales": 15,
     "orphanSaleProfit": 825553,
     "forcedOrphanSales": 0,
     "totalTransactions": 74,
     "totalOverpay": 30435861,
     "avgOverpayRatio": 0.5867306250577476,
-    "ppm": 35.54275825935551,
+    "ppm": 36.11697039990917,
     "bestTrade": {
       "name": "Ayoube Amaimouni",
       "profit": 3940016,
@@ -260,18 +260,18 @@
     "calculation": {
       "pro": {
         "score": 75,
-        "weightedAverageProfit": 14223.315874410118,
+        "weightedAverageProfit": 14246.162109350233,
         "completedTrades": 26,
         "openPositions": 10,
         "orphanSales": 15,
         "saleTimingSampleSize": 31,
-        "profitBonus": 0.7111657937205059,
+        "profitBonus": 0.7123081054675117,
         "leaguePercentile": 45,
         "leagueRank": 6,
         "leagueSize": 10,
-        "leagueMean": -818.1648091959302,
-        "leagueStd": 665097.9620530538,
-        "zScore": 0.02261543643461986
+        "leagueMean": -1314.5365924217738,
+        "leagueStd": 664603.6425024946,
+        "zScore": 0.023413501983196847
       },
       "ovp": {
         "score": 82,
@@ -283,16 +283,16 @@
       },
       "pkt": {
         "score": 76,
-        "points": 5089,
+        "points": 5204,
         "totalSpent": 381597666,
         "managerSquadValue": 145734972,
         "ppmBasis": "squadValue",
-        "ppm": 34.919552459927054,
+        "ppm": 35.70865612133236,
         "perfBonus": 10,
         "leaguePercentile": 45,
         "leagueRank": 6,
         "leagueSize": 10,
-        "leagueMeanPpm": 34.45591710436523
+        "leagueMeanPpm": 35.13127933379603
       },
       "akt": {
         "score": 79,
@@ -302,9 +302,9 @@
         "leaguePercentile": 55.00000000000001,
         "leagueRank": 5,
         "leagueSize": 10,
-        "leagueMean": 4.226911215232126,
-        "leagueStd": 0.7601296970914534,
-        "zScore": 0.17075719045594612
+        "leagueMean": 4.227362683267579,
+        "leagueStd": 0.7609035859393769,
+        "zScore": 0.16999018773492575
       },
       "kad": {
         "score": 94,
@@ -340,14 +340,14 @@
     "forcedRealizedProfit": 0,
     "openPositions": 10,
     "unrealizedProfit": -3253315,
-    "openPositionsAvgAgeDays": 18.85640978009259,
+    "openPositionsAvgAgeDays": 18.96423490740741,
     "orphanSales": 15,
     "orphanSaleProfit": 12375290,
     "forcedOrphanSales": 1,
     "totalTransactions": 77,
     "totalOverpay": 37837006,
     "avgOverpayRatio": 0.17623802623374862,
-    "ppm": 34.919552459927054,
+    "ppm": 35.70865612133236,
     "bestTrade": {
       "name": "Luka Duric",
       "profit": 4808695,
@@ -383,18 +383,18 @@
     "calculation": {
       "pro": {
         "score": 79,
-        "weightedAverageProfit": 433794.0096976579,
+        "weightedAverageProfit": 433768.3821498193,
         "completedTrades": 50,
         "openPositions": 10,
         "orphanSales": 14,
         "saleTimingSampleSize": 43,
-        "profitBonus": 21.689700484882895,
+        "profitBonus": 21.688419107490965,
         "leaguePercentile": 38.88888888888889,
         "leagueRank": 6,
         "leagueSize": 9,
-        "leagueMean": 387965.4061367091,
-        "leagueStd": 229905.4437625598,
-        "zScore": 0.19933674823411038
+        "leagueMean": 388428.2802316614,
+        "leagueStd": 230602.56663451839,
+        "zScore": 0.19661577310202855
       },
       "ovp": {
         "score": 54,
@@ -406,16 +406,16 @@
       },
       "pkt": {
         "score": 67,
-        "points": 4673,
+        "points": 4725,
         "totalSpent": 493047346,
         "managerSquadValue": 167194556,
         "ppmBasis": "squadValue",
-        "ppm": 27.949474622845973,
+        "ppm": 28.260489534120953,
         "perfBonus": 10,
         "leaguePercentile": 5.555555555555555,
         "leagueRank": 9,
         "leagueSize": 9,
-        "leagueMeanPpm": 33.041441851397316
+        "leagueMeanPpm": 33.495813145930796
       },
       "akt": {
         "score": 64,
@@ -425,9 +425,9 @@
         "leaguePercentile": 38.88888888888889,
         "leagueRank": 6,
         "leagueSize": 9,
-        "leagueMean": 4.909566616351984,
-        "leagueStd": 0.185758775966259,
-        "zScore": -0.4374107151978736
+        "leagueMean": 4.912397625829872,
+        "leagueStd": 0.18823151282134346,
+        "zScore": -0.4467046312663758
       },
       "kad": {
         "score": 97,
@@ -451,8 +451,8 @@
         "leagueRank": 1,
         "leagueSize": 9,
         "leagueMean": 1198223.6497158129,
-        "leagueStd": 270103.6783688663,
-        "zScore": 1.4999354087327317
+        "leagueStd": 270103.67836886627,
+        "zScore": 1.499935408732732
       }
     },
     "totalProfit": 9058371,
@@ -463,14 +463,14 @@
     "forcedRealizedProfit": -3264613,
     "openPositions": 10,
     "unrealizedProfit": 404846,
-    "openPositionsAvgAgeDays": 24.404872500000003,
+    "openPositionsAvgAgeDays": 24.512697685185184,
     "orphanSales": 14,
     "orphanSaleProfit": 12436204,
     "forcedOrphanSales": 0,
     "totalTransactions": 124,
     "totalOverpay": 57784068,
     "avgOverpayRatio": 0.47630486496977115,
-    "ppm": 27.949474622845973,
+    "ppm": 28.260489534120953,
     "bestTrade": {
       "name": "Tim Oermann",
       "profit": 5777246,
@@ -497,27 +497,27 @@
     "level": "Gold",
     "cardTier": "gold",
     "league": "L2",
-    "pro": 76,
+    "pro": 77,
     "ovp": 90,
-    "pkt": 66,
+    "pkt": 65,
     "akt": 80,
     "kad": 76,
     "tim": 93,
     "calculation": {
       "pro": {
-        "score": 76,
-        "weightedAverageProfit": 397035.1152991855,
+        "score": 77,
+        "weightedAverageProfit": 396967.7094594442,
         "completedTrades": 52,
         "openPositions": 10,
         "orphanSales": 13,
         "saleTimingSampleSize": 48,
-        "profitBonus": 19.851755764959275,
+        "profitBonus": 19.84838547297221,
         "leaguePercentile": 31.25,
         "leagueRank": 6,
         "leagueSize": 8,
-        "leagueMean": 360542.76055847335,
-        "leagueStd": 449596.72880136676,
-        "zScore": 0.08116685999473672
+        "leagueMean": 359901.0000709153,
+        "leagueStd": 449189.4385773955,
+        "zScore": 0.08251910264391107
       },
       "ovp": {
         "score": 90,
@@ -528,7 +528,7 @@
         "leagueSize": 8
       },
       "pkt": {
-        "score": 66,
+        "score": 65,
         "points": 4989,
         "totalSpent": 778670526,
         "managerSquadValue": 178713976,
@@ -538,7 +538,7 @@
         "leaguePercentile": 6.25,
         "leagueRank": 8,
         "leagueSize": 8,
-        "leagueMeanPpm": 34.113266073928656
+        "leagueMeanPpm": 34.604425969597614
       },
       "akt": {
         "score": 80,
@@ -548,9 +548,9 @@
         "leaguePercentile": 43.75,
         "leagueRank": 5,
         "leagueSize": 8,
-        "leagueMean": 4.755146011157855,
-        "leagueStd": 0.3971718426086095,
-        "zScore": 0.24393535081799822
+        "leagueMean": 4.756192042366671,
+        "leagueStd": 0.397255024456398,
+        "zScore": 0.2412511249771879
       },
       "kad": {
         "score": 76,
@@ -562,9 +562,9 @@
         "leaguePercentile": 43.75,
         "leagueRank": 5,
         "leagueSize": 8,
-        "leagueMean": -7.299999999999998,
+        "leagueMean": -7.3,
         "leagueStd": 1.8731181032095734,
-        "zScore": 0.05338691662242201
+        "zScore": 0.05338691662242296
       },
       "tim": {
         "score": 93,
@@ -573,9 +573,9 @@
         "leaguePercentile": 93.75,
         "leagueRank": 1,
         "leagueSize": 8,
-        "leagueMean": 1074511.5873413454,
+        "leagueMean": 1074511.5873413451,
         "leagueStd": 463764.4387937968,
-        "zScore": 0.9802414393271683
+        "zScore": 0.9802414393271689
       }
     },
     "totalProfit": -4589416,
@@ -586,7 +586,7 @@
     "forcedRealizedProfit": -5646186,
     "openPositions": 10,
     "unrealizedProfit": -4721043,
-    "openPositionsAvgAgeDays": 15.047055520833334,
+    "openPositionsAvgAgeDays": 15.154880659722224,
     "orphanSales": 13,
     "orphanSaleProfit": 2319512,
     "forcedOrphanSales": 0,
@@ -622,25 +622,25 @@
     "league": "L1",
     "pro": 61,
     "ovp": 64,
-    "pkt": 87,
+    "pkt": 86,
     "akt": 70,
     "kad": 62,
     "tim": 68,
     "calculation": {
       "pro": {
         "score": 61,
-        "weightedAverageProfit": 251935.79161181077,
+        "weightedAverageProfit": 251861.23333701017,
         "completedTrades": 51,
         "openPositions": 14,
         "orphanSales": 14,
         "saleTimingSampleSize": 54,
-        "profitBonus": 12.596789580590539,
+        "profitBonus": 12.593061666850508,
         "leaguePercentile": 27.77777777777778,
         "leagueRank": 7,
         "leagueSize": 9,
-        "leagueMean": 387965.4061367091,
-        "leagueStd": 229905.4437625598,
-        "zScore": -0.591676353107089
+        "leagueMean": 388428.2802316614,
+        "leagueStd": 230602.56663451839,
+        "zScore": -0.5922182432214473
       },
       "ovp": {
         "score": 64,
@@ -651,7 +651,7 @@
         "leagueSize": 9
       },
       "pkt": {
-        "score": 87,
+        "score": 86,
         "points": 6340,
         "totalSpent": 676072257,
         "managerSquadValue": 154086027,
@@ -661,7 +661,7 @@
         "leaguePercentile": 94.44444444444444,
         "leagueRank": 1,
         "leagueSize": 9,
-        "leagueMeanPpm": 33.041441851397316
+        "leagueMeanPpm": 33.495813145930796
       },
       "akt": {
         "score": 70,
@@ -671,9 +671,9 @@
         "leaguePercentile": 50,
         "leagueRank": 5,
         "leagueSize": 9,
-        "leagueMean": 4.909566616351984,
-        "leagueStd": 0.185758775966259,
-        "zScore": -0.18502110046782422
+        "leagueMean": 4.912397625829872,
+        "leagueStd": 0.18823151282134346,
+        "zScore": -0.19763057774512308
       },
       "kad": {
         "score": 62,
@@ -697,8 +697,8 @@
         "leagueRank": 6,
         "leagueSize": 9,
         "leagueMean": 1198223.6497158129,
-        "leagueStd": 270103.6783688663,
-        "zScore": -0.2611635066056102
+        "leagueStd": 270103.67836886627,
+        "zScore": -0.2611635066056103
       }
     },
     "totalProfit": 3508858,
@@ -709,7 +709,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 14,
     "unrealizedProfit": 12526269,
-    "openPositionsAvgAgeDays": 21.80077898809524,
+    "openPositionsAvgAgeDays": 21.90860411541005,
     "orphanSales": 14,
     "orphanSaleProfit": 2570926,
     "forcedOrphanSales": 0,
@@ -752,18 +752,18 @@
     "calculation": {
       "pro": {
         "score": 81,
-        "weightedAverageProfit": 482027.93742710544,
+        "weightedAverageProfit": 482043.98988101934,
         "completedTrades": 75,
         "openPositions": 13,
         "orphanSales": 13,
         "saleTimingSampleSize": 66,
-        "profitBonus": 24.10139687135527,
+        "profitBonus": 24.102199494050964,
         "leaguePercentile": 56.25,
         "leagueRank": 4,
         "leagueSize": 8,
-        "leagueMean": 360542.76055847335,
-        "leagueStd": 449596.72880136676,
-        "zScore": 0.2702092099124338
+        "leagueMean": 359901.0000709153,
+        "leagueStd": 449189.4385773955,
+        "zScore": 0.2719186590783094
       },
       "ovp": {
         "score": 72,
@@ -775,16 +775,16 @@
       },
       "pkt": {
         "score": 77,
-        "points": 7003,
+        "points": 7192,
         "totalSpent": 856381129,
         "managerSquadValue": 198603981,
         "ppmBasis": "squadValue",
-        "ppm": 35.261126009352246,
+        "ppm": 36.21276856479528,
         "perfBonus": 10,
-        "leaguePercentile": 56.25,
-        "leagueRank": 4,
+        "leaguePercentile": 81.25,
+        "leagueRank": 2,
         "leagueSize": 8,
-        "leagueMeanPpm": 34.113266073928656
+        "leagueMeanPpm": 34.604425969597614
       },
       "akt": {
         "score": 94,
@@ -794,9 +794,9 @@
         "leaguePercentile": 93.75,
         "leagueRank": 1,
         "leagueSize": 8,
-        "leagueMean": 4.755146011157855,
-        "leagueStd": 0.3971718426086095,
-        "zScore": 1.0600039485448856
+        "leagueMean": 4.756192042366671,
+        "leagueStd": 0.397255024456398,
+        "zScore": 1.057148844830412
       },
       "kad": {
         "score": 54,
@@ -808,9 +808,9 @@
         "leaguePercentile": 12.5,
         "leagueRank": 7,
         "leagueSize": 8,
-        "leagueMean": -7.299999999999998,
+        "leagueMean": -7.3,
         "leagueStd": 1.8731181032095734,
-        "zScore": -1.2278990823157223
+        "zScore": -1.2278990823157214
       },
       "tim": {
         "score": 66,
@@ -819,9 +819,9 @@
         "leaguePercentile": 31.25,
         "leagueRank": 6,
         "leagueSize": 8,
-        "leagueMean": 1074511.5873413454,
+        "leagueMean": 1074511.5873413451,
         "leagueStd": 463764.4387937968,
-        "zScore": -0.34750370357800214
+        "zScore": -0.34750370357800164
       }
     },
     "totalProfit": 32999796,
@@ -832,14 +832,14 @@
     "forcedRealizedProfit": 0,
     "openPositions": 13,
     "unrealizedProfit": -85547,
-    "openPositionsAvgAgeDays": 29.87891611734331,
+    "openPositionsAvgAgeDays": 29.986741279380343,
     "orphanSales": 13,
     "orphanSaleProfit": 8524867,
     "forcedOrphanSales": 0,
     "totalTransactions": 176,
     "totalOverpay": 61008628,
     "avgOverpayRatio": 0.2276909348009511,
-    "ppm": 35.261126009352246,
+    "ppm": 36.21276856479528,
     "bestTrade": {
       "name": "9224",
       "profit": 5021848,
@@ -875,18 +875,18 @@
     "calculation": {
       "pro": {
         "score": 83,
-        "weightedAverageProfit": 235079.91917469984,
+        "weightedAverageProfit": 235058.20473053612,
         "completedTrades": 10,
         "openPositions": 12,
         "orphanSales": 14,
         "saleTimingSampleSize": 16,
-        "profitBonus": 11.753995958734992,
+        "profitBonus": 11.752910236526807,
         "leaguePercentile": 55.00000000000001,
         "leagueRank": 5,
         "leagueSize": 10,
-        "leagueMean": -818.1648091959302,
-        "leagueStd": 665097.9620530538,
-        "zScore": 0.35468171223336054
+        "leagueMean": -1314.5365924217738,
+        "leagueStd": 664603.6425024946,
+        "zScore": 0.3556597138603113
       },
       "ovp": {
         "score": 77,
@@ -898,16 +898,16 @@
       },
       "pkt": {
         "score": 77,
-        "points": 5959,
+        "points": 6063,
         "totalSpent": 292252728,
         "managerSquadValue": 165449667,
         "ppmBasis": "squadValue",
-        "ppm": 36.01699603299897,
+        "ppm": 36.64558599564906,
         "perfBonus": 10,
         "leaguePercentile": 65,
         "leagueRank": 4,
         "leagueSize": 10,
-        "leagueMeanPpm": 34.45591710436523
+        "leagueMeanPpm": 35.13127933379603
       },
       "akt": {
         "score": 63,
@@ -917,9 +917,9 @@
         "leaguePercentile": 35,
         "leagueRank": 7,
         "leagueSize": 10,
-        "leagueMean": 4.226911215232126,
-        "leagueStd": 0.7601296970914534,
-        "zScore": -0.49565701085447506
+        "leagueMean": 4.227362683267579,
+        "leagueStd": 0.7609035859393769,
+        "zScore": -0.49574622662847334
       },
       "kad": {
         "score": 51,
@@ -955,14 +955,14 @@
     "forcedRealizedProfit": 0,
     "openPositions": 12,
     "unrealizedProfit": 7392236,
-    "openPositionsAvgAgeDays": 32.781046342592596,
+    "openPositionsAvgAgeDays": 32.888871458333334,
     "orphanSales": 14,
     "orphanSaleProfit": 5767496,
     "forcedOrphanSales": 0,
     "totalTransactions": 46,
     "totalOverpay": 22990178,
     "avgOverpayRatio": 0.188935004610432,
-    "ppm": 36.01699603299897,
+    "ppm": 36.64558599564906,
     "bestTrade": {
       "name": "Derry Scherhant",
       "profit": 6865149,
@@ -998,18 +998,18 @@
     "calculation": {
       "pro": {
         "score": 82,
-        "weightedAverageProfit": 457582.7868061723,
+        "weightedAverageProfit": 457168.9187917062,
         "completedTrades": 71,
         "openPositions": 13,
         "orphanSales": 15,
         "saleTimingSampleSize": 78,
-        "profitBonus": 22.879139340308612,
+        "profitBonus": 22.858445939585312,
         "leaguePercentile": 50,
         "leagueRank": 5,
         "leagueSize": 9,
-        "leagueMean": 387965.4061367091,
-        "leagueStd": 229905.4437625598,
-        "zScore": 0.3028087527208019
+        "leagueMean": 388428.2802316614,
+        "leagueStd": 230602.56663451839,
+        "zScore": 0.29809138537903496
       },
       "ovp": {
         "score": 75,
@@ -1021,16 +1021,16 @@
       },
       "pkt": {
         "score": 75,
-        "points": 6918,
+        "points": 7033,
         "totalSpent": 836599146,
         "managerSquadValue": 210764489,
         "ppmBasis": "squadValue",
-        "ppm": 32.823366179109996,
+        "ppm": 33.36899889240829,
         "perfBonus": 10,
         "leaguePercentile": 38.88888888888889,
         "leagueRank": 6,
         "leagueSize": 9,
-        "leagueMeanPpm": 33.041441851397316
+        "leagueMeanPpm": 33.495813145930796
       },
       "akt": {
         "score": 95,
@@ -1040,9 +1040,9 @@
         "leaguePercentile": 94.44444444444444,
         "leagueRank": 1,
         "leagueSize": 9,
-        "leagueMean": 4.909566616351984,
-        "leagueStd": 0.185758775966259,
-        "zScore": 1.2494534319758526
+        "leagueMean": 4.912397625829872,
+        "leagueStd": 0.18823151282134346,
+        "zScore": 1.2179997240440397
       },
       "kad": {
         "score": 62,
@@ -1066,8 +1066,8 @@
         "leagueRank": 9,
         "leagueSize": 9,
         "leagueMean": 1198223.6497158129,
-        "leagueStd": 270103.6783688663,
-        "zScore": -1.636606485467428
+        "leagueStd": 270103.67836886627,
+        "zScore": -1.6366064854674283
       }
     },
     "totalProfit": 18041558,
@@ -1078,14 +1078,14 @@
     "forcedRealizedProfit": -6427504,
     "openPositions": 13,
     "unrealizedProfit": -10329787,
-    "openPositionsAvgAgeDays": 16.63800153400997,
+    "openPositionsAvgAgeDays": 16.745826649750715,
     "orphanSales": 15,
     "orphanSaleProfit": 3316123,
     "forcedOrphanSales": 0,
     "totalTransactions": 170,
     "totalOverpay": 100588456,
     "avgOverpayRatio": 0.1911731005326477,
-    "ppm": 32.823366179109996,
+    "ppm": 33.36899889240829,
     "bestTrade": {
       "name": "Derry Scherhant",
       "profit": 4800000,
@@ -1121,18 +1121,18 @@
     "calculation": {
       "pro": {
         "score": 53,
-        "weightedAverageProfit": 70368.72938530467,
+        "weightedAverageProfit": 70364.54629037969,
         "completedTrades": 41,
         "openPositions": 12,
         "orphanSales": 15,
         "saleTimingSampleSize": 48,
-        "profitBonus": 3.5184364692652332,
+        "profitBonus": 3.5182273145189846,
         "leaguePercentile": 16.666666666666664,
         "leagueRank": 8,
         "leagueSize": 9,
-        "leagueMean": 387965.4061367091,
-        "leagueStd": 229905.4437625598,
-        "zScore": -1.3814230387663626
+        "leagueMean": 388428.2802316614,
+        "leagueStd": 230602.56663451839,
+        "zScore": -1.3792723063892882
       },
       "ovp": {
         "score": 70,
@@ -1144,16 +1144,16 @@
       },
       "pkt": {
         "score": 68,
-        "points": 3421,
+        "points": 3526,
         "totalSpent": 500283804,
         "managerSquadValue": 121516192,
         "ppmBasis": "squadValue",
-        "ppm": 28.152626770924485,
+        "ppm": 29.016709147699427,
         "perfBonus": 10,
         "leaguePercentile": 16.666666666666664,
         "leagueRank": 8,
         "leagueSize": 9,
-        "leagueMeanPpm": 33.041441851397316
+        "leagueMeanPpm": 33.495813145930796
       },
       "akt": {
         "score": 55,
@@ -1163,9 +1163,9 @@
         "leaguePercentile": 16.666666666666664,
         "leagueRank": 8,
         "leagueSize": 9,
-        "leagueMean": 4.909566616351984,
-        "leagueStd": 0.185758775966259,
-        "zScore": -1.1255793944160466
+        "leagueMean": 4.912397625829872,
+        "leagueStd": 0.18823151282134346,
+        "zScore": -1.1258330598372903
       },
       "kad": {
         "score": 94,
@@ -1189,8 +1189,8 @@
         "leagueRank": 4,
         "leagueSize": 9,
         "leagueMean": 1198223.6497158129,
-        "leagueStd": 270103.6783688663,
-        "zScore": 0.4629967347084273
+        "leagueStd": 270103.67836886627,
+        "zScore": 0.4629967347084274
       }
     },
     "totalProfit": -25702067,
@@ -1201,14 +1201,14 @@
     "forcedRealizedProfit": -155844,
     "openPositions": 12,
     "unrealizedProfit": -14878373,
-    "openPositionsAvgAgeDays": 26.295198344907405,
+    "openPositionsAvgAgeDays": 26.403023518518513,
     "orphanSales": 15,
     "orphanSaleProfit": 6487579,
     "forcedOrphanSales": 0,
     "totalTransactions": 109,
     "totalOverpay": 49300476,
     "avgOverpayRatio": 0.22142437548113447,
-    "ppm": 28.152626770924485,
+    "ppm": 29.016709147699427,
     "bestTrade": {
       "name": "Stefano Marino",
       "profit": 5817794,
@@ -1244,7 +1244,7 @@
     "calculation": {
       "pro": {
         "score": 55,
-        "weightedAverageProfit": -699498.961035534,
+        "weightedAverageProfit": -699525.7223480875,
         "completedTrades": 12,
         "openPositions": 9,
         "orphanSales": 11,
@@ -1253,9 +1253,9 @@
         "leaguePercentile": 15,
         "leagueRank": 9,
         "leagueSize": 10,
-        "leagueMean": -818.1648091959302,
-        "leagueStd": 665097.9620530538,
-        "zScore": -1.0504930643143446
+        "leagueMean": -1314.5365924217738,
+        "leagueStd": 664603.6425024946,
+        "zScore": -1.0505677987659312
       },
       "ovp": {
         "score": 68,
@@ -1267,16 +1267,16 @@
       },
       "pkt": {
         "score": 82,
-        "points": 4946,
+        "points": 5074,
         "totalSpent": 318022648,
         "managerSquadValue": 125681164,
         "ppmBasis": "squadValue",
-        "ppm": 39.35355022650809,
+        "ppm": 40.37200037389851,
         "perfBonus": 10,
         "leaguePercentile": 75,
         "leagueRank": 3,
         "leagueSize": 10,
-        "leagueMeanPpm": 34.45591710436523
+        "leagueMeanPpm": 35.13127933379603
       },
       "akt": {
         "score": 62,
@@ -1286,9 +1286,9 @@
         "leaguePercentile": 25,
         "leagueRank": 8,
         "leagueSize": 10,
-        "leagueMean": 4.226911215232126,
-        "leagueStd": 0.7601296970914534,
-        "zScore": -0.5528645007159151
+        "leagueMean": 4.227362683267579,
+        "leagueStd": 0.7609035859393769,
+        "zScore": -0.5528955327209845
       },
       "kad": {
         "score": 55,
@@ -1324,14 +1324,14 @@
     "forcedRealizedProfit": 0,
     "openPositions": 9,
     "unrealizedProfit": -2210996,
-    "openPositionsAvgAgeDays": 34.02180703960906,
+    "openPositionsAvgAgeDays": 34.129632155349796,
     "orphanSales": 11,
     "orphanSaleProfit": 2684433,
     "forcedOrphanSales": 0,
     "totalTransactions": 44,
     "totalOverpay": 34018025,
     "avgOverpayRatio": 0.25352391892956666,
-    "ppm": 39.35355022650809,
+    "ppm": 40.37200037389851,
     "bestTrade": {
       "name": "Adam Daghim",
       "profit": 2779736,
@@ -1360,25 +1360,25 @@
     "league": "L1",
     "pro": 82,
     "ovp": 59,
-    "pkt": 77,
+    "pkt": 78,
     "akt": 93,
     "kad": 53,
     "tim": 68,
     "calculation": {
       "pro": {
         "score": 82,
-        "weightedAverageProfit": 461433.3459110887,
+        "weightedAverageProfit": 461493.6221756539,
         "completedTrades": 66,
         "openPositions": 15,
         "orphanSales": 15,
         "saleTimingSampleSize": 63,
-        "profitBonus": 23.071667295554434,
+        "profitBonus": 23.074681108782695,
         "leaguePercentile": 61.111111111111114,
         "leagueRank": 4,
         "leagueSize": 9,
-        "leagueMean": 387965.4061367091,
-        "leagueStd": 229905.4437625598,
-        "zScore": 0.3195571995687728
+        "leagueMean": 388428.2802316614,
+        "leagueStd": 230602.56663451839,
+        "zScore": 0.31684531100555186
       },
       "ovp": {
         "score": 59,
@@ -1389,17 +1389,17 @@
         "leagueSize": 9
       },
       "pkt": {
-        "score": 77,
-        "points": 6179,
+        "score": 78,
+        "points": 6326,
         "totalSpent": 763816006,
         "managerSquadValue": 179120978,
         "ppmBasis": "squadValue",
-        "ppm": 34.4962386259414,
+        "ppm": 35.31691301953476,
         "perfBonus": 10,
         "leaguePercentile": 83.33333333333334,
         "leagueRank": 2,
         "leagueSize": 9,
-        "leagueMeanPpm": 33.041441851397316
+        "leagueMeanPpm": 33.495813145930796
       },
       "akt": {
         "score": 93,
@@ -1409,9 +1409,9 @@
         "leaguePercentile": 77.77777777777779,
         "leagueRank": 2,
         "leagueSize": 9,
-        "leagueMean": 4.909566616351984,
-        "leagueStd": 0.185758775966259,
-        "zScore": 0.9915202309915779
+        "leagueMean": 4.912397625829872,
+        "leagueStd": 0.18823151282134346,
+        "zScore": 0.9634549085785546
       },
       "kad": {
         "score": 53,
@@ -1435,8 +1435,8 @@
         "leagueRank": 7,
         "leagueSize": 9,
         "leagueMean": 1198223.6497158129,
-        "leagueStd": 270103.6783688663,
-        "zScore": -0.2933784045529807
+        "leagueStd": 270103.67836886627,
+        "zScore": -0.29337840455298075
       }
     },
     "totalProfit": 27035422,
@@ -1447,14 +1447,14 @@
     "forcedRealizedProfit": 0,
     "openPositions": 15,
     "unrealizedProfit": 5050024,
-    "openPositionsAvgAgeDays": 29.01609353009259,
+    "openPositionsAvgAgeDays": 29.123918680555562,
     "orphanSales": 15,
     "orphanSaleProfit": 7173854,
     "forcedOrphanSales": 0,
     "totalTransactions": 162,
     "totalOverpay": 64453376,
     "avgOverpayRatio": 0.3788373069493709,
-    "ppm": 34.4962386259414,
+    "ppm": 35.31691301953476,
     "bestTrade": {
       "name": "Ludovit Reis",
       "profit": 5334414,
@@ -1483,25 +1483,25 @@
     "league": "L1",
     "pro": 84,
     "ovp": 96,
-    "pkt": 73,
+    "pkt": 72,
     "akt": 93,
     "kad": 62,
     "tim": 54,
     "calculation": {
       "pro": {
         "score": 84,
-        "weightedAverageProfit": 477909.5984113851,
+        "weightedAverageProfit": 477849.1849206086,
         "completedTrades": 68,
         "openPositions": 12,
         "orphanSales": 14,
         "saleTimingSampleSize": 64,
-        "profitBonus": 23.895479920569255,
+        "profitBonus": 23.892459246030427,
         "leaguePercentile": 72.22222222222221,
         "leagueRank": 3,
         "leagueSize": 9,
-        "leagueMean": 387965.4061367091,
-        "leagueStd": 229905.4437625598,
-        "zScore": 0.3912225426361281
+        "leagueMean": 388428.2802316614,
+        "leagueStd": 230602.56663451839,
+        "zScore": 0.3877706393037257
       },
       "ovp": {
         "score": 96,
@@ -1512,17 +1512,17 @@
         "leagueSize": 9
       },
       "pkt": {
-        "score": 73,
-        "points": 5608,
+        "score": 72,
+        "points": 5671,
         "totalSpent": 763938847,
         "managerSquadValue": 178332729,
         "ppmBasis": "squadValue",
-        "ppm": 31.446835538528656,
+        "ppm": 31.800107763729674,
         "perfBonus": 10,
         "leaguePercentile": 27.77777777777778,
         "leagueRank": 7,
         "leagueSize": 9,
-        "leagueMeanPpm": 33.041441851397316
+        "leagueMeanPpm": 33.495813145930796
       },
       "akt": {
         "score": 93,
@@ -1532,9 +1532,9 @@
         "leaguePercentile": 77.77777777777779,
         "leagueRank": 2,
         "leagueSize": 9,
-        "leagueMean": 4.909566616351984,
-        "leagueStd": 0.185758775966259,
-        "zScore": 0.9915202309915779
+        "leagueMean": 4.912397625829872,
+        "leagueStd": 0.18823151282134346,
+        "zScore": 0.9634549085785546
       },
       "kad": {
         "score": 62,
@@ -1558,8 +1558,8 @@
         "leagueRank": 8,
         "leagueSize": 9,
         "leagueMean": 1198223.6497158129,
-        "leagueStd": 270103.6783688663,
-        "zScore": -1.1693927184674
+        "leagueStd": 270103.67836886627,
+        "zScore": -1.1693927184674002
       }
     },
     "totalProfit": 25606249,
@@ -1570,14 +1570,14 @@
     "forcedRealizedProfit": -1087297,
     "openPositions": 12,
     "unrealizedProfit": -9163575,
-    "openPositionsAvgAgeDays": 21.01808120756173,
+    "openPositionsAvgAgeDays": 21.125906392746913,
     "orphanSales": 14,
     "orphanSaleProfit": 7168471,
     "forcedOrphanSales": 0,
     "totalTransactions": 162,
     "totalOverpay": 34796879,
     "avgOverpayRatio": 0.048824506120653734,
-    "ppm": 31.446835538528656,
+    "ppm": 31.800107763729674,
     "bestTrade": {
       "name": "Arthur",
       "profit": 5842862,
@@ -1600,11 +1600,11 @@
   },
   "3607127": {
     "name": "Blake",
-    "score": 79,
+    "score": 78,
     "level": "Gold",
     "cardTier": "gold",
     "league": "L1",
-    "pro": 95,
+    "pro": 94,
     "ovp": 91,
     "pkt": 76,
     "akt": 56,
@@ -1612,8 +1612,8 @@
     "tim": 91,
     "calculation": {
       "pro": {
-        "score": 95,
-        "weightedAverageProfit": 651595.8497615637,
+        "score": 94,
+        "weightedAverageProfit": 651560.934955884,
         "completedTrades": 42,
         "openPositions": 14,
         "orphanSales": 14,
@@ -1622,9 +1622,9 @@
         "leaguePercentile": 83.33333333333334,
         "leagueRank": 2,
         "leagueSize": 9,
-        "leagueMean": 387965.4061367091,
-        "leagueStd": 229905.4437625598,
-        "zScore": 1.146690740812232
+        "leagueMean": 388428.2802316614,
+        "leagueStd": 230602.56663451839,
+        "zScore": 1.141065594214574
       },
       "ovp": {
         "score": 91,
@@ -1636,16 +1636,16 @@
       },
       "pkt": {
         "score": 76,
-        "points": 6260,
+        "points": 6405,
         "totalSpent": 665561708,
         "managerSquadValue": 185865740,
         "ppmBasis": "squadValue",
-        "ppm": 33.68022530671871,
+        "ppm": 34.46035832101172,
         "perfBonus": 10,
-        "leaguePercentile": 50,
-        "leagueRank": 5,
+        "leaguePercentile": 72.22222222222221,
+        "leagueRank": 3,
         "leagueSize": 9,
-        "leagueMeanPpm": 33.041441851397316
+        "leagueMeanPpm": 33.495813145930796
       },
       "akt": {
         "score": 56,
@@ -1655,9 +1655,9 @@
         "leaguePercentile": 27.77777777777778,
         "leagueRank": 7,
         "leagueSize": 9,
-        "leagueMean": 4.909566616351984,
-        "leagueStd": 0.185758775966259,
-        "zScore": -0.9807278105274249
+        "leagueMean": 4.912397625829872,
+        "leagueStd": 0.18823151282134346,
+        "zScore": -0.982884344626873
       },
       "kad": {
         "score": 62,
@@ -1681,8 +1681,8 @@
         "leagueRank": 2,
         "leagueSize": 9,
         "leagueMean": 1198223.6497158129,
-        "leagueStd": 270103.6783688663,
-        "zScore": 0.8322832816408401
+        "leagueStd": 270103.67836886627,
+        "zScore": 0.8322832816408402
       }
     },
     "totalProfit": 33074100,
@@ -1693,14 +1693,14 @@
     "forcedRealizedProfit": -1310509,
     "openPositions": 14,
     "unrealizedProfit": 14950180,
-    "openPositionsAvgAgeDays": 33.13459763475529,
+    "openPositionsAvgAgeDays": 33.24242270998677,
     "orphanSales": 14,
     "orphanSaleProfit": 13470834,
     "forcedOrphanSales": 0,
     "totalTransactions": 112,
     "totalOverpay": 38482440,
     "avgOverpayRatio": 0.08530673307561853,
-    "ppm": 33.68022530671871,
+    "ppm": 34.46035832101172,
     "bestTrade": {
       "name": "Jordy Makengo",
       "profit": 9286040,
@@ -1730,57 +1730,57 @@
     "pro": 95,
     "ovp": 86,
     "pkt": 76,
-    "akt": 90,
+    "akt": 91,
     "kad": 71,
     "tim": 90,
     "calculation": {
       "pro": {
         "score": 95,
-        "weightedAverageProfit": 667260.0823236477,
-        "completedTrades": 62,
-        "openPositions": 15,
+        "weightedAverageProfit": 671955.5468099389,
+        "completedTrades": 65,
+        "openPositions": 13,
         "orphanSales": 15,
         "saleTimingSampleSize": 66,
         "profitBonus": 25,
         "leaguePercentile": 94.44444444444444,
         "leagueRank": 1,
         "leagueSize": 9,
-        "leagueMean": 387965.4061367091,
-        "leagueStd": 229905.4437625598,
-        "zScore": 1.2148241103650712
+        "leagueMean": 388428.2802316614,
+        "leagueStd": 230602.56663451839,
+        "zScore": 1.2295061183236495
       },
       "ovp": {
         "score": 86,
-        "purchaseCount": 77,
-        "averageOverpayRatio": 0.10614653789297156,
+        "purchaseCount": 78,
+        "averageOverpayRatio": 0.10517217719873205,
         "leaguePercentile": 72.22222222222221,
         "leagueRank": 3,
         "leagueSize": 9
       },
       "pkt": {
         "score": 76,
-        "points": 6519,
-        "totalSpent": 954271355,
+        "points": 6536,
+        "totalSpent": 963571355,
         "managerSquadValue": 192702525,
         "ppmBasis": "squadValue",
-        "ppm": 33.82934395903738,
+        "ppm": 33.91756283421818,
         "perfBonus": 10,
-        "leaguePercentile": 61.111111111111114,
-        "leagueRank": 4,
+        "leaguePercentile": 50,
+        "leagueRank": 5,
         "leagueSize": 9,
-        "leagueMeanPpm": 33.041441851397316
+        "leagueMeanPpm": 33.495813145930796
       },
       "akt": {
-        "score": 90,
-        "buys": 77,
-        "sells": 77,
-        "totalTransactions": 154,
+        "score": 91,
+        "buys": 78,
+        "sells": 80,
+        "totalTransactions": 158,
         "leaguePercentile": 61.111111111111114,
         "leagueRank": 4,
         "leagueSize": 9,
-        "leagueMean": 4.909566616351984,
-        "leagueStd": 0.185758775966259,
-        "zScore": 0.7206039115566536
+        "leagueMean": 4.912397625829872,
+        "leagueStd": 0.18823151282134346,
+        "zScore": 0.8314578895134583
       },
       "kad": {
         "score": 71,
@@ -1804,26 +1804,26 @@
         "leagueRank": 3,
         "leagueSize": 9,
         "leagueMean": 1198223.6497158129,
-        "leagueStd": 270103.6783688663,
-        "zScore": 0.7741393860367151
+        "leagueStd": 270103.67836886627,
+        "zScore": 0.7741393860367153
       }
     },
-    "totalProfit": 41149525,
-    "tradesCount": 62,
-    "completedTrades": 62,
+    "totalProfit": 40877368,
+    "tradesCount": 65,
+    "completedTrades": 65,
     "forcedCompletedTrades": 2,
-    "realizedProfit": 15657331,
+    "realizedProfit": 18593658,
     "forcedRealizedProfit": -1672489,
-    "openPositions": 15,
-    "unrealizedProfit": 17866971,
-    "openPositionsAvgAgeDays": 17.2785078125,
+    "openPositions": 13,
+    "unrealizedProfit": 14658487,
+    "openPositionsAvgAgeDays": 18.58388313034188,
     "orphanSales": 15,
     "orphanSaleProfit": 7625223,
     "forcedOrphanSales": 0,
-    "totalTransactions": 154,
-    "totalOverpay": 68967839,
-    "avgOverpayRatio": 0.10614653789297156,
-    "ppm": 33.82934395903738,
+    "totalTransactions": 158,
+    "totalOverpay": 69239996,
+    "avgOverpayRatio": 0.10517217719873205,
+    "ppm": 33.91756283421818,
     "bestTrade": {
       "name": "Arijon Ibrahimović",
       "profit": 5601165,
@@ -1859,18 +1859,18 @@
     "calculation": {
       "pro": {
         "score": 90,
-        "weightedAverageProfit": 486138.928617345,
+        "weightedAverageProfit": 485919.4877402311,
         "completedTrades": 27,
         "openPositions": 16,
         "orphanSales": 13,
         "saleTimingSampleSize": 34,
-        "profitBonus": 24.30694643086725,
+        "profitBonus": 24.295974387011555,
         "leaguePercentile": 65,
         "leagueRank": 4,
         "leagueSize": 10,
-        "leagueMean": -818.1648091959302,
-        "leagueStd": 665097.9620530538,
-        "zScore": 0.7321584506489544
+        "leagueMean": -1314.5365924217738,
+        "leagueStd": 664603.6425024946,
+        "zScore": 0.7331197019896322
       },
       "ovp": {
         "score": 63,
@@ -1882,16 +1882,16 @@
       },
       "pkt": {
         "score": 83,
-        "points": 6635,
+        "points": 6809,
         "totalSpent": 403383443,
         "managerSquadValue": 166655196,
         "ppmBasis": "squadValue",
-        "ppm": 39.81274007202272,
+        "ppm": 40.85681192922422,
         "perfBonus": 10,
         "leaguePercentile": 95,
         "leagueRank": 1,
         "leagueSize": 10,
-        "leagueMeanPpm": 34.45591710436523
+        "leagueMeanPpm": 35.13127933379603
       },
       "akt": {
         "score": 81,
@@ -1901,9 +1901,9 @@
         "leaguePercentile": 65,
         "leagueRank": 4,
         "leagueSize": 10,
-        "leagueMean": 4.226911215232126,
-        "leagueStd": 0.7601296970914534,
-        "zScore": 0.2682510424094839
+        "leagueMean": 4.227362683267579,
+        "leagueStd": 0.7609035859393769,
+        "zScore": 0.2673848820472562
       },
       "kad": {
         "score": 78,
@@ -1939,14 +1939,14 @@
     "forcedRealizedProfit": 0,
     "openPositions": 16,
     "unrealizedProfit": 14213119,
-    "openPositionsAvgAgeDays": 28.962762141203704,
+    "openPositionsAvgAgeDays": 29.070587280092592,
     "orphanSales": 13,
     "orphanSaleProfit": 1526637,
     "forcedOrphanSales": 0,
     "totalTransactions": 83,
     "totalOverpay": 48090131,
     "avgOverpayRatio": 0.27234286205181174,
-    "ppm": 39.81274007202272,
+    "ppm": 40.85681192922422,
     "bestTrade": {
       "name": "Jordy Makengo",
       "profit": 7188449,
@@ -1982,18 +1982,18 @@
     "calculation": {
       "pro": {
         "score": 87,
-        "weightedAverageProfit": 620888.2687833572,
-        "completedTrades": 45,
-        "openPositions": 14,
+        "weightedAverageProfit": 616338.9410867289,
+        "completedTrades": 46,
+        "openPositions": 13,
         "orphanSales": 14,
         "saleTimingSampleSize": 50,
         "profitBonus": 25,
         "leaguePercentile": 68.75,
         "leagueRank": 3,
         "leagueSize": 8,
-        "leagueMean": 360542.76055847335,
-        "leagueStd": 449596.72880136676,
-        "zScore": 0.5790645072506863
+        "leagueMean": 359901.0000709153,
+        "leagueStd": 449189.4385773955,
+        "zScore": 0.5708904061234495
       },
       "ovp": {
         "score": 84,
@@ -2005,28 +2005,28 @@
       },
       "pkt": {
         "score": 71,
-        "points": 5832,
+        "points": 5981,
         "totalSpent": 614846036,
         "managerSquadValue": 187753271,
         "ppmBasis": "squadValue",
-        "ppm": 31.062042056247318,
+        "ppm": 31.855636752128806,
         "perfBonus": 10,
         "leaguePercentile": 31.25,
         "leagueRank": 6,
         "leagueSize": 8,
-        "leagueMeanPpm": 34.113266073928656
+        "leagueMeanPpm": 34.604425969597614
       },
       "akt": {
         "score": 76,
         "buys": 59,
-        "sells": 59,
-        "totalTransactions": 118,
+        "sells": 60,
+        "totalTransactions": 119,
         "leaguePercentile": 31.25,
         "leagueRank": 6,
         "leagueSize": 8,
-        "leagueMean": 4.755146011157855,
-        "leagueStd": 0.3971718426086095,
-        "zScore": 0.06037054841599917
+        "leagueMean": 4.756192042366671,
+        "leagueStd": 0.397255024456398,
+        "zScore": 0.07878994219948657
       },
       "kad": {
         "score": 58,
@@ -2038,9 +2038,9 @@
         "leaguePercentile": 31.25,
         "leagueRank": 6,
         "leagueSize": 8,
-        "leagueMean": -7.299999999999998,
+        "leagueMean": -7.3,
         "leagueStd": 1.8731181032095734,
-        "zScore": -0.8008037493363415
+        "zScore": -0.8008037493363406
       },
       "tim": {
         "score": 86,
@@ -2049,27 +2049,27 @@
         "leaguePercentile": 56.25,
         "leagueRank": 4,
         "leagueSize": 8,
-        "leagueMean": 1074511.5873413454,
+        "leagueMean": 1074511.5873413451,
         "leagueStd": 463764.4387937968,
-        "zScore": 0.5157352583581789
+        "zScore": 0.5157352583581793
       }
     },
     "totalProfit": 31140233,
-    "tradesCount": 45,
-    "completedTrades": 45,
+    "tradesCount": 46,
+    "completedTrades": 46,
     "forcedCompletedTrades": 1,
-    "realizedProfit": 7398352,
+    "realizedProfit": 7614076,
     "forcedRealizedProfit": -4614898,
-    "openPositions": 14,
-    "unrealizedProfit": 20852505,
-    "openPositionsAvgAgeDays": 22.89153562830688,
+    "openPositions": 13,
+    "unrealizedProfit": 20636781,
+    "openPositionsAvgAgeDays": 24.51622759170228,
     "orphanSales": 14,
     "orphanSaleProfit": 2889376,
     "forcedOrphanSales": 0,
-    "totalTransactions": 118,
+    "totalTransactions": 119,
     "totalOverpay": 28502685,
     "avgOverpayRatio": 0.13633024840991276,
-    "ppm": 31.062042056247318,
+    "ppm": 31.855636752128806,
     "bestTrade": {
       "name": "Derry Scherhant",
       "profit": 12809594,
@@ -2092,13 +2092,13 @@
   },
   "3694149": {
     "name": "Flocke",
-    "score": 76,
+    "score": 77,
     "level": "Gold",
     "cardTier": "gold",
     "league": "L3",
     "pro": 62,
     "ovp": 87,
-    "pkt": 82,
+    "pkt": 83,
     "akt": 54,
     "kad": 90,
     "tim": 83,
@@ -2114,9 +2114,9 @@
         "leaguePercentile": 35,
         "leagueRank": 7,
         "leagueSize": 10,
-        "leagueMean": -818.1648091959302,
-        "leagueStd": 665097.9620530538,
-        "zScore": -0.5646033096001577
+        "leagueMean": -1314.5365924217738,
+        "leagueStd": 664603.6425024946,
+        "zScore": -0.5642763819171225
       },
       "ovp": {
         "score": 87,
@@ -2127,17 +2127,17 @@
         "leagueSize": 10
       },
       "pkt": {
-        "score": 82,
-        "points": 3551,
+        "score": 83,
+        "points": 3643,
         "totalSpent": 137310766,
         "managerSquadValue": 89912520,
         "ppmBasis": "squadValue",
-        "ppm": 39.49394366880163,
+        "ppm": 40.517160457742705,
         "perfBonus": 10,
         "leaguePercentile": 85,
         "leagueRank": 2,
         "leagueSize": 10,
-        "leagueMeanPpm": 34.45591710436523
+        "leagueMeanPpm": 35.13127933379603
       },
       "akt": {
         "score": 54,
@@ -2147,9 +2147,9 @@
         "leaguePercentile": 15,
         "leagueRank": 9,
         "leagueSize": 10,
-        "leagueMean": 4.226911215232126,
-        "leagueStd": 0.7601296970914534,
-        "zScore": -1.2745386490196327
+        "leagueMean": 4.227362683267579,
+        "leagueStd": 0.7609035859393769,
+        "zScore": -1.2738356910875703
       },
       "kad": {
         "score": 90,
@@ -2185,14 +2185,14 @@
     "forcedRealizedProfit": 0,
     "openPositions": 8,
     "unrealizedProfit": -32149971,
-    "openPositionsAvgAgeDays": 48.967940185185185,
+    "openPositionsAvgAgeDays": 49.07576530092592,
     "orphanSales": 11,
     "orphanSaleProfit": 13407282,
     "forcedOrphanSales": 0,
     "totalTransactions": 25,
     "totalOverpay": 14706659,
     "avgOverpayRatio": 0.11368732344093078,
-    "ppm": 39.49394366880163,
+    "ppm": 40.517160457742705,
     "bestTrade": {
       "name": "Justin Lerma",
       "profit": 7896524,
@@ -2221,25 +2221,25 @@
     "league": "L2",
     "pro": 55,
     "ovp": 78,
-    "pkt": 90,
+    "pkt": 89,
     "akt": 51,
     "kad": 96,
     "tim": 63,
     "calculation": {
       "pro": {
         "score": 55,
-        "weightedAverageProfit": -141794.69046458337,
+        "weightedAverageProfit": -142244.05033748836,
         "completedTrades": 13,
         "openPositions": 13,
         "orphanSales": 15,
         "saleTimingSampleSize": 22,
-        "profitBonus": -7.089734523229168,
+        "profitBonus": -7.112202516874418,
         "leaguePercentile": 18.75,
         "leagueRank": 7,
         "leagueSize": 8,
-        "leagueMean": 360542.76055847335,
-        "leagueStd": 449596.72880136676,
-        "zScore": -1.1173067303276376
+        "leagueMean": 359901.0000709153,
+        "leagueStd": 449189.4385773955,
+        "zScore": -1.1178914891648413
       },
       "ovp": {
         "score": 78,
@@ -2250,7 +2250,7 @@
         "leagueSize": 8
       },
       "pkt": {
-        "score": 90,
+        "score": 89,
         "points": 5130,
         "totalSpent": 305688625,
         "managerSquadValue": 116346996,
@@ -2260,7 +2260,7 @@
         "leaguePercentile": 93.75,
         "leagueRank": 1,
         "leagueSize": 8,
-        "leagueMeanPpm": 34.113266073928656
+        "leagueMeanPpm": 34.604425969597614
       },
       "akt": {
         "score": 51,
@@ -2270,9 +2270,9 @@
         "leaguePercentile": 6.25,
         "leagueRank": 8,
         "leagueSize": 8,
-        "leagueMean": 4.755146011157855,
-        "leagueStd": 0.3971718426086095,
-        "zScore": -1.8828445164032217
+        "leagueMean": 4.756192042366671,
+        "leagueStd": 0.397255024456398,
+        "zScore": -1.88508341249789
       },
       "kad": {
         "score": 96,
@@ -2284,9 +2284,9 @@
         "leaguePercentile": 93.75,
         "leagueRank": 1,
         "leagueSize": 8,
-        "leagueMean": -7.299999999999998,
+        "leagueMean": -7.3,
         "leagueStd": 1.8731181032095734,
-        "zScore": 1.3346729155605659
+        "zScore": 1.3346729155605668
       },
       "tim": {
         "score": 63,
@@ -2295,9 +2295,9 @@
         "leaguePercentile": 18.75,
         "leagueRank": 7,
         "leagueSize": 8,
-        "leagueMean": 1074511.5873413454,
+        "leagueMean": 1074511.5873413451,
         "leagueStd": 463764.4387937968,
-        "zScore": -0.527500451768104
+        "zScore": -0.5275004517681035
       }
     },
     "totalProfit": -14239079,
@@ -2308,7 +2308,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 13,
     "unrealizedProfit": -12769682,
-    "openPositionsAvgAgeDays": 27.59353512108262,
+    "openPositionsAvgAgeDays": 27.701360259971505,
     "orphanSales": 15,
     "orphanSaleProfit": 20447843,
     "forcedOrphanSales": 0,
@@ -2344,14 +2344,14 @@
     "league": "L2",
     "pro": 95,
     "ovp": 60,
-    "pkt": 78,
+    "pkt": 77,
     "akt": 85,
     "kad": 54,
     "tim": 92,
     "calculation": {
       "pro": {
         "score": 95,
-        "weightedAverageProfit": 910173.5291443575,
+        "weightedAverageProfit": 910006.1073753644,
         "completedTrades": 56,
         "openPositions": 13,
         "orphanSales": 14,
@@ -2360,9 +2360,9 @@
         "leaguePercentile": 93.75,
         "leagueRank": 1,
         "leagueSize": 8,
-        "leagueMean": 360542.76055847335,
-        "leagueStd": 449596.72880136676,
-        "zScore": 1.2224972589351575
+        "leagueMean": 359901.0000709153,
+        "leagueStd": 449189.4385773955,
+        "zScore": 1.2246617129883068
       },
       "ovp": {
         "score": 60,
@@ -2373,17 +2373,17 @@
         "leagueSize": 8
       },
       "pkt": {
-        "score": 78,
-        "points": 7839,
+        "score": 77,
+        "points": 7860,
         "totalSpent": 834020705,
         "managerSquadValue": 218799873,
         "ppmBasis": "squadValue",
-        "ppm": 35.827260283647426,
+        "ppm": 35.92323840151406,
         "perfBonus": 10,
-        "leaguePercentile": 81.25,
-        "leagueRank": 2,
+        "leaguePercentile": 56.25,
+        "leagueRank": 4,
         "leagueSize": 8,
-        "leagueMeanPpm": 34.113266073928656
+        "leagueMeanPpm": 34.604425969597614
       },
       "akt": {
         "score": 85,
@@ -2393,9 +2393,9 @@
         "leaguePercentile": 68.75,
         "leagueRank": 3,
         "leagueSize": 8,
-        "leagueMean": 4.755146011157855,
-        "leagueStd": 0.3971718426086095,
-        "zScore": 0.4695610097295609
+        "leagueMean": 4.756192042366671,
+        "leagueStd": 0.397255024456398,
+        "zScore": 0.46682953978090713
       },
       "kad": {
         "score": 54,
@@ -2407,9 +2407,9 @@
         "leaguePercentile": 12.5,
         "leagueRank": 7,
         "leagueSize": 8,
-        "leagueMean": -7.299999999999998,
+        "leagueMean": -7.3,
         "leagueStd": 1.8731181032095734,
-        "zScore": -1.2278990823157223
+        "zScore": -1.2278990823157214
       },
       "tim": {
         "score": 92,
@@ -2418,9 +2418,9 @@
         "leaguePercentile": 81.25,
         "leagueRank": 2,
         "leagueSize": 8,
-        "leagueMean": 1074511.5873413454,
+        "leagueMean": 1074511.5873413451,
         "leagueStd": 463764.4387937968,
-        "zScore": 0.8645314650223986
+        "zScore": 0.8645314650223992
       }
     },
     "totalProfit": 61000844,
@@ -2431,14 +2431,14 @@
     "forcedRealizedProfit": 2041957,
     "openPositions": 13,
     "unrealizedProfit": 12253025,
-    "openPositionsAvgAgeDays": 24.086700994480054,
+    "openPositionsAvgAgeDays": 24.194526156517096,
     "orphanSales": 14,
     "orphanSaleProfit": 8275937,
     "forcedOrphanSales": 0,
     "totalTransactions": 139,
     "totalOverpay": 56412247,
     "avgOverpayRatio": 0.2586896103793006,
-    "ppm": 35.827260283647426,
+    "ppm": 35.92323840151406,
     "bestTrade": {
       "name": "Jordy Makengo",
       "profit": 10085546,
@@ -2461,31 +2461,31 @@
   },
   "3849633": {
     "name": "tjalf",
-    "score": 75,
-    "level": "Gold",
-    "cardTier": "gold",
+    "score": 74,
+    "level": "Silber",
+    "cardTier": "silver",
     "league": "L3",
     "pro": 92,
     "ovp": 58,
-    "pkt": 70,
+    "pkt": 69,
     "akt": 97,
     "kad": 58,
     "tim": 72,
     "calculation": {
       "pro": {
         "score": 92,
-        "weightedAverageProfit": 607618.8401313626,
-        "completedTrades": 94,
-        "openPositions": 17,
+        "weightedAverageProfit": 602920.1949037386,
+        "completedTrades": 95,
+        "openPositions": 16,
         "orphanSales": 15,
         "saleTimingSampleSize": 90,
         "profitBonus": 25,
         "leaguePercentile": 75,
         "leagueRank": 3,
         "leagueSize": 10,
-        "leagueMean": -818.1648091959302,
-        "leagueStd": 665097.9620530538,
-        "zScore": 0.9148081029483359
+        "leagueMean": -1314.5365924217738,
+        "leagueStd": 664603.6425024946,
+        "zScore": 0.9091655429708126
       },
       "ovp": {
         "score": 58,
@@ -2496,29 +2496,29 @@
         "leagueSize": 10
       },
       "pkt": {
-        "score": 70,
-        "points": 6298,
+        "score": 69,
+        "points": 6413,
         "totalSpent": 1275412072,
         "managerSquadValue": 205180786,
         "ppmBasis": "squadValue",
-        "ppm": 30.694881927199557,
+        "ppm": 31.25536325803918,
         "perfBonus": 10,
         "leaguePercentile": 25,
         "leagueRank": 8,
         "leagueSize": 10,
-        "leagueMeanPpm": 34.45591710436523
+        "leagueMeanPpm": 35.13127933379603
       },
       "akt": {
         "score": 97,
         "buys": 111,
-        "sells": 109,
-        "totalTransactions": 220,
+        "sells": 110,
+        "totalTransactions": 221,
         "leaguePercentile": 95,
         "leagueRank": 1,
         "leagueSize": 10,
-        "leagueMean": 4.226911215232126,
-        "leagueStd": 0.7601296970914534,
-        "zScore": 1.5408574231046126
+        "leagueMean": 4.227362683267579,
+        "leagueStd": 0.7609035859393769,
+        "zScore": 1.5446302531926046
       },
       "kad": {
         "score": 58,
@@ -2547,21 +2547,21 @@
       }
     },
     "totalProfit": 43203322,
-    "tradesCount": 94,
-    "completedTrades": 94,
+    "tradesCount": 95,
+    "completedTrades": 95,
     "forcedCompletedTrades": 1,
-    "realizedProfit": 45398826,
+    "realizedProfit": 44820130,
     "forcedRealizedProfit": -388295,
-    "openPositions": 17,
-    "unrealizedProfit": -14299247,
-    "openPositionsAvgAgeDays": 16.17292300994009,
+    "openPositions": 16,
+    "unrealizedProfit": -13720551,
+    "openPositionsAvgAgeDays": 16.504862476851855,
     "orphanSales": 15,
     "orphanSaleProfit": 12103743,
     "forcedOrphanSales": 0,
-    "totalTransactions": 220,
+    "totalTransactions": 221,
     "totalOverpay": 105601780,
     "avgOverpayRatio": 0.3615581139367008,
-    "ppm": 30.694881927199557,
+    "ppm": 31.25536325803918,
     "bestTrade": {
       "name": "Faik Sakar",
       "profit": 5953438,
@@ -2597,7 +2597,7 @@
     "calculation": {
       "pro": {
         "score": 94,
-        "weightedAverageProfit": 754339.6331338106,
+        "weightedAverageProfit": 754308.2274534022,
         "completedTrades": 81,
         "openPositions": 17,
         "orphanSales": 15,
@@ -2606,9 +2606,9 @@
         "leaguePercentile": 95,
         "leagueRank": 1,
         "leagueSize": 10,
-        "leagueMean": -818.1648091959302,
-        "leagueStd": 665097.9620530538,
-        "zScore": 1.1354083774545813
+        "leagueMean": -1314.5365924217738,
+        "leagueStd": 664603.6425024946,
+        "zScore": 1.1369524867492549
       },
       "ovp": {
         "score": 73,
@@ -2620,16 +2620,16 @@
       },
       "pkt": {
         "score": 64,
-        "points": 6094,
+        "points": 6153,
         "totalSpent": 1080270709,
         "managerSquadValue": 224384763,
         "ppmBasis": "squadValue",
-        "ppm": 27.158706850339925,
+        "ppm": 27.42164805548762,
         "perfBonus": 10,
         "leaguePercentile": 5,
         "leagueRank": 10,
         "leagueSize": 10,
-        "leagueMeanPpm": 34.45591710436523
+        "leagueMeanPpm": 35.13127933379603
       },
       "akt": {
         "score": 96,
@@ -2639,9 +2639,9 @@
         "leaguePercentile": 85,
         "leagueRank": 2,
         "leagueSize": 10,
-        "leagueMean": 4.226911215232126,
-        "leagueStd": 0.7601296970914534,
-        "zScore": 1.3761971770532775
+        "leagueMean": 4.227362683267579,
+        "leagueStd": 0.7609035859393769,
+        "zScore": 1.3742041628116028
       },
       "kad": {
         "score": 84,
@@ -2677,14 +2677,14 @@
     "forcedRealizedProfit": -3047694,
     "openPositions": 17,
     "unrealizedProfit": 3350530,
-    "openPositionsAvgAgeDays": 13.123628370778867,
+    "openPositionsAvgAgeDays": 13.23145349809368,
     "orphanSales": 15,
     "orphanSaleProfit": 13470778,
     "forcedOrphanSales": 0,
     "totalTransactions": 194,
     "totalOverpay": 68180459,
     "avgOverpayRatio": 0.1896233104026007,
-    "ppm": 27.158706850339925,
+    "ppm": 27.42164805548762,
     "bestTrade": {
       "name": "Marcel Hoffmeier",
       "profit": 7852355,
@@ -2720,18 +2720,18 @@
     "calculation": {
       "pro": {
         "score": 52,
-        "weightedAverageProfit": 19808.461321751107,
+        "weightedAverageProfit": 19832.152653951925,
         "completedTrades": 40,
         "openPositions": 12,
         "orphanSales": 15,
         "saleTimingSampleSize": 43,
-        "profitBonus": 0.9904230660875554,
+        "profitBonus": 0.9916076326975963,
         "leaguePercentile": 5.555555555555555,
         "leagueRank": 9,
         "leagueSize": 9,
-        "leagueMean": 387965.4061367091,
-        "leagueStd": 229905.4437625598,
-        "zScore": -1.6013407024636643
+        "leagueMean": 388428.2802316614,
+        "leagueStd": 230602.56663451839,
+        "zScore": -1.598404271717829
       },
       "ovp": {
         "score": 80,
@@ -2743,16 +2743,16 @@
       },
       "pkt": {
         "score": 76,
-        "points": 4253,
+        "points": 4294,
         "totalSpent": 622549661,
         "managerSquadValue": 125646181,
         "ppmBasis": "squadValue",
-        "ppm": 33.84901925510971,
+        "ppm": 34.17533239629464,
         "perfBonus": 10,
-        "leaguePercentile": 72.22222222222221,
-        "leagueRank": 3,
+        "leaguePercentile": 61.111111111111114,
+        "leagueRank": 4,
         "leagueSize": 9,
-        "leagueMeanPpm": 33.041441851397316
+        "leagueMeanPpm": 33.495813145930796
       },
       "akt": {
         "score": 54,
@@ -2762,9 +2762,9 @@
         "leaguePercentile": 5.555555555555555,
         "leagueRank": 9,
         "leagueSize": 9,
-        "leagueMean": 4.909566616351984,
-        "leagueStd": 0.185758775966259,
-        "zScore": -1.2243587849064832
+        "leagueMean": 4.912397625829872,
+        "leagueStd": 0.18823151282134346,
+        "zScore": -1.223314817238945
       },
       "kad": {
         "score": 94,
@@ -2788,8 +2788,8 @@
         "leagueRank": 5,
         "leagueSize": 9,
         "leagueMean": 1198223.6497158129,
-        "leagueStd": 270103.6783688663,
-        "zScore": -0.20881369602529848
+        "leagueStd": 270103.67836886627,
+        "zScore": -0.20881369602529853
       }
     },
     "totalProfit": -14711692,
@@ -2800,14 +2800,14 @@
     "forcedRealizedProfit": 0,
     "openPositions": 12,
     "unrealizedProfit": 120099,
-    "openPositionsAvgAgeDays": 20.472527613811728,
+    "openPositionsAvgAgeDays": 20.58035278935185,
     "orphanSales": 15,
     "orphanSaleProfit": 12848846,
     "forcedOrphanSales": 0,
     "totalTransactions": 107,
     "totalOverpay": 71204095,
     "avgOverpayRatio": 0.15453546059277254,
-    "ppm": 33.84901925510971,
+    "ppm": 34.17533239629464,
     "bestTrade": {
       "name": "Justin Lerma",
       "profit": 7539818,
@@ -2843,7 +2843,7 @@
     "calculation": {
       "pro": {
         "score": 93,
-        "weightedAverageProfit": 684442.9978300249,
+        "weightedAverageProfit": 684454.4013046902,
         "completedTrades": 35,
         "openPositions": 12,
         "orphanSales": 15,
@@ -2852,9 +2852,9 @@
         "leaguePercentile": 85,
         "leagueRank": 2,
         "leagueSize": 10,
-        "leagueMean": -818.1648091959302,
-        "leagueStd": 665097.9620530538,
-        "zScore": 1.030316136473981
+        "leagueMean": -1314.5365924217738,
+        "leagueStd": 664603.6425024946,
+        "zScore": 1.03184649321951
       },
       "ovp": {
         "score": 97,
@@ -2866,16 +2866,16 @@
       },
       "pkt": {
         "score": 65,
-        "points": 5763,
+        "points": 5883,
         "totalSpent": 498148631,
         "managerSquadValue": 208743376,
         "ppmBasis": "squadValue",
-        "ppm": 27.60806168048178,
+        "ppm": 28.182930221460055,
         "perfBonus": 10,
         "leaguePercentile": 15,
         "leagueRank": 9,
         "leagueSize": 10,
-        "leagueMeanPpm": 34.45591710436523
+        "leagueMeanPpm": 35.13127933379603
       },
       "akt": {
         "score": 85,
@@ -2885,9 +2885,9 @@
         "leaguePercentile": 75,
         "leagueRank": 3,
         "leagueSize": 10,
-        "leagueMean": 4.226911215232126,
-        "leagueStd": 0.7601296970914534,
-        "zScore": 0.4710462764558556
+        "leagueMean": 4.227362683267579,
+        "leagueStd": 0.7609035859393769,
+        "zScore": 0.46997386004103386
       },
       "kad": {
         "score": 63,
@@ -2923,14 +2923,14 @@
     "forcedRealizedProfit": 0,
     "openPositions": 12,
     "unrealizedProfit": 15199934,
-    "openPositionsAvgAgeDays": 33.79310653935185,
+    "openPositionsAvgAgeDays": 33.90093165509259,
     "orphanSales": 15,
     "orphanSaleProfit": 1893803,
     "forcedOrphanSales": 0,
     "totalTransactions": 97,
     "totalOverpay": 29847082,
     "avgOverpayRatio": 0.05978767399081868,
-    "ppm": 27.60806168048178,
+    "ppm": 28.182930221460055,
     "bestTrade": {
       "name": "Fábio Silva",
       "profit": 5978547,
@@ -2959,7 +2959,7 @@
     "league": "L3",
     "pro": 51,
     "ovp": 92,
-    "pkt": 74,
+    "pkt": 73,
     "akt": 52,
     "kad": 96,
     "tim": 50,
@@ -2975,9 +2975,9 @@
         "leaguePercentile": 5,
         "leagueRank": 10,
         "leagueSize": 10,
-        "leagueMean": -818.1648091959302,
-        "leagueStd": 665097.9620530538,
-        "zScore": -1.7417087653116479
+        "leagueMean": -1314.5365924217738,
+        "leagueStd": 664603.6425024946,
+        "zScore": -1.7422573462816153
       },
       "ovp": {
         "score": 92,
@@ -2988,17 +2988,17 @@
         "leagueSize": 10
       },
       "pkt": {
-        "score": 74,
-        "points": 3438,
+        "score": 73,
+        "points": 3427,
         "totalSpent": 98932782,
         "managerSquadValue": 100818376,
         "ppmBasis": "squadValue",
-        "ppm": 34.100926204167386,
+        "ppm": 33.99181911043677,
         "perfBonus": 10,
         "leaguePercentile": 35,
         "leagueRank": 7,
         "leagueSize": 10,
-        "leagueMeanPpm": 34.45591710436523
+        "leagueMeanPpm": 35.13127933379603
       },
       "akt": {
         "score": 52,
@@ -3008,9 +3008,9 @@
         "leaguePercentile": 5,
         "leagueRank": 10,
         "leagueSize": 10,
-        "leagueMean": 4.226911215232126,
-        "leagueStd": 0.7601296970914534,
-        "zScore": -1.4943091504253518
+        "leagueMean": 4.227362683267579,
+        "leagueStd": 0.7609035859393769,
+        "zScore": -1.4933826714805314
       },
       "kad": {
         "score": 96,
@@ -3046,14 +3046,14 @@
     "forcedRealizedProfit": 0,
     "openPositions": 8,
     "unrealizedProfit": -33003107,
-    "openPositionsAvgAgeDays": 48.60894568287036,
+    "openPositionsAvgAgeDays": 48.716770798611115,
     "orphanSales": 7,
     "orphanSaleProfit": 5604688,
     "forcedOrphanSales": 0,
     "totalTransactions": 21,
     "totalOverpay": 9012356,
     "avgOverpayRatio": 0.09879370542686643,
-    "ppm": 34.100926204167386,
+    "ppm": 33.99181911043677,
     "bestTrade": {
       "name": "Örjan Nyland",
       "profit": 3750000,
@@ -3082,25 +3082,25 @@
     "league": "L2",
     "pro": 80,
     "ovp": 96,
-    "pkt": 74,
+    "pkt": 75,
     "akt": 81,
     "kad": 94,
     "tim": 91,
     "calculation": {
       "pro": {
         "score": 80,
-        "weightedAverageProfit": 462858.59413667937,
+        "weightedAverageProfit": 462742.60261730425,
         "completedTrades": 50,
         "openPositions": 16,
         "orphanSales": 13,
         "saleTimingSampleSize": 54,
-        "profitBonus": 23.142929706833968,
+        "profitBonus": 23.137130130865213,
         "leaguePercentile": 43.75,
         "leagueRank": 5,
         "leagueSize": 8,
-        "leagueMean": 360542.76055847335,
-        "leagueStd": 449596.72880136676,
-        "zScore": 0.22757245999316306
+        "leagueMean": 359901.0000709153,
+        "leagueStd": 449189.4385773955,
+        "zScore": 0.2289492889060197
       },
       "ovp": {
         "score": 96,
@@ -3111,17 +3111,17 @@
         "leagueSize": 8
       },
       "pkt": {
-        "score": 74,
-        "points": 5829,
+        "score": 75,
+        "points": 6032,
         "totalSpent": 621857099,
         "managerSquadValue": 172634006,
         "ppmBasis": "squadValue",
-        "ppm": 33.76507407237019,
+        "ppm": 34.94097217439303,
         "perfBonus": 10,
         "leaguePercentile": 43.75,
         "leagueRank": 5,
         "leagueSize": 8,
-        "leagueMeanPpm": 34.113266073928656
+        "leagueMeanPpm": 34.604425969597614
       },
       "akt": {
         "score": 81,
@@ -3131,9 +3131,9 @@
         "leaguePercentile": 56.25,
         "leagueRank": 4,
         "leagueSize": 8,
-        "leagueMean": 4.755146011157855,
-        "leagueStd": 0.3971718426086095,
-        "zScore": 0.2829718203575668
+        "leagueMean": 4.756192042366671,
+        "leagueStd": 0.397255024456398,
+        "zScore": 0.2802794206096501
       },
       "kad": {
         "score": 94,
@@ -3145,9 +3145,9 @@
         "leaguePercentile": 81.25,
         "leagueRank": 2,
         "leagueSize": 8,
-        "leagueMean": -7.299999999999998,
+        "leagueMean": -7.3,
         "leagueStd": 1.8731181032095734,
-        "zScore": 1.1211252490708759
+        "zScore": 1.121125249070877
       },
       "tim": {
         "score": 91,
@@ -3156,9 +3156,9 @@
         "leaguePercentile": 68.75,
         "leagueRank": 3,
         "leagueSize": 8,
-        "leagueMean": 1074511.5873413454,
+        "leagueMean": 1074511.5873413451,
         "leagueStd": 463764.4387937968,
-        "zScore": 0.797227660547236
+        "zScore": 0.7972276605472365
       }
     },
     "totalProfit": 18447027,
@@ -3169,14 +3169,14 @@
     "forcedRealizedProfit": 0,
     "openPositions": 16,
     "unrealizedProfit": 15581553,
-    "openPositionsAvgAgeDays": 20.9690113599537,
+    "openPositionsAvgAgeDays": 21.076836498842596,
     "orphanSales": 13,
     "orphanSaleProfit": 6403843,
     "forcedOrphanSales": 0,
     "totalTransactions": 129,
     "totalOverpay": 51525163,
     "avgOverpayRatio": 0.08258313808521583,
-    "ppm": 33.76507407237019,
+    "ppm": 34.94097217439303,
     "bestTrade": {
       "name": "Leonidas Stergiou",
       "profit": 4680023,
@@ -3205,7 +3205,7 @@
     "league": "L3",
     "pro": 58,
     "ovp": 53,
-    "pkt": 76,
+    "pkt": 77,
     "akt": 74,
     "kad": 84,
     "tim": 92,
@@ -3221,9 +3221,9 @@
         "leaguePercentile": 25,
         "leagueRank": 8,
         "leagueSize": 10,
-        "leagueMean": -818.1648091959302,
-        "leagueStd": 665097.9620530538,
-        "zScore": -0.8331830769676836
+        "leagueMean": -1314.5365924217738,
+        "leagueStd": 664603.6425024946,
+        "zScore": -0.8330559138080483
       },
       "ovp": {
         "score": 53,
@@ -3234,17 +3234,17 @@
         "leagueSize": 10
       },
       "pkt": {
-        "score": 76,
-        "points": 4273,
+        "score": 77,
+        "points": 4389,
         "totalSpent": 368417207,
         "managerSquadValue": 120706856,
         "ppmBasis": "squadValue",
-        "ppm": 35.399811921205206,
+        "ppm": 36.36081781468983,
         "perfBonus": 10,
         "leaguePercentile": 55.00000000000001,
         "leagueRank": 5,
         "leagueSize": 10,
-        "leagueMeanPpm": 34.45591710436523
+        "leagueMeanPpm": 35.13127933379603
       },
       "akt": {
         "score": 74,
@@ -3254,9 +3254,9 @@
         "leaguePercentile": 45,
         "leagueRank": 6,
         "leagueSize": 10,
-        "leagueMean": 4.226911215232126,
-        "leagueStd": 0.7601296970914534,
-        "zScore": -0.009739798463798298
+        "leagueMean": 4.227362683267579,
+        "leagueStd": 0.7609035859393769,
+        "zScore": -0.01032322390986559
       },
       "kad": {
         "score": 84,
@@ -3292,14 +3292,14 @@
     "forcedRealizedProfit": 0,
     "openPositions": 11,
     "unrealizedProfit": 2532667,
-    "openPositionsAvgAgeDays": 33.374477026515144,
+    "openPositionsAvgAgeDays": 33.48230214225589,
     "orphanSales": 12,
     "orphanSaleProfit": 2655287,
     "forcedOrphanSales": 0,
     "totalTransactions": 67,
     "totalOverpay": 36149180,
     "avgOverpayRatio": 0.7473104982842393,
-    "ppm": 35.399811921205206,
+    "ppm": 36.36081781468983,
     "bestTrade": {
       "name": "Marcel Sabitzer",
       "profit": 3558697,
