@@ -1,8 +1,8 @@
 {
   "matchday": 7,
-  "totalPoints": 2540,
-  "totalBudget": 149108854,
-  "timestamp": "2026-10-25T23:12:29.471Z",
+  "totalPoints": 2501,
+  "totalBudget": 149451377,
+  "timestamp": "2026-10-27T00:24:10.121Z",
   "lineup": [
     {
       "id": "1728",
@@ -10,8 +10,8 @@
       "name": "Nyland",
       "lastName": "Nyland",
       "position": 1,
-      "marketValue": 597013,
-      "points": 141,
+      "marketValue": 867420,
+      "points": 132,
       "imagePath": "content/file/361c8899e8db48868bb66d49e2cd4d2d.png",
       "teamName": "Leipzig"
     },
@@ -21,7 +21,7 @@
       "name": "Bensebaini",
       "lastName": "Bensebaini",
       "position": 2,
-      "marketValue": 6030603,
+      "marketValue": 6063136,
       "points": 184,
       "imagePath": "content/file/f2e48e2f879643559eb9d2cdb6db0d7a.png",
       "teamName": "Dortmund"
@@ -32,8 +32,8 @@
       "name": "Scally",
       "lastName": "Scally",
       "position": 2,
-      "marketValue": 6618061,
-      "points": 206,
+      "marketValue": 6747192,
+      "points": 207,
       "imagePath": "content/file/d6ec0ce09dc940e7ae1e339aba844c03.png",
       "teamName": "M'gladbach"
     },
@@ -43,10 +43,21 @@
       "name": "Caci",
       "lastName": "Caci",
       "position": 2,
-      "marketValue": 12709503,
+      "marketValue": 12976317,
       "points": 229,
       "imagePath": "content/file/5bb349b2622049a7aa73a59edcec1781.png",
       "teamName": "Mainz"
+    },
+    {
+      "id": "7320",
+      "teamId": 29,
+      "name": "Scheller",
+      "lastName": "Scheller",
+      "position": 2,
+      "marketValue": 8911131,
+      "points": 176,
+      "imagePath": "content/file/06f63d14a0f4493faf04f78ea6aa5f10.png",
+      "teamName": "Paderborn"
     },
     {
       "id": "8329",
@@ -54,8 +65,8 @@
       "name": "Olise",
       "lastName": "Olise",
       "position": 3,
-      "marketValue": 65053868,
-      "points": 382,
+      "marketValue": 65087454,
+      "points": 365,
       "imagePath": "content/file/2d1bffc491014bb582c5d1c622b0ee37.png",
       "teamName": "Bayern"
     },
@@ -65,8 +76,8 @@
       "name": "Reis",
       "lastName": "Reis",
       "position": 3,
-      "marketValue": 10455636,
-      "points": 201,
+      "marketValue": 10629101,
+      "points": 206,
       "imagePath": "content/file/4b8927aad68d467b96d281d272a77f35.png",
       "teamName": "Bremen"
     },
@@ -76,7 +87,7 @@
       "name": "Kramarić",
       "lastName": "Kramarić",
       "position": 3,
-      "marketValue": 5095968,
+      "marketValue": 5300107,
       "points": 241,
       "imagePath": "content/file/26cffab4e6be4195a3d2817f15c60ee2.png",
       "teamName": "Hoffenheim"
@@ -87,21 +98,10 @@
       "name": "Mohya",
       "lastName": "Mohya",
       "position": 3,
-      "marketValue": 6111975,
+      "marketValue": 6510440,
       "points": 276,
       "imagePath": "content/file/4fc954ae0ffd4f5ab6d58a98b51cccd9.png",
       "teamName": "M'gladbach"
-    },
-    {
-      "id": "8292",
-      "teamId": 29,
-      "name": "Castañeda",
-      "lastName": "Castañeda",
-      "position": 3,
-      "marketValue": 10472026,
-      "points": 183,
-      "imagePath": "content/file/37ddcd7042414ce59c844f52d87ee300.png",
-      "teamName": "Paderborn"
     },
     {
       "id": "2854",
@@ -109,8 +109,8 @@
       "name": "Demirović",
       "lastName": "Demirović",
       "position": 4,
-      "marketValue": 13142336,
-      "points": 220,
+      "marketValue": 13337717,
+      "points": 208,
       "imagePath": "content/file/80dff151ca80494294c4872fe9d6d725.png",
       "teamName": "Stuttgart"
     },
@@ -120,7 +120,7 @@
       "name": "Rômulo",
       "lastName": "Rômulo",
       "position": 4,
-      "marketValue": 12821865,
+      "marketValue": 13021362,
       "points": 277,
       "imagePath": "content/file/040691ff56a547f291aae153a0681fac.png",
       "teamName": "Leipzig"
