@@ -1,19 +1,19 @@
 {
   "matchday": 8,
-  "totalPoints": 2213,
-  "totalBudget": 149149092,
-  "timestamp": "2026-11-01T00:03:49.832Z",
+  "totalPoints": 2272,
+  "totalBudget": 149741082,
+  "timestamp": "2026-11-02T00:33:56.508Z",
   "lineup": [
     {
-      "id": "577",
-      "teamId": 15,
-      "name": "Batz",
-      "lastName": "Batz",
+      "id": "9513",
+      "teamId": 10,
+      "name": "Hein",
+      "lastName": "Hein",
       "position": 1,
-      "marketValue": 500000,
-      "points": 120,
-      "imagePath": "content/file/61c6f55172674b6eb750e6263b23da0d.png",
-      "teamName": "M'gladbach"
+      "marketValue": 12924744,
+      "points": 197,
+      "imagePath": "content/file/0342913c28ed45b18f310732f9b90b16.png",
+      "teamName": "Bremen"
     },
     {
       "id": "2038",
@@ -21,21 +21,21 @@
       "name": "Laimer",
       "lastName": "Laimer",
       "position": 2,
-      "marketValue": 23006440,
+      "marketValue": 23194232,
       "points": 250,
       "imagePath": "content/file/cb9d5de1bbd14bf0915f1ec819569c17.png",
       "teamName": "Bayern"
     },
     {
-      "id": "2294",
-      "teamId": 10,
-      "name": "Pieper",
-      "lastName": "Pieper",
+      "id": "10024",
+      "teamId": 28,
+      "name": "Schmied",
+      "lastName": "Schmied",
       "position": 2,
-      "marketValue": 13783876,
-      "points": 168,
-      "imagePath": "content/file/32262c6e17164fd1a62ee34e358e2540.png",
-      "teamName": "Bremen"
+      "marketValue": 1365810,
+      "points": 113,
+      "imagePath": "content/file/312960f02c6e4acab4db65b9c63eaf01.png",
+      "teamName": "Köln"
     },
     {
       "id": "6292",
@@ -43,21 +43,32 @@
       "name": "Hansen",
       "lastName": "Hansen",
       "position": 2,
-      "marketValue": 6972591,
+      "marketValue": 7155382,
       "points": 143,
       "imagePath": "content/file/c747e1ad35ed44f4afbc5de1075d8bf1.png",
       "teamName": "Paderborn"
     },
     {
-      "id": "11007",
-      "teamId": 5,
-      "name": "Irié",
-      "lastName": "Irié",
+      "id": "7277",
+      "teamId": 4,
+      "name": "Chaïbi",
+      "lastName": "Chaïbi",
       "position": 3,
-      "marketValue": 4808575,
-      "points": 138,
-      "imagePath": "content/file/495fd2fe440e4673a4c36e223f53eb4e.png",
-      "teamName": "Freiburg"
+      "marketValue": 8692437,
+      "points": 189,
+      "imagePath": "content/file/774d9ee4bd994b9dae8672fbf45215fe.png",
+      "teamName": "Frankfurt"
+    },
+    {
+      "id": "16369",
+      "teamId": 4,
+      "name": "Onyedika",
+      "lastName": "Onyedika",
+      "position": 3,
+      "marketValue": 10174918,
+      "points": 191,
+      "imagePath": "content/file/4413ed18fac54a58a6e94d858ea72074.png",
+      "teamName": "Frankfurt"
     },
     {
       "id": "2988",
@@ -65,20 +76,9 @@
       "name": "Leweling",
       "lastName": "Leweling",
       "position": 3,
-      "marketValue": 12755612,
+      "marketValue": 12905535,
       "points": 219,
       "imagePath": "content/file/c9e7ad1b174e48d8aaf075b0bc0bb13d.png",
-      "teamName": "Stuttgart"
-    },
-    {
-      "id": "11955",
-      "teamId": 9,
-      "name": "El Khannouss",
-      "lastName": "El Khannouss",
-      "position": 3,
-      "marketValue": 14634094,
-      "points": 205,
-      "imagePath": "content/file/5647309665b04428a87e221756ac45de.png",
       "teamName": "Stuttgart"
     },
     {
@@ -87,7 +87,7 @@
       "name": "Dinkçi",
       "lastName": "Dinkçi",
       "position": 3,
-      "marketValue": 6957418,
+      "marketValue": 6990198,
       "points": 166,
       "imagePath": "content/file/174ad85385c44b14afdb5c2c71ce799f.png",
       "teamName": "Bremen"
@@ -98,7 +98,7 @@
       "name": "Nusa",
       "lastName": "Nusa",
       "position": 3,
-      "marketValue": 30452417,
+      "marketValue": 30587435,
       "points": 333,
       "imagePath": "content/file/9a7ea9c911e04f9e9cf0fa6c4b57ca54.png",
       "teamName": "Leipzig"
@@ -109,7 +109,7 @@
       "name": "Demirović",
       "lastName": "Demirović",
       "position": 4,
-      "marketValue": 14062001,
+      "marketValue": 14267557,
       "points": 245,
       "imagePath": "content/file/80dff151ca80494294c4872fe9d6d725.png",
       "teamName": "Stuttgart"
@@ -120,7 +120,7 @@
       "name": "Füllkrug",
       "lastName": "Füllkrug",
       "position": 4,
-      "marketValue": 21216068,
+      "marketValue": 21482834,
       "points": 226,
       "imagePath": "content/file/b83a0c4ef29b40d99020bb11e9e1bc7f.png",
       "teamName": "Bremen"
