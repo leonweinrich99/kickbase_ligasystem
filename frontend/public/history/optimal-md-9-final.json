@@ -1,8 +1,8 @@
 {
   "matchday": 9,
-  "totalPoints": 2628,
-  "totalBudget": 149864497,
-  "timestamp": "2026-11-09T00:44:31.860Z",
+  "totalPoints": 2549,
+  "totalBudget": 147790320,
+  "timestamp": "2026-11-10T03:26:16.020Z",
   "lineup": [
     {
       "id": "2279",
@@ -10,8 +10,8 @@
       "name": "Rönnow",
       "lastName": "Rönnow",
       "position": 1,
-      "marketValue": 9966786,
-      "points": 259,
+      "marketValue": 9859883,
+      "points": 256,
       "imagePath": "content/file/a74539007fa347f28af0ce83caafef6f.png",
       "teamName": "Union Berlin"
     },
@@ -21,7 +21,7 @@
       "name": "Muheim",
       "lastName": "Muheim",
       "position": 2,
-      "marketValue": 10507702,
+      "marketValue": 10675810,
       "points": 213,
       "imagePath": "content/file/6b31cba3484c46c98c5575fe4f79b349.png",
       "teamName": "Hamburg"
@@ -32,10 +32,21 @@
       "name": "Nandja",
       "lastName": "Nandja",
       "position": 2,
-      "marketValue": 4342435,
-      "points": 155,
+      "marketValue": 4709304,
+      "points": 158,
       "imagePath": "content/file/74d769a877844fa1bf2f65f53f4fb91f.png",
       "teamName": "Hamburg"
+    },
+    {
+      "id": "11161",
+      "teamId": 14,
+      "name": "Machida",
+      "lastName": "Machida",
+      "position": 2,
+      "marketValue": 11379379,
+      "points": 170,
+      "imagePath": "content/file/80f0a50727b54ea5a90a99a754cc7a6c.png",
+      "teamName": "Hoffenheim"
     },
     {
       "id": "2522",
@@ -43,8 +54,8 @@
       "name": "Raum",
       "lastName": "Raum",
       "position": 2,
-      "marketValue": 30248574,
-      "points": 332,
+      "marketValue": 30337730,
+      "points": 331,
       "imagePath": "content/file/ff40a7c5554548ee8a8a51168c408d77.png",
       "teamName": "Leipzig"
     },
@@ -54,10 +65,21 @@
       "name": "Nmecha",
       "lastName": "Nmecha",
       "position": 3,
-      "marketValue": 29292588,
-      "points": 336,
+      "marketValue": 29382711,
+      "points": 341,
       "imagePath": "content/file/f83b3a24df594aaf81be1d58da773656.png",
       "teamName": "Dortmund"
+    },
+    {
+      "id": "2125",
+      "teamId": 5,
+      "name": "Beste",
+      "lastName": "Beste",
+      "position": 3,
+      "marketValue": 12526930,
+      "points": 193,
+      "imagePath": "content/file/50008e312d584e419fc78f1d54151bc3.png",
+      "teamName": "Freiburg"
     },
     {
       "id": "9605",
@@ -65,21 +87,10 @@
       "name": "Grønbæk",
       "lastName": "Grønbæk",
       "position": 3,
-      "marketValue": 8553841,
-      "points": 297,
+      "marketValue": 8912653,
+      "points": 300,
       "imagePath": "content/file/02b24cefd3da410ca1d4639a2fb7ccac.png",
       "teamName": "Hamburg"
-    },
-    {
-      "id": "1671",
-      "teamId": 9,
-      "name": "Prömel",
-      "lastName": "Prömel",
-      "position": 3,
-      "marketValue": 11183296,
-      "points": 187,
-      "imagePath": "content/file/08b903ec758e4ca3be71c96efaf7d324.png",
-      "teamName": "Stuttgart"
     },
     {
       "id": "2015",
@@ -87,8 +98,8 @@
       "name": "Obermair",
       "lastName": "Obermair",
       "position": 3,
-      "marketValue": 9669802,
-      "points": 201,
+      "marketValue": 9881348,
+      "points": 197,
       "imagePath": "content/file/0d9820e6e0904252b629770883bf6ed2.png",
       "teamName": "Paderborn"
     },
@@ -98,8 +109,8 @@
       "name": "Banzuzi",
       "lastName": "Banzuzi",
       "position": 3,
-      "marketValue": 12275625,
-      "points": 231,
+      "marketValue": 12436618,
+      "points": 217,
       "imagePath": "content/file/a9c36464a61049d0b9acd73d6c4e9c96.png",
       "teamName": "Leipzig"
     },
@@ -109,20 +120,9 @@
       "name": "Lemperle",
       "lastName": "Lemperle",
       "position": 4,
-      "marketValue": 7331640,
-      "points": 179,
+      "marketValue": 7687954,
+      "points": 173,
       "imagePath": "content/file/531648f7c8e7446883243fb819e94d82.png",
-      "teamName": "Hoffenheim"
-    },
-    {
-      "id": "3158",
-      "teamId": 14,
-      "name": "Asllani",
-      "lastName": "Asllani",
-      "position": 4,
-      "marketValue": 16492208,
-      "points": 238,
-      "imagePath": "content/file/61214fe54f31411ea068f8fb8b3c1e49.png",
       "teamName": "Hoffenheim"
     }
   ]
