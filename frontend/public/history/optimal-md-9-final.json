@@ -1,8 +1,8 @@
 {
   "matchday": 9,
-  "totalPoints": 2492,
-  "totalBudget": 149745513,
-  "timestamp": "2026-11-16T00:58:19.805Z",
+  "totalPoints": 2487,
+  "totalBudget": 149920797,
+  "timestamp": "2026-11-17T03:41:55.620Z",
   "lineup": [
     {
       "id": "2279",
@@ -10,7 +10,7 @@
       "name": "Rönnow",
       "lastName": "Rönnow",
       "position": 1,
-      "marketValue": 10096276,
+      "marketValue": 10120794,
       "points": 256,
       "imagePath": "content/file/a74539007fa347f28af0ce83caafef6f.png",
       "teamName": "Union Berlin"
@@ -21,7 +21,7 @@
       "name": "Muheim",
       "lastName": "Muheim",
       "position": 2,
-      "marketValue": 11324045,
+      "marketValue": 11404503,
       "points": 213,
       "imagePath": "content/file/6b31cba3484c46c98c5575fe4f79b349.png",
       "teamName": "Hamburg"
@@ -32,7 +32,7 @@
       "name": "Nandja",
       "lastName": "Nandja",
       "position": 2,
-      "marketValue": 6074088,
+      "marketValue": 5904482,
       "points": 158,
       "imagePath": "content/file/74d769a877844fa1bf2f65f53f4fb91f.png",
       "teamName": "Hamburg"
@@ -43,7 +43,7 @@
       "name": "Raum",
       "lastName": "Raum",
       "position": 2,
-      "marketValue": 30756226,
+      "marketValue": 30822026,
       "points": 331,
       "imagePath": "content/file/ff40a7c5554548ee8a8a51168c408d77.png",
       "teamName": "Leipzig"
@@ -54,21 +54,10 @@
       "name": "Nmecha",
       "lastName": "Nmecha",
       "position": 3,
-      "marketValue": 29814055,
+      "marketValue": 29878631,
       "points": 341,
       "imagePath": "content/file/f83b3a24df594aaf81be1d58da773656.png",
       "teamName": "Dortmund"
-    },
-    {
-      "id": "2125",
-      "teamId": 5,
-      "name": "Beste",
-      "lastName": "Beste",
-      "position": 3,
-      "marketValue": 13339618,
-      "points": 193,
-      "imagePath": "content/file/50008e312d584e419fc78f1d54151bc3.png",
-      "teamName": "Freiburg"
     },
     {
       "id": "9605",
@@ -76,10 +65,21 @@
       "name": "Grønbæk",
       "lastName": "Grønbæk",
       "position": 3,
-      "marketValue": 10564642,
+      "marketValue": 10708419,
       "points": 300,
       "imagePath": "content/file/02b24cefd3da410ca1d4639a2fb7ccac.png",
       "teamName": "Hamburg"
+    },
+    {
+      "id": "1671",
+      "teamId": 9,
+      "name": "Prömel",
+      "lastName": "Prömel",
+      "position": 3,
+      "marketValue": 12602476,
+      "points": 188,
+      "imagePath": "content/file/08b903ec758e4ca3be71c96efaf7d324.png",
+      "teamName": "Stuttgart"
     },
     {
       "id": "2015",
@@ -87,7 +87,7 @@
       "name": "Obermair",
       "lastName": "Obermair",
       "position": 3,
-      "marketValue": 10563209,
+      "marketValue": 10575727,
       "points": 197,
       "imagePath": "content/file/0d9820e6e0904252b629770883bf6ed2.png",
       "teamName": "Paderborn"
@@ -98,7 +98,7 @@
       "name": "Banzuzi",
       "lastName": "Banzuzi",
       "position": 3,
-      "marketValue": 13563436,
+      "marketValue": 13742119,
       "points": 217,
       "imagePath": "content/file/a9c36464a61049d0b9acd73d6c4e9c96.png",
       "teamName": "Leipzig"
@@ -109,7 +109,7 @@
       "name": "Adamu",
       "lastName": "Adamu",
       "position": 4,
-      "marketValue": 3795743,
+      "marketValue": 3991292,
       "points": 113,
       "imagePath": "content/file/61eaae6121e34a598bac55925001ce96.png",
       "teamName": "Schalke"
@@ -120,7 +120,7 @@
       "name": "Lemperle",
       "lastName": "Lemperle",
       "position": 4,
-      "marketValue": 9854175,
+      "marketValue": 10170328,
       "points": 173,
       "imagePath": "content/file/531648f7c8e7446883243fb819e94d82.png",
       "teamName": "Hoffenheim"
