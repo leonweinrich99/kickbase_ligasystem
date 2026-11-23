@@ -99,3 +99,19 @@ export async function resolveMatchday(leagueId, token, dayNumber) {
   const ranking = await getJson(`${API_BASE}/leagues/${leagueId}/ranking`, token);
   return ranking?.day || null;
 }
+
+// Uebersetzt die eti-Codes aus playercenter-events in Klartext (Owner-Wunsch
+// 23.11.2026: "Punkte mit Aktionen mappen, also Pass etc. und das beim
+// Anklicken des Spielers als Liste anzeigen, wie im echten Live-Modus").
+// /v4/live/eventtypes liefert GENAU diese Zuordnung (id -> Titel, z.B.
+// "Accurate long Ball", "Shot Assist") - verifiziert per Diagnose-Workflow
+// gegen echte eti-Codes aus einem Live-Spiel, 18/18 Treffer. Modul-weiter
+// Cache, damit nicht JEDE Anfrage (pro Spieler-Click potenziell) einen
+// weiteren Kickbase-Call ausloest - die Liste aendert sich laut Doku "selten".
+let eventTypeMapCache = null;
+export async function getEventTypeMap(token) {
+  if (eventTypeMapCache) return eventTypeMapCache;
+  const data = await getJson(`${API_BASE}/live/eventtypes`, token);
+  eventTypeMapCache = new Map((data?.it || []).map((x) => [x.i, x.ti]));
+  return eventTypeMapCache;
+}

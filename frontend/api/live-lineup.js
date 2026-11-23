@@ -15,7 +15,7 @@
 // backend/reconstructStartingEleven.js), danach liefert playercenter PRO
 // Spieler die Live-Punkte + minutengenaue Event-Liste fuer den aktuellen
 // Spieltag.
-import { API_BASE, COMPETITION_ID, loginAndFindLeague, getJson, resolveMatchday } from './_kickbaseClient.js';
+import { API_BASE, COMPETITION_ID, loginAndFindLeague, getJson, resolveMatchday, getEventTypeMap } from './_kickbaseClient.js';
 
 export default async function handler(req, res) {
   const { userId, leagueKey, dayNumber } = req.query;
@@ -46,6 +46,14 @@ export default async function handler(req, res) {
     return res.status(200).json({ matchday: day, players: [], note: 'Keine Startelf fuer diesen Spieltag gefunden' });
   }
 
+  // /v4/live/eventtypes liefert Klartext-Titel fuer die eti-Codes in den
+  // playercenter-events (z.B. "Accurate long Ball", "Shot Assist") - verifiziert
+  // per Diagnose-Workflow 23.11.2026 gegen echte Live-Daten, 18/18 Treffer.
+  // Damit laesst sich jetzt eine "Pass +2"-Liste pro Spieler zeigen (Owner-
+  // Wunsch: "Punkte mit Aktionen mappen... beim Anklicken des Spielers als
+  // Liste, wie im echten Live-Modus").
+  const eventTypeMap = await getEventTypeMap(token);
+
   // Live-Punkte + Event-Verlauf PRO Spieler, parallel abgefragt.
   const players = await Promise.all(
     playerIds.map(async (playerId) => {
@@ -54,12 +62,6 @@ export default async function handler(req, res) {
         token
       );
       if (!pc) return { playerId, error: true };
-      // Die Kickbase-API liefert fuer jede Mini-Aktion (pro Pass, Zweikampf
-      // etc.) einen Punktewert in `events[].p`, aber KEIN Klartext-Label fuer
-      // die zugehoerige Aktion (nur einen vierstelligen `eti`-Code ohne
-      // bekannte Bedeutung) - eine "Erfolgreicher Pass +2"-Anzeige liesse sich
-      // damit nicht ehrlich bauen. Deshalb nur der Gesamtpunktestand je
-      // Spieler (siehe Chat 23.11.2026).
       return {
         playerId,
         name: pc.n,
@@ -71,6 +73,10 @@ export default async function handler(req, res) {
         opponentTeamId: pc.t1 === Number(pc.tid) ? pc.t2 : pc.t1,
         goalsFor: pc.t1g,
         goalsAgainst: pc.t2g,
+        events: (pc.events || [])
+          .filter((e) => e.p !== 0)
+          .map((e) => ({ label: eventTypeMap.get(e.eti) || 'Aktion', points: e.p, minute: e.mt }))
+          .sort((a, b) => b.minute - a.minute),
       };
     })
   );

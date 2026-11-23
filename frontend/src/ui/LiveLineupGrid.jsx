@@ -1,5 +1,6 @@
-import React from 'react';
-import LivePlayerCircle from './LivePlayerCircle';
+import React, { useState } from 'react';
+import { X } from 'lucide-react';
+import LivePlayerCircle, { pointColor } from './LivePlayerCircle';
 
 // Gemeinsame Live-Pitch-Darstellung fuer alle Stellen, die eine Startelf mit
 // Live-Punkten zeigen (LiveLineupPage.jsx "Live Punkte" UND UserDetail.jsx
@@ -8,6 +9,48 @@ import LivePlayerCircle from './LivePlayerCircle';
 // beide Stellen nutzen jetzt exakt dieselbe Komponente + dieselbe Datenquelle
 // (frontend/api/live-lineup.js), damit die Zahlen nie wieder auseinanderlaufen
 // koennen.
+//
+// Klick auf einen Spieler oeffnet eine Event-Liste ("Pass +2" usw., Owner-
+// Wunsch 23.11.2026: "Punkte mit Aktionen mappen... beim Anklicken des
+// Spielers als Liste anzeigen, wie im echten Live-Modus") - moeglich seit
+// frontend/api/_kickbaseClient.js::getEventTypeMap die eti-Codes aus den
+// playercenter-events via /v4/live/eventtypes in Klartext uebersetzt.
+
+const PlayerEventsModal = ({ player, onClose }) => (
+  <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={onClose}>
+    <div
+      className="card-surface rounded-2xl w-full max-w-md max-h-[80vh] flex flex-col shadow-2xl"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="p-4 border-b border-[#2e2e2e] flex items-center justify-between shrink-0">
+        <div>
+          <div className="font-bold text-gray-100">{player.lastName || player.name}</div>
+          <div className={`text-2xl font-black ${pointColor(player.points)}`}>{player.points ?? '–'} Punkte</div>
+        </div>
+        <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
+          <X size={20} />
+        </button>
+      </div>
+      <div className="overflow-y-auto p-2">
+        {player.events?.length ? (
+          player.events.map((e, i) => (
+            <div key={i} className="flex items-center justify-between px-3 py-2.5 text-sm">
+              <div>
+                <div className="text-gray-200 font-medium">{e.label}</div>
+                <div className="text-[11px] text-[#626978]">{e.minute}'</div>
+              </div>
+              <span className={`font-black ${e.points >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {e.points >= 0 ? '+' : ''}{e.points}
+              </span>
+            </div>
+          ))
+        ) : (
+          <div className="p-4 text-center text-sm text-[#626978]">Noch keine punkterelevanten Aktionen.</div>
+        )}
+      </div>
+    </div>
+  </div>
+);
 
 export const LiveRow = ({ players, onPlayerClick }) => {
   if (!players || players.length === 0) return null;
@@ -25,7 +68,7 @@ export const LiveRow = ({ players, onPlayerClick }) => {
           points={p.points}
           size={size}
           containerSize={containerSize}
-          onClick={!p.isDummy && onPlayerClick ? () => onPlayerClick(p.id) : undefined}
+          onClick={!p.isDummy && onPlayerClick ? () => onPlayerClick(p) : undefined}
         />
       ))}
     </div>
@@ -34,8 +77,12 @@ export const LiveRow = ({ players, onPlayerClick }) => {
 
 // Der dunkle Spielfeld-Rahmen selbst (Hintergrund + Feldlinien-Dekoration +
 // die 4 Positionsreihen + Gesamtpunkte-Box unten rechts) - identisch an
-// beiden Einsatzorten.
-const LiveLineupPitch = ({ lineup, totalPoints, onPlayerClick }) => {
+// beiden Einsatzorten. Verwaltet den Event-Listen-Klick selbst (kein
+// Aufrufer-Callback mehr noetig), damit die Listenansicht ueberall
+// automatisch verfuegbar ist.
+const LiveLineupPitch = ({ lineup, totalPoints }) => {
+  const [selectedPlayer, setSelectedPlayer] = useState(null);
+
   const st = lineup?.filter((p) => p.position === 4) || [];
   const mf = lineup?.filter((p) => p.position === 3 || p.position === 0) || [];
   const aw = lineup?.filter((p) => p.position === 2) || [];
@@ -52,10 +99,10 @@ const LiveLineupPitch = ({ lineup, totalPoints, onPlayerClick }) => {
       </div>
 
       <div className="relative z-10 w-full px-2 sm:px-4 flex flex-col">
-        <LiveRow players={st} onPlayerClick={onPlayerClick} />
-        <LiveRow players={mf} onPlayerClick={onPlayerClick} />
-        <LiveRow players={aw} onPlayerClick={onPlayerClick} />
-        <LiveRow players={tw} onPlayerClick={onPlayerClick} />
+        <LiveRow players={st} onPlayerClick={setSelectedPlayer} />
+        <LiveRow players={mf} onPlayerClick={setSelectedPlayer} />
+        <LiveRow players={aw} onPlayerClick={setSelectedPlayer} />
+        <LiveRow players={tw} onPlayerClick={setSelectedPlayer} />
       </div>
 
       {totalPoints != null && (
@@ -66,6 +113,8 @@ const LiveLineupPitch = ({ lineup, totalPoints, onPlayerClick }) => {
           </div>
         </div>
       )}
+
+      {selectedPlayer && <PlayerEventsModal player={selectedPlayer} onClose={() => setSelectedPlayer(null)} />}
     </div>
   );
 };

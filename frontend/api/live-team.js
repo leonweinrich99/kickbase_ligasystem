@@ -9,7 +9,7 @@
 //
 // Ohne matchId: sucht automatisch das erste LIVE-Spiel im angegebenen
 // Wettbewerb (Default: competitionId=3 = La Liga).
-import { API_BASE, getJson, loginAny } from './_kickbaseClient.js';
+import { API_BASE, getJson, loginAny, getEventTypeMap } from './_kickbaseClient.js';
 
 export default async function handler(req, res) {
   const { competitionId = '3', matchId: requestedMatchId, team = 't1' } = req.query;
@@ -47,6 +47,8 @@ export default async function handler(req, res) {
   const teamName = team === 't2' ? details.t2n : details.t1n;
   const lineup = details[lineupKey] || [];
 
+  const eventTypeMap = await getEventTypeMap(token);
+
   const players = await Promise.all(
     lineup.map(async (p) => {
       const pc = day
@@ -58,6 +60,10 @@ export default async function handler(req, res) {
         position: p.pos,
         imagePath: p.pim,
         points: pc?.p ?? null,
+        events: (pc?.events || [])
+          .filter((e) => e.p !== 0)
+          .map((e) => ({ label: eventTypeMap.get(e.eti) || 'Aktion', points: e.p, minute: e.mt }))
+          .sort((a, b) => b.minute - a.minute),
       };
     })
   );

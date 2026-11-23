@@ -357,6 +357,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
           lastName: full?.ln || p.name,
           points: p.points ?? 0,
           imagePath: full?.pim || null,
+          events: p.events || [],
         };
       });
     return buildLineupWithDummies(enriched);
@@ -550,7 +551,6 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
             <LiveLineupPitch
               lineup={liveLineupEnriched}
               totalPoints={liveLineupTotalPoints}
-              onPlayerClick={handlePlayerClick}
             />
           </div>
         ) : startelfData?.managers?.[userData.id] ? (

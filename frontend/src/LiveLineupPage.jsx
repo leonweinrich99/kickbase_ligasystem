@@ -91,6 +91,7 @@ const LiveLineupPage = () => {
       lastName: p.name,
       points: p.points ?? 0,
       imagePath: p.imagePath || null,
+      events: p.events || [],
     }));
     return buildLineupWithDummies(enriched);
   }, [testTeam]);
@@ -168,6 +169,7 @@ const LiveLineupPage = () => {
           lastName: full?.ln || p.name,
           points: p.points ?? 0,
           imagePath: full?.pim || null,
+          events: p.events || [],
         };
       });
     return buildLineupWithDummies(enriched);
