@@ -897,10 +897,10 @@ def main():
         if not league_id or not token:
             continue
         try:
-            teams = get_all_teams(token, league_id)
+            teams = get_all_teams(token, COMPETITION_IDS[0])
             result["leagues"][key]["teams"] = teams
         except Exception as e:
-            pass
+            print(f"Warning: Team-Logos fuer {key} fehlgeschlagen: {e}")
 
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
 

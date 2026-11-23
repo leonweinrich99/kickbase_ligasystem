@@ -99,7 +99,13 @@ def preprocess_player_data(df):
     max_date = (now - timedelta(days=1)) if now <= cutoff_time else now
     max_date = max_date.date()
 
-    today_df = df[df["date"].dt.date >= max_date]
+    # Pro Spieler immer seine JUENGSTE Zeile mit gueltigem Marktwert (mv.notna())
+    # fuer die Live-Prognose verwenden statt starr date >= max_date. Sonst
+    # fallen nach 22:15 alle Spieler raus, deren Tages-Marktwert bei Kickbase
+    # noch auf gestern steht (oder unveraendert bei 500k liegt) und deren einzige
+    # >= max_date-Zeile ein zukuenftiger Spieltag mit mv=NaN waere.
+    valid_mv_df = df[df["mv"].notna()]
+    today_df = valid_mv_df.drop_duplicates(subset=["player_id"], keep="last").copy()
     df = df[df["date"].dt.date < max_date]
 
     df = df.dropna(subset=["mv_change_1d", "next_day", "next_md", "days_to_next", "mv_next_day", "mv_target", "mv_target_clipped", "mv_target_3d_clipped", "mv_target_7d_clipped"])

@@ -9,6 +9,12 @@ import PageHeader from './ui/PageHeader';
 import CloseButton, { BackButton } from './ui/CloseButton';
 import StatTile from './ui/StatTile';
 import { countPositions, missingPositions, estimateReserveForMissingPositions } from './squadRules';
+import {
+  enrichPlayerWithCatalog,
+  buildCompletePlayerCatalog,
+  analyzeOwnSquad,
+  evaluatePlayerForSquad,
+} from './advisorSquadEval';
 
 // Zeigt die Auswertungen des "Kickbase Trading Advisor" an (siehe
 // backend/advisor/, generiert per GitHub Action aus
@@ -305,23 +311,35 @@ const StarIcon = ({ filled }) => (
 
 const PlayerCard = ({ entry, teamLogo, ownerName, onClick, isFavorite, onToggleFavorite }) => {
   const rising = (entry.predictedChange || 0) >= 0;
-  const hasHistory = Array.isArray(entry.history) && entry.history.length > 1;
   const isBuyContext = entry.onMarket;
   const isSellContext = entry.inSquad;
-  const showPlayBadge = isBuyContext && entry.playRecommended;
-  const showTradeBadge = isBuyContext && entry.tradeRecommended;
+  const squadEval = entry.squadEval;
   const showSellBadge = isSellContext && entry.sellRecommended;
+  const showStartelfBadge = !isSellContext && squadEval?.tier === 'startelf';
+  const showKaderBadge = !isSellContext && (squadEval?.tier === 'kader' || (!squadEval && isBuyContext && entry.playRecommended));
+  const showTradeBadge = !isSellContext && (squadEval?.tier === 'trading' || (!squadEval && isBuyContext && entry.tradeRecommended));
   const isFit = entry.status === null || entry.status === undefined || entry.status === 0;
+  const isClickable = Boolean(onClick);
+
+  const borderColor = showSellBadge
+    ? 'rgba(239,68,68,0.4)'
+    : showStartelfBadge
+      ? 'rgba(34,197,94,0.55)'
+      : showKaderBadge
+        ? 'rgba(16,185,129,0.4)'
+        : showTradeBadge
+          ? 'rgba(34,211,238,0.38)'
+          : undefined;
 
   return (
     <div
-      role={hasHistory ? 'button' : undefined}
-      tabIndex={hasHistory ? 0 : undefined}
-      onClick={hasHistory ? onClick : undefined}
-      onKeyDown={hasHistory ? (e) => (e.key === 'Enter' || e.key === ' ') && onClick() : undefined}
+      role={isClickable ? 'button' : undefined}
+      tabIndex={isClickable ? 0 : undefined}
+      onClick={isClickable ? onClick : undefined}
+      onKeyDown={isClickable ? (e) => (e.key === 'Enter' || e.key === ' ') && onClick() : undefined}
       // p-3 instead of pl-[72px], the text wrapper gets margin instead
-      className={`relative overflow-hidden w-full h-[72px] flex items-center p-3 mb-2 card-surface rounded-xl shadow-sm text-left transition-all ${hasHistory ? 'hover:border-cyan-500/50 hover:bg-[#1c1c1c] active:scale-[0.99] cursor-pointer' : 'cursor-default'}`}
-      style={{ borderColor: showSellBadge ? 'rgba(239,68,68,0.4)' : (showPlayBadge || showTradeBadge) ? 'rgba(34,197,94,0.4)' : undefined }}
+      className={`relative overflow-hidden w-full h-[72px] flex items-center p-3 mb-2 card-surface rounded-xl shadow-sm text-left transition-all ${isClickable ? 'hover:border-cyan-500/50 hover:bg-[#1c1c1c] active:scale-[0.99] cursor-pointer' : 'cursor-default'}`}
+      style={{ borderColor }}
     >
       {/* Background Hero Image + Team Logo Watermark (LEFT ALIGNED) */}
       <div className="absolute top-0 left-0 bottom-0 z-0 pointer-events-none w-1/2 flex justify-start overflow-hidden rounded-l-xl">
@@ -370,22 +388,24 @@ const PlayerCard = ({ entry, teamLogo, ownerName, onClick, isFavorite, onToggleF
           </div>
         </div>
         
-        <div className="text-[9px] text-[#8b92a5] mt-0.5 flex items-center gap-1.5 flex-wrap">
-          <span className="font-semibold text-gray-400">{entry.team}</span>
-          
-          {/* Strictly ONE badge per player! Priority: Sell -> Play (Kader) -> Trade -> Status */}
+        {/* Ohne Mannschaftsname auf der Karte (Owner-Wunsch 24.11.2026) - nur das
+            klare Empfehlungs-Label basierend auf eigenem Kader & Marktwert. */}
+        <div className="text-[9px] text-[#8b92a5] mt-1 flex items-center gap-1.5 flex-wrap min-h-[14px]">
           {(() => {
             if (showSellBadge) {
-              return <span className="text-[7px] font-bold uppercase tracking-widest bg-red-500/15 text-red-400 border border-red-500/40 rounded px-1 shrink-0 ml-1">⚠ Verkaufen</span>;
+              return <span className="text-[8px] font-bold uppercase tracking-wider bg-red-500/15 text-red-400 border border-red-500/40 rounded px-1.5 py-0.5 shrink-0">⚠ Verkaufen</span>;
             }
-            if (showPlayBadge) {
-              return <span className="text-[7px] font-bold uppercase tracking-widest bg-green-500/15 text-green-400 border border-green-500/40 rounded px-1 shrink-0 ml-1">✓ Kader-Potenzial</span>;
+            if (showStartelfBadge) {
+              return <span className="text-[8px] font-bold uppercase tracking-wider bg-green-500/15 text-green-400 border border-green-500/45 rounded px-1.5 py-0.5 shrink-0">★ Startelf-Upgrade</span>;
+            }
+            if (showKaderBadge) {
+              return <span className="text-[8px] font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/40 rounded px-1.5 py-0.5 shrink-0">{squadEval?.badgeLabel || '✓ Kader-Ergänzung'}</span>;
             }
             if (showTradeBadge) {
-              return <span className="text-[7px] font-bold uppercase tracking-widest bg-cyan-500/15 text-cyan-400 border border-cyan-500/40 rounded px-1 shrink-0 ml-1">📈 Trading</span>;
+              return <span className="text-[8px] font-bold uppercase tracking-wider bg-cyan-500/15 text-cyan-400 border border-cyan-500/40 rounded px-1.5 py-0.5 shrink-0">📈 Nur Trading</span>;
             }
             if (entry.statusLabel && !isFit) {
-              return <span className="text-[7px] font-bold uppercase tracking-widest bg-orange-500/10 text-orange-400 border border-orange-500/30 rounded px-1 shrink-0 ml-1">{entry.statusLabel}</span>;
+              return <span className="text-[8px] font-bold uppercase tracking-wider bg-orange-500/10 text-orange-400 border border-orange-500/30 rounded px-1.5 py-0.5 shrink-0">{entry.statusLabel}</span>;
             }
             return null;
           })()}
@@ -573,6 +593,10 @@ const generateAIReasoning = (player) => {
     }
   }
 
+  if (player.squadEval?.reasonText) {
+    sentences.unshift(player.squadEval.reasonText);
+  }
+
   return sentences.join(" ");
 };
 
@@ -652,8 +676,10 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, 
   
   const hasScoutingFacts = player.appearances !== undefined || player.totalMinutes !== undefined || player.avgPoints !== undefined;
   const isFit = player.status === null || player.status === undefined || player.status === 0;
-  const showPlayBadge = player.onMarket && player.playRecommended;
-  const showTradeBadge = player.onMarket && player.tradeRecommended;
+  const squadEval = player.squadEval;
+  const showStartelfBadge = !player.inSquad && squadEval?.tier === 'startelf';
+  const showPlayBadge = !player.inSquad && (squadEval?.tier === 'kader' || (!squadEval && player.onMarket && player.playRecommended));
+  const showTradeBadge = !player.inSquad && (squadEval?.tier === 'trading' || (!squadEval && player.onMarket && player.tradeRecommended));
   const showSellBadge = player.inSquad && player.sellRecommended;
   const reasons = (player.inSquad ? player.sellReasons : player.buyReasons) || [];
 
@@ -737,40 +763,46 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, 
           </div>
 
           {/* Chart (Clean without grid) */}
-          <div className="h-[160px] sm:h-[200px] w-full px-4 sm:px-6 mb-6 relative">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={history} margin={{ top: 20, right: 0, left: 0, bottom: 5 }}>
-                <XAxis
-                  dataKey="date"
-                  stroke="#4b5563"
-                  fontSize={9}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={formatShortDate}
-                  minTickGap={30}
-                />
-                <YAxis
-                  stroke="#4b5563"
-                  tickLine={false}
-                  axisLine={false}
-                  domain={['dataMin', 'dataMax']}
-                  tickFormatter={formatCompactMoney}
-                  orientation="left"
-                  width={0}
-                  tickMargin={0}
-                  tick={{ dx: 5, dy: -10, fill: '#6b7280', fontSize: 10, textAnchor: 'start', fontWeight: 600 }}
-                  tickCount={3}
-                />
-                <Tooltip 
-                   content={<ChartTooltip />}
-                   cursor={{ stroke: '#2e2e2e', strokeWidth: 1, strokeDasharray: '4 4' }}
-                />
-                {/* connectNulls stellt sicher, dass die Linien perfekt aneinander andocken */}
-                <Line type="monotone" dataKey="mv" stroke="#ffffff" strokeWidth={2.5} dot={false} activeDot={{ r: 6, fill: "#ffffff", strokeWidth: 0 }} connectNulls={true} animationDuration={800} />
-                <Line type="monotone" dataKey="mv_predicted" stroke="#eab308" strokeDasharray="2 3" strokeWidth={1.5} dot={{ r: 3, fill: "#eab308", strokeWidth: 0 }} activeDot={{ r: 5, fill: "#eab308", strokeWidth: 0 }} connectNulls={true} animationDuration={800} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          {history.length > 0 ? (
+            <div className="h-[160px] sm:h-[200px] w-full px-4 sm:px-6 mb-6 relative">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={history} margin={{ top: 20, right: 0, left: 0, bottom: 5 }}>
+                  <XAxis
+                    dataKey="date"
+                    stroke="#4b5563"
+                    fontSize={9}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={formatShortDate}
+                    minTickGap={30}
+                  />
+                  <YAxis
+                    stroke="#4b5563"
+                    tickLine={false}
+                    axisLine={false}
+                    domain={['dataMin', 'dataMax']}
+                    tickFormatter={formatCompactMoney}
+                    orientation="left"
+                    width={0}
+                    tickMargin={0}
+                    tick={{ dx: 5, dy: -10, fill: '#6b7280', fontSize: 10, textAnchor: 'start', fontWeight: 600 }}
+                    tickCount={3}
+                  />
+                  <Tooltip 
+                     content={<ChartTooltip />}
+                     cursor={{ stroke: '#2e2e2e', strokeWidth: 1, strokeDasharray: '4 4' }}
+                  />
+                  {/* connectNulls stellt sicher, dass die Linien perfekt aneinander andocken */}
+                  <Line type="monotone" dataKey="mv" stroke="#ffffff" strokeWidth={2.5} dot={false} activeDot={{ r: 6, fill: "#ffffff", strokeWidth: 0 }} connectNulls={true} animationDuration={800} />
+                  <Line type="monotone" dataKey="mv_predicted" stroke="#eab308" strokeDasharray="2 3" strokeWidth={1.5} dot={{ r: 3, fill: "#eab308", strokeWidth: 0 }} activeDot={{ r: 5, fill: "#eab308", strokeWidth: 0 }} connectNulls={true} animationDuration={800} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="mx-4 sm:mx-6 mb-6 rounded-xl border border-[#2e2e2e] bg-[#111111] px-4 py-6 text-center text-xs text-[#8b92a5]">
+              Marktwert-Verlauf und ML-Prognose werden beim nächsten Trading-Advisor-Lauf ergänzt.
+            </div>
+          )}
 
           {/* Time Toggles */}
           <div className="px-4 sm:px-6 mb-8">
@@ -788,21 +820,26 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, 
           </div>
 
           {/* Badges / Trading Recommendations */}
-          {(showPlayBadge || showTradeBadge || showSellBadge || !isFit || player.teamOfTheWeek) && (
+          {(showStartelfBadge || showPlayBadge || showTradeBadge || showSellBadge || !isFit || player.teamOfTheWeek) && (
             <div className="px-4 sm:px-6 mb-6 flex flex-wrap gap-2">
               {showSellBadge && (
                 <div className="bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-1 rounded-md text-[10px] sm:text-xs font-medium">
                   ⚠ Verkaufen
                 </div>
               )}
+              {showStartelfBadge && (
+                <div className="bg-green-500/15 text-green-400 border border-green-500/35 px-2 py-1 rounded-md text-[10px] sm:text-xs font-medium">
+                  ★ Startelf-Upgrade
+                </div>
+              )}
               {showPlayBadge && (
-                <div className="bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-1 rounded-md text-[10px] sm:text-xs font-medium">
-                  ✓ Stammelf
+                <div className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 px-2 py-1 rounded-md text-[10px] sm:text-xs font-medium">
+                  {squadEval?.badgeLabel || '✓ Kader-Ergänzung'}
                 </div>
               )}
               {showTradeBadge && (
-                <div className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-1 rounded-md text-[10px] sm:text-xs font-medium">
-                  📈 Trading
+                <div className="bg-cyan-500/10 text-cyan-400 border border-cyan-500/25 px-2 py-1 rounded-md text-[10px] sm:text-xs font-medium">
+                  📈 Nur Trading
                 </div>
               )}
               {!isFit && player.statusLabel && (
@@ -880,6 +917,7 @@ const Advisor = () => {
   const goBack = useBackNavigation('/account');
   const { isFavorite, toggleFavorite, favoritePlayers } = useFavorites();
   const [data, setData] = useState(null);
+  const [allPlayersRaw, setAllPlayersRaw] = useState(null);
   const [error, setError] = useState(false);
   const [activeLeague, setActiveLeague] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
@@ -899,21 +937,46 @@ const Advisor = () => {
   const [sectionTab, setSectionTab] = useState('market');
   const [showInfo, setShowInfo] = useState(false);
 
-  // Vereinslogos auslesen (Kickbase API liefert die Tabelle mit den Logos als SVG)
-  const teamsData = data?.leagues ? Object.values(data.leagues)[0]?.teams || [] : [];
-  const teamLogos = {};
-  teamsData.forEach(t => {
-    if (t.tn) {
-      // Suche im Objekt nach der Eigenschaft, die den SVG-Link enthält
-      const svgKey = Object.keys(t).find(k => typeof t[k] === 'string' && t[k].endsWith('.svg'));
-      if (svgKey) {
-        teamLogos[t.tn] = `https://kickbase.b-cdn.net/${t[svgKey]}`;
-      }
+  const catalogMap = useMemo(() => {
+    const map = new Map();
+    if (Array.isArray(allPlayersRaw)) {
+      allPlayersRaw.forEach((p) => {
+        if (p?.i != null) map.set(String(p.i), p);
+      });
     }
-  });
+    return map;
+  }, [allPlayersRaw]);
+
+  // Vereinslogos auslesen (Advisor-Tabelle + Fallback ueber all_players.json,
+  // damit Wappen auch bei leerer Advisor-Teamliste verfuegbar sind).
+  const teamLogos = useMemo(() => {
+    const logos = {};
+    if (Array.isArray(allPlayersRaw)) {
+      allPlayersRaw.forEach((p) => {
+        if (p?.tn && p?.tim && !logos[p.tn]) {
+          logos[p.tn] = `https://kickbase.b-cdn.net/${p.tim}`;
+        }
+      });
+    }
+    const teamsData = data?.leagues ? Object.values(data.leagues)[0]?.teams || [] : [];
+    teamsData.forEach((t) => {
+      if (t.tn) {
+        const svgKey = Object.keys(t).find((k) => typeof t[k] === 'string' && t[k].endsWith('.svg'));
+        if (svgKey) {
+          logos[t.tn] = `https://kickbase.b-cdn.net/${t[svgKey]}`;
+        }
+      }
+    });
+    return logos;
+  }, [data, allPlayersRaw]);
 
 
   const loadData = () => {
+    fetch('/history/all_players.json')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((list) => { if (Array.isArray(list)) setAllPlayersRaw(list); })
+      .catch(() => {});
+
     fetch(`/advisor-data.json?t=${Date.now()}`)
       .then((res) => {
         if (!res.ok) throw new Error('not found');
@@ -971,39 +1034,33 @@ const Advisor = () => {
   const league = data?.leagues?.[activeLeague];
   const generatedAt = data?.generatedAt ? new Date(data.generatedAt) : null;
 
-  const marketTeams = useMemo(
-    () => [...new Set((league?.marketRecommendations || []).map((p) => p.team).filter(Boolean))].sort(),
-    [league]
-  );
-
-  const dbTeams = useMemo(
-    () => [...new Set((data?.players || []).map((p) => p.team).filter(Boolean))].sort(),
-    [data]
-  );
-
-  // Favoriten: aus der kompletten Spieler-Datenbank gefiltert, damit auch
-  // Spieler auftauchen, die aktuell weder auf dem Markt noch im Kader sind.
-  const favoritePlayersList = useMemo(
-    () => (data?.players || []).filter((p) => favoritePlayers.includes(String(p.playerId))),
-    [data, favoritePlayers]
-  );
-  const filteredFavorites = useMemo(
-    () => applyFilters(favoritePlayersList, favoritesFilters, 'buy'),
-    [favoritePlayersList, favoritesFilters]
+  // Vollstaendige Spieler-Datenbank: Advisor-Spieler + fehlende Bundesliga-
+  // Spieler aus all_players.json (damit z.B. Regeer oder Spieler ganzer Teams
+  // auch sofort korrekt angezeigt und gefunden werden).
+  const completePlayers = useMemo(
+    () => buildCompletePlayerCatalog(data?.players || [], allPlayersRaw, catalogMap),
+    [data, allPlayersRaw, catalogMap]
   );
 
   // Robust gegen aeltere/unvollstaendige Advisor-Daten (z.B. von einem Lauf
   // vor diesem Feature): Falls "managers" fehlt, aber "managerSquads"
   // trotzdem Daten hat, die Manager-Liste direkt daraus ableiten - damit die
   // Sektion IMMER sichtbar ist, sobald irgendwelche Kader-Daten bekannt sind.
-  // Noch aeltere Laeufe (vor der Multi-Manager-Umstellung) hatten stattdessen
-  // ein flaches "squadRecommendations"-Array fuer den eingeloggten Account -
-  // auch das wird hier noch unterstuetzt, statt einfach nichts anzuzeigen.
+  // Jeder Kader-Spieler wird zusaetzlich gegen all_players.json angereichert,
+  // damit kein Spieler mehr mit name=null / marketValue=0 erscheint.
   const effectiveManagerSquads = useMemo(() => {
-    if (league?.managerSquads && Object.keys(league.managerSquads).length) return league.managerSquads;
-    if (league?.squadRecommendations?.length) return { OWN: league.squadRecommendations };
-    return {};
-  }, [league]);
+    let rawSquads = {};
+    if (league?.managerSquads && Object.keys(league.managerSquads).length) {
+      rawSquads = league.managerSquads;
+    } else if (league?.squadRecommendations?.length) {
+      rawSquads = { OWN: league.squadRecommendations };
+    }
+    const enriched = {};
+    for (const [mid, squad] of Object.entries(rawSquads)) {
+      enriched[mid] = (squad || []).map((p) => enrichPlayerWithCatalog(p, catalogMap));
+    }
+    return enriched;
+  }, [league, catalogMap]);
 
   const resolvedManagers = useMemo(() => {
     if (league?.managers?.length) return league.managers;
@@ -1015,54 +1072,93 @@ const Advisor = () => {
   const playerManagerMap = useMemo(() => {
     const map = {};
     if (!effectiveManagerSquads || !resolvedManagers) return map;
-    
+
     const managerNames = {};
-    resolvedManagers.forEach(m => managerNames[m.id] = m.name);
+    resolvedManagers.forEach((m) => { managerNames[m.id] = m.name; });
 
     for (const [managerId, squad] of Object.entries(effectiveManagerSquads)) {
       const managerName = managerNames[managerId] || `Manager ${managerId}`;
-      squad.forEach(p => {
+      squad.forEach((p) => {
         map[p.playerId] = managerName;
       });
     }
     return map;
   }, [effectiveManagerSquads, resolvedManagers]);
 
+  // Eigener Kader (standardmaessig per profile.kickbaseId gewaehlt) als Basis
+  // fuer die personalisierte Startelf-/Kader- vs. Nur-Trading-Bewertung.
+  const currentSquad = useMemo(
+    () => effectiveManagerSquads[selectedManagerId] || [],
+    [effectiveManagerSquads, selectedManagerId]
+  );
+  const ownSquadAnalysis = useMemo(() => analyzeOwnSquad(currentSquad), [currentSquad]);
+
   const marketPlayersAnnotated = useMemo(
-    () => (league?.marketRecommendations || []).map((p) => ({
-      ...p,
-      ownedByAccount: Boolean(playerManagerMap[p.playerId]),
-    })),
-    [league, playerManagerMap]
+    () => (league?.marketRecommendations || []).map((raw) => {
+      const enriched = enrichPlayerWithCatalog(raw, catalogMap);
+      const squadEval = evaluatePlayerForSquad(enriched, ownSquadAnalysis);
+      return {
+        ...enriched,
+        ownedByAccount: Boolean(playerManagerMap[enriched.playerId]),
+        squadEval,
+        buyRecommended: squadEval.isBuyRecommended,
+        playRecommended: squadEval.isPlayFit,
+        tradeRecommended: squadEval.isTradeOnly,
+      };
+    }),
+    [league, catalogMap, playerManagerMap, ownSquadAnalysis]
+  );
+  const marketTeams = useMemo(
+    () => [...new Set(marketPlayersAnnotated.map((p) => p.team).filter(Boolean))].sort(),
+    [marketPlayersAnnotated]
   );
   const filteredMarket = useMemo(
     () => applyFilters(marketPlayersAnnotated, marketFilters, 'buy'),
     [marketPlayersAnnotated, marketFilters]
   );
 
-  // Nur die "Alle Spieler"-Datenbank (data.players) enthaelt Spieler unabhaengig
-  // von Markt-/Kaderstatus - deshalb fehlen ihr bisher beide Infos komplett.
-  // Markt- und Kaderdaten sind pro Liga bereits geladen (marketRecommendations,
-  // playerManagerMap), hier nur noch pro DB-Spieler gegengeprueft (Owner-Wunsch
-  // 29.08.2026, Issue "Trading-Advisor: Filter 'auf dem Markt' + 'gehoert
-  // anderem Account'").
+  const dbTeams = useMemo(
+    () => [...new Set(completePlayers.map((p) => p.team).filter(Boolean))].sort(),
+    [completePlayers]
+  );
+
+  // Nur die "Alle Spieler"-Datenbank enthaelt Spieler unabhaengig von Markt-/
+  // Kaderstatus - hier um Markt-, Besitzer- und eigene Kader-Bewertung ergaenzt.
   const marketPlayerIds = useMemo(
-    () => new Set((league?.marketRecommendations || []).map((p) => p.playerId)),
-    [league]
+    () => new Set(marketPlayersAnnotated.map((p) => String(p.playerId))),
+    [marketPlayersAnnotated]
   );
   const dbPlayersAnnotated = useMemo(
-    () => (data?.players || []).map((p) => ({
-      ...p,
-      onMarket: marketPlayerIds.has(p.playerId),
-      ownedByAccount: Boolean(playerManagerMap[p.playerId]),
-    })),
-    [data, marketPlayerIds, playerManagerMap]
+    () => completePlayers.map((p) => {
+      const onMarket = marketPlayerIds.has(String(p.playerId));
+      const squadEval = evaluatePlayerForSquad({ ...p, onMarket }, ownSquadAnalysis);
+      return {
+        ...p,
+        onMarket,
+        ownedByAccount: Boolean(playerManagerMap[p.playerId]),
+        squadEval,
+        buyRecommended: squadEval.isBuyRecommended,
+        playRecommended: squadEval.isPlayFit,
+        tradeRecommended: squadEval.isTradeOnly,
+      };
+    }),
+    [completePlayers, marketPlayerIds, playerManagerMap, ownSquadAnalysis]
   );
   const filteredDb = useMemo(() => applyFilters(dbPlayersAnnotated, dbFilters, 'buy'), [dbPlayersAnnotated, dbFilters]);
 
+  // Favoriten: aus der vollstaendig angereicherten Spieler-Datenbank gefiltert.
+  const favoritePlayersList = useMemo(
+    () => dbPlayersAnnotated.filter((p) => favoritePlayers.includes(String(p.playerId))),
+    [dbPlayersAnnotated, favoritePlayers]
+  );
+  const filteredFavorites = useMemo(
+    () => applyFilters(favoritePlayersList, favoritesFilters, 'buy'),
+    [favoritePlayersList, favoritesFilters]
+  );
+
   const filteredSquad = useMemo(
-    () => applyFilters(effectiveManagerSquads[selectedManagerId] || [], squadFilters, 'sell'),
-    [effectiveManagerSquads, squadFilters, selectedManagerId]
+    () => applyFilters(currentSquad, squadFilters, 'sell'),
+    [currentSquad, squadFilters]
   );
 
   // Budget des ausgewaehlten Managers + welche Kaufempfehlungen er sich damit
@@ -1077,41 +1173,40 @@ const Advisor = () => {
   // Kader-Vollstaendigkeit: reicht das Budget noch fuer eine volle Elf, oder
   // muessten fehlende Pflichtpositionen (siehe squadRules.js) zuerst
   // nachbesetzt werden, bevor man "frei" Geld ausgeben kann?
-  const currentSquad = effectiveManagerSquads[selectedManagerId] || [];
   const squadPositionCounts = useMemo(() => countPositions(currentSquad), [currentSquad]);
   const squadMissing = useMemo(() => missingPositions(squadPositionCounts), [squadPositionCounts]);
   const squadReserveInfo = useMemo(
-    () => estimateReserveForMissingPositions(squadMissing, data?.players || []),
-    [squadMissing, data]
+    () => estimateReserveForMissingPositions(squadMissing, completePlayers),
+    [squadMissing, completePlayers]
   );
   const netBudgetAfterReserve = rawBudget - squadReserveInfo.reserve;
 
   const affordableBuyRecommendations = useMemo(() => {
-    if (!selectedManagerBudget || !league?.marketRecommendations) return [];
-    return league.marketRecommendations
-      .filter((p) => p.buyRecommended && (p.marketValue || 0) <= netBudgetAfterReserve)
+    if (!selectedManagerBudget || !marketPlayersAnnotated.length) return [];
+    return marketPlayersAnnotated
+      .filter((p) => p.buyRecommended && !p.ownedByAccount && (p.marketValue || 0) <= netBudgetAfterReserve)
       .slice(0, 5);
-  }, [selectedManagerBudget, league, netBudgetAfterReserve]);
+  }, [selectedManagerBudget, marketPlayersAnnotated, netBudgetAfterReserve]);
 
   // "Verkaufe X, dann kannst du dir auch noch Y leisten": pro Verkaufs-
   // empfehlung im eigenen Kader wird geprueft, welches zusaetzliche Budget
   // dieser eine Verkauf freigeben wuerde und welche (bisher nicht leistbaren)
   // Kaufempfehlungen dadurch neu in Reichweite kommen.
   const sellUnlockOpportunities = useMemo(() => {
-    if (!league?.marketRecommendations) return [];
+    if (!marketPlayersAnnotated.length) return [];
     const alreadyAffordableIds = new Set(affordableBuyRecommendations.map((p) => p.playerId));
     const sellCandidates = currentSquad.filter((p) => p.sellRecommended);
 
     return sellCandidates
       .map((sellPlayer) => {
         const budgetAfterSale = netBudgetAfterReserve + (sellPlayer.marketValue || 0);
-        const unlocked = league.marketRecommendations
-          .filter((p) => p.buyRecommended && !alreadyAffordableIds.has(p.playerId) && (p.marketValue || 0) <= budgetAfterSale)
+        const unlocked = marketPlayersAnnotated
+          .filter((p) => p.buyRecommended && !p.ownedByAccount && !alreadyAffordableIds.has(p.playerId) && (p.marketValue || 0) <= budgetAfterSale)
           .slice(0, 3);
         return { sellPlayer, budgetAfterSale, unlocked };
       })
       .filter((entry) => entry.unlocked.length > 0);
-  }, [currentSquad, league, netBudgetAfterReserve, affordableBuyRecommendations]);
+  }, [currentSquad, marketPlayersAnnotated, netBudgetAfterReserve, affordableBuyRecommendations]);
 
   // Wenn sich die aktive Liga aendert (oder Daten neu laden): der eigene
   // Account (per profile.kickbaseId verknuepft) hat immer Vorrang, damit der
@@ -1427,9 +1522,9 @@ const Advisor = () => {
                     <h2 className="text-lg font-semibold text-white">Alle Spieler durchsuchen</h2>
                     <p className="text-[10px] text-[#8b92a5] mt-1">Marktwert-Prognose für die komplette Bundesliga, unabhängig davon, ob gerade jemand verkauft.</p>
                   </div>
-                  <span className="text-[10px] text-[#8b92a5]">{filteredDb.length} von {data.players?.length || 0} Spielern</span>
+                  <span className="text-[10px] text-[#8b92a5]">{filteredDb.length} von {completePlayers.length} Spielern</span>
                 </div>
-                {data.players?.length ? (
+                {completePlayers.length ? (
                   <>
                     <FilterBar filters={dbFilters} onChange={(f) => { setDbFilters(f); setDbVisibleCount(DB_PAGE_SIZE); }} teams={dbTeams} showTeamFilter showAvailabilityFilters recommendationMode="buy" />
                     {filteredDb.length ? (

@@ -112,7 +112,24 @@ def _prepare_context_df(raw_list, debug_label=""):
     if "p" in df.columns:
         df = df.rename(columns={"p": "season_points"})
 
+    # Basis-Metadaten aus der Kader-/Markt-Antwort als Fallback sichern, falls
+    # ein Spieler in today_df_results fehlt (z.B. frischer Transfer oder
+    # zwischenzeitliches API-Limit) - verhindert name=None / marketValue=0.
+    fallback_renames = {
+        "fn": "_ctx_first_name",
+        "ln": "_ctx_last_name",
+        "n": "_ctx_name_fallback",
+        "pos": "_ctx_position",
+        "tn": "_ctx_team_name",
+        "mv": "_ctx_mv",
+        "pim": "_ctx_image_path",
+    }
+    present_fallbacks = {k: v for k, v in fallback_renames.items() if k in df.columns}
+    if present_fallbacks:
+        df = df.rename(columns=present_fallbacks)
+
     keep = ["i"] + [c for c in CONTEXT_EXTRA_FIELDS if c in df.columns]
+    keep += [v for v in present_fallbacks.values() if v in df.columns]
     if "season_points" in df.columns:
         keep.append("season_points")
     for market_only_field in ["prob", "exs"]:
@@ -120,6 +137,28 @@ def _prepare_context_df(raw_list, debug_label=""):
             keep.append(market_only_field)
 
     return df[keep]
+
+
+def _apply_context_fallbacks(merged_df):
+    """Fuellt fehlende Stammdaten aus _ctx_*-Spalten auf, wenn ein Spieler beim
+    Left-Join nicht in today_df_results enthalten war."""
+
+    fallback_pairs = [
+        ("first_name", "_ctx_first_name"),
+        ("last_name", "_ctx_last_name"),
+        ("last_name", "_ctx_name_fallback"),
+        ("position", "_ctx_position"),
+        ("team_name", "_ctx_team_name"),
+        ("mv", "_ctx_mv"),
+        ("image_path", "_ctx_image_path"),
+    ]
+    for target_col, ctx_col in fallback_pairs:
+        if ctx_col in merged_df.columns:
+            if target_col not in merged_df.columns:
+                merged_df[target_col] = merged_df[ctx_col]
+            else:
+                merged_df[target_col] = merged_df[target_col].fillna(merged_df[ctx_col])
+    return merged_df
 
 
 _BASE_RESULT_COLUMNS = [
@@ -180,6 +219,7 @@ def join_current_squad(token, league_id, today_df_results, manager_id=None):
         right_on="player_id",
         how="left"
     )
+    merged_squad_df = _apply_context_fallbacks(merged_squad_df)
 
     # Da "left" join, koennen Prognose-Werte nun NaN sein fuer eingefrorene Spieler.
     # Wir fuellen numerische Werte mit 0.
@@ -222,7 +262,14 @@ def join_current_market(token, league_id, today_df_results):
     today_df_results["player_id"] = today_df_results["player_id"].astype(str)
     market_df["i"] = market_df["i"].astype(str)
 
-    bid_df = pd.merge(today_df_results, market_df, left_on="player_id", right_on="i")
+    # Left-Join auf market_df statt Inner-Join: auch wenn fuer einen Marktspieler
+    # noch keine ML-Prognose vorliegt, bleibt er mit seinen Stammdaten sichtbar.
+    bid_df = pd.merge(market_df, today_df_results, left_on="i", right_on="player_id", how="left")
+    bid_df = _apply_context_fallbacks(bid_df)
+    bid_df["player_id"] = bid_df["player_id"].fillna(bid_df["i"])
+    for col in ["mv", "predicted_mv_target", "predicted_mv_target_3d", "predicted_mv_target_7d", "p"]:
+        if col in bid_df.columns:
+            bid_df[col] = bid_df[col].fillna(0)
 
     if "exs" in bid_df.columns:
         bid_df["hours_to_exp"] = np.round((bid_df["exs"] / 3600), 2)

@@ -12,7 +12,12 @@ def get_player_market_value(token, competition_id, player_id, last_mv_values):
     url = f"{BASE_URL}/competitions/{competition_id}/players/{player_id}/marketvalue/{timeframe}"
     data = get_json_with_token(url, token)
 
-    market_values = [(item["dt"], item["mv"]) for item in data["it"][-last_mv_values:]]
+    items = data.get("it") or []
+    market_values = [
+        (item["dt"], item["mv"])
+        for item in items[-last_mv_values:]
+        if "dt" in item and "mv" in item
+    ]
 
     epoch = datetime(1970, 1, 1)
     return [
@@ -55,9 +60,14 @@ def get_all_players_raw(token, competition_id):
     team_ids = [team.get("tid") for team in get_all_teams(token, competition_id)]
 
     for team_id in team_ids:
-        url = f"{BASE_URL}/competitions/{competition_id}/teams/{team_id}/teamprofile"
-        data = get_json_with_token(url, token)
-        all_players.extend(data.get("it", []))
+        if not team_id:
+            continue
+        try:
+            url = f"{BASE_URL}/competitions/{competition_id}/teams/{team_id}/teamprofile"
+            data = get_json_with_token(url, token)
+            all_players.extend(data.get("it") or [])
+        except Exception as e:
+            print(f"Warning: Team {team_id} in Competition {competition_id} konnte nicht geladen werden: {e}")
 
     return all_players
 
@@ -68,7 +78,14 @@ def get_player_performance(token, competition_id, player_id, last_pfm_values, pl
     url = f"{BASE_URL}/competitions/{competition_id}/players/{player_id}/performance"
     data = get_json_with_token(url, token)
 
-    all_ph = [m for item in data["it"] for m in item["ph"]]
+    all_ph = [
+        m
+        for item in (data.get("it") or [])
+        for m in (item.get("ph") or [])
+        if m.get("md")
+    ]
+    if not all_ph:
+        return []
 
     current_date = datetime.now().date()
     future_dates = [

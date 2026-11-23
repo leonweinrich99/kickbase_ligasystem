@@ -20,7 +20,7 @@ import pandas as pd
 MV_FALLBACK_FIELDS = ["mv", "marketValue", "curVal"]
 
 
-def fetch_player_data(token, competition_ids, last_mv_values, last_pfm_values, max_workers=12):
+def fetch_player_data(token, competition_ids, last_mv_values, last_pfm_values, max_workers=5):
     """Fetch market-value + performance history for all players of the given competitions."""
 
     all_competitions_dfs = []
