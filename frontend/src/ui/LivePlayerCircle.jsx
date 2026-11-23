@@ -1,4 +1,5 @@
 import React from 'react';
+import AnimatedPoints from './AnimatedPoints';
 
 // Spieler-Kreis fuer die Live-Punkte-Ansicht ("Meine 11" waehrend eines
 // laufenden Spieltags) - bewusst ANDERS als PlayerPhotoCard (dort eckige
@@ -20,9 +21,7 @@ export const pointColor = (points) => {
   return 'text-green-700';
 };
 
-const LivePlayerCircle = ({ imagePath, name, displayName, points, size = 'w-14 h-14 sm:w-16 sm:h-16', containerSize = 'w-[72px] sm:w-[86px]', onClick }) => {
-  const hasPoints = points != null;
-
+const LivePlayerCircle = ({ imagePath, name, displayName, points, prevPoints, animKey, size = 'w-14 h-14 sm:w-16 sm:h-16', containerSize = 'w-[72px] sm:w-[86px]', onClick }) => {
   return (
     <div
       className={`relative flex flex-col items-center ${containerSize} ${onClick ? 'cursor-pointer hover:scale-105 transition-transform' : ''}`}
@@ -45,8 +44,15 @@ const LivePlayerCircle = ({ imagePath, name, displayName, points, size = 'w-14 h
         <div className="text-[9px] sm:text-[10px] font-bold text-gray-300 truncate w-full">
           {displayName || name}
         </div>
-        <div className={`text-base sm:text-lg font-black leading-tight ${pointColor(points)}`}>
-          {hasPoints ? points : '–'}
+        <div className="leading-tight">
+          <AnimatedPoints
+            value={points}
+            previousValue={prevPoints}
+            animKey={animKey}
+            usePointColor
+            className="text-base sm:text-lg font-black leading-tight"
+            deltaPlacement="bottom"
+          />
         </div>
       </div>
     </div>

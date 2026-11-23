@@ -3,9 +3,10 @@ import { RefreshCw, ChevronDown, Users } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import ManagerAvatar from './ui/ManagerAvatar';
 import PageHeader from './ui/PageHeader';
-import { pointColor } from './ui/LivePlayerCircle';
+import AnimatedPoints from './ui/AnimatedPoints';
 import LiveLineupPitch from './ui/LiveLineupGrid';
 import { buildLineupWithDummies, buildTeamLogoMap } from './liveLineupUtils';
+import { diffAndSavePoints, buildLineupPointsMap, buildRankingPointsMap, nextAnimId } from './livePointsStore';
 
 // Live-Punkte waehrend eines laufenden Spieltags (Owner-Wunsch 23.11.2026) -
 // On-Demand ueber frontend/api/live-lineup.js + live-ranking.js + live-team.js,
@@ -33,7 +34,7 @@ const COMPETITIONS = [
   { id: '9', name: 'MLS' },
 ];
 
-const RankingList = ({ ranking, selectedUserId, onSelect }) => (
+const RankingList = ({ ranking, selectedUserId, onSelect, prevPointsMap, animId }) => (
   <div className="card-surface rounded-2xl overflow-hidden divide-y divide-[#2a2a2a]">
     {ranking.map((r, i) => {
       const isSelected = r.userId === selectedUserId;
@@ -46,7 +47,14 @@ const RankingList = ({ ranking, selectedUserId, onSelect }) => (
           <span className="text-xs font-black text-[#626978] w-5 shrink-0">{i + 1}</span>
           <ManagerAvatar name={r.name} size={32} ringColor={isSelected ? '#ff5c3e' : undefined} />
           <span className="text-sm font-bold text-gray-100 flex-1 truncate">{r.name}</span>
-          <span className={`text-base font-black ${pointColor(r.livePoints)}`}>{r.livePoints}</span>
+          <AnimatedPoints
+            value={r.livePoints}
+            previousValue={prevPointsMap?.[String(r.userId)]}
+            animKey={animId != null ? `${animId}:rank:${r.userId}` : null}
+            usePointColor
+            className="text-base font-black"
+            deltaPlacement="left"
+          />
         </button>
       );
     })}
@@ -99,10 +107,15 @@ const LiveLineupPage = () => {
   const [setupError, setSetupError] = useState(null);
 
   const [ranking, setRanking] = useState(null);
+  const [rankingPrevPoints, setRankingPrevPoints] = useState(null);
+  const [rankingAnimId, setRankingAnimId] = useState(null);
   const [matchday, setMatchday] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   // "own": immer die Default-Ansicht (Owner-Wunsch 24.11.2026).
   const [ownData, setOwnData] = useState(null);
+  const [ownPrevPoints, setOwnPrevPoints] = useState(null);
+  const [ownAnimId, setOwnAnimId] = useState(null);
   const [ownLoading, setOwnLoading] = useState(true);
 
   // "managers": Startelf eines ANDEREN Liga-Managers, erst nach Auswahl in der RankingList.
@@ -111,6 +124,8 @@ const LiveLineupPage = () => {
   // SelectorButton-Zeile die Liste, der Kader bekommt den Hauptplatz.
   const [selectedManagerId, setSelectedManagerId] = useState(null);
   const [managerData, setManagerData] = useState(null);
+  const [managerPrevPoints, setManagerPrevPoints] = useState(null);
+  const [managerAnimId, setManagerAnimId] = useState(null);
   const [managerLoading, setManagerLoading] = useState(false);
   const [managerPickerOpen, setManagerPickerOpen] = useState(true);
 
@@ -122,6 +137,8 @@ const LiveLineupPage = () => {
   const [teamsLoading, setTeamsLoading] = useState(false);
   const [selectedTeamId, setSelectedTeamId] = useState(null);
   const [teamData, setTeamData] = useState(null);
+  const [teamPrevPoints, setTeamPrevPoints] = useState(null);
+  const [teamAnimId, setTeamAnimId] = useState(null);
   const [teamLoading, setTeamLoading] = useState(false);
   const [teamError, setTeamError] = useState(null);
   const [teamsPickerOpen, setTeamsPickerOpen] = useState(false);
@@ -134,10 +151,12 @@ const LiveLineupPage = () => {
   }, []);
 
   // Grundsetup: Liga ermitteln, Spieler-/Vereinswappen-Nachschlagewerk laden,
-  // Ranking + eigenen Kader EINMAL beim Oeffnen abrufen.
-  const loadAll = useCallback(async () => {
+  // Ranking + eigenen Kader EINMAL beim Oeffnen abrufen. Bei manuellem
+  // Refresh (`silent = true`) bleibt das Spielfeld stehen, sodass sich die
+  // Punktzahlen direkt an Ort und Stelle hoch-/runterzaehlen koennen.
+  const loadAll = useCallback(async (silent = false) => {
     if (!kickbaseId) { setOwnLoading(false); return; }
-    setOwnLoading(true);
+    if (!silent) setOwnLoading(true);
     setSetupError(null);
     try {
       const [ratingsRes, playersRes] = await Promise.all([
@@ -156,33 +175,52 @@ const LiveLineupPage = () => {
       const rankingRes = await fetch(`/api/live-ranking?userId=${kickbaseId}&leagueKey=${league}`);
       if (rankingRes.ok) {
         const rankingJson = await rankingRes.json();
-        setRanking(rankingJson.ranking || []);
+        const nextRanking = rankingJson.ranking || [];
+        const prevRank = diffAndSavePoints(
+          `ranking:md${rankingJson.matchday ?? 'cur'}:${league}`,
+          buildRankingPointsMap(nextRanking)
+        );
+        setRankingPrevPoints(prevRank);
+        setRankingAnimId(nextAnimId());
+        setRanking(nextRanking);
         setMatchday(rankingJson.matchday);
       }
 
       const lineupJson = await loadLineup(league, kickbaseId);
+      const prevOwn = diffAndSavePoints(
+        `own:md${lineupJson.matchday ?? 'cur'}:${kickbaseId}`,
+        buildLineupPointsMap(lineupJson.players)
+      );
+      setOwnPrevPoints(prevOwn);
+      setOwnAnimId(nextAnimId());
       setOwnData(lineupJson);
     } catch (e) {
       setSetupError(e.message || 'Unbekannter Fehler');
     } finally {
-      setOwnLoading(false);
+      if (!silent) setOwnLoading(false);
     }
   }, [kickbaseId, loadLineup]);
 
   useEffect(() => { loadAll(); }, [loadAll]);
 
-  const selectManager = useCallback(async (userId) => {
+  const selectManager = useCallback(async (userId, forceRefresh = false) => {
     setManagerPickerOpen(false);
     setSelectedManagerId(userId);
-    if (!leagueKey || (userId === selectedManagerId && managerData)) return;
-    setManagerLoading(true);
+    if (!leagueKey || (!forceRefresh && userId === selectedManagerId && managerData)) return;
+    if (!forceRefresh) setManagerLoading(true);
     try {
       const lineupJson = await loadLineup(leagueKey, userId);
+      const prevMgr = diffAndSavePoints(
+        `mgr:md${lineupJson.matchday ?? 'cur'}:${userId}`,
+        buildLineupPointsMap(lineupJson.players)
+      );
+      setManagerPrevPoints(prevMgr);
+      setManagerAnimId(nextAnimId());
       setManagerData(lineupJson);
     } catch {
-      setManagerData(null);
+      if (!forceRefresh) setManagerData(null);
     } finally {
-      setManagerLoading(false);
+      if (!forceRefresh) setManagerLoading(false);
     }
   }, [leagueKey, selectedManagerId, managerData, loadLineup]);
 
@@ -193,6 +231,7 @@ const LiveLineupPage = () => {
     setTeamsLoading(true);
     setSelectedTeamId(null);
     setTeamData(null);
+    setTeamPrevPoints(null);
     fetch(`/api/live-teams-list?competitionId=${competitionId}`)
       .then((res) => res.ok ? res.json() : null)
       .then((json) => { if (!cancelled) setTeamsList(json?.teams || []); })
@@ -201,23 +240,53 @@ const LiveLineupPage = () => {
     return () => { cancelled = true; };
   }, [mode, competitionId]);
 
-  const selectTeam = useCallback(async (teamId) => {
+  const selectTeam = useCallback(async (teamId, forceRefresh = false) => {
     setSelectedTeamId(teamId);
     setTeamsPickerOpen(false);
-    setTeamLoading(true);
+    if (!forceRefresh) setTeamLoading(true);
     setTeamError(null);
     try {
       const res = await fetch(`/api/live-team?competitionId=${competitionId}&teamId=${teamId}`);
       if (!res.ok) throw new Error('Team-Daten konnten nicht geladen werden');
       const json = await res.json();
+      const teamScope = json.matchId
+        ? `team:m:${json.matchId}:${teamId}`
+        : `team:c:${competitionId}:${teamId}`;
+      const prevTeam = diffAndSavePoints(teamScope, buildLineupPointsMap(json.players));
+      setTeamPrevPoints(prevTeam);
+      setTeamAnimId(nextAnimId());
       setTeamData(json);
     } catch (e) {
       setTeamError(e.message || 'Unbekannter Fehler');
-      setTeamData(null);
+      if (!forceRefresh) setTeamData(null);
     } finally {
-      setTeamLoading(false);
+      if (!forceRefresh) setTeamLoading(false);
     }
   }, [competitionId]);
+
+  // Aktualisiert je nach aktivem Tab die gerade sichtbaren Live-Daten im
+  // Hintergrund (ohne das Spielfeld auszublenden), damit Punktaenderungen
+  // sofort animiert werden.
+  const handleRefresh = useCallback(async () => {
+    if (refreshing || ownLoading) return;
+    setRefreshing(true);
+    try {
+      if (mode === 'teams') {
+        if (selectedTeamId) {
+          await selectTeam(selectedTeamId, true);
+        }
+      } else if (mode === 'managers') {
+        await loadAll(true);
+        if (selectedManagerId) {
+          await selectManager(selectedManagerId, true);
+        }
+      } else {
+        await loadAll(true);
+      }
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshing, ownLoading, mode, selectedTeamId, selectedManagerId, selectTeam, selectManager, loadAll]);
 
   // Gemeinsame Anreicherung: live-lineup.js-Rohdaten -> Name/Position/Foto aus
   // all_players.json + Vereinswappen - identisch fuer "own" und "managers".
@@ -289,11 +358,12 @@ const LiveLineupPage = () => {
             <PageHeader eyebrow={matchday ? `SPIELTAG ${matchday} · LIVE` : 'LIVE'} accentColor="#ef4444" title="Live Punkte" />
           </div>
           <button
-            onClick={loadAll}
-            disabled={ownLoading}
+            onClick={handleRefresh}
+            disabled={ownLoading || refreshing}
+            aria-label="Live-Daten aktualisieren"
             className="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-[#8b92a5] hover:text-white transition-colors disabled:opacity-50 shrink-0"
           >
-            <RefreshCw size={13} className={ownLoading ? 'animate-spin' : ''} />
+            <RefreshCw size={13} className={ownLoading || refreshing ? 'animate-spin' : ''} />
           </button>
         </div>
 
@@ -305,7 +375,7 @@ const LiveLineupPage = () => {
 
         {mode === 'own' && (
           <>
-            {ownLoading ? (
+            {ownLoading && !ownData ? (
               <div className="text-center text-[#8b92a5] text-sm py-10">Lade Live-Daten…</div>
             ) : !kickbaseId ? (
               <div className="card-surface rounded-2xl p-5 text-center text-sm text-[#8b92a5]">
@@ -316,7 +386,13 @@ const LiveLineupPage = () => {
                 {ownData.note || 'Keine Startelf-Daten verfügbar.'}
               </div>
             ) : ownLineup ? (
-              <LiveLineupPitch lineup={ownLineup} totalPoints={ownTotalPoints} />
+              <LiveLineupPitch
+                key={`own-${kickbaseId}`}
+                lineup={ownLineup}
+                totalPoints={ownTotalPoints}
+                prevPointsMap={ownPrevPoints}
+                animId={ownAnimId}
+              />
             ) : null}
           </>
         )}
@@ -325,7 +401,13 @@ const LiveLineupPage = () => {
           <>
             {managerPickerOpen ? (
               ranking && ranking.length > 0 ? (
-                <RankingList ranking={ranking} selectedUserId={selectedManagerId} onSelect={selectManager} />
+                <RankingList
+                  ranking={ranking}
+                  selectedUserId={selectedManagerId}
+                  onSelect={selectManager}
+                  prevPointsMap={rankingPrevPoints}
+                  animId={rankingAnimId}
+                />
               ) : (
                 <div className="text-center text-[#8b92a5] text-sm py-6">Lade Liga-Ranking…</div>
               )
@@ -341,7 +423,13 @@ const LiveLineupPage = () => {
                 {managerLoading ? (
                   <div className="text-center text-[#8b92a5] text-sm py-10">Lade Live-Daten…</div>
                 ) : managerLineup ? (
-                  <LiveLineupPitch lineup={managerLineup} totalPoints={managerTotalPoints} />
+                  <LiveLineupPitch
+                    key={`mgr-${selectedManagerId}`}
+                    lineup={managerLineup}
+                    totalPoints={managerTotalPoints}
+                    prevPointsMap={managerPrevPoints}
+                    animId={managerAnimId}
+                  />
                 ) : null}
               </>
             )}
@@ -420,7 +508,13 @@ const LiveLineupPage = () => {
               <div className="text-center text-[#8b92a5] text-sm py-10">Lade Live-Daten…</div>
             )}
             {!teamsPickerOpen && !teamLoading && teamLineup && (
-              <LiveLineupPitch lineup={teamLineup} totalPoints={teamTotalPoints} />
+              <LiveLineupPitch
+                key={`team-${competitionId}-${selectedTeamId}`}
+                lineup={teamLineup}
+                totalPoints={teamTotalPoints}
+                prevPointsMap={teamPrevPoints}
+                animId={teamAnimId}
+              />
             )}
           </>
         )}

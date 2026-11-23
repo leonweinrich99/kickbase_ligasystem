@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import LivePlayerCircle from './LivePlayerCircle';
+import AnimatedPoints from './AnimatedPoints';
 
 // Gemeinsame Live-Pitch-Darstellung fuer alle Stellen, die eine Startelf mit
 // Live-Punkten zeigen (LiveLineupPage.jsx "Live Punkte" UND UserDetail.jsx
@@ -17,7 +18,7 @@ import LivePlayerCircle from './LivePlayerCircle';
 // playercenter-events via /v4/live/eventtypes in Klartext uebersetzt. Die
 // Spielerdaten werden per Router-State mitgegeben (kein Extra-Fetch noetig).
 
-export const LiveRow = ({ players, onPlayerClick }) => {
+export const LiveRow = ({ players, onPlayerClick, prevPointsMap, animId }) => {
   if (!players || players.length === 0) return null;
   const itemCount = players.length;
   const size = itemCount > 4 ? 'w-12 h-12 sm:w-14 sm:h-14' : 'w-14 h-14 sm:w-16 sm:h-16';
@@ -31,6 +32,8 @@ export const LiveRow = ({ players, onPlayerClick }) => {
           name={p.name}
           displayName={p.lastName || p.name}
           points={p.points}
+          prevPoints={!p.isDummy ? prevPointsMap?.[String(p.id)] : undefined}
+          animKey={!p.isDummy && animId != null ? `${animId}:p:${p.id}` : null}
           size={size}
           containerSize={containerSize}
           onClick={!p.isDummy && onPlayerClick ? () => onPlayerClick(p) : undefined}
@@ -45,7 +48,7 @@ export const LiveRow = ({ players, onPlayerClick }) => {
 // beiden Einsatzorten. Navigiert bei Spieler-Klick selbst zur Detailseite
 // (kein Aufrufer-Callback mehr noetig), damit das ueberall automatisch
 // funktioniert.
-const LiveLineupPitch = ({ lineup, totalPoints }) => {
+const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId }) => {
   const navigate = useNavigate();
   const openPlayer = (player) => navigate('/live-player', { state: { player } });
 
@@ -65,16 +68,23 @@ const LiveLineupPitch = ({ lineup, totalPoints }) => {
       </div>
 
       <div className="relative z-10 w-full px-2 sm:px-4 flex flex-col">
-        <LiveRow players={st} onPlayerClick={openPlayer} />
-        <LiveRow players={mf} onPlayerClick={openPlayer} />
-        <LiveRow players={aw} onPlayerClick={openPlayer} />
-        <LiveRow players={tw} onPlayerClick={openPlayer} />
+        <LiveRow players={st} onPlayerClick={openPlayer} prevPointsMap={prevPointsMap} animId={animId} />
+        <LiveRow players={mf} onPlayerClick={openPlayer} prevPointsMap={prevPointsMap} animId={animId} />
+        <LiveRow players={aw} onPlayerClick={openPlayer} prevPointsMap={prevPointsMap} animId={animId} />
+        <LiveRow players={tw} onPlayerClick={openPlayer} prevPointsMap={prevPointsMap} animId={animId} />
       </div>
 
       {totalPoints != null && (
         <div className="relative z-10 flex justify-end px-6 sm:px-8 mt-4">
           <div className="text-right">
-            <div className="text-3xl sm:text-4xl font-black text-white leading-none">{totalPoints.toLocaleString('de-DE')}</div>
+            <AnimatedPoints
+              value={totalPoints}
+              previousValue={prevPointsMap?.__total__}
+              animKey={animId != null ? `${animId}:__total__` : null}
+              format={(n) => n.toLocaleString('de-DE')}
+              className="text-3xl sm:text-4xl font-black text-white leading-none"
+              deltaPlacement="left"
+            />
             <div className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] mt-1">Punkte</div>
           </div>
         </div>

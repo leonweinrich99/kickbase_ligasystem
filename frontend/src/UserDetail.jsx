@@ -14,6 +14,7 @@ import ManagerAvatar from './ui/ManagerAvatar';
 import PlayerPhotoCard from './ui/PlayerPhotoCard';
 import PositionRow from './ui/PositionRow';
 import LiveLineupPitch from './ui/LiveLineupGrid';
+import { diffAndSavePoints, buildLineupPointsMap, nextAnimId } from './livePointsStore';
 import { buildLineupWithDummies, buildTeamLogoMap } from './liveLineupUtils';
 import { PlayerDetailView } from './Advisor';
 
@@ -290,6 +291,8 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
   // Mit diesem Status bleibt die Seite waehrend des Ladens im Loading-Zustand
   // (siehe weiter unten) statt kurz die alte Ansicht zu zeigen.
   const [liveLineup, setLiveLineup] = useState(null);
+  const [livePrevPoints, setLivePrevPoints] = useState(null);
+  const [liveAnimId, setLiveAnimId] = useState(null);
   const [liveLineupLoading, setLiveLineupLoading] = useState(true);
   useEffect(() => {
     let cancelled = false;
@@ -307,7 +310,20 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
         if (!leagueKey) return null;
         return fetch(`/api/live-lineup?userId=${userData.id}&leagueKey=${leagueKey}`).then((res) => res.ok ? res.json() : null);
       })
-      .then((json) => { if (!cancelled) setLiveLineup(json?.players?.length ? json : null); })
+      .then((json) => {
+        if (cancelled) return;
+        if (json?.players?.length) {
+          const prev = diffAndSavePoints(
+            `profile:md${json.matchday ?? 'cur'}:${userData.id}`,
+            buildLineupPointsMap(json.players)
+          );
+          setLivePrevPoints(prev);
+          setLiveAnimId(nextAnimId());
+          setLiveLineup(json);
+        } else {
+          setLiveLineup(null);
+        }
+      })
       .catch(() => { if (!cancelled) setLiveLineup(null); })
       .finally(() => { if (!cancelled) setLiveLineupLoading(false); });
     return () => { cancelled = true; };
@@ -588,8 +604,11 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
               </h3>
             </div>
             <LiveLineupPitch
+              key={`profile-${userData.id}`}
               lineup={liveLineupEnriched}
               totalPoints={liveLineupTotalPoints}
+              prevPointsMap={livePrevPoints}
+              animId={liveAnimId}
             />
           </div>
         ) : startelfData?.managers?.[userData.id] ? (
