@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { RefreshCw, Radio } from 'lucide-react';
+import { RefreshCw, Radio, ChevronDown, Users } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import ManagerAvatar from './ui/ManagerAvatar';
 import PageHeader from './ui/PageHeader';
@@ -53,6 +53,22 @@ const RankingList = ({ ranking, selectedUserId, onSelect }) => (
   </div>
 );
 
+// Kompakte Auswahl-Zeile statt dauerhaft sichtbarer Liste/Raster (Owner-
+// Feedback 24.11.2026: "ich finde es nicht gut wenn man alle Manager sieht
+// und dann darunter noch den Kader... beim echten Team ueber einen Button
+// auswaehlen, dann soll hauptsaechlich der Kader angezeigt werden") - toggelt
+// die Auswahl-Ansicht auf/zu, sobald etwas ausgewaehlt ist steht nur noch
+// diese eine Zeile zwischen Umschalter und Kader.
+const SelectorButton = ({ onClick, children }) => (
+  <button
+    onClick={onClick}
+    className="w-full flex items-center gap-3 card-surface rounded-2xl px-4 py-3 mb-4 hover:bg-[#171717] transition-colors"
+  >
+    {children}
+    <ChevronDown size={16} className="text-[#626978] shrink-0" />
+  </button>
+);
+
 const ModeSwitch = ({ mode, onChange }) => (
   <div className="flex gap-2 bg-[#171717] border border-[#2e2e2e] rounded-xl p-1 mb-5 overflow-x-auto no-scrollbar">
     {[
@@ -90,11 +106,17 @@ const LiveLineupPage = () => {
   const [ownLoading, setOwnLoading] = useState(true);
 
   // "managers": Startelf eines ANDEREN Liga-Managers, erst nach Auswahl in der RankingList.
+  // managerPickerOpen: solange true, steht die RankingList da statt des Kaders
+  // (Default true - noch nichts ausgewaehlt) - danach ersetzt eine kompakte
+  // SelectorButton-Zeile die Liste, der Kader bekommt den Hauptplatz.
   const [selectedManagerId, setSelectedManagerId] = useState(null);
   const [managerData, setManagerData] = useState(null);
   const [managerLoading, setManagerLoading] = useState(false);
+  const [managerPickerOpen, setManagerPickerOpen] = useState(true);
 
-  // "teams": Wettbewerb + echtes Team waehlen.
+  // "teams": Wettbewerb + echtes Team waehlen. teamsPickerOpen startet
+  // geschlossen (Default false) - erst ein Button oeffnet die Auswahl, nach
+  // der Teamwahl schliesst sie sich wieder automatisch.
   const [competitionId, setCompetitionId] = useState('1');
   const [teamsList, setTeamsList] = useState(null);
   const [teamsLoading, setTeamsLoading] = useState(false);
@@ -102,6 +124,7 @@ const LiveLineupPage = () => {
   const [teamData, setTeamData] = useState(null);
   const [teamLoading, setTeamLoading] = useState(false);
   const [teamError, setTeamError] = useState(null);
+  const [teamsPickerOpen, setTeamsPickerOpen] = useState(false);
 
   // Lineup-Daten fuer EINEN Kickbase-Manager laden (Startelf + Live-Punkte pro Spieler).
   const loadLineup = useCallback(async (league, userId) => {
@@ -149,8 +172,9 @@ const LiveLineupPage = () => {
   useEffect(() => { loadAll(); }, [loadAll]);
 
   const selectManager = useCallback(async (userId) => {
-    if (!leagueKey || (userId === selectedManagerId && managerData)) return;
+    setManagerPickerOpen(false);
     setSelectedManagerId(userId);
+    if (!leagueKey || (userId === selectedManagerId && managerData)) return;
     setManagerLoading(true);
     try {
       const lineupJson = await loadLineup(leagueKey, userId);
@@ -179,6 +203,7 @@ const LiveLineupPage = () => {
 
   const selectTeam = useCallback(async (teamId) => {
     setSelectedTeamId(teamId);
+    setTeamsPickerOpen(false);
     setTeamLoading(true);
     setTeamError(null);
     try {
@@ -227,6 +252,7 @@ const LiveLineupPage = () => {
   const managerLineup = useMemo(() => enrichKickbaseLineup(managerData), [managerData, enrichKickbaseLineup]);
   const managerTotalPoints = managerData?.players?.reduce((sum, p) => sum + (p.points || 0), 0) ?? null;
   const selectedManagerName = ranking?.find((r) => r.userId === selectedManagerId)?.name;
+  const selectedTeam = teamsList?.find((t) => t.id === selectedTeamId);
 
   const teamLineup = useMemo(() => {
     if (!teamData?.players?.length) return null;
@@ -294,78 +320,103 @@ const LiveLineupPage = () => {
 
         {mode === 'managers' && (
           <>
-            {ranking && ranking.length > 0 ? (
-              <RankingList ranking={ranking} selectedUserId={selectedManagerId} onSelect={selectManager} />
+            {managerPickerOpen ? (
+              ranking && ranking.length > 0 ? (
+                <RankingList ranking={ranking} selectedUserId={selectedManagerId} onSelect={selectManager} />
+              ) : (
+                <div className="text-center text-[#8b92a5] text-sm py-6">Lade Liga-Ranking…</div>
+              )
             ) : (
-              <div className="text-center text-[#8b92a5] text-sm py-6">Lade Liga-Ranking…</div>
-            )}
+              <>
+                <SelectorButton onClick={() => setManagerPickerOpen(true)}>
+                  <ManagerAvatar name={selectedManagerName} size={28} />
+                  <span className="text-sm font-bold text-gray-100 flex-1 text-left truncate">
+                    {selectedManagerName || 'Manager wählen'}
+                  </span>
+                </SelectorButton>
 
-            {selectedManagerName && (
-              <div className="mt-6 mb-3 text-sm font-bold text-gray-300">
-                Startelf: <span className="text-white">{selectedManagerName}</span>
-              </div>
-            )}
-
-            {managerLoading && (
-              <div className="text-center text-[#8b92a5] text-sm py-10">Lade Live-Daten…</div>
-            )}
-            {!managerLoading && managerLineup && (
-              <LiveLineupPitch lineup={managerLineup} totalPoints={managerTotalPoints} />
+                {managerLoading ? (
+                  <div className="text-center text-[#8b92a5] text-sm py-10">Lade Live-Daten…</div>
+                ) : managerLineup ? (
+                  <LiveLineupPitch lineup={managerLineup} totalPoints={managerTotalPoints} />
+                ) : null}
+              </>
             )}
           </>
         )}
 
         {mode === 'teams' && (
           <>
-            <div className="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
-              {COMPETITIONS.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => setCompetitionId(c.id)}
-                  className={`px-4 py-2 rounded-full whitespace-nowrap text-xs font-bold border transition-colors ${competitionId === c.id ? 'bg-[#ff5c3e]/15 border-[#ff5c3e] text-white' : 'border-[#2e2e2e] text-[#8b92a5] hover:text-white'}`}
-                >
-                  {c.name}
-                </button>
-              ))}
-            </div>
+            {teamsPickerOpen ? (
+              <>
+                <div className="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
+                  {COMPETITIONS.map((c) => (
+                    <button
+                      key={c.id}
+                      onClick={() => setCompetitionId(c.id)}
+                      className={`px-4 py-2 rounded-full whitespace-nowrap text-xs font-bold border transition-colors ${competitionId === c.id ? 'bg-[#ff5c3e]/15 border-[#ff5c3e] text-white' : 'border-[#2e2e2e] text-[#8b92a5] hover:text-white'}`}
+                    >
+                      {c.name}
+                    </button>
+                  ))}
+                </div>
 
-            {teamsLoading ? (
-              <div className="text-center text-[#8b92a5] text-sm py-6">Lade Teams…</div>
-            ) : teamsList && teamsList.length > 0 ? (
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-4">
-                {teamsList.map((t) => (
-                  <button
-                    key={t.id}
-                    onClick={() => selectTeam(t.id)}
-                    className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-colors ${selectedTeamId === t.id ? 'bg-[#1e1e1e] border-[#ff5c3e]' : 'border-[#2e2e2e] hover:border-[#8b92a5]'}`}
-                  >
-                    {t.logo ? (
-                      <img src={t.logo} alt="" className="w-7 h-7 object-contain" onError={(e) => { e.target.style.display = 'none'; }} />
-                    ) : (
-                      <div className="w-7 h-7 rounded-full bg-[#202020]" />
-                    )}
-                    <span className="text-[10px] font-bold text-gray-300 text-center truncate w-full">{t.name}</span>
-                  </button>
-                ))}
-              </div>
+                {teamsLoading ? (
+                  <div className="text-center text-[#8b92a5] text-sm py-6">Lade Teams…</div>
+                ) : teamsList && teamsList.length > 0 ? (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                    {teamsList.map((t) => (
+                      <button
+                        key={t.id}
+                        onClick={() => selectTeam(t.id)}
+                        className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-colors ${selectedTeamId === t.id ? 'bg-[#1e1e1e] border-[#ff5c3e]' : 'border-[#2e2e2e] hover:border-[#8b92a5]'}`}
+                      >
+                        {t.logo ? (
+                          <img src={t.logo} alt="" className="w-7 h-7 object-contain" onError={(e) => { e.target.style.display = 'none'; }} />
+                        ) : (
+                          <div className="w-7 h-7 rounded-full bg-[#202020]" />
+                        )}
+                        <span className="text-[10px] font-bold text-gray-300 text-center truncate w-full">{t.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center text-[#8b92a5] text-sm py-6">Keine Teams gefunden.</div>
+                )}
+              </>
+            ) : selectedTeam ? (
+              <SelectorButton onClick={() => setTeamsPickerOpen(true)}>
+                {selectedTeam.logo ? (
+                  <img src={selectedTeam.logo} alt="" className="w-7 h-7 object-contain shrink-0" onError={(e) => { e.target.style.display = 'none'; }} />
+                ) : (
+                  <div className="w-7 h-7 rounded-full bg-[#202020] shrink-0" />
+                )}
+                <span className="text-sm font-bold text-gray-100 flex-1 text-left truncate">{selectedTeam.name}</span>
+              </SelectorButton>
             ) : (
-              <div className="text-center text-[#8b92a5] text-sm py-6">Keine Teams gefunden.</div>
+              <button
+                onClick={() => setTeamsPickerOpen(true)}
+                className="w-full flex items-center justify-center gap-2.5 border border-dashed border-[#ff5c3e]/40 rounded-2xl p-5 mb-4 hover:border-[#ff5c3e] transition-all active:scale-[0.98] text-[#ff5c3e] font-bold text-sm"
+              >
+                <Users size={18} strokeWidth={2.5} />
+                Team auswählen
+              </button>
             )}
 
             {teamError && (
-              <div className="card-surface rounded-2xl p-5 text-center text-sm text-red-400 mb-4">{teamError}</div>
+              <div className="card-surface rounded-2xl p-5 text-center text-sm text-red-400 mb-4 mt-4">{teamError}</div>
             )}
 
-            {teamData && (
+            {!teamsPickerOpen && teamData && (
               <div className="mb-3 text-sm font-bold text-gray-300">
-                {teamData.teamName} · {teamData.score} {teamData.isLive ? `· LIVE ${teamData.minute}'` : ''}
+                {teamData.score} {teamData.isLive ? `· LIVE ${teamData.minute}'` : ''}
               </div>
             )}
 
-            {teamLoading && (
+            {!teamsPickerOpen && teamLoading && (
               <div className="text-center text-[#8b92a5] text-sm py-10">Lade Live-Daten…</div>
             )}
-            {!teamLoading && teamLineup && (
+            {!teamsPickerOpen && !teamLoading && teamLineup && (
               <LiveLineupPitch lineup={teamLineup} totalPoints={teamTotalPoints} />
             )}
           </>
