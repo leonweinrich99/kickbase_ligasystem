@@ -14,7 +14,7 @@ import ManagerAvatar from './ui/ManagerAvatar';
 import PlayerPhotoCard from './ui/PlayerPhotoCard';
 import PositionRow from './ui/PositionRow';
 import LiveLineupPitch from './ui/LiveLineupGrid';
-import { buildLineupWithDummies } from './liveLineupUtils';
+import { buildLineupWithDummies, buildTeamLogoMap } from './liveLineupUtils';
 import { PlayerDetailView } from './Advisor';
 
 // Gleiche Positions-Labels/Reihenfolge wie AccountStats.jsx/Advisor.jsx.
@@ -268,12 +268,16 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
   // all_players.json (gleiche Quelle wie LiveLineupPage.jsx) deckt WIRKLICH
   // alle Spieler ab.
   const [allPlayersMap, setAllPlayersMap] = useState(null);
+  const [teamLogoMap, setTeamLogoMap] = useState(null);
   useEffect(() => {
     if (mode === 'archive') return;
     fetch('/history/all_players.json')
       .then((res) => res.json())
-      .then((list) => setAllPlayersMap(new Map(list.map((p) => [String(p.i), p]))))
-      .catch(() => setAllPlayersMap(null));
+      .then((list) => {
+        setAllPlayersMap(new Map(list.map((p) => [String(p.i), p])));
+        setTeamLogoMap(buildTeamLogoMap(list));
+      })
+      .catch(() => { setAllPlayersMap(null); setTeamLogoMap(null); });
   }, [mode]);
 
   // liveLineupLoading ist WICHTIG fuer die Anzeige unten: ohne diesen Status
@@ -375,10 +379,16 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
           points: p.points ?? 0,
           imagePath: full?.pim || null,
           events: p.events || [],
+          teamLogo: teamLogoMap?.get(String(p.teamId)) || null,
+          opponentLogo: teamLogoMap?.get(String(p.opponentTeamId)) || null,
+          goalsFor: p.goalsFor,
+          goalsAgainst: p.goalsAgainst,
+          matchStatus: p.matchStatus,
+          matchMinute: p.matchMinute,
         };
       });
     return buildLineupWithDummies(enriched);
-  }, [liveLineup, allPlayersMap]);
+  }, [liveLineup, allPlayersMap, teamLogoMap]);
 
   const liveLineupTotalPoints = liveLineup?.players?.reduce((sum, p) => sum + (p.points || 0), 0) ?? null;
 

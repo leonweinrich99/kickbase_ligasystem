@@ -25,3 +25,18 @@ export const buildLineupWithDummies = (players) => {
   }
   return lineup;
 };
+
+// Vereinswappen je Team-ID aus all_players.json ableiten (jeder Spieler
+// traegt tid [Team-ID] + tim [Wappen-SVG-Pfad seines EIGENEN Vereins] - ein
+// Treffer pro Team reicht). Fuer die Spieler-Detailseite (PlayerLiveDetailPage),
+// die "eigenes Wappen - Ergebnis - Gegner-Wappen" wie im Kickbase-Original
+// zeigt (Owner-Vorlage 23.11.2026, Screenshot "Rômulo 181 Punkte").
+export const buildTeamLogoMap = (allPlayers) => {
+  const map = new Map();
+  (allPlayers || []).forEach((p) => {
+    if (p.tid != null && p.tim && !map.has(String(p.tid))) {
+      map.set(String(p.tid), `https://kickbase.b-cdn.net/${p.tim}`);
+    }
+  });
+  return map;
+};

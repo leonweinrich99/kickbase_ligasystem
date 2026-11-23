@@ -6,7 +6,7 @@ import { BackButton } from './ui/CloseButton';
 import ManagerAvatar from './ui/ManagerAvatar';
 import { pointColor } from './ui/LivePlayerCircle';
 import LiveLineupPitch from './ui/LiveLineupGrid';
-import { buildLineupWithDummies } from './liveLineupUtils';
+import { buildLineupWithDummies, buildTeamLogoMap } from './liveLineupUtils';
 
 // Live-Punkte waehrend eines laufenden Spieltags (Owner-Wunsch 23.11.2026) -
 // On-Demand ueber frontend/api/live-lineup.js + live-ranking.js, KEIN
@@ -49,6 +49,7 @@ const LiveLineupPage = () => {
 
   const [leagueKey, setLeagueKey] = useState(null);
   const [playerMap, setPlayerMap] = useState(null);
+  const [teamLogoMap, setTeamLogoMap] = useState(null);
   const [ranking, setRanking] = useState(null);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [data, setData] = useState(null);
@@ -92,6 +93,10 @@ const LiveLineupPage = () => {
       points: p.points ?? 0,
       imagePath: p.imagePath || null,
       events: p.events || [],
+      goalsFor: p.goalsFor,
+      goalsAgainst: p.goalsAgainst,
+      matchStatus: p.matchStatus,
+      matchMinute: p.matchMinute,
     }));
     return buildLineupWithDummies(enriched);
   }, [testTeam]);
@@ -116,6 +121,7 @@ const LiveLineupPage = () => {
       const ratings = await ratingsRes.json();
       const allPlayers = await playersRes.json();
       setPlayerMap(new Map(allPlayers.map((p) => [String(p.i), p])));
+      setTeamLogoMap(buildTeamLogoMap(allPlayers));
 
       const league = ratings[kickbaseId]?.league;
       if (!league) throw new Error('Liga konnte nicht ermittelt werden');
@@ -170,10 +176,16 @@ const LiveLineupPage = () => {
           points: p.points ?? 0,
           imagePath: full?.pim || null,
           events: p.events || [],
+          teamLogo: teamLogoMap?.get(String(p.teamId)) || null,
+          opponentLogo: teamLogoMap?.get(String(p.opponentTeamId)) || null,
+          goalsFor: p.goalsFor,
+          goalsAgainst: p.goalsAgainst,
+          matchStatus: p.matchStatus,
+          matchMinute: p.matchMinute,
         };
       });
     return buildLineupWithDummies(enriched);
-  }, [data, playerMap]);
+  }, [data, playerMap, teamLogoMap]);
 
   const totalPoints = data?.players?.reduce((sum, p) => sum + (p.points || 0), 0) ?? null;
   const selectedName = ranking?.find((r) => r.userId === selectedUserId)?.name;

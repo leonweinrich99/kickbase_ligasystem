@@ -49,6 +49,9 @@ export default async function handler(req, res) {
 
   const eventTypeMap = await getEventTypeMap(token);
 
+  const ownGoals = team === 't2' ? details.t2g : details.t1g;
+  const opponentGoals = team === 't2' ? details.t1g : details.t2g;
+
   const players = await Promise.all(
     lineup.map(async (p) => {
       const pc = day
@@ -64,6 +67,10 @@ export default async function handler(req, res) {
           .filter((e) => e.p !== 0)
           .map((e) => ({ label: eventTypeMap.get(e.eti) || 'Aktion', points: e.p, minute: e.mt }))
           .sort((a, b) => b.minute - a.minute),
+        goalsFor: ownGoals ?? null,
+        goalsAgainst: opponentGoals ?? null,
+        matchStatus: details.il ? null : 2,
+        matchMinute: details.mt ?? null,
       };
     })
   );
