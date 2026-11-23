@@ -13,6 +13,8 @@ import { BackButton } from './ui/CloseButton';
 import ManagerAvatar from './ui/ManagerAvatar';
 import PlayerPhotoCard from './ui/PlayerPhotoCard';
 import PositionRow from './ui/PositionRow';
+import LiveLineupPitch from './ui/LiveLineupGrid';
+import { buildLineupWithDummies } from './liveLineupUtils';
 import { PlayerDetailView } from './Advisor';
 
 // Gleiche Positions-Labels/Reihenfolge wie AccountStats.jsx/Advisor.jsx.
@@ -33,6 +35,41 @@ const calculatePerformanceScore = (points, avg, opt, max) => {
 };
 
 const formatShortMD = (val) => `ST ${val}`;
+
+// Positions-Kodierung TW/ABW/MF/ST (advisorData) -> 1-4 (ui/LiveLineupGrid.jsx).
+const POSITION_TO_NUM = { TW: 1, ABW: 2, MF: 3, ST: 4 };
+
+// Reine Funktion (ausgelagert aus der Komponente), damit sie sowohl als
+// getFullPlayer(playerId) direkt genutzt werden kann als auch als stabile
+// Abhaengigkeit in useMemo(() => ..., [advisorData]) - eine Closure ueber
+// advisorData waere bei jedem Render neu und wuerde die Memoization brechen.
+function lookupAdvisorPlayer(advisorData, playerId) {
+  if (!advisorData || !advisorData.leagues) return 'LOADING';
+
+  // Zuerst in allen Ligen (Kader & Markt) suchen, da dort oft noch
+  // kontextbezogene Zusatzdaten (wie owner) liegen könnten.
+  for (const lName in advisorData.leagues) {
+    const league = advisorData.leagues[lName];
+    if (league.managerSquads) {
+      for (const mId in league.managerSquads) {
+        const found = league.managerSquads[mId].find(p => String(p.playerId) === String(playerId));
+        if (found) return found;
+      }
+    }
+    if (league.marketData) {
+      const foundMarket = league.marketData.find(p => String(p.playerId) === String(playerId));
+      if (foundMarket) return foundMarket;
+    }
+  }
+
+  // Fallback: In der globalen Spieler-Datenbank suchen (für verkaufte Spieler)
+  if (advisorData.players) {
+    const foundGlobal = advisorData.players.find(p => String(p.playerId) === String(playerId));
+    if (foundGlobal) return foundGlobal;
+  }
+
+  return null;
+}
 
 const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
   const { id } = useParams();
@@ -209,34 +246,45 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
       .catch(() => setStartelfData(null));
   }, [dataBase, mode, currentMatchday]);
 
+  // Live-Punkte ueber dieselbe On-Demand-Route wie "Live Punkte" (Owner-Wunsch
+  // 23.11.2026: "zeig die Live-Punkte-Anzeige auch im Manager-Profil, aktuell
+  // ist die Anzeige dort unterschiedlich") - ersetzt die vorher hier genutzte
+  // statische startelf-mdN.json (Startelf-Snapshot vom letzten ABGESCHLOSSENEN
+  // Spieltag) durch dieselbe Live-Quelle wie frontend/src/LiveLineupPage.jsx.
+  // Nur fuer die laufende Saison sinnvoll (nicht im eingefrorenen Archiv).
+  const [liveLineup, setLiveLineup] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    if (mode === 'archive' || !userData?.id) return () => { cancelled = true; };
+    fetch('/history/manager-ratings.json')
+      .then((res) => res.json())
+      .then((ratings) => {
+        const leagueKey = ratings[userData.id]?.league;
+        if (!leagueKey) return null;
+        return fetch(`/api/live-lineup?userId=${userData.id}&leagueKey=${leagueKey}`).then((res) => res.ok ? res.json() : null);
+      })
+      .then((json) => { if (!cancelled) setLiveLineup(json?.players?.length ? json : null); })
+      .catch(() => { if (!cancelled) setLiveLineup(null); });
+    return () => { cancelled = true; };
+  }, [mode, userData?.id]);
+
   const [selectedPlayer, setSelectedPlayer] = useState(null);
 
-  const getFullPlayer = (playerId) => {
-    if (!advisorData || !advisorData.leagues) return 'LOADING';
-    
-    // Zuerst in allen Ligen (Kader & Markt) suchen, da dort oft noch
-    // kontextbezogene Zusatzdaten (wie owner) liegen könnten.
-    for (const lName in advisorData.leagues) {
-      const league = advisorData.leagues[lName];
-      if (league.managerSquads) {
-        for (const mId in league.managerSquads) {
-          const found = league.managerSquads[mId].find(p => String(p.playerId) === String(playerId));
-          if (found) return found;
-        }
-      }
-      if (league.marketData) {
-        const foundMarket = league.marketData.find(p => String(p.playerId) === String(playerId));
-        if (foundMarket) return foundMarket;
-      }
+  const getFullPlayer = (playerId) => lookupAdvisorPlayer(advisorData, playerId);
+
+  // Auf Komponenten-Ebene (statt wie frueher pro Startelf-Variante neu
+  // definiert), da sowohl die Live-Startelf als auch der statische Fallback
+  // sie jetzt brauchen.
+  const handlePlayerClick = (pid) => {
+    if (pid && pid.toString().startsWith('dummy-')) return;
+    const fullPlayer = getFullPlayer(pid);
+    if (fullPlayer === 'LOADING') {
+      alert('Spielerdaten werden noch geladen. Bitte in wenigen Sekunden nochmal probieren.');
+    } else if (fullPlayer) {
+      setSelectedPlayer(fullPlayer);
+    } else {
+      alert('Keine detaillierten Prognose-Daten für diesen Spieler gefunden (vermutlich verkauft).');
     }
-    
-    // Fallback: In der globalen Spieler-Datenbank suchen (für verkaufte Spieler)
-    if (advisorData.players) {
-      const foundGlobal = advisorData.players.find(p => String(p.playerId) === String(playerId));
-      if (foundGlobal) return foundGlobal;
-    }
-    
-    return null;
   };
 
   // Gleiches Join-Muster wie AccountStats.jsx::KaderTab: managerId (userData.id)
@@ -267,6 +315,30 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
       }))
       .filter((g) => g.players.length > 0);
   }, [squad]);
+
+  // Live-Startelf mit Name/Position/Foto angereichert (aus advisorData,
+  // direkter Lookup statt getFullPlayer - siehe lookupAdvisorPlayer) - gleiche
+  // Positions-Kodierung (1-4) wie ui/LiveLineupGrid.jsx erwartet.
+  const liveLineupEnriched = useMemo(() => {
+    if (!liveLineup?.players?.length) return null;
+    const enriched = liveLineup.players
+      .filter((p) => !p.error)
+      .map((p) => {
+        const full = lookupAdvisorPlayer(advisorData, p.playerId);
+        const full2 = full === 'LOADING' ? null : full;
+        return {
+          id: p.playerId,
+          position: POSITION_TO_NUM[full2?.position] || 3,
+          name: full2 ? `${full2.firstName || ''} ${full2.name || ''}`.trim() : p.name,
+          lastName: full2?.name || p.name,
+          points: p.points ?? 0,
+          imagePath: full2?.imagePath || null,
+        };
+      });
+    return buildLineupWithDummies(enriched);
+  }, [liveLineup, advisorData]);
+
+  const liveLineupTotalPoints = liveLineup?.players?.reduce((sum, p) => sum + (p.points || 0), 0) ?? null;
 
   const historyWithScores = useMemo(() => {
     return history.map(h => ({
@@ -444,7 +516,20 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
           )}
         </div>
 
-        {startelfData?.managers?.[userData.id] ? (
+        {liveLineupEnriched ? (
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <h3 className="text-lg font-semibold text-white">
+                Startelf {liveLineup?.matchday ? `· Spieltag ${liveLineup.matchday}` : ''}
+              </h3>
+            </div>
+            <LiveLineupPitch
+              lineup={liveLineupEnriched}
+              totalPoints={liveLineupTotalPoints}
+              onPlayerClick={handlePlayerClick}
+            />
+          </div>
+        ) : startelfData?.managers?.[userData.id] ? (
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-4">
               <h3 className="text-lg font-semibold text-white">Startelf</h3>
@@ -462,12 +547,12 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
               <div className="relative z-10 w-full px-2 sm:px-4 h-full flex flex-col justify-between">
                   {(() => {
                     const lineup = [...startelfData.managers[userData.id].lineup];
-                    
+
                     let twCount = lineup.filter(p => p.position === 1).length;
                     let awCount = lineup.filter(p => p.position === 2).length;
                     let mfCount = lineup.filter(p => p.position === 3).length;
                     let stCount = lineup.filter(p => p.position === 4).length;
-                    
+
                     let dummyIndex = 1;
                     while (lineup.length < 11) {
                       const dummy = {
@@ -479,14 +564,14 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                         marketValue: 0,
                         imagePath: null
                       };
-                      
+
                       if (twCount < 1) { dummy.position = 1; twCount++; }
                       else if (awCount < 3) { dummy.position = 2; awCount++; }
                       else if (mfCount < 3) { dummy.position = 3; mfCount++; }
                       else if (stCount < 2) { dummy.position = 4; stCount++; }
                       else if (mfCount < 5) { dummy.position = 3; mfCount++; }
                       else { dummy.position = 4; stCount++; }
-                      
+
                       lineup.push(dummy);
                     }
 
@@ -494,18 +579,6 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                     const mf = lineup.filter(p => p.position === 3 || p.position === 0);
                     const aw = lineup.filter(p => p.position === 2);
                     const tw = lineup.filter(p => p.position === 1);
-
-                    const handlePlayerClick = (pid) => {
-                      if (pid && pid.toString().startsWith('dummy-')) return;
-                      const fullPlayer = getFullPlayer(pid);
-                      if (fullPlayer === 'LOADING') {
-                        alert('Spielerdaten werden noch geladen. Bitte in wenigen Sekunden nochmal probieren.');
-                      } else if (fullPlayer) {
-                        setSelectedPlayer(fullPlayer);
-                      } else {
-                        alert('Keine detaillierten Prognose-Daten für diesen Spieler gefunden (vermutlich verkauft).');
-                      }
-                    };
 
                     return (
                       <>

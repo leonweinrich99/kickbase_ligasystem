@@ -4,7 +4,9 @@ import { useAuth } from './AuthContext';
 import { useBackNavigation } from './useBackNavigation';
 import { BackButton } from './ui/CloseButton';
 import ManagerAvatar from './ui/ManagerAvatar';
-import LivePlayerCircle, { pointColor } from './ui/LivePlayerCircle';
+import { pointColor } from './ui/LivePlayerCircle';
+import LiveLineupPitch from './ui/LiveLineupGrid';
+import { buildLineupWithDummies } from './liveLineupUtils';
 
 // Live-Punkte waehrend eines laufenden Spieltags (Owner-Wunsch 23.11.2026) -
 // On-Demand ueber frontend/api/live-lineup.js + live-ranking.js, KEIN
@@ -16,56 +18,9 @@ import LivePlayerCircle, { pointColor } from './ui/LivePlayerCircle';
 //    App) - EIN guenstiger teamcenter-Call liefert alle Manager auf einmal
 //    (siehe live-ranking.js), kein Playercenter-Call pro Spieler noetig.
 // 2. Startelf-Ansicht des gerade ausgewaehlten Managers (Klick auf eine
-//    Ranking-Zeile wechselt die Auswahl) - Design an das echte Kickbase-
-//    "Meine 11"-Live-Pitch angelehnt (recherchiert an offiziellen
-//    App-Store-Screenshots UND einem vom Owner bereitgestellten Screenshot):
-//    runde Fotos, Punktzahl GROSS UNTER dem Namen, Gesamtpunkte-Box unten
-//    rechts. Farbskala NUR nach erreichten Punkten (siehe
-//    ui/LivePlayerCircle.jsx: <0 rot, 0 grau, 1-99 orange, 100-199 gruen, ab
-//    200 dunkelgruen) statt Spielstatus.
-
-const buildLineupWithDummies = (players) => {
-  const lineup = [...players];
-  let twCount = lineup.filter((p) => p.position === 1).length;
-  let awCount = lineup.filter((p) => p.position === 2).length;
-  let mfCount = lineup.filter((p) => p.position === 3).length;
-  let stCount = lineup.filter((p) => p.position === 4).length;
-
-  let dummyIndex = 1;
-  while (lineup.length < 11) {
-    const dummy = { id: 'dummy-' + dummyIndex++, isDummy: true, name: 'Unbekannt', lastName: 'Unbekannt', points: null, imagePath: null };
-    if (twCount < 1) { dummy.position = 1; twCount++; }
-    else if (awCount < 3) { dummy.position = 2; awCount++; }
-    else if (mfCount < 3) { dummy.position = 3; mfCount++; }
-    else if (stCount < 2) { dummy.position = 4; stCount++; }
-    else if (mfCount < 5) { dummy.position = 3; mfCount++; }
-    else { dummy.position = 4; stCount++; }
-    lineup.push(dummy);
-  }
-  return lineup;
-};
-
-const LiveRow = ({ players }) => {
-  if (!players || players.length === 0) return null;
-  const itemCount = players.length;
-  const size = itemCount > 4 ? 'w-12 h-12 sm:w-14 sm:h-14' : 'w-14 h-14 sm:w-16 sm:h-16';
-  const containerSize = itemCount > 4 ? 'w-[62px] sm:w-[76px]' : 'w-[72px] sm:w-[86px]';
-  return (
-    <div className="flex justify-center items-start flex-nowrap gap-1 sm:gap-4 w-full px-2 mb-4 last:mb-0 overflow-visible">
-      {players.map((p) => (
-        <LivePlayerCircle
-          key={p.id}
-          imagePath={p.imagePath}
-          name={p.name}
-          displayName={p.lastName || p.name}
-          points={p.points}
-          size={size}
-          containerSize={containerSize}
-        />
-      ))}
-    </div>
-  );
-};
+//    Ranking-Zeile wechselt die Auswahl) - Darstellung aus ui/LiveLineupGrid.jsx
+//    (gemeinsam mit UserDetail.jsx genutzt, damit Design UND Zahlen an
+//    beiden Stellen immer identisch sind).
 
 const RankingList = ({ ranking, selectedUserId, onSelect }) => (
   <div className="card-surface rounded-2xl overflow-hidden divide-y divide-[#2a2a2a]">
@@ -181,11 +136,6 @@ const LiveLineupPage = () => {
   const totalPoints = data?.players?.reduce((sum, p) => sum + (p.points || 0), 0) ?? null;
   const selectedName = ranking?.find((r) => r.userId === selectedUserId)?.name;
 
-  const st = lineup?.filter((p) => p.position === 4) || [];
-  const mf = lineup?.filter((p) => p.position === 3 || p.position === 0) || [];
-  const aw = lineup?.filter((p) => p.position === 2) || [];
-  const tw = lineup?.filter((p) => p.position === 1) || [];
-
   return (
     <div className="w-full bg-[#000000] min-h-screen relative flex flex-col pb-10">
       <div className="sticky top-0 z-40 bg-[#000000]/90 backdrop-blur-md px-4 sm:px-6 py-4 flex items-center justify-between border-b border-[#2e2e2e]/50">
@@ -232,33 +182,7 @@ const LiveLineupPage = () => {
           </div>
         )}
 
-        {lineup && (
-          <div
-            className="rounded-2xl overflow-hidden relative min-h-[500px] sm:min-h-[600px] flex flex-col justify-between py-6 sm:py-8 mt-4 shadow-2xl"
-            style={{ backgroundImage: 'radial-gradient(circle at center, #1a1a1a 0%, #050505 100%)' }}
-          >
-            <div className="absolute inset-0 pointer-events-none opacity-5 border border-white rounded-lg m-4 sm:m-6">
-              <div className="absolute top-1/2 left-0 w-full h-[1px] bg-white"></div>
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 sm:w-32 sm:h-32 border border-white rounded-full"></div>
-            </div>
-
-            <div className="relative z-10 w-full px-2 sm:px-4 flex flex-col">
-              <LiveRow players={st} />
-              <LiveRow players={mf} />
-              <LiveRow players={aw} />
-              <LiveRow players={tw} />
-            </div>
-
-            {totalPoints != null && (
-              <div className="relative z-10 flex justify-end px-6 sm:px-8 mt-4">
-                <div className="text-right">
-                  <div className="text-3xl sm:text-4xl font-black text-white leading-none">{totalPoints.toLocaleString('de-DE')}</div>
-                  <div className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] mt-1">Punkte</div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+        {lineup && <LiveLineupPitch lineup={lineup} totalPoints={totalPoints} />}
       </div>
     </div>
   );

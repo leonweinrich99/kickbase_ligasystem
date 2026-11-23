@@ -40,7 +40,7 @@ function App() {
 
           <TourProvider>
             <AuthGate>
-              <div style={{ paddingBottom: 'calc(64px + env(safe-area-inset-bottom, 0px))' }}>
+              <div style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>
                 <Routes>
                   <Route path="/rules" element={<Rules />} />
                   <Route path="/pokal" element={<Pokal />} />
