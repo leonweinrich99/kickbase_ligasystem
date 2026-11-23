@@ -51,7 +51,11 @@ const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
         ];
         const uniqueViews = [...new Set(views)];
         setAvailableViews(uniqueViews);
-        setCurrentViewIndex(uniqueViews.length - 1);
+        // Owner-Wunsch 23.11.2026: beim Oeffnen der App soll der Liga-Tab
+        // immer den aktuellen/laufenden Spieltag zeigen, nicht "Gesamt" -
+        // mDay liegt im views-Array immer direkt VOR 'saison' (siehe oben),
+        // also das vorletzte Element statt des letzten.
+        setCurrentViewIndex(Math.max(0, uniqueViews.length - 2));
 
         const mDays = [...uniqueViews.filter(v => typeof v === 'number')].sort((a, b) => b - a);
         const prevMDay = mDays.length > 1 ? mDays[1] : (mDays.length === 1 && mDays[0] !== mDay ? mDays[0] : null);

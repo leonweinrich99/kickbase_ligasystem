@@ -36,9 +36,6 @@ const calculatePerformanceScore = (points, avg, opt, max) => {
 
 const formatShortMD = (val) => `ST ${val}`;
 
-// Positions-Kodierung TW/ABW/MF/ST (advisorData) -> 1-4 (ui/LiveLineupGrid.jsx).
-const POSITION_TO_NUM = { TW: 1, ABW: 2, MF: 3, ST: 4 };
-
 // Reine Funktion (ausgelagert aus der Komponente), damit sie sowohl als
 // getFullPlayer(playerId) direkt genutzt werden kann als auch als stabile
 // Abhaengigkeit in useMemo(() => ..., [advisorData]) - eine Closure ueber
@@ -252,6 +249,25 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
   // statische startelf-mdN.json (Startelf-Snapshot vom letzten ABGESCHLOSSENEN
   // Spieltag) durch dieselbe Live-Quelle wie frontend/src/LiveLineupPage.jsx.
   // Nur fuer die laufende Saison sinnvoll (nicht im eingefrorenen Archiv).
+  //
+  // Foto/Position/Name kommen bewusst NICHT aus advisorData (siehe
+  // lookupAdvisorPlayer) - advisorData deckt nur die fuer den Trading Advisor
+  // relevanten Spieler ab (Kader/Markt + Vorhersage-Pool), nicht alle 448
+  // Bundesliga-Spieler. Ein Spieler aus der ECHTEN Live-Startelf, der in
+  // advisorData fehlt, zeigte dadurch kein Foto und landete per Default-Fall-
+  // back faelschlich in der MF-Reihe (Owner-Feedback 23.11.2026: "Bilder
+  // werden nicht immer angezeigt und auch nicht die richtigen Positionen").
+  // all_players.json (gleiche Quelle wie LiveLineupPage.jsx) deckt WIRKLICH
+  // alle Spieler ab.
+  const [allPlayersMap, setAllPlayersMap] = useState(null);
+  useEffect(() => {
+    if (mode === 'archive') return;
+    fetch('/history/all_players.json')
+      .then((res) => res.json())
+      .then((list) => setAllPlayersMap(new Map(list.map((p) => [String(p.i), p]))))
+      .catch(() => setAllPlayersMap(null));
+  }, [mode]);
+
   const [liveLineup, setLiveLineup] = useState(null);
   useEffect(() => {
     let cancelled = false;
@@ -316,27 +332,27 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
       .filter((g) => g.players.length > 0);
   }, [squad]);
 
-  // Live-Startelf mit Name/Position/Foto angereichert (aus advisorData,
-  // direkter Lookup statt getFullPlayer - siehe lookupAdvisorPlayer) - gleiche
-  // Positions-Kodierung (1-4) wie ui/LiveLineupGrid.jsx erwartet.
+  // Live-Startelf mit Name/Position/Foto angereichert aus all_players.json
+  // (deckt wirklich ALLE Bundesliga-Spieler ab, siehe Kommentar beim
+  // allPlayersMap-Effekt oben) - gleiche Positions-Kodierung (1-4), die dort
+  // bereits numerisch vorliegt (kein TW/ABW/MF/ST-String wie bei advisorData).
   const liveLineupEnriched = useMemo(() => {
     if (!liveLineup?.players?.length) return null;
     const enriched = liveLineup.players
       .filter((p) => !p.error)
       .map((p) => {
-        const full = lookupAdvisorPlayer(advisorData, p.playerId);
-        const full2 = full === 'LOADING' ? null : full;
+        const full = allPlayersMap?.get(String(p.playerId));
         return {
           id: p.playerId,
-          position: POSITION_TO_NUM[full2?.position] || 3,
-          name: full2 ? `${full2.firstName || ''} ${full2.name || ''}`.trim() : p.name,
-          lastName: full2?.name || p.name,
+          position: full?.pos || 3,
+          name: full ? `${full.fn || ''} ${full.ln || ''}`.trim() : p.name,
+          lastName: full?.ln || p.name,
           points: p.points ?? 0,
-          imagePath: full2?.imagePath || null,
+          imagePath: full?.pim || null,
         };
       });
     return buildLineupWithDummies(enriched);
-  }, [liveLineup, advisorData]);
+  }, [liveLineup, allPlayersMap]);
 
   const liveLineupTotalPoints = liveLineup?.players?.reduce((sum, p) => sum + (p.points || 0), 0) ?? null;
 
