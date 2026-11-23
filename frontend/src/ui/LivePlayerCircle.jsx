@@ -4,24 +4,24 @@ import React from 'react';
 // laufenden Spieltags) - bewusst ANDERS als PlayerPhotoCard (dort eckige
 // Karte, Punktzahl-Badge AUF dem Foto): im echten Kickbase-Live-Pitch sind
 // die Spielerfotos RUND, die Punktzahl steht GROSS UNTER dem Namen statt auf
-// dem Foto, und die Farbe zeigt den Spielstatus (grau = Partie noch nicht
-// begonnen, orange = laeuft gerade live, gruen = beendet) - siehe Recherche
-// an echten App-Store-Screenshots, Chat 23.11.2026.
-const STATUS_COLOR = {
-  pending: 'text-[#8b92a5]',
-  live: 'text-orange-400',
-  finished: 'text-green-400',
+// dem Foto (siehe Recherche an echten App-Screenshots, Chat 23.11.2026).
+//
+// Farbskala NUR nach erreichten Punkten (Owner-Vorgabe 23.11.2026, ersetzt
+// die vorherige Spielstatus-basierte Faerbung):
+// < 0 rot, genau 0 grau, 1-99 orange, 100-199 gruen, ab 200 dunkelgruen.
+// Exportiert, damit die Live-Ranking-Liste (LiveLineupPage.jsx) dieselbe
+// Skala fuer die Gesamtpunkte je Manager nutzt.
+export const pointColor = (points) => {
+  if (points == null) return 'text-[#8b92a5]';
+  if (points < 0) return 'text-red-500';
+  if (points === 0) return 'text-[#8b92a5]';
+  if (points < 100) return 'text-orange-400';
+  if (points < 200) return 'text-green-400';
+  return 'text-green-700';
 };
 
-export const matchPhase = (mst) => {
-  if (mst === 2) return 'finished';
-  if (mst === 1 || mst === 8) return 'live';
-  return 'pending';
-};
-
-const LivePlayerCircle = ({ imagePath, name, displayName, points, matchStatus, size = 'w-14 h-14 sm:w-16 sm:h-16', containerSize = 'w-[72px] sm:w-[86px]', onClick }) => {
-  const phase = matchPhase(matchStatus);
-  const isPending = phase === 'pending';
+const LivePlayerCircle = ({ imagePath, name, displayName, points, size = 'w-14 h-14 sm:w-16 sm:h-16', containerSize = 'w-[72px] sm:w-[86px]', onClick }) => {
+  const hasPoints = points != null;
 
   return (
     <div
@@ -33,16 +33,11 @@ const LivePlayerCircle = ({ imagePath, name, displayName, points, matchStatus, s
           <img
             src={`https://kickbase.b-cdn.net/${imagePath}`}
             alt={name}
-            className={`w-full h-full object-cover object-top ${isPending ? 'grayscale opacity-60' : ''}`}
+            className="w-full h-full object-cover object-top"
             onError={(e) => { e.target.style.display = 'none'; }}
           />
         ) : (
           <div className="text-gray-500 font-bold text-xs uppercase">{name?.substring(0, 2)}</div>
-        )}
-        {phase === 'live' && (
-          <div className="absolute -top-1 -right-1.5 bg-orange-500 text-white text-[7px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full border-2 border-black shadow-lg z-20">
-            Live
-          </div>
         )}
       </div>
 
@@ -50,8 +45,8 @@ const LivePlayerCircle = ({ imagePath, name, displayName, points, matchStatus, s
         <div className="text-[9px] sm:text-[10px] font-bold text-gray-300 truncate w-full">
           {displayName || name}
         </div>
-        <div className={`text-base sm:text-lg font-black leading-tight ${isPending ? STATUS_COLOR.pending : STATUS_COLOR[phase]}`}>
-          {isPending ? '–' : points}
+        <div className={`text-base sm:text-lg font-black leading-tight ${pointColor(points)}`}>
+          {hasPoints ? points : '–'}
         </div>
       </div>
     </div>

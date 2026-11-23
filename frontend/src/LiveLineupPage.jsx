@@ -3,21 +3,26 @@ import { RefreshCw } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import { useBackNavigation } from './useBackNavigation';
 import { BackButton } from './ui/CloseButton';
-import LivePlayerCircle from './ui/LivePlayerCircle';
+import ManagerAvatar from './ui/ManagerAvatar';
+import LivePlayerCircle, { pointColor } from './ui/LivePlayerCircle';
 
-// Live-Punkte der eigenen Startelf waehrend eines laufenden Spieltags (Owner-
-// Wunsch 23.11.2026) - On-Demand ueber frontend/api/live-lineup.js, KEIN
+// Live-Punkte waehrend eines laufenden Spieltags (Owner-Wunsch 23.11.2026) -
+// On-Demand ueber frontend/api/live-lineup.js + live-ranking.js, KEIN
 // Hintergrund-Polling: Daten werden nur beim Oeffnen der Seite bzw. per
 // manuellem "Aktualisieren" neu abgerufen.
 //
-// Design: dunkler Spielfeld-Rahmen wie die bestehende "Startelf"-Sektion im
-// Mannschaftsprofil (UserDetail.jsx), ABER Spieler-Darstellung selbst an das
-// ECHTE Kickbase-"Meine 11"-Live-Pitch angelehnt (recherchiert an offiziellen
-// App-Store-Screenshots, Chat 23.11.2026): runde Fotos, Punktzahl GROSS
-// UNTER dem Namen statt als Badge auf dem Foto, Farbcode nach Spielstatus
-// (grau = noch nicht began, orange = laeuft live, gruen = beendet), kleine
-// "LIVE"-Pille auf dem Foto waehrend das Spiel laeuft, Gesamtpunkte-Box
-// unten rechts.
+// Zwei Teile:
+// 1. Live-Ranking der ganzen Liga (analog "LEADERBOARD LIVE" in der echten
+//    App) - EIN guenstiger teamcenter-Call liefert alle Manager auf einmal
+//    (siehe live-ranking.js), kein Playercenter-Call pro Spieler noetig.
+// 2. Startelf-Ansicht des gerade ausgewaehlten Managers (Klick auf eine
+//    Ranking-Zeile wechselt die Auswahl) - Design an das echte Kickbase-
+//    "Meine 11"-Live-Pitch angelehnt (recherchiert an offiziellen
+//    App-Store-Screenshots UND einem vom Owner bereitgestellten Screenshot):
+//    runde Fotos, Punktzahl GROSS UNTER dem Namen, Gesamtpunkte-Box unten
+//    rechts. Farbskala NUR nach erreichten Punkten (siehe
+//    ui/LivePlayerCircle.jsx: <0 rot, 0 grau, 1-99 orange, 100-199 gruen, ab
+//    200 dunkelgruen) statt Spielstatus.
 
 const buildLineupWithDummies = (players) => {
   const lineup = [...players];
@@ -28,7 +33,7 @@ const buildLineupWithDummies = (players) => {
 
   let dummyIndex = 1;
   while (lineup.length < 11) {
-    const dummy = { id: 'dummy-' + dummyIndex++, isDummy: true, name: 'Unbekannt', lastName: 'Unbekannt', points: null, matchStatus: null, imagePath: null };
+    const dummy = { id: 'dummy-' + dummyIndex++, isDummy: true, name: 'Unbekannt', lastName: 'Unbekannt', points: null, imagePath: null };
     if (twCount < 1) { dummy.position = 1; twCount++; }
     else if (awCount < 3) { dummy.position = 2; awCount++; }
     else if (mfCount < 3) { dummy.position = 3; mfCount++; }
@@ -54,7 +59,6 @@ const LiveRow = ({ players }) => {
           name={p.name}
           displayName={p.lastName || p.name}
           points={p.points}
-          matchStatus={p.matchStatus}
           size={size}
           containerSize={containerSize}
         />
@@ -63,17 +67,48 @@ const LiveRow = ({ players }) => {
   );
 };
 
+const RankingList = ({ ranking, selectedUserId, onSelect }) => (
+  <div className="card-surface rounded-2xl overflow-hidden divide-y divide-[#2a2a2a]">
+    {ranking.map((r, i) => {
+      const isSelected = r.userId === selectedUserId;
+      return (
+        <button
+          key={r.userId}
+          onClick={() => onSelect(r.userId)}
+          className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${isSelected ? 'bg-[#1e1e1e]' : 'hover:bg-[#171717]'}`}
+        >
+          <span className="text-xs font-black text-[#626978] w-5 shrink-0">{i + 1}</span>
+          <ManagerAvatar name={r.name} size={32} ringColor={isSelected ? '#ff5c3e' : undefined} />
+          <span className="text-sm font-bold text-gray-100 flex-1 truncate">{r.name}</span>
+          <span className={`text-base font-black ${pointColor(r.livePoints)}`}>{r.livePoints}</span>
+        </button>
+      );
+    })}
+  </div>
+);
+
 const LiveLineupPage = () => {
   const { profile } = useAuth();
   const kickbaseId = profile?.kickbaseId;
   const goBack = useBackNavigation('/account');
 
-  const [data, setData] = useState(null);
+  const [leagueKey, setLeagueKey] = useState(null);
   const [playerMap, setPlayerMap] = useState(null);
+  const [ranking, setRanking] = useState(null);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [data, setData] = useState(null);
+  const [matchday, setMatchday] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const load = useCallback(async () => {
+  // Lineup-Daten fuer EINEN Manager laden (Startelf + Live-Punkte pro Spieler).
+  const loadLineup = useCallback(async (league, userId) => {
+    const res = await fetch(`/api/live-lineup?userId=${userId}&leagueKey=${league}`);
+    if (!res.ok) throw new Error('Live-Daten konnten nicht geladen werden');
+    return res.json();
+  }, []);
+
+  const loadAll = useCallback(async () => {
     if (!kickbaseId) { setLoading(false); return; }
     setLoading(true);
     setError(null);
@@ -84,24 +119,46 @@ const LiveLineupPage = () => {
       ]);
       const ratings = await ratingsRes.json();
       const allPlayers = await playersRes.json();
-      const map = new Map(allPlayers.map((p) => [String(p.i), p]));
-      setPlayerMap(map);
+      setPlayerMap(new Map(allPlayers.map((p) => [String(p.i), p])));
 
-      const leagueKey = ratings[kickbaseId]?.league;
-      if (!leagueKey) throw new Error('Liga konnte nicht ermittelt werden');
+      const league = ratings[kickbaseId]?.league;
+      if (!league) throw new Error('Liga konnte nicht ermittelt werden');
+      setLeagueKey(league);
 
-      const res = await fetch(`/api/live-lineup?userId=${kickbaseId}&leagueKey=${leagueKey}`);
-      if (!res.ok) throw new Error('Live-Daten konnten nicht geladen werden');
-      const json = await res.json();
-      setData(json);
+      const rankingRes = await fetch(`/api/live-ranking?userId=${kickbaseId}&leagueKey=${league}`);
+      if (!rankingRes.ok) throw new Error('Live-Ranking konnte nicht geladen werden');
+      const rankingJson = await rankingRes.json();
+      setRanking(rankingJson.ranking || []);
+      setMatchday(rankingJson.matchday);
+
+      const target = selectedUserId || kickbaseId;
+      setSelectedUserId(target);
+      const lineupJson = await loadLineup(league, target);
+      setData(lineupJson);
     } catch (e) {
       setError(e.message || 'Unbekannter Fehler');
     } finally {
       setLoading(false);
     }
-  }, [kickbaseId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kickbaseId, loadLineup]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { loadAll(); }, [loadAll]);
+
+  const selectManager = useCallback(async (userId) => {
+    if (!leagueKey || userId === selectedUserId) return;
+    setSelectedUserId(userId);
+    setLoading(true);
+    setError(null);
+    try {
+      const lineupJson = await loadLineup(leagueKey, userId);
+      setData(lineupJson);
+    } catch (e) {
+      setError(e.message || 'Unbekannter Fehler');
+    } finally {
+      setLoading(false);
+    }
+  }, [leagueKey, selectedUserId, loadLineup]);
 
   const lineup = useMemo(() => {
     if (!data?.players?.length || !playerMap) return null;
@@ -115,7 +172,6 @@ const LiveLineupPage = () => {
           name: full ? `${full.fn || ''} ${full.ln || ''}`.trim() : p.name,
           lastName: full?.ln || p.name,
           points: p.points ?? 0,
-          matchStatus: p.matchStatus,
           imagePath: full?.pim || null,
         };
       });
@@ -123,6 +179,7 @@ const LiveLineupPage = () => {
   }, [data, playerMap]);
 
   const totalPoints = data?.players?.reduce((sum, p) => sum + (p.points || 0), 0) ?? null;
+  const selectedName = ranking?.find((r) => r.userId === selectedUserId)?.name;
 
   const st = lineup?.filter((p) => p.position === 4) || [];
   const mf = lineup?.filter((p) => p.position === 3 || p.position === 0) || [];
@@ -134,7 +191,7 @@ const LiveLineupPage = () => {
       <div className="sticky top-0 z-40 bg-[#000000]/90 backdrop-blur-md px-4 sm:px-6 py-4 flex items-center justify-between border-b border-[#2e2e2e]/50">
         <BackButton onClick={goBack} />
         <button
-          onClick={load}
+          onClick={loadAll}
           disabled={loading}
           className="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-[#8b92a5] hover:text-white transition-colors disabled:opacity-50"
         >
@@ -147,16 +204,26 @@ const LiveLineupPage = () => {
         <div className="mb-3">
           <h2 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight leading-tight">Live Punkte</h2>
           <p className="text-[#8b92a5] font-medium text-sm mt-1">
-            {data ? `Spieltag ${data.matchday}` : 'Deine Startelf im aktuellen Spieltag'}
+            {matchday ? `Spieltag ${matchday} · Liga-Ranking live` : 'Live-Ranking deiner Liga'}
           </p>
         </div>
 
-        {loading && !data && (
+        {loading && !ranking && (
           <div className="text-center text-[#8b92a5] text-sm py-10">Lade Live-Daten…</div>
         )}
 
         {error && (
           <div className="card-surface rounded-2xl p-5 text-center text-sm text-red-400 mt-4">{error}</div>
+        )}
+
+        {ranking && ranking.length > 0 && (
+          <RankingList ranking={ranking} selectedUserId={selectedUserId} onSelect={selectManager} />
+        )}
+
+        {selectedName && (
+          <div className="mt-6 mb-3 text-sm font-bold text-gray-300">
+            Startelf: <span className="text-white">{selectedName}</span>
+          </div>
         )}
 
         {!loading && !error && data?.players?.length === 0 && (
