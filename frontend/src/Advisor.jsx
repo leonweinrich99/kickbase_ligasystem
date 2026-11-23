@@ -92,6 +92,7 @@ const normalizeHistory = (history) => {
 };
 
 const DEFAULT_FILTERS = { search: '', position: 'ALL', team: 'ALL', sort: 'predictedDesc', risingOnly: false, recommendedOnly: false, onMarketOnly: false, ownedOnly: false };
+const DEFAULT_MARKET_FILTERS = { ...DEFAULT_FILTERS, sort: 'expiryAsc' };
 
 function applyFilters(list, filters, recommendationMode) {
   let result = list;
@@ -124,6 +125,21 @@ function applyFilters(list, filters, recommendationMode) {
     result = result.filter((p) => !!p.ownedByAccount);
   }
   const sorters = {
+    // Markt-Grundsortierung (Owner-Wunsch 24.11.2026): Spieler ohne Manager-
+    // Besitzer nach Ablaufzeit aufsteigend (naechster Ablauf ganz oben),
+    // Spieler die bereits einem anderen Manager gehoeren erst darunter.
+    expiryAsc: (a, b) => {
+      const aOwned = a.ownedByAccount ? 1 : 0;
+      const bOwned = b.ownedByAccount ? 1 : 0;
+      if (aOwned !== bOwned) return aOwned - bOwned;
+      const aHasExp = typeof a.hoursToExpiry === 'number';
+      const bHasExp = typeof b.hoursToExpiry === 'number';
+      if (aHasExp && bHasExp && a.hoursToExpiry !== b.hoursToExpiry) {
+        return a.hoursToExpiry - b.hoursToExpiry;
+      }
+      if (aHasExp !== bHasExp) return aHasExp ? -1 : 1;
+      return (b.predictedChange || 0) - (a.predictedChange || 0);
+    },
     predictedDesc: (a, b) => (b.predictedChange || 0) - (a.predictedChange || 0),
     predictedAsc: (a, b) => (a.predictedChange || 0) - (b.predictedChange || 0),
     marketValueDesc: (a, b) => (b.marketValue || 0) - (a.marketValue || 0),
@@ -137,13 +153,13 @@ function applyFilters(list, filters, recommendationMode) {
 // sichtbar, alle weiteren Optionen (Position, Team, Sortierung, Toggles)
 // stecken in einem Popover - nimmt dadurch deutlich weniger Platz ein als
 // vorher (5+ Elemente nebeneinander).
-const FilterBar = ({ filters, onChange, teams, showTeamFilter = false, showAvailabilityFilters = false, recommendationMode }) => {
+const FilterBar = ({ filters, onChange, teams, showTeamFilter = false, showAvailabilityFilters = false, showExpirySort = false, defaultSort = DEFAULT_FILTERS.sort, recommendationMode }) => {
   const [open, setOpen] = useState(false);
 
   const activeCount = [
     filters.position !== 'ALL',
     showTeamFilter && filters.team !== 'ALL',
-    filters.sort !== DEFAULT_FILTERS.sort,
+    filters.sort !== defaultSort,
     filters.risingOnly,
     recommendationMode && filters.recommendedOnly,
     showAvailabilityFilters && filters.onMarketOnly,
@@ -216,6 +232,7 @@ const FilterBar = ({ filters, onChange, teams, showTeamFilter = false, showAvail
                 onChange={(e) => onChange({ ...filters, sort: e.target.value })}
                 className="w-full bg-[#000] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-cyan-500"
               >
+                {showExpirySort && <option value="expiryAsc">Ablaufzeit: nächste zuerst</option>}
                 <option value="predictedDesc">Prognose: höchste zuerst</option>
                 <option value="predictedAsc">Prognose: niedrigste zuerst</option>
                 <option value="marketValueDesc">Marktwert: höchster zuerst</option>
@@ -866,7 +883,7 @@ const Advisor = () => {
   const [error, setError] = useState(false);
   const [activeLeague, setActiveLeague] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
-  const [marketFilters, setMarketFilters] = useState(DEFAULT_FILTERS);
+  const [marketFilters, setMarketFilters] = useState(DEFAULT_MARKET_FILTERS);
   const [dbFilters, setDbFilters] = useState(DEFAULT_FILTERS);
   const [squadFilters, setSquadFilters] = useState(DEFAULT_FILTERS);
   const [favoritesFilters, setFavoritesFilters] = useState(DEFAULT_FILTERS);
@@ -958,10 +975,6 @@ const Advisor = () => {
     () => [...new Set((league?.marketRecommendations || []).map((p) => p.team).filter(Boolean))].sort(),
     [league]
   );
-  const filteredMarket = useMemo(
-    () => applyFilters(league?.marketRecommendations || [], marketFilters, 'buy'),
-    [league, marketFilters]
-  );
 
   const dbTeams = useMemo(
     () => [...new Set((data?.players || []).map((p) => p.team).filter(Boolean))].sort(),
@@ -1014,6 +1027,18 @@ const Advisor = () => {
     }
     return map;
   }, [effectiveManagerSquads, resolvedManagers]);
+
+  const marketPlayersAnnotated = useMemo(
+    () => (league?.marketRecommendations || []).map((p) => ({
+      ...p,
+      ownedByAccount: Boolean(playerManagerMap[p.playerId]),
+    })),
+    [league, playerManagerMap]
+  );
+  const filteredMarket = useMemo(
+    () => applyFilters(marketPlayersAnnotated, marketFilters, 'buy'),
+    [marketPlayersAnnotated, marketFilters]
+  );
 
   // Nur die "Alle Spieler"-Datenbank (data.players) enthaelt Spieler unabhaengig
   // von Markt-/Kaderstatus - deshalb fehlen ihr bisher beide Infos komplett.
@@ -1254,7 +1279,7 @@ const Advisor = () => {
                 </div>
                 {league.marketRecommendations?.length ? (
                   <>
-                    <FilterBar filters={marketFilters} onChange={setMarketFilters} teams={marketTeams} showTeamFilter recommendationMode="buy" />
+                    <FilterBar filters={marketFilters} onChange={setMarketFilters} teams={marketTeams} showTeamFilter showExpirySort defaultSort={DEFAULT_MARKET_FILTERS.sort} recommendationMode="buy" />
                     {filteredMarket.length ? (
                       <div className="mb-10">
                         {filteredMarket.map((entry, index) => (
