@@ -227,13 +227,21 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
   const [advisorData, setAdvisorData] = useState(null);
   const [startelfData, setStartelfData] = useState(null);
   
+  // Haengt bewusst auch von userData?.id ab (nicht nur dataBase/mode): sonst
+  // wird advisorData nur EINMAL pro Sitzung geladen (React Router nutzt
+  // dieselbe UserDetail-Instanz fuer /user/:id1 -> /user/:id2) und zeigt dann
+  // dauerhaft den Stand vom allerersten Profil-Aufruf - unabhaengig davon,
+  // wie viele andere Manager-Profile seitdem besucht wurden oder ob
+  // zwischenzeitlich ein neuer Advisor-Cron-Lauf frischere Kaderdaten
+  // gebracht hat (Owner-Feedback 23.11.2026: "zeigt immer den alten Stand
+  // von vorher mit dem Kader").
   useEffect(() => {
     if (mode === 'archive') return;
     fetch(`${dataBase}/advisor-data.json?t=${Date.now()}`)
       .then((res) => res.json())
       .then((json) => setAdvisorData(json))
       .catch(() => setAdvisorData(null));
-  }, [dataBase, mode]);
+  }, [dataBase, mode, userData?.id]);
 
   useEffect(() => {
     if (mode === 'archive' || !currentMatchday) return;
