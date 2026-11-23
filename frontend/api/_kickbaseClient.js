@@ -108,10 +108,17 @@ export async function resolveMatchday(leagueId, token, dayNumber) {
 // gegen echte eti-Codes aus einem Live-Spiel, 18/18 Treffer. Modul-weiter
 // Cache, damit nicht JEDE Anfrage (pro Spieler-Click potenziell) einen
 // weiteren Kickbase-Call ausloest - die Liste aendert sich laut Doku "selten".
+//
+// Accept-Language: de liefert deutsche Titel ("Ballverlust" statt "Possession
+// lost") - verifiziert per Diagnose-Workflow 23.11.2026 (Owner-Wunsch: "ob
+// man fuer die Beschreibungen auch die deutsche Beschreibung haben kann").
 let eventTypeMapCache = null;
 export async function getEventTypeMap(token) {
   if (eventTypeMapCache) return eventTypeMapCache;
-  const data = await getJson(`${API_BASE}/live/eventtypes`, token);
+  const res = await fetch(`${API_BASE}/live/eventtypes`, {
+    headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', 'Accept-Language': 'de' },
+  });
+  const data = res.ok ? await res.json().catch(() => null) : null;
   eventTypeMapCache = new Map((data?.it || []).map((x) => [x.i, x.ti]));
   return eventTypeMapCache;
 }
