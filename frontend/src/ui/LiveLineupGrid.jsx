@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LivePlayerCircle from './LivePlayerCircle';
 import AnimatedPoints from './AnimatedPoints';
@@ -105,28 +105,13 @@ const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId }) => {
   // `selectedMinute === null` bedeutet: folgt automatisch dem aktuellen/letzten Stand.
   const [selectedMinute, setSelectedMinute] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [resetToken, setResetToken] = useState(0);
 
   const activeMinute = selectedMinute == null
     ? timelineMeta.maxMinute
     : Math.min(selectedMinute, timelineMeta.maxMinute);
   const isLiveEdge = selectedMinute == null || activeMinute >= timelineMeta.maxMinute;
   const isScrubbing = timelineMeta.hasTimeline && (!isLiveEdge || isPlaying);
-
-  // Spielverlauf-Wiedergabe (Play-Button): zaehlt Minute fuer Minute hoch.
-  useEffect(() => {
-    if (!isPlaying || !timelineMeta.hasTimeline) return undefined;
-    const timer = window.setInterval(() => {
-      setSelectedMinute((prev) => {
-        const current = prev == null ? 0 : prev;
-        if (current >= timelineMeta.maxMinute) {
-          setIsPlaying(false);
-          return null;
-        }
-        return current + 1;
-      });
-    }, 110);
-    return () => window.clearInterval(timer);
-  }, [isPlaying, timelineMeta.hasTimeline, timelineMeta.maxMinute]);
 
   const handleSelectMinute = useCallback((minute) => {
     if (minute >= timelineMeta.maxMinute) {
@@ -139,16 +124,17 @@ const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId }) => {
   const handleResetToLive = useCallback(() => {
     setIsPlaying(false);
     setSelectedMinute(null);
+    setResetToken((t) => t + 1);
+  }, []);
+
+  const handleFinishPlay = useCallback(() => {
+    setIsPlaying(false);
+    setSelectedMinute(null);
   }, []);
 
   const handleTogglePlay = useCallback(() => {
-    if (isPlaying) {
-      setIsPlaying(false);
-      return;
-    }
-    setSelectedMinute((prev) => (prev == null || prev >= timelineMeta.maxMinute ? 0 : prev));
-    setIsPlaying(true);
-  }, [isPlaying, timelineMeta.maxMinute]);
+    setIsPlaying((prev) => !prev);
+  }, []);
 
   // Punkte je Spieler fuer die gewaehlte Minute berechnen. Am rechten Rand
   // (`isLiveEdge && !isPlaying`) stehen immer exakt die offiziellen Punkte.
@@ -296,10 +282,12 @@ const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId }) => {
           anyFinished={timelineMeta.anyFinished}
           minuteDeltas={timelineMeta.minuteDeltas}
           isPlaying={isPlaying}
+          resetToken={resetToken}
           onSelectMinute={handleSelectMinute}
           onResetToLive={handleResetToLive}
           onTogglePlay={handleTogglePlay}
           onPausePlay={() => setIsPlaying(false)}
+          onFinishPlay={handleFinishPlay}
         />
       )}
     </div>

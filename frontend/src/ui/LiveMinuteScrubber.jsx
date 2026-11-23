@@ -2,6 +2,9 @@ import React, { useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import { Play, Pause, RotateCcw } from 'lucide-react';
 
 const STEP_PX = 14;
+// Fluessige Wiedergabe-Geschwindigkeit: ~8 Minuten/Sekunde (~11s fuer 90 Min)
+// per 60/120fps requestAnimationFrame statt abgehackter 1-Minuten-Spruenge.
+const PLAY_MINUTES_PER_SEC = 8;
 
 const formatMinuteLabel = (minute, maxMinute, hasLive, anyFinished) => {
   if (minute >= maxMinute) {
@@ -16,8 +19,9 @@ const formatMinuteLabel = (minute, maxMinute, hasLive, anyFinished) => {
 };
 
 // Horizontaler Minuten-Scrubber (Lineal-Optik): jede einzelne Spielminute von
-// 0 bis maxMinute laesst sich per Touch-Swipe, Maus-Drag oder Klick ansteuern.
-// Farbpunkte ueber den Strichen markieren Minuten mit Punkt-Events im Kader.
+// 0 bis maxMinute laesst sich per Touch-Swipe, Maus-Drag, Klick oder sanfter
+// 60fps-Wiedergabe ansteuern. Farbpunkte ueber den Strichen markieren Minuten
+// mit Punkt-Events im Kader.
 const LiveMinuteScrubber = ({
   maxMinute,
   activeMinute,
@@ -26,16 +30,19 @@ const LiveMinuteScrubber = ({
   anyFinished,
   minuteDeltas,
   isPlaying,
+  resetToken = 0,
   onSelectMinute,
   onResetToLive,
   onTogglePlay,
   onPausePlay,
+  onFinishPlay,
 }) => {
   const scrollerRef = useRef(null);
   const programmaticRef = useRef(false);
   const programmaticTimerRef = useRef(null);
   const dragRef = useRef({ active: false, startX: 0, startScrollLeft: 0, moved: false });
   const initSyncedRef = useRef(false);
+  const lastReportedMinuteRef = useRef(activeMinute);
 
   const scrollToMinute = useCallback((minute, behavior = 'auto') => {
     const el = scrollerRef.current;
@@ -50,23 +57,83 @@ const LiveMinuteScrubber = ({
     programmaticTimerRef.current = window.setTimeout(() => {
       programmaticRef.current = false;
       programmaticTimerRef.current = null;
-    }, behavior === 'smooth' ? 300 : 45);
+    }, behavior === 'smooth' ? 350 : 45);
   }, [maxMinute]);
 
   // Initial sofort vor dem ersten Paint auf die aktuelle Minute positionieren.
   useLayoutEffect(() => {
     if (!initSyncedRef.current) {
       initSyncedRef.current = true;
+      lastReportedMinuteRef.current = activeMinute;
       scrollToMinute(activeMinute, 'auto');
     }
   }, [activeMinute, scrollToMinute]);
 
-  // Bei automatischer Wiedergabe / Sprung ans Ende synchronisieren.
+  // Butterweiche 60/120fps-Wiedergabe direkt ueber kontinuierliches scrollLeft
+  // in requestAnimationFrame (React rendert nur beim Ueberschreiten einer vollen
+  // Minute neu, waehrend das Lineal kontinuierlich Pixel fuer Pixel gleitet).
   useEffect(() => {
-    if (isPlaying || isLiveEdge) {
-      scrollToMinute(activeMinute, 'auto');
+    if (!isPlaying) return undefined;
+    const el = scrollerRef.current;
+    if (!el) return undefined;
+
+    const maxScroll = maxMinute * STEP_PX;
+    const pxPerMs = (PLAY_MINUTES_PER_SEC * STEP_PX) / 1000;
+
+    // Wenn wir am Ende standen, direkt von Minute 0 starten.
+    let virtualScroll = el.scrollLeft >= maxScroll - 2 ? 0 : el.scrollLeft;
+    if (virtualScroll === 0) {
+      programmaticRef.current = true;
+      el.scrollLeft = 0;
+      lastReportedMinuteRef.current = 0;
+      onSelectMinute(0);
     }
-  }, [activeMinute, isPlaying, isLiveEdge, scrollToMinute]);
+
+    let rafId = null;
+    let lastTs = null;
+
+    const tick = (ts) => {
+      if (lastTs == null) {
+        lastTs = ts;
+        rafId = window.requestAnimationFrame(tick);
+        return;
+      }
+      const dt = Math.min(64, ts - lastTs);
+      lastTs = ts;
+
+      virtualScroll = Math.min(maxScroll, virtualScroll + dt * pxPerMs);
+      programmaticRef.current = true;
+      el.scrollLeft = virtualScroll;
+
+      const minute = Math.max(0, Math.min(maxMinute, Math.round(virtualScroll / STEP_PX)));
+      if (minute !== lastReportedMinuteRef.current) {
+        lastReportedMinuteRef.current = minute;
+        onSelectMinute(minute);
+      }
+
+      if (virtualScroll >= maxScroll) {
+        programmaticRef.current = false;
+        onFinishPlay();
+      } else {
+        rafId = window.requestAnimationFrame(tick);
+      }
+    };
+
+    rafId = window.requestAnimationFrame(tick);
+
+    return () => {
+      if (rafId != null) window.cancelAnimationFrame(rafId);
+      programmaticRef.current = false;
+    };
+  }, [isPlaying, maxMinute, onSelectMinute, onFinishPlay]);
+
+  // Sprung ans Ende (z.B. ueber das Minuten-Badge oben rechts oder "Aktuell").
+  useEffect(() => {
+    if (resetToken > 0) {
+      lastReportedMinuteRef.current = maxMinute;
+      scrollToMinute(maxMinute, 'smooth');
+    }
+  }, [resetToken, maxMinute, scrollToMinute]);
 
   useEffect(() => () => {
     if (programmaticTimerRef.current != null) {
@@ -75,14 +142,15 @@ const LiveMinuteScrubber = ({
   }, []);
 
   const handleScroll = useCallback(() => {
-    if (programmaticRef.current) return;
+    if (programmaticRef.current || isPlaying) return;
     const el = scrollerRef.current;
     if (!el) return;
     const next = Math.max(0, Math.min(maxMinute, Math.round(el.scrollLeft / STEP_PX)));
-    if (next !== activeMinute) {
+    if (next !== lastReportedMinuteRef.current) {
+      lastReportedMinuteRef.current = next;
       onSelectMinute(next);
     }
-  }, [maxMinute, activeMinute, onSelectMinute]);
+  }, [maxMinute, isPlaying, onSelectMinute]);
 
   // Desktop-Maus-Drag fuer komfortables Ziehen ohne horizontales Trackpad.
   const handleMouseDown = (e) => {
@@ -117,11 +185,13 @@ const LiveMinuteScrubber = ({
   const handleTickClick = (minute) => {
     if (dragRef.current.moved) return;
     if (isPlaying) onPausePlay();
+    lastReportedMinuteRef.current = minute;
     onSelectMinute(minute);
     scrollToMinute(minute, 'smooth');
   };
 
   const handleJumpLive = () => {
+    lastReportedMinuteRef.current = maxMinute;
     onResetToLive();
     scrollToMinute(maxMinute, 'smooth');
   };
