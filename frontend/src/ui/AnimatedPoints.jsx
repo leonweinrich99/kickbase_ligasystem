@@ -22,11 +22,17 @@ const easeNatural = (p) => {
 // 2) Live-Update (`previousValue !== value` + ungespielter `animKey`): zaehlt
 //    fluessig vom gespeicherten Vorwert auf den neuen Stand mit Pop/Glow und
 //    +X / -X Delta-Hinweis.
+// 3) Scrub-Modus (`instant = true`, waehrend des Minuten-Scrollens): zeigt den
+//    exakten Minuten-Stand unmittelbar an und hebt eventuelle Punkte in genau
+//    dieser Minute (`instantDelta`) kurz hervor.
 const AnimatedPoints = ({
   value,
   previousValue,
   animKey,
   animateOnMount = true,
+  instant = false,
+  instantDelta = 0,
+  instantKey = null,
   usePointColor = false,
   format,
   className = '',
@@ -34,6 +40,7 @@ const AnimatedPoints = ({
 }) => {
   const hasValue = typeof value === 'number' && !Number.isNaN(value);
   const canLiveAnimate =
+    !instant &&
     hasValue &&
     typeof previousValue === 'number' &&
     !Number.isNaN(previousValue) &&
@@ -42,7 +49,7 @@ const AnimatedPoints = ({
     !playedAnimKeys.has(animKey);
 
   const initialValue = (() => {
-    if (!hasValue || isReducedMotion()) return value;
+    if (!hasValue || instant || isReducedMotion()) return value;
     if (canLiveAnimate) return previousValue;
     if (animateOnMount && value !== 0) return 0;
     return value;
@@ -53,10 +60,16 @@ const AnimatedPoints = ({
   const [phase, setPhase] = useState(() => (canLiveAnimate && !isReducedMotion() ? 'animating' : 'idle'));
 
   const currentDisplayedRef = useRef(initialValue);
-  const hasRevealedRef = useRef(!animateOnMount || !hasValue || value === 0 || isReducedMotion());
+  const hasRevealedRef = useRef(instant || !animateOnMount || !hasValue || value === 0 || isReducedMotion());
 
   useEffect(() => {
     if (!hasValue) return undefined;
+
+    if (instant) {
+      hasRevealedRef.current = true;
+      currentDisplayedRef.current = value;
+      return undefined;
+    }
 
     const shouldLiveAnimate =
       typeof previousValue === 'number' &&
@@ -173,27 +186,35 @@ const AnimatedPoints = ({
       setPhase('idle');
     });
     return () => window.cancelAnimationFrame(rafId);
-  }, [value, previousValue, animKey, animateOnMount, hasValue]);
+  }, [value, previousValue, animKey, animateOnMount, instant, hasValue]);
 
   if (!hasValue) {
     return <span className={`${usePointColor ? pointColor(null) : ''} ${className}`}>–</span>;
   }
 
-  const shownNumber = typeof displayValue === 'number' ? displayValue : value;
+  const shownNumber = instant ? value : (typeof displayValue === 'number' ? displayValue : value);
   const formatted = format ? format(shownNumber) : String(shownNumber);
   const colorClass = usePointColor ? pointColor(shownNumber) : '';
-  const directionClass =
-    phase === 'animating' && delta != null
+
+  const activeDelta = instant ? (instantDelta || null) : (phase !== 'idle' ? delta : null);
+  const activeDeltaKey = instant ? instantKey : animKey;
+  const directionClass = instant
+    ? activeDelta != null
+      ? activeDelta > 0
+        ? 'live-points-pop-up'
+        : 'live-points-pop-down'
+      : ''
+    : phase === 'animating' && delta != null
       ? delta > 0
         ? 'live-points-pop-up'
         : 'live-points-pop-down'
       : '';
 
-  const showDelta = delta != null && delta !== 0 && phase !== 'idle';
-  const deltaText = showDelta ? `${delta > 0 ? '+' : ''}${delta}` : '';
-  const deltaColor = delta > 0 ? 'text-emerald-400' : 'text-[#ff5c3e]';
+  const showDelta = activeDelta != null && activeDelta !== 0;
+  const deltaText = showDelta ? `${activeDelta > 0 ? '+' : ''}${activeDelta}` : '';
+  const deltaColor = activeDelta > 0 ? 'text-emerald-400' : 'text-[#ff5c3e]';
   const deltaPillStyle =
-    delta > 0
+    activeDelta > 0
       ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
       : 'bg-[#ff5c3e]/15 text-[#ff5c3e] border-[#ff5c3e]/30';
 
@@ -202,13 +223,16 @@ const AnimatedPoints = ({
       <span className="inline-flex items-center justify-end gap-1.5">
         {showDelta && (
           <span
-            key={animKey}
+            key={activeDeltaKey}
             className={`text-[10px] font-black leading-none px-1.5 py-0.5 rounded-full border tabular-nums live-delta-badge ${deltaPillStyle}`}
           >
             {deltaText}
           </span>
         )}
-        <span className={`inline-block tabular-nums transition-colors duration-300 ${colorClass} ${className} ${directionClass}`}>
+        <span
+          key={instant && showDelta ? activeDeltaKey : 'val'}
+          className={`inline-block tabular-nums transition-colors duration-200 ${colorClass} ${className} ${directionClass}`}
+        >
           {formatted}
         </span>
       </span>
@@ -217,12 +241,15 @@ const AnimatedPoints = ({
 
   return (
     <span className="relative inline-flex items-center justify-center">
-      <span className={`inline-block tabular-nums transition-colors duration-300 ${colorClass} ${className} ${directionClass}`}>
+      <span
+        key={instant && showDelta ? activeDeltaKey : 'val'}
+        className={`inline-block tabular-nums transition-colors duration-200 ${colorClass} ${className} ${directionClass}`}
+      >
         {formatted}
       </span>
       {showDelta && (
         <span
-          key={animKey}
+          key={activeDeltaKey}
           className={`absolute -bottom-3 left-1/2 -translate-x-1/2 text-[9px] font-black leading-none whitespace-nowrap pointer-events-none tabular-nums live-delta-badge ${deltaColor}`}
         >
           {deltaText}

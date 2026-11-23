@@ -21,7 +21,20 @@ export const pointColor = (points) => {
   return 'text-green-700';
 };
 
-const LivePlayerCircle = ({ imagePath, name, displayName, points, prevPoints, animKey, size = 'w-14 h-14 sm:w-16 sm:h-16', containerSize = 'w-[72px] sm:w-[86px]', onClick }) => {
+const LivePlayerCircle = ({
+  imagePath,
+  name,
+  displayName,
+  points,
+  prevPoints,
+  animKey,
+  instant = false,
+  instantDelta = 0,
+  instantKey = null,
+  size = 'w-14 h-14 sm:w-16 sm:h-16',
+  containerSize = 'w-[72px] sm:w-[86px]',
+  onClick,
+}) => {
   return (
     <div
       className={`relative flex flex-col items-center ${containerSize} ${onClick ? 'cursor-pointer hover:scale-105 transition-transform' : ''}`}
@@ -49,6 +62,9 @@ const LivePlayerCircle = ({ imagePath, name, displayName, points, prevPoints, an
             value={points}
             previousValue={prevPoints}
             animKey={animKey}
+            instant={instant}
+            instantDelta={instantDelta}
+            instantKey={instantKey}
             usePointColor
             className="text-base sm:text-lg font-black leading-tight"
             deltaPlacement="bottom"
