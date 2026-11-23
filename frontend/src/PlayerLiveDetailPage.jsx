@@ -76,20 +76,20 @@ const PlayerLiveDetailPage = () => {
               backgroundSize: '16px 16px',
             }}
           >
-            <div className="relative h-64 sm:h-80 w-full overflow-hidden">
+            <div className="relative w-full flex justify-center">
               {player.imagePath ? (
                 <img
                   src={`https://kickbase.b-cdn.net/${player.imagePath}`}
                   alt={player.lastName || player.name}
-                  className="w-full h-full object-cover object-top"
+                  className="w-full max-w-[380px] h-auto object-contain"
                   style={{
-                    maskImage: 'linear-gradient(to bottom, black 45%, transparent 92%)',
-                    WebkitMaskImage: 'linear-gradient(to bottom, black 45%, transparent 92%)',
+                    maskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)',
+                    WebkitMaskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)',
                   }}
                   onError={(e) => { e.target.style.display = 'none'; }}
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center">
+                <div className="h-64 sm:h-80 flex items-center justify-center">
                   <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden shadow-2xl ring-2 ring-[#2a2a2a] bg-[#171717] flex items-center justify-center">
                     <span className="text-gray-500 font-bold text-2xl uppercase">
                       {(player.lastName || player.name || '?').substring(0, 2)}
@@ -99,7 +99,7 @@ const PlayerLiveDetailPage = () => {
               )}
             </div>
 
-            <div className="relative -mt-16 sm:-mt-20 flex flex-col items-center px-4 sm:px-6 pb-6">
+            <div className="relative -mt-6 sm:-mt-8 flex flex-col items-center px-4 sm:px-6 pb-6">
               <div className="text-lg font-bold text-gray-100">{player.lastName || player.name}</div>
               <div className={`text-6xl sm:text-7xl font-black leading-none mt-1 ${pointColor(player.points)}`}>
                 {player.points ?? '–'}
