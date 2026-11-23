@@ -14,7 +14,13 @@ import ManagerAvatar from './ui/ManagerAvatar';
 import PlayerPhotoCard from './ui/PlayerPhotoCard';
 import PositionRow from './ui/PositionRow';
 import LiveLineupPitch from './ui/LiveLineupGrid';
-import { diffAndSavePoints, buildLineupPointsMap, nextAnimId } from './livePointsStore';
+import {
+  diffAndSavePoints,
+  buildLineupPointsMap,
+  nextAnimId,
+  readCachedSnapshot,
+  saveCachedSnapshot,
+} from './livePointsStore';
 import { buildLineupWithDummies, buildTeamLogoMap } from './liveLineupUtils';
 import { PlayerDetailView } from './Advisor';
 
@@ -294,14 +300,21 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
   const [livePrevPoints, setLivePrevPoints] = useState(null);
   const [liveAnimId, setLiveAnimId] = useState(null);
   const [liveLineupLoading, setLiveLineupLoading] = useState(true);
+  const profileUserId = userData?.id;
+  const cachedLiveProfile = useMemo(
+    () => (mode !== 'archive' && profileUserId ? readCachedSnapshot(`profile:${profileUserId}`) : null),
+    [mode, profileUserId]
+  );
   useEffect(() => {
     let cancelled = false;
     if (mode === 'archive') return () => { cancelled = true; };
     if (!userData?.id) return () => { cancelled = true; };
     // Muss hier (statt in der Startelf-Anzeige abgeleitet) zurueckgesetzt
     // werden, damit beim Managerwechsel (userData.id aendert sich) wieder
-    // "lade" statt der alten Live-Daten des VORHERIGEN Managers gezeigt wird.
+    // sauber geladen wird statt der Live-Daten des VORHERIGEN Managers.
     // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLiveLineup(null);
+    setLivePrevPoints(null);
     setLiveLineupLoading(true);
     fetch('/history/manager-ratings.json')
       .then((res) => res.json())
@@ -319,7 +332,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
           );
           setLivePrevPoints(prev);
           setLiveAnimId(nextAnimId());
-          setLiveLineup(json);
+          setLiveLineup({ ...json, _userId: userData.id });
         } else {
           setLiveLineup(null);
         }
@@ -407,6 +420,20 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
   }, [liveLineup, allPlayersMap, teamLogoMap]);
 
   const liveLineupTotalPoints = liveLineup?.players?.reduce((sum, p) => sum + (p.points || 0), 0) ?? null;
+
+  useEffect(() => {
+    if (liveLineup?._userId && liveLineupEnriched && allPlayersMap) {
+      saveCachedSnapshot(`profile:${liveLineup._userId}`, {
+        lineup: liveLineupEnriched,
+        totalPoints: liveLineupTotalPoints,
+        matchday: liveLineup.matchday ?? null,
+      });
+    }
+  }, [liveLineup, liveLineupEnriched, liveLineupTotalPoints, allPlayersMap]);
+
+  const displayedLiveLineup = liveLineupEnriched || (mode !== 'archive' ? cachedLiveProfile?.lineup : null) || null;
+  const displayedLiveTotalPoints = liveLineupEnriched ? liveLineupTotalPoints : (cachedLiveProfile?.totalPoints ?? null);
+  const displayedLiveMatchday = liveLineup?.matchday ?? cachedLiveProfile?.matchday ?? null;
 
   const historyWithScores = useMemo(() => {
     return history.map(h => ({
@@ -584,7 +611,22 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
           )}
         </div>
 
-        {liveLineupLoading && mode !== 'archive' ? (
+        {displayedLiveLineup ? (
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <h3 className="text-lg font-semibold text-white">
+                Startelf {displayedLiveMatchday ? `· Spieltag ${displayedLiveMatchday}` : ''}
+              </h3>
+            </div>
+            <LiveLineupPitch
+              key={`profile-${userData.id}`}
+              lineup={displayedLiveLineup}
+              totalPoints={displayedLiveTotalPoints}
+              prevPointsMap={liveLineupEnriched ? livePrevPoints : null}
+              animId={liveLineupEnriched ? liveAnimId : null}
+            />
+          </div>
+        ) : liveLineupLoading && mode !== 'archive' ? (
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-4">
               <h3 className="text-lg font-semibold text-white">Startelf</h3>
@@ -595,21 +637,6 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
             >
               <div className="text-[#626978] text-sm">Lade Live-Daten…</div>
             </div>
-          </div>
-        ) : liveLineupEnriched ? (
-          <div className="mb-8">
-            <div className="flex items-center gap-2 mb-4">
-              <h3 className="text-lg font-semibold text-white">
-                Startelf {liveLineup?.matchday ? `· Spieltag ${liveLineup.matchday}` : ''}
-              </h3>
-            </div>
-            <LiveLineupPitch
-              key={`profile-${userData.id}`}
-              lineup={liveLineupEnriched}
-              totalPoints={liveLineupTotalPoints}
-              prevPointsMap={livePrevPoints}
-              animId={liveAnimId}
-            />
           </div>
         ) : startelfData?.managers?.[userData.id] ? (
           <div className="mb-8">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { RefreshCw, ChevronDown, Users } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import ManagerAvatar from './ui/ManagerAvatar';
@@ -6,7 +6,14 @@ import PageHeader from './ui/PageHeader';
 import AnimatedPoints from './ui/AnimatedPoints';
 import LiveLineupPitch from './ui/LiveLineupGrid';
 import { buildLineupWithDummies, buildTeamLogoMap } from './liveLineupUtils';
-import { diffAndSavePoints, buildLineupPointsMap, buildRankingPointsMap, nextAnimId } from './livePointsStore';
+import {
+  diffAndSavePoints,
+  buildLineupPointsMap,
+  buildRankingPointsMap,
+  nextAnimId,
+  readCachedSnapshot,
+  saveCachedSnapshot,
+} from './livePointsStore';
 
 // Live-Punkte waehrend eines laufenden Spieltags (Owner-Wunsch 23.11.2026) -
 // On-Demand ueber frontend/api/live-lineup.js + live-ranking.js + live-team.js,
@@ -112,6 +119,15 @@ const LiveLineupPage = () => {
   const [matchday, setMatchday] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Zwischengespeicherte Stände fuer sofortige Anzeige beim Oeffnen (kein
+  // "Lade Live-Daten..."-Flackern), waehrend die frischen Werte im Hintergrund
+  // geladen und danach direkt ueber die Zahlen-Animation eingeblendet werden.
+  const cachedOwn = useMemo(
+    () => (kickbaseId ? readCachedSnapshot(`own:${kickbaseId}`) : null),
+    [kickbaseId]
+  );
+  const cachedRanking = useMemo(() => readCachedSnapshot('ranking'), []);
+
   // "own": immer die Default-Ansicht (Owner-Wunsch 24.11.2026).
   const [ownData, setOwnData] = useState(null);
   const [ownPrevPoints, setOwnPrevPoints] = useState(null);
@@ -124,10 +140,13 @@ const LiveLineupPage = () => {
   // SelectorButton-Zeile die Liste, der Kader bekommt den Hauptplatz.
   const [selectedManagerId, setSelectedManagerId] = useState(null);
   const [managerData, setManagerData] = useState(null);
+  const [managerCached, setManagerCached] = useState(null);
   const [managerPrevPoints, setManagerPrevPoints] = useState(null);
   const [managerAnimId, setManagerAnimId] = useState(null);
   const [managerLoading, setManagerLoading] = useState(false);
+  const [managerRefreshing, setManagerRefreshing] = useState(false);
   const [managerPickerOpen, setManagerPickerOpen] = useState(true);
+  const managerReqRef = useRef(0);
 
   // "teams": Wettbewerb + echtes Team waehlen. teamsPickerOpen startet
   // geschlossen (Default false) - erst ein Button oeffnet die Auswahl, nach
@@ -137,11 +156,14 @@ const LiveLineupPage = () => {
   const [teamsLoading, setTeamsLoading] = useState(false);
   const [selectedTeamId, setSelectedTeamId] = useState(null);
   const [teamData, setTeamData] = useState(null);
+  const [teamCached, setTeamCached] = useState(null);
   const [teamPrevPoints, setTeamPrevPoints] = useState(null);
   const [teamAnimId, setTeamAnimId] = useState(null);
   const [teamLoading, setTeamLoading] = useState(false);
+  const [teamRefreshing, setTeamRefreshing] = useState(false);
   const [teamError, setTeamError] = useState(null);
   const [teamsPickerOpen, setTeamsPickerOpen] = useState(false);
+  const teamReqRef = useRef(0);
 
   // Lineup-Daten fuer EINEN Kickbase-Manager laden (Startelf + Live-Punkte pro Spieler).
   const loadLineup = useCallback(async (league, userId) => {
@@ -184,6 +206,10 @@ const LiveLineupPage = () => {
         setRankingAnimId(nextAnimId());
         setRanking(nextRanking);
         setMatchday(rankingJson.matchday);
+        saveCachedSnapshot('ranking', {
+          ranking: nextRanking,
+          matchday: rankingJson.matchday ?? null,
+        });
       }
 
       const lineupJson = await loadLineup(league, kickbaseId);
@@ -206,21 +232,36 @@ const LiveLineupPage = () => {
   const selectManager = useCallback(async (userId, forceRefresh = false) => {
     setManagerPickerOpen(false);
     setSelectedManagerId(userId);
-    if (!leagueKey || (!forceRefresh && userId === selectedManagerId && managerData)) return;
-    if (!forceRefresh) setManagerLoading(true);
+    if (!leagueKey) return;
+    if (!forceRefresh && userId === selectedManagerId && managerData) return;
+
+    const reqId = ++managerReqRef.current;
+    const cached = readCachedSnapshot(`mgr:${userId}`);
+    if (!forceRefresh) {
+      setManagerCached(cached);
+      setManagerData(null);
+      setManagerPrevPoints(null);
+      setManagerLoading(!cached);
+    }
+    setManagerRefreshing(true);
     try {
       const lineupJson = await loadLineup(leagueKey, userId);
+      if (managerReqRef.current !== reqId) return;
       const prevMgr = diffAndSavePoints(
         `mgr:md${lineupJson.matchday ?? 'cur'}:${userId}`,
         buildLineupPointsMap(lineupJson.players)
       );
       setManagerPrevPoints(prevMgr);
       setManagerAnimId(nextAnimId());
-      setManagerData(lineupJson);
+      setManagerData({ ...lineupJson, _userId: userId });
     } catch {
-      if (!forceRefresh) setManagerData(null);
+      if (managerReqRef.current !== reqId) return;
+      if (!forceRefresh && !cached) setManagerData(null);
     } finally {
-      if (!forceRefresh) setManagerLoading(false);
+      if (managerReqRef.current === reqId) {
+        setManagerLoading(false);
+        setManagerRefreshing(false);
+      }
     }
   }, [leagueKey, selectedManagerId, managerData, loadLineup]);
 
@@ -231,6 +272,7 @@ const LiveLineupPage = () => {
     setTeamsLoading(true);
     setSelectedTeamId(null);
     setTeamData(null);
+    setTeamCached(null);
     setTeamPrevPoints(null);
     fetch(`/api/live-teams-list?competitionId=${competitionId}`)
       .then((res) => res.ok ? res.json() : null)
@@ -243,24 +285,39 @@ const LiveLineupPage = () => {
   const selectTeam = useCallback(async (teamId, forceRefresh = false) => {
     setSelectedTeamId(teamId);
     setTeamsPickerOpen(false);
-    if (!forceRefresh) setTeamLoading(true);
     setTeamError(null);
+
+    const reqId = ++teamReqRef.current;
+    const cacheKey = `team:${competitionId}:${teamId}`;
+    const cached = readCachedSnapshot(cacheKey);
+    if (!forceRefresh) {
+      setTeamCached(cached);
+      setTeamData(null);
+      setTeamPrevPoints(null);
+      setTeamLoading(!cached);
+    }
+    setTeamRefreshing(true);
     try {
       const res = await fetch(`/api/live-team?competitionId=${competitionId}&teamId=${teamId}`);
       if (!res.ok) throw new Error('Team-Daten konnten nicht geladen werden');
       const json = await res.json();
+      if (teamReqRef.current !== reqId) return;
       const teamScope = json.matchId
         ? `team:m:${json.matchId}:${teamId}`
         : `team:c:${competitionId}:${teamId}`;
       const prevTeam = diffAndSavePoints(teamScope, buildLineupPointsMap(json.players));
       setTeamPrevPoints(prevTeam);
       setTeamAnimId(nextAnimId());
-      setTeamData(json);
+      setTeamData({ ...json, _cacheKey: cacheKey });
     } catch (e) {
+      if (teamReqRef.current !== reqId) return;
       setTeamError(e.message || 'Unbekannter Fehler');
-      if (!forceRefresh) setTeamData(null);
+      if (!forceRefresh && !cached) setTeamData(null);
     } finally {
-      if (!forceRefresh) setTeamLoading(false);
+      if (teamReqRef.current === reqId) {
+        setTeamLoading(false);
+        setTeamRefreshing(false);
+      }
     }
   }, [competitionId]);
 
@@ -268,7 +325,7 @@ const LiveLineupPage = () => {
   // Hintergrund (ohne das Spielfeld auszublenden), damit Punktaenderungen
   // sofort animiert werden.
   const handleRefresh = useCallback(async () => {
-    if (refreshing || ownLoading) return;
+    if (refreshing || ownLoading || managerRefreshing || teamRefreshing) return;
     setRefreshing(true);
     try {
       if (mode === 'teams') {
@@ -286,7 +343,7 @@ const LiveLineupPage = () => {
     } finally {
       setRefreshing(false);
     }
-  }, [refreshing, ownLoading, mode, selectedTeamId, selectedManagerId, selectTeam, selectManager, loadAll]);
+  }, [refreshing, ownLoading, managerRefreshing, teamRefreshing, mode, selectedTeamId, selectedManagerId, selectTeam, selectManager, loadAll]);
 
   // Gemeinsame Anreicherung: live-lineup.js-Rohdaten -> Name/Position/Foto aus
   // all_players.json + Vereinswappen - identisch fuer "own" und "managers".
@@ -320,7 +377,9 @@ const LiveLineupPage = () => {
 
   const managerLineup = useMemo(() => enrichKickbaseLineup(managerData), [managerData, enrichKickbaseLineup]);
   const managerTotalPoints = managerData?.players?.reduce((sum, p) => sum + (p.points || 0), 0) ?? null;
-  const selectedManagerName = ranking?.find((r) => r.userId === selectedManagerId)?.name;
+  const displayedRanking = ranking || cachedRanking?.ranking || null;
+  const displayedMatchday = matchday ?? cachedOwn?.matchday ?? cachedRanking?.matchday ?? null;
+  const selectedManagerName = displayedRanking?.find((r) => r.userId === selectedManagerId)?.name;
   const selectedTeam = teamsList?.find((t) => t.id === selectedTeamId);
 
   const teamLineup = useMemo(() => {
@@ -344,6 +403,49 @@ const LiveLineupPage = () => {
   }, [teamData]);
   const teamTotalPoints = teamData?.players?.reduce((sum, p) => sum + (p.points || 0), 0) ?? null;
 
+  // Frische, fertig angereicherte Aufstellungen im Cache ablegen, damit beim
+  // naechsten Oeffnen sofort der letzte Stand sichtbar ist.
+  useEffect(() => {
+    if (kickbaseId && ownLineup && ownData) {
+      saveCachedSnapshot(`own:${kickbaseId}`, {
+        lineup: ownLineup,
+        totalPoints: ownTotalPoints,
+        matchday: ownData.matchday ?? matchday ?? null,
+      });
+    }
+  }, [kickbaseId, ownLineup, ownTotalPoints, ownData, matchday]);
+
+  useEffect(() => {
+    if (managerData?._userId && managerLineup) {
+      saveCachedSnapshot(`mgr:${managerData._userId}`, {
+        lineup: managerLineup,
+        totalPoints: managerTotalPoints,
+        matchday: managerData.matchday ?? matchday ?? null,
+      });
+    }
+  }, [managerData, managerLineup, managerTotalPoints, matchday]);
+
+  useEffect(() => {
+    if (teamData?._cacheKey && teamLineup) {
+      saveCachedSnapshot(teamData._cacheKey, {
+        lineup: teamLineup,
+        totalPoints: teamTotalPoints,
+        score: teamData.score ?? null,
+        isLive: Boolean(teamData.isLive),
+        minute: teamData.minute ?? null,
+      });
+    }
+  }, [teamData, teamLineup, teamTotalPoints]);
+
+  const displayedOwnLineup = ownLineup || cachedOwn?.lineup || null;
+  const displayedOwnTotalPoints = ownLineup ? ownTotalPoints : (cachedOwn?.totalPoints ?? null);
+  const displayedManagerLineup = managerLineup || managerCached?.lineup || null;
+  const displayedManagerTotalPoints = managerLineup ? managerTotalPoints : (managerCached?.totalPoints ?? null);
+  const displayedTeamLineup = teamLineup || teamCached?.lineup || null;
+  const displayedTeamTotalPoints = teamLineup ? teamTotalPoints : (teamCached?.totalPoints ?? null);
+  const displayedTeamMeta = teamData || teamCached || null;
+  const isBusy = ownLoading || refreshing || managerRefreshing || teamRefreshing;
+
   return (
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10">
       <div className="max-w-[700px] mx-auto">
@@ -355,15 +457,15 @@ const LiveLineupPage = () => {
                 <span className="relative inline-flex rounded-full h-3.5 w-3.5 sm:h-4 sm:w-4 bg-[#ef4444]"></span>
               </span>
             </div>
-            <PageHeader eyebrow={matchday ? `SPIELTAG ${matchday} · LIVE` : 'LIVE'} accentColor="#ef4444" title="Live Punkte" />
+            <PageHeader eyebrow={displayedMatchday ? `SPIELTAG ${displayedMatchday} · LIVE` : 'LIVE'} accentColor="#ef4444" title="Live Punkte" />
           </div>
           <button
             onClick={handleRefresh}
-            disabled={ownLoading || refreshing}
+            disabled={isBusy}
             aria-label="Live-Daten aktualisieren"
             className="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-[#8b92a5] hover:text-white transition-colors disabled:opacity-50 shrink-0"
           >
-            <RefreshCw size={13} className={ownLoading || refreshing ? 'animate-spin' : ''} />
+            <RefreshCw size={13} className={isBusy ? 'animate-spin' : ''} />
           </button>
         </div>
 
@@ -375,9 +477,7 @@ const LiveLineupPage = () => {
 
         {mode === 'own' && (
           <>
-            {ownLoading && !ownData ? (
-              <div className="text-center text-[#8b92a5] text-sm py-10">Lade Live-Daten…</div>
-            ) : !kickbaseId ? (
+            {!kickbaseId ? (
               <div className="card-surface rounded-2xl p-5 text-center text-sm text-[#8b92a5]">
                 Verbinde zuerst deinen Kickbase-Account in deinem Profil.
               </div>
@@ -385,14 +485,16 @@ const LiveLineupPage = () => {
               <div className="card-surface rounded-2xl p-5 text-center text-sm text-[#8b92a5]">
                 {ownData.note || 'Keine Startelf-Daten verfügbar.'}
               </div>
-            ) : ownLineup ? (
+            ) : displayedOwnLineup ? (
               <LiveLineupPitch
                 key={`own-${kickbaseId}`}
-                lineup={ownLineup}
-                totalPoints={ownTotalPoints}
-                prevPointsMap={ownPrevPoints}
-                animId={ownAnimId}
+                lineup={displayedOwnLineup}
+                totalPoints={displayedOwnTotalPoints}
+                prevPointsMap={ownLineup ? ownPrevPoints : null}
+                animId={ownLineup ? ownAnimId : null}
               />
+            ) : ownLoading ? (
+              <div className="text-center text-[#8b92a5] text-sm py-10">Lade Live-Daten…</div>
             ) : null}
           </>
         )}
@@ -400,13 +502,13 @@ const LiveLineupPage = () => {
         {mode === 'managers' && (
           <>
             {managerPickerOpen ? (
-              ranking && ranking.length > 0 ? (
+              displayedRanking && displayedRanking.length > 0 ? (
                 <RankingList
-                  ranking={ranking}
+                  ranking={displayedRanking}
                   selectedUserId={selectedManagerId}
                   onSelect={selectManager}
-                  prevPointsMap={rankingPrevPoints}
-                  animId={rankingAnimId}
+                  prevPointsMap={ranking ? rankingPrevPoints : null}
+                  animId={ranking ? rankingAnimId : null}
                 />
               ) : (
                 <div className="text-center text-[#8b92a5] text-sm py-6">Lade Liga-Ranking…</div>
@@ -420,16 +522,16 @@ const LiveLineupPage = () => {
                   </span>
                 </SelectorButton>
 
-                {managerLoading ? (
-                  <div className="text-center text-[#8b92a5] text-sm py-10">Lade Live-Daten…</div>
-                ) : managerLineup ? (
+                {displayedManagerLineup ? (
                   <LiveLineupPitch
                     key={`mgr-${selectedManagerId}`}
-                    lineup={managerLineup}
-                    totalPoints={managerTotalPoints}
-                    prevPointsMap={managerPrevPoints}
-                    animId={managerAnimId}
+                    lineup={displayedManagerLineup}
+                    totalPoints={displayedManagerTotalPoints}
+                    prevPointsMap={managerLineup ? managerPrevPoints : null}
+                    animId={managerLineup ? managerAnimId : null}
                   />
+                ) : managerLoading ? (
+                  <div className="text-center text-[#8b92a5] text-sm py-10">Lade Live-Daten…</div>
                 ) : null}
               </>
             )}
@@ -498,24 +600,23 @@ const LiveLineupPage = () => {
               <div className="card-surface rounded-2xl p-5 text-center text-sm text-red-400 mb-4 mt-4">{teamError}</div>
             )}
 
-            {!teamsPickerOpen && teamData && (
+            {!teamsPickerOpen && displayedTeamMeta?.score && (
               <div className="mb-3 text-sm font-bold text-gray-300">
-                {teamData.score} {teamData.isLive ? `· LIVE ${teamData.minute}'` : ''}
+                {displayedTeamMeta.score} {displayedTeamMeta.isLive ? `· LIVE ${displayedTeamMeta.minute}'` : ''}
               </div>
             )}
 
-            {!teamsPickerOpen && teamLoading && (
-              <div className="text-center text-[#8b92a5] text-sm py-10">Lade Live-Daten…</div>
-            )}
-            {!teamsPickerOpen && !teamLoading && teamLineup && (
+            {!teamsPickerOpen && displayedTeamLineup ? (
               <LiveLineupPitch
                 key={`team-${competitionId}-${selectedTeamId}`}
-                lineup={teamLineup}
-                totalPoints={teamTotalPoints}
-                prevPointsMap={teamPrevPoints}
-                animId={teamAnimId}
+                lineup={displayedTeamLineup}
+                totalPoints={displayedTeamTotalPoints}
+                prevPointsMap={teamLineup ? teamPrevPoints : null}
+                animId={teamLineup ? teamAnimId : null}
               />
-            )}
+            ) : !teamsPickerOpen && teamLoading ? (
+              <div className="text-center text-[#8b92a5] text-sm py-10">Lade Live-Daten…</div>
+            ) : null}
           </>
         )}
       </div>

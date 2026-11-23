@@ -11,7 +11,9 @@
 // bereinigt.
 
 const STORAGE_KEY = 'kickbase_live_points_v1';
+const SNAPSHOT_STORAGE_KEY = 'kickbase_live_snapshots_v1';
 const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+const MAX_SNAPSHOTS = 20;
 
 let animCounter = 0;
 
@@ -102,4 +104,48 @@ export const buildRankingPointsMap = (ranking) => {
     }
   }
   return map;
+};
+
+// Stale-While-Revalidate Cache fuer die vollstaendigen Live-Ansichten
+// (angereicherte Startelf inkl. Fotos/Namen/Punkte bzw. Ranking): beim Oeffnen
+// der Seite wird sofort der letzte bekannte Stand angezeigt statt "Lade...",
+// waehrend im Hintergrund die frischen Daten nachgeladen und dann direkt an
+// den Zahlen animiert werden.
+const readSnapshotStore = () => {
+  try {
+    const raw = window.localStorage.getItem(SNAPSHOT_STORAGE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+};
+
+export const readCachedSnapshot = (key) => {
+  if (!key) return null;
+  const store = readSnapshotStore();
+  const entry = store[key];
+  if (!entry || typeof entry.ts !== 'number') return null;
+  if (Date.now() - entry.ts > MAX_AGE_MS) return null;
+  return entry.data ?? null;
+};
+
+export const saveCachedSnapshot = (key, data) => {
+  if (!key || !data) return;
+  try {
+    const now = Date.now();
+    const store = readSnapshotStore();
+    store[key] = { data, ts: now };
+
+    const validEntries = Object.entries(store)
+      .filter(([, entry]) => entry && typeof entry.ts === 'number' && now - entry.ts <= MAX_AGE_MS)
+      .sort((a, b) => b[1].ts - a[1].ts)
+      .slice(0, MAX_SNAPSHOTS);
+
+    const trimmed = Object.fromEntries(validEntries);
+    window.localStorage.setItem(SNAPSHOT_STORAGE_KEY, JSON.stringify(trimmed));
+  } catch {
+    // Private-Browsing / Quota-Fehler still ignorieren.
+  }
 };
