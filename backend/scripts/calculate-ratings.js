@@ -16,7 +16,10 @@ const REFERENCE_OVERPAY_RATIO = 0.08;
 const FORCED_SALE_POINTS_THRESHOLD = 250;
 const FORCED_SALE_WINDOW_DAYS = 6; // Regel verlangt Verkauf bis Montag 22 Uhr nach dem Spieltag
 
-// Gewichtung der verschiedenen Trade-Arten im Score (nicht in den rohen Anzeige-Summen):
+// Gewichtung der verschiedenen Trade-Arten im PRO-Score (reiner Profit, Owner-
+// Feedback 23.11.2026: "nicht so gängig" fand den alten gewichteten DURCHSCHNITT
+// inkl. Verkaufs-Timing - jetzt stattdessen die gewichtete SUMME, ohne Timing,
+// das ausschliesslich noch bei TIM einfliesst):
 // - realized: abgeschlossener Kauf+Verkauf -> volle Wertung
 // - forcedRealized: abgeschlossen, aber durch die 250-Punkte-Regel erzwungen -> gedämpft
 // - unrealized: noch offene Position (gekauft, noch nicht verkauft) -> nicht sicher, daher reduziert
@@ -29,7 +32,6 @@ const SCORE_WEIGHTS = {
     unrealized: 0.5,
     orphanSale: 0.7,
     forcedOrphanSale: 0.2, // erzwungen UND ohne bekannten Einstandspreis -> kaum Aussagekraft fürs Trading-Können
-    saleTiming: 0.4, // zusätzliches, moderates Gewicht für "war der Verkaufszeitpunkt im Nachhinein klug?"
 };
 
 // Eine offene Position (gekauft, noch nicht verkauft) ist am Kauftag praktisch IMMER
@@ -155,6 +157,13 @@ const PROB_FALLBACK_UNKNOWN = 3; // neutraler Mittelwert, falls fuer einen Spiel
 
 function playerStartProbability(playerId, playerMap) {
     const player = playerMap.get(playerId) || playerMap.get(String(playerId));
+    // `prob` ist eine langfristige "ist normalerweise Stammspieler"-Einschaetzung
+    // und wird NICHT automatisch aktualisiert, wenn ein Spieler aktuell verletzt/
+    // angeschlagen/gesperrt ist (Kickbase-Statusfeld `st`, 0 = fit) - ein Spieler
+    // kann z.B. `prob: 5` UND `st: 1` (verletzt) gleichzeitig haben. Ohne diese
+    // Pruefung wuerde ein Kader voller aktuell nicht spielberechtigter Spieler
+    // trotzdem als "startelf-faehig" gelten.
+    if (player && typeof player.st === 'number' && player.st !== 0) return 0;
     const prob = player && typeof player.prob === 'number' ? player.prob : null;
     return prob != null ? prob : PROB_FALLBACK_UNKNOWN;
 }
@@ -294,7 +303,7 @@ function percentileRank(value, allValues, higherIsBetter = true) {
 // ersten Durchlauf neutral (Platzhalter), da der Liga-Vergleich erst nach
 // allen Liga-Mitgliedern moeglich ist - final gesetzt im zweiten Durchlauf
 // (siehe computeLeagueRelativeScore, Ende von run()).
-function computeProScore(profitBonus, hasWeightedTrades) {
+function computeProScore(hasWeightedTrades) {
     if (!hasWeightedTrades) return NEUTRAL_CARD_SCORE;
     return NEUTRAL_CARD_SCORE;
 }
@@ -456,6 +465,141 @@ function historicalMarketValue(mvHistory, playerId, date) {
     return lookupValueOnOrBefore(entries, date.toISOString().slice(0, 10));
 }
 
+// --- PPM (Punkte pro Million) auf Basis des Kaderwerts ZUM JEWEILIGEN SPIELTAG ---
+// Der Kaderwert schwankt durch Trades waehrend der Saison staendig - ein PPM auf
+// Basis des HEUTIGEN Kaderwerts (oder der Investitionssumme) vergleicht Punkte,
+// die ueber viele Spieltage verteilt erzielt wurden, mit einem einzigen Momentan-
+// wert, der nachtraeglich durch ganz andere Trades verzerrt sein kann (Owner-
+// Feedback: "Punkte pro Million muss sich immer auf den Kaderwert zum jeweiligen
+// Spieltag [...] beziehen, [...] der Kaderwert steigt/sinkt ja durch Trades").
+// Stattdessen: pro Spieltag das Verhaeltnis (Punkte diesen Spieltag) / (Kaderwert
+// zum Freitags-/Kickoff-Cutoff DIESES Spieltags) bilden, danach den SAISON-PPM als
+// Durchschnitt dieser Einzel-Verhaeltnisse (Owner-Vorgabe: "Durchschnitt der
+// einzelnen Spieltags-Quotienten", nicht gepoolt).
+
+// Liest `pointsMatchday` je Manager aus den pro Spieltag gespeicherten
+// spieltag-N.json-Dateien (siehe backend/scripts/*, werden laufend aktualisiert).
+// Rueckgabe: Map(spieltag -> Map(managerId -> punkteDiesenSpieltag)).
+function loadMatchdayPoints(historyDir) {
+    const result = new Map();
+    let files = [];
+    try {
+        files = fs.readdirSync(historyDir).filter(f => /^spieltag-\d+\.json$/.test(f));
+    } catch (e) {
+        console.warn('Konnte history-Verzeichnis nicht lesen (Spieltagspunkte):', e.message);
+        return result;
+    }
+    files.forEach(file => {
+        const day = parseInt(file.match(/^spieltag-(\d+)\.json$/)[1], 10);
+        try {
+            const data = JSON.parse(fs.readFileSync(path.join(historyDir, file), 'utf8'));
+            const map = new Map();
+            (data.leagues || []).forEach(l => {
+                (l.users || []).forEach(u => {
+                    const pts = parseInt(String(u.pointsMatchday || '0').replace(/\./g, ''), 10);
+                    if (Number.isFinite(pts)) map.set(String(u.id), pts);
+                });
+            });
+            result.set(day, map);
+        } catch (e) {
+            console.warn(`Konnte ${file} nicht lesen (Spieltagspunkte):`, e.message);
+        }
+    });
+    return result;
+}
+
+// Frühester bekannter Anstoss je Spieltag, aus den Performance-Historien ALLER
+// Spieler ermittelt (gleiches Prinzip wie backend/reconstructStartingEleven.js,
+// "Global kickoff cutoff") - das ist der Zeitpunkt, zu dem der Kader fuer diesen
+// Spieltag feststand (Transfersperre). Rueckgabe: Map(spieltag -> Zeitstempel in ms).
+function computeMatchdayKickoffs(players) {
+    const kickoffs = new Map();
+    players.forEach(p => {
+        const season = getCurrentSeasonPerformance(p);
+        if (!season || !Array.isArray(season.ph)) return;
+        season.ph.forEach(entry => {
+            if (!entry.day || !entry.md) return;
+            const t = new Date(entry.md).getTime();
+            if (!Number.isFinite(t)) return;
+            const cur = kickoffs.get(entry.day);
+            if (cur === undefined || t < cur) kickoffs.set(entry.day, t);
+        });
+    });
+    return kickoffs;
+}
+
+// Spult, ausgehend vom HEUTIGEN Kader (managerSquads), fuer jeden gewuenschten
+// Spieltags-Cutoff-Zeitpunkt die seitdem passierten Transfers zurueck - exakt das
+// gleiche Prinzip wie die Startelf-Rekonstruktion (reconstructStartingEleven.js):
+// ein Kauf NACH dem Cutoff bedeutet, der Spieler war beim Kaeufer zum Cutoff noch
+// NICHT im Kader (wird entfernt); ein Verkauf NACH dem Cutoff bedeutet, der
+// Spieler war beim Verkaeufer zum Cutoff noch im Kader (wird wieder hinzugefuegt).
+// cutoffsDesc muss nach Spieltag ABSTEIGEND sortiert sein, damit die Transfer-
+// Liste nur EINMAL komplett durchlaufen werden muss (Performance).
+// Rueckgabe: Map(spieltag -> Map(managerId -> Set(playerId))).
+function computeHistoricalSquads(managerSquads, transfers, nameToId, cutoffsDesc) {
+    const squads = new Map();
+    managerSquads.forEach((info, uid) => {
+        squads.set(String(uid), new Set((info.players || []).map(p => String(p.id))));
+    });
+
+    const descTransfers = [...transfers].sort((a, b) => new Date(b.date || b.d || 0) - new Date(a.date || a.d || 0));
+    const result = new Map();
+    let ti = 0;
+    cutoffsDesc.forEach(({ day, cutoffTime }) => {
+        while (ti < descTransfers.length) {
+            const t = descTransfers[ti];
+            const tTime = new Date(t.date || t.d || 0).getTime();
+            if (!Number.isFinite(tTime) || tTime <= cutoffTime) break;
+
+            const pId = String(t.playerId);
+            let buyerId = t.buyerId || (t.buyerName && nameToId[t.buyerName.toLowerCase()]);
+            let sellerId = t.sellerId || (t.sellerName && nameToId[t.sellerName.toLowerCase()]);
+            if (buyerId && squads.has(String(buyerId))) squads.get(String(buyerId)).delete(pId);
+            if (sellerId) {
+                if (!squads.has(String(sellerId))) squads.set(String(sellerId), new Set());
+                squads.get(String(sellerId)).add(pId);
+            }
+            ti++;
+        }
+        const snapshot = new Map();
+        squads.forEach((set, uid) => snapshot.set(uid, new Set(set)));
+        result.set(day, snapshot);
+    });
+    return result;
+}
+
+// Saison-PPM: Durchschnitt der Spieltags-Quotienten (Punkte diesen Spieltag /
+// Kaderwert zum Cutoff dieses Spieltags, in Mio.) - nur Spieltage mit bekannten
+// Punkten UND einem nicht-leeren, bewertbaren Kader fliessen ein. Liefert null,
+// wenn kein einziger Spieltag ausgewertet werden konnte (z.B. brandneue Liga ohne
+// Spieltagshistorie) - Aufrufer faellt dann auf die alte Methode zurueck.
+function computePerMatchdayPpm(uid, matchdayDays, matchdayPoints, historicalSquads, mvHistory, currentMarketValue, kickoffs) {
+    const ratios = [];
+    const breakdown = [];
+    matchdayDays.forEach(day => {
+        const pts = matchdayPoints.get(day)?.get(String(uid));
+        const squadSet = historicalSquads.get(day)?.get(String(uid));
+        if (pts == null || !squadSet || squadSet.size === 0) return;
+
+        const cutoffDate = new Date(kickoffs.get(day));
+        let squadValue = 0;
+        squadSet.forEach(pId => {
+            const hv = historicalMarketValue(mvHistory, pId, cutoffDate);
+            squadValue += (hv != null && hv > 0) ? hv : currentMarketValue(pId);
+        });
+        if (squadValue <= 0) return;
+
+        const ratio = pts / (squadValue / 1_000_000);
+        ratios.push(ratio);
+        breakdown.push({ day, points: pts, squadValue, ratio });
+    });
+
+    if (ratios.length === 0) return null;
+    const ppm = ratios.reduce((a, b) => a + b, 0) / ratios.length;
+    return { ppm, matchdaysUsed: ratios.length, breakdown };
+}
+
 function run() {
     console.log("Calculating Manager Ratings...");
     const historyDir = path.join(__dirname, '../../frontend/public/history');
@@ -514,6 +658,18 @@ function run() {
             });
         });
     }
+
+    // Fuer den neuen spieltagsbasierten PPM (siehe computePerMatchdayPpm): Punkte
+    // je Spieltag, frühester Anstoss je Spieltag (Cutoff), und daraus der Kader
+    // JEDES Managers zu JEDEM dieser Cutoffs (rueckgerechnet aus dem heutigen
+    // Kader + Transferhistorie - gleiches Prinzip wie die Startelf-Rekonstruktion).
+    const matchdayPoints = loadMatchdayPoints(historyDir);
+    const matchdayKickoffs = computeMatchdayKickoffs(players);
+    const matchdayDays = [...matchdayPoints.keys()].filter(d => matchdayKickoffs.has(d)).sort((a, b) => a - b);
+    const matchdayCutoffsDesc = matchdayDays
+        .map(day => ({ day, cutoffTime: matchdayKickoffs.get(day) }))
+        .sort((a, b) => b.day - a.day);
+    const historicalSquads = computeHistoricalSquads(managerSquads, transfers, nameToId, matchdayCutoffsDesc);
 
     // Map: userId -> { buys: [...], sells: [...] }
     const userTrades = {};
@@ -634,12 +790,14 @@ function run() {
                         weightedProfitSum += profit * weight;
                         weightedTradeWeight += weight;
 
+                        // Verkaufs-Timing fliesst NICHT mehr in PRO ein (siehe unten) - das
+                        // Signal hat mit TIM bereits eine eigene Karte, eine Mischung in PRO
+                        // war eine Doppelzaehlung UND liess "Profit" etwas messen, was gar
+                        // kein Profit ist (Owner-Feedback: PRO soll wieder "nur Profit" sein).
                         const wisdom = saleTimingWisdom(mvHistory, s.playerId, s.date);
                         if (wisdom != null) {
                             saleTimingProfit += wisdom;
                             saleTimingSampleSize++;
-                            weightedProfitSum += wisdom * SCORE_WEIGHTS.saleTiming;
-                            weightedTradeWeight += SCORE_WEIGHTS.saleTiming;
                         }
 
                         considerForTopFlop(name, profit, 'realized', forced);
@@ -663,8 +821,6 @@ function run() {
                         if (wisdom != null) {
                             saleTimingProfit += wisdom;
                             saleTimingSampleSize++;
-                            weightedProfitSum += wisdom * SCORE_WEIGHTS.saleTiming;
-                            weightedTradeWeight += SCORE_WEIGHTS.saleTiming;
                         }
 
                         considerForTopFlop(name, profit, 'orphan', forced);
@@ -694,7 +850,12 @@ function run() {
                 const openPositionsAvgAgeDays = openPositions > 0 ? openPositionAgeSum / openPositions : 0;
 
                 const totalTransactions = trades.buys.length + trades.sells.length;
-                const avgWeightedProfit = weightedTradeWeight > 0 ? weightedProfitSum / weightedTradeWeight : 0;
+                // PRO-Basis: die gewichtete SUMME (nicht mehr der Durchschnitt) - "nur
+                // Profit", aber weiterhin mit den zwei Kickbase-Mechanik-Korrekturen
+                // (frische offene Positionen + Zwangsverkäufe zählen weniger, siehe
+                // SCORE_WEIGHTS/openPositionConfidence), da sonst echte Spielmechanik-
+                // Verzerrungen zurückkämen (Owner-Entscheidung 23.11.2026).
+                const weightedTotalProfit = weightedProfitSum;
                 const avgOverpayRatio = overpayRatios.length > 0
                     ? overpayRatios.reduce((a, b) => a + b, 0) / overpayRatios.length
                     : 0;
@@ -704,18 +865,35 @@ function run() {
 
                 let userPoints = parseInt(u.points.replace(/\./g, '')) || 0;
 
-                // PPM-Basis: bevorzugt der aktuelle Kaderwert (summe(marketValue) der
-                // Spieler im Kader, aus advisor-data.json) statt der historischen
-                // Investitionssumme (totalSpent) - Owner-Vorgabe 29.08.2026. So misst PPM
-                // "Punkte pro Million AKTUELLEM Marktwert" statt "... eingesetztem Kapital".
-                // Fallback auf totalSpent, wenn kein Kaderwert vorliegt (z.B. Advisor-Daten
-                // fehlen); ppmBasis macht die tatsaechlich genutzte Basis transparent.
+                // PPM-Basis: bevorzugt der Kaderwert ZUM JEWEILIGEN SPIELTAG (siehe
+                // computePerMatchdayPpm) statt eines einzigen Momentan-Snapshots - Owner-
+                // Korrektur, da der Kaderwert durch Trades waehrend der Saison staendig
+                // schwankt und ein fixer Snapshot (heutiger Kaderwert ODER Investitions-
+                // summe) Punkte aus ganz anderen Wochen mit einem dazu passenden Kaderwert
+                // verwechseln kann (siehe Beispiel-Fall in der Analyse: kollabierter
+                // Kaderwert durch schlechte Trades liess PPM faelschlich exzellent aussehen,
+                // obwohl PRO fuer dieselben Trades den schlechtesten Wert der Liga zeigte).
+                // Fallback-Kette, falls keine Spieltagshistorie auswertbar ist (z.B. ganz
+                // neue Liga ohne Spieltage): aktueller Kaderwert, danach Investitionssumme.
                 const managerSquadValue = managerSquadValues.get(String(uid)) || 0;
-                const ppmBasis = managerSquadValue > 0 ? 'squadValue' : 'totalSpent';
-                const ppmDenominator = managerSquadValue > 0 ? managerSquadValue : totalSpent;
+                const perMatchdayPpm = computePerMatchdayPpm(
+                    uid, matchdayDays, matchdayPoints, historicalSquads, mvHistory, currentMarketValue, matchdayKickoffs
+                );
+                let ppmBasis;
                 let ppm = 0;
-                if (ppmDenominator > 0 && userPoints > 0) {
-                    ppm = userPoints / (ppmDenominator / 1000000);
+                let ppmMatchdaysUsed = null;
+                let ppmBreakdown = null;
+                if (perMatchdayPpm) {
+                    ppmBasis = 'perMatchdayAverage';
+                    ppm = perMatchdayPpm.ppm;
+                    ppmMatchdaysUsed = perMatchdayPpm.matchdaysUsed;
+                    ppmBreakdown = perMatchdayPpm.breakdown;
+                } else {
+                    ppmBasis = managerSquadValue > 0 ? 'squadValue' : 'totalSpent';
+                    const ppmDenominator = managerSquadValue > 0 ? managerSquadValue : totalSpent;
+                    if (ppmDenominator > 0 && userPoints > 0) {
+                        ppm = userPoints / (ppmDenominator / 1000000);
+                    }
                 }
 
                 // Kader-Vollständigkeit & Budget: unabhängig vom bisherigen Trading-Erfolg -
@@ -731,19 +909,6 @@ function run() {
                 const squadHeadcountReadiness = squadInfo ? computeSquadReadiness(squadInfo.positionCounts, squadInfo.total) : null;
                 const squadReadiness = squadInfo ? computeRealisticSquadReadiness(squadInfo.players, playerMap, squadInfo.total) : null;
                 const squadRiskPenalty = computeSquadRiskPenalty(squadReadiness, budget);
-
-                // Profit Score (-20 bis +25 Punkte) - fliesst NICHT mehr in die
-                // Gesamtwertung ein (siehe unten), wird aber weiterhin fuer die PRO-Karte
-                // gebraucht (computeProScore-Aufruf + calculation.pro.profitBonus-Anzeige).
-                // Basiert auf dem GEWICHTETEN Durchschnittsgewinn (siehe SCORE_WEIGHTS):
-                // abgeschlossene Trades zählen voll, Zwangsverkäufe (250-Punkte-Regel) und
-                // offene Positionen gedämpft, damit ein einzelner Glücks-/Pflichtverkauf
-                // das Rating nicht dominiert.
-                let profitBonus = 0;
-                if (weightedTradeWeight > 0) {
-                    profitBonus = (avgWeightedProfit / 500000) * 25;
-                    profitBonus = Math.max(-20, Math.min(25, profitBonus));
-                }
 
                 // Performance / PPM - fliesst NICHT mehr in die Gesamtwertung ein, wird aber
                 // weiterhin fuer calculation.pkt.perfBonus (Anzeige) gebraucht.
@@ -774,7 +939,7 @@ function run() {
                     // Teilscores - siehe computeXxxScore-Funktionen weiter oben. Alle 6
                     // sind hier noch Platzhalter (neutral 50) - werden im zweiten Durchlauf
                     // nach der Liga-weiten Vergleichsrunde final gesetzt (siehe Ende von run()).
-                    pro: computeProScore(profitBonus, weightedTradeWeight > 0),
+                    pro: computeProScore(weightedTradeWeight > 0),
                     ovp: NEUTRAL_CARD_SCORE,
                     pkt: computePktScore(ppm, userPoints > 0),
                     akt: NEUTRAL_CARD_SCORE,
@@ -787,13 +952,12 @@ function run() {
                     // statt einer im Frontend nachgebauten (und potenziell abweichenden) Kopie.
                     calculation: {
                         pro: {
-                            score: computeProScore(profitBonus, weightedTradeWeight > 0),
-                            weightedAverageProfit: weightedTradeWeight > 0 ? avgWeightedProfit : null,
+                            score: computeProScore(weightedTradeWeight > 0),
+                            weightedTotalProfit: weightedTradeWeight > 0 ? weightedTotalProfit : null,
                             completedTrades,
                             openPositions,
                             orphanSales,
                             saleTimingSampleSize,
-                            profitBonus,
                         },
                         // score/leaguePercentile/leagueRank/leagueSize werden im zweiten
                         // Durchlauf gesetzt (Liga-Vergleich, siehe Ende von run()).
@@ -809,6 +973,15 @@ function run() {
                             managerSquadValue: managerSquadValue > 0 ? managerSquadValue : null,
                             ppmBasis,
                             ppm: userPoints > 0 ? ppm : null,
+                            // Nur gesetzt, wenn ppmBasis === 'perMatchdayAverage': Anzahl
+                            // Spieltage, die in den Durchschnitt eingeflossen sind, und die
+                            // vollstaendige Aufschluesselung je Spieltag (Punkte, Kaderwert
+                            // zum Cutoff, Verhaeltnis) fuer Transparenz/Debugging.
+                            matchdaysUsed: ppmMatchdaysUsed,
+                            matchdayBreakdown: ppmBreakdown,
+                            averageMatchdaySquadValue: ppmBreakdown && ppmBreakdown.length > 0
+                                ? ppmBreakdown.reduce((s, b) => s + b.squadValue, 0) / ppmBreakdown.length
+                                : null,
                             perfBonus,
                         },
                         akt: {
@@ -959,26 +1132,28 @@ function run() {
             });
 
             // PRO (Profit): liga-relativ wie PKT/OVP/AKT (Owner-Vorgabe 29.08.2026).
-            // Z-Score des gewichteten Durchschnittsgewinns gegen Mittelwert/Streuung
-            // der Liga - kein Log-Transform (anders als AKT), da Profit negativ sein
-            // kann. Nur unter Managern mit echt vorliegenden gewichteten Trades
-            // vergleichen; ohne Trades bleibt neutral.
-            const proMembers = memberUids.filter(uid => ratings[uid].calculation.pro.weightedAverageProfit != null);
-            const proValues = proMembers.map(uid => ratings[uid].calculation.pro.weightedAverageProfit);
+            // Z-Score der gewichteten Gesamtsumme (nicht mehr Durchschnitt, siehe
+            // weightedTotalProfit - Owner-Feedback 23.11.2026, "nur Profit" statt
+            // gewichteter Durchschnitt inkl. Verkaufs-Timing) gegen Mittelwert/
+            // Streuung der Liga - kein Log-Transform (anders als AKT), da Profit
+            // negativ sein kann. Nur unter Managern mit echt vorliegenden gewichteten
+            // Trades vergleichen; ohne Trades bleibt neutral.
+            const proMembers = memberUids.filter(uid => ratings[uid].calculation.pro.weightedTotalProfit != null);
+            const proValues = proMembers.map(uid => ratings[uid].calculation.pro.weightedTotalProfit);
             const proMean = proValues.length > 0 ? proValues.reduce((a, b) => a + b, 0) / proValues.length : 0;
             const proStd = proValues.length > 1
                 ? Math.sqrt(proValues.reduce((s, v) => s + (v - proMean) ** 2, 0) / (proValues.length - 1))
                 : 0;
             const proRanked = [...proValues].sort((a, b) => b - a);
             memberUids.forEach(uid => {
-                const avgProfit = ratings[uid].calculation.pro.weightedAverageProfit;
-                if (avgProfit == null) return; // bleibt neutral (Platzhalter aus erstem Durchlauf)
-                const zScore = proStd > 1e-9 ? (avgProfit - proMean) / proStd : 0;
-                const percentile = percentileRank(avgProfit, proValues, true);
+                const totalProfitWeighted = ratings[uid].calculation.pro.weightedTotalProfit;
+                if (totalProfitWeighted == null) return; // bleibt neutral (Platzhalter aus erstem Durchlauf)
+                const zScore = proStd > 1e-9 ? (totalProfitWeighted - proMean) / proStd : 0;
+                const percentile = percentileRank(totalProfitWeighted, proValues, true);
                 const score = computeLeagueRelativeScore(zScore);
                 Object.assign(ratings[uid].calculation.pro, {
                     leaguePercentile: percentile,
-                    leagueRank: proRanked.indexOf(avgProfit) + 1,
+                    leagueRank: proRanked.indexOf(totalProfitWeighted) + 1,
                     leagueSize: proValues.length,
                     leagueMean: proMean,
                     leagueStd: proStd,

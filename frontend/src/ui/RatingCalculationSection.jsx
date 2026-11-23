@@ -156,16 +156,15 @@ export default function RatingCalculationSection({ calculation, ovpLeaguePeers, 
         <StatCalcCard
           label="PRO" title="Profit" score={pro.score}
           isOpen={openKey === 'pro'} onToggle={() => toggle('pro')}
-          emptyNote={pro.weightedAverageProfit == null ? 'Noch keine Trades' : undefined}
-          factors={pro.weightedAverageProfit == null ? (
+          emptyNote={pro.weightedTotalProfit == null ? 'Noch keine Trades' : undefined}
+          factors={pro.weightedTotalProfit == null ? (
             <EmptyState>Noch keine bewerteten Trades vorhanden – Wert bleibt neutral bei 50.</EmptyState>
           ) : (
             <FactorGrid>
-              <FactorChip value={fmtSignedEUR(pro.weightedAverageProfit)} label="Gewichteter Ø-Gewinn" highlight />
+              <FactorChip value={fmtSignedEUR(pro.weightedTotalProfit)} label="Profit" highlight />
               <FactorChip value={pro.completedTrades} label="Abgeschl. Trades" />
               <FactorChip value={pro.openPositions} label="Offene Positionen" />
               <FactorChip value={pro.orphanSales} label="Kaderverkäufe" />
-              {pro.saleTimingSampleSize > 0 && <FactorChip value={pro.saleTimingSampleSize} label="Verkaufszeitpunkte" />}
               <LeagueCompareBar percentile={pro.leaguePercentile} rank={pro.leagueRank} total={pro.leagueSize} accent={proAccent} />
             </FactorGrid>
           )}
@@ -203,10 +202,17 @@ export default function RatingCalculationSection({ calculation, ovpLeaguePeers, 
                 label="Ø der Liga"
               />
               <FactorChip value={pkt.points.toLocaleString('de-DE')} label="Liga-Punkte" />
-              <FactorChip
-                value={fmtEUR(pkt.ppmBasis === 'squadValue' ? pkt.managerSquadValue : pkt.totalSpent)}
-                label={pkt.ppmBasis === 'squadValue' ? 'Aktueller Kaderwert' : 'Investierte Summe (Fallback)'}
-              />
+              {pkt.ppmBasis === 'perMatchdayAverage' ? (
+                <FactorChip
+                  value={fmtEUR(pkt.averageMatchdaySquadValue)}
+                  label={`Ø Kaderwert/Spieltag (${pkt.matchdaysUsed})`}
+                />
+              ) : (
+                <FactorChip
+                  value={fmtEUR(pkt.ppmBasis === 'squadValue' ? pkt.managerSquadValue : pkt.totalSpent)}
+                  label={pkt.ppmBasis === 'squadValue' ? 'Aktueller Kaderwert (Fallback)' : 'Investierte Summe (Fallback)'}
+                />
+              )}
               <LeagueCompareBar percentile={pkt.leaguePercentile} rank={pkt.leagueRank} total={pkt.leagueSize} accent={pktAccent} />
               <LeaguePeerList peers={pktLeaguePeers} formatValue={fmtNum1} />
             </FactorGrid>
