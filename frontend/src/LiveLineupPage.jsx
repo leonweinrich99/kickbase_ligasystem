@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { RefreshCw, Radio, ChevronDown, Users } from 'lucide-react';
+import { RefreshCw, ChevronDown, Users } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import ManagerAvatar from './ui/ManagerAvatar';
 import PageHeader from './ui/PageHeader';
@@ -281,7 +281,10 @@ const LiveLineupPage = () => {
         <div className="flex items-center justify-between gap-3 mb-6">
           <div className="flex items-center gap-3 sm:gap-4 min-w-0">
             <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-[#ef4444]/10 flex items-center justify-center shrink-0">
-              <Radio size={22} className="text-[#ef4444]" strokeWidth={2.5} />
+              <span className="relative flex h-3.5 w-3.5 sm:h-4 sm:w-4">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ef4444] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3.5 w-3.5 sm:h-4 sm:w-4 bg-[#ef4444]"></span>
+              </span>
             </div>
             <PageHeader eyebrow={matchday ? `SPIELTAG ${matchday} · LIVE` : 'LIVE'} accentColor="#ef4444" title="Live Punkte" />
           </div>

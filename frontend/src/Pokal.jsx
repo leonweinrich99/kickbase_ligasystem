@@ -241,19 +241,28 @@ const Pokal = () => {
 
   const roundSchedule = data?.meta?.roundSchedule || {};
 
+  // Owner-Feedback 24.11.2026: "beim Pokal muss dann auch oben dahin
+  // gescrollt sein, damit es richtig aussieht" - der Umschalter muss nicht
+  // nur beim manuellen Wechsel (handleRoundChange), sondern auch beim
+  // automatischen Default auf die aktuelle Runde (siehe getCurrentRound
+  // unten) zur ausgewaehlten Runde scrollen, sonst steht man z.B. beim
+  // Viertelfinale, sieht aber noch den auf das Sechzehntelfinale
+  // gescrollten Umschalter.
+  const scrollRoundIntoView = (round, behavior = 'smooth') => {
+    if (!tabsRef.current) return;
+    const button = tabsRef.current.querySelector(`[data-round="${round}"]`);
+    if (button) {
+      button.scrollIntoView({ behavior, inline: 'center', block: 'nearest' });
+    }
+  };
+
   const handleRoundChange = (round) => {
     if (round === activeRound) return;
     const currentIndex = rounds.indexOf(activeRound);
     const newIndex = rounds.indexOf(round);
     setDirection(newIndex > currentIndex ? 1 : -1);
     setActiveRound(round);
-    
-    if (tabsRef.current) {
-      const button = tabsRef.current.querySelector(`[data-round="${round}"]`);
-      if (button) {
-        button.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-      }
-    }
+    scrollRoundIntoView(round);
   };
 
   useEffect(() => {
@@ -261,7 +270,11 @@ const Pokal = () => {
       .then((res) => res.json())
       .then((json) => {
         setData(json);
-        setActiveRound(getCurrentRound(json));
+        const current = getCurrentRound(json);
+        setActiveRound(current);
+        // "auto" statt "smooth": beim Laden soll der Umschalter direkt an
+        // der richtigen Stelle stehen, kein sichtbares Hin-Scrollen.
+        scrollRoundIntoView(current, 'auto');
       })
       .catch((err) => console.error("Error loading pokal data:", err));
 
