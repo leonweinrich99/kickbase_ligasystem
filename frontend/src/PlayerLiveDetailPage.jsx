@@ -42,9 +42,10 @@ const Divider = ({ label }) => (
   </div>
 );
 
-// Chronologische Event-Liste mit eingeschobenen "Halbzeit"/"Spielende"-
-// Teilern statt einer gebuendelten "Korrekturen"-Zusammenfassung - zeigt
-// jeden Punktabzug/-zuschlag einzeln, an der richtigen Stelle im Spielverlauf.
+// Umgekehrt chronologische Event-Liste (neueste Punkte/Nachspiel-Boni oben,
+// Spielbeginn unten) mit eingeschobenen "Spielende"/"Halbzeit"-Teilern statt
+// einer gebuendelten "Korrekturen"-Zusammenfassung - zeigt jeden Punktabzug/
+// -zuschlag einzeln, an der richtigen Stelle im Spielverlauf.
 const buildTimeline = (events, matchStatus, matchMinute) => {
   const sorted = [...events].sort((a, b) => a.minute - b.minute);
   const timeline = [];
@@ -67,7 +68,7 @@ const buildTimeline = (events, matchStatus, matchMinute) => {
   if (!ftDone && matchStatus === 2) {
     timeline.push({ divider: 'Spielende' });
   }
-  return timeline;
+  return timeline.reverse();
 };
 
 const PlayerLiveDetailPage = () => {
