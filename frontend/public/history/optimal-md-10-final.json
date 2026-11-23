@@ -1,8 +1,8 @@
 {
   "matchday": 10,
-  "totalPoints": 2641,
-  "totalBudget": 148091095,
-  "timestamp": "2026-11-22T01:10:36.446Z",
+  "totalPoints": 2963,
+  "totalBudget": 147410558,
+  "timestamp": "2026-11-23T01:34:09.374Z",
   "lineup": [
     {
       "id": "3019",
@@ -10,32 +10,32 @@
       "name": "Atubolu",
       "lastName": "Atubolu",
       "position": 1,
-      "marketValue": 14697272,
+      "marketValue": 14765503,
       "points": 236,
       "imagePath": "content/file/1a428dbd61524b48bb209d1ebee4ac6d.png",
       "teamName": "Frankfurt"
     },
     {
-      "id": "2736",
-      "teamId": 3,
-      "name": "Bensebaini",
-      "lastName": "Bensebaini",
+      "id": "1996",
+      "teamId": 10,
+      "name": "Friedl",
+      "lastName": "Friedl",
       "position": 2,
-      "marketValue": 5437300,
-      "points": 143,
-      "imagePath": "content/file/f2e48e2f879643559eb9d2cdb6db0d7a.png",
-      "teamName": "Dortmund"
+      "marketValue": 17263443,
+      "points": 257,
+      "imagePath": "content/file/7ab07056637e493d80590700542ee887.png",
+      "teamName": "Bremen"
     },
     {
-      "id": "4563",
-      "teamId": 7,
-      "name": "Badé",
-      "lastName": "Badé",
+      "id": "9754",
+      "teamId": 13,
+      "name": "Bah",
+      "lastName": "Bah",
       "position": 2,
-      "marketValue": 3812754,
-      "points": 164,
-      "imagePath": "content/file/80f11505e8d445ae827aefe485b1c4c7.png",
-      "teamName": "Leverkusen"
+      "marketValue": 7369099,
+      "points": 196,
+      "imagePath": "content/file/5627c3fa11834a97ae7c6963d68a09a6.png",
+      "teamName": "Augsburg"
     },
     {
       "id": "2141",
@@ -43,7 +43,7 @@
       "name": "Baku",
       "lastName": "Baku",
       "position": 2,
-      "marketValue": 17674496,
+      "marketValue": 17834420,
       "points": 302,
       "imagePath": "content/file/938a124759354a928af165b155e6925a.png",
       "teamName": "Leipzig"
@@ -54,7 +54,7 @@
       "name": "Nmecha",
       "lastName": "Nmecha",
       "position": 3,
-      "marketValue": 30226308,
+      "marketValue": 30352129,
       "points": 287,
       "imagePath": "content/file/f83b3a24df594aaf81be1d58da773656.png",
       "teamName": "Dortmund"
@@ -65,21 +65,21 @@
       "name": "Knauff",
       "lastName": "Knauff",
       "position": 3,
-      "marketValue": 2456273,
+      "marketValue": 2761390,
       "points": 202,
       "imagePath": "content/file/df49f152f9bc4fd99f45742758ff5cfc.png",
       "teamName": "Frankfurt"
     },
     {
-      "id": "7277",
-      "teamId": 4,
-      "name": "Chaïbi",
-      "lastName": "Chaïbi",
+      "id": "2846",
+      "teamId": 7,
+      "name": "Tillman",
+      "lastName": "Tillman",
       "position": 3,
-      "marketValue": 12962456,
-      "points": 183,
-      "imagePath": "content/file/774d9ee4bd994b9dae8672fbf45215fe.png",
-      "teamName": "Frankfurt"
+      "marketValue": 6779451,
+      "points": 185,
+      "imagePath": "content/file/04966a0af0e2477db734c91fdd98d4e1.png",
+      "teamName": "Leverkusen"
     },
     {
       "id": "7269",
@@ -87,21 +87,10 @@
       "name": "Tella",
       "lastName": "Tella",
       "position": 3,
-      "marketValue": 3813120,
+      "marketValue": 4157851,
       "points": 247,
       "imagePath": "content/file/e0df07546d38465080767efd17a0898e.png",
       "teamName": "Leverkusen"
-    },
-    {
-      "id": "4596",
-      "teamId": 43,
-      "name": "Gruda",
-      "lastName": "Gruda",
-      "position": 3,
-      "marketValue": 22468428,
-      "points": 247,
-      "imagePath": "content/file/fc98ceda9d134bd09d5526a600465611.png",
-      "teamName": "Leipzig"
     },
     {
       "id": "15199",
@@ -109,21 +98,32 @@
       "name": "Moreira",
       "lastName": "Moreira",
       "position": 4,
-      "marketValue": 16375759,
+      "marketValue": 16547725,
       "points": 441,
       "imagePath": "content/file/91b4b5c394a1464f98589ffa59af5aec.png",
       "teamName": "Leverkusen"
     },
     {
-      "id": "11886",
-      "teamId": 43,
-      "name": "Rômulo",
-      "lastName": "Rômulo",
+      "id": "608",
+      "teamId": 10,
+      "name": "Füllkrug",
+      "lastName": "Füllkrug",
       "position": 4,
-      "marketValue": 18166929,
-      "points": 189,
-      "imagePath": "content/file/040691ff56a547f291aae153a0681fac.png",
-      "teamName": "Leipzig"
+      "marketValue": 25430538,
+      "points": 287,
+      "imagePath": "content/file/b83a0c4ef29b40d99020bb11e9e1bc7f.png",
+      "teamName": "Bremen"
+    },
+    {
+      "id": "3228",
+      "teamId": 10,
+      "name": "Njinmah",
+      "lastName": "Njinmah",
+      "position": 4,
+      "marketValue": 4149009,
+      "points": 323,
+      "imagePath": "content/file/aecaedfbbfac4fc189856b5b5d560b2d.png",
+      "teamName": "Bremen"
     }
   ]
 }
