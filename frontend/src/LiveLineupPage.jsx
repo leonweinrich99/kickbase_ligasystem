@@ -56,6 +56,46 @@ const LiveLineupPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // TEST-Baustein (Owner-Wunsch 23.11.2026, "Test mit Live-Daten zum
+  // aktuellen Spiel in der La Liga... baue das kurz in die App ein um das zu
+  // ueberpruefen"): zeigt statt eines weiteren Kickbase-Managers den Kader
+  // eines ECHTEN Fussball-Teams mit Live-Punkten - beweist, dass derselbe
+  // Mechanismus auch ausserhalb Bundesliga/Kickbase-Fantasy funktioniert
+  // (siehe frontend/api/live-team.js). Bewusst deutlich als Test markiert,
+  // kein fester Bestandteil der normalen Ansicht.
+  const [testTeam, setTestTeam] = useState(null);
+  const [testLoading, setTestLoading] = useState(false);
+  const [testError, setTestError] = useState(null);
+
+  const loadTestTeam = useCallback(async () => {
+    setTestLoading(true);
+    setTestError(null);
+    try {
+      const res = await fetch('/api/live-team?competitionId=3');
+      if (!res.ok) throw new Error('Test-Daten konnten nicht geladen werden');
+      const json = await res.json();
+      setTestTeam(json);
+    } catch (e) {
+      setTestError(e.message || 'Unbekannter Fehler');
+    } finally {
+      setTestLoading(false);
+    }
+  }, []);
+
+  const testLineup = useMemo(() => {
+    if (!testTeam?.players?.length) return null;
+    const enriched = testTeam.players.map((p) => ({
+      id: p.id,
+      position: p.position || 3,
+      name: p.name,
+      lastName: p.name,
+      points: p.points ?? 0,
+      imagePath: p.imagePath || null,
+    }));
+    return buildLineupWithDummies(enriched);
+  }, [testTeam]);
+  const testTotalPoints = testTeam?.players?.reduce((sum, p) => sum + (p.points || 0), 0) ?? null;
+
   // Lineup-Daten fuer EINEN Manager laden (Startelf + Live-Punkte pro Spieler).
   const loadLineup = useCallback(async (league, userId) => {
     const res = await fetch(`/api/live-lineup?userId=${userId}&leagueKey=${league}`);
@@ -183,6 +223,34 @@ const LiveLineupPage = () => {
         )}
 
         {lineup && <LiveLineupPitch lineup={lineup} totalPoints={totalPoints} />}
+
+        {/* TEST-Baustein, siehe Kommentar oben bei testTeam/loadTestTeam */}
+        <div className="mt-10 pt-6 border-t border-dashed border-[#2e2e2e]">
+          <button
+            onClick={loadTestTeam}
+            disabled={testLoading}
+            className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-[#8b92a5] hover:text-white transition-colors disabled:opacity-50"
+          >
+            <RefreshCw size={13} className={testLoading ? 'animate-spin' : ''} />
+            🧪 Test: Live-Spiel La Liga laden
+          </button>
+          <p className="text-[#626978] text-xs mt-1">
+            Testet denselben Live-Mechanismus fuer ein echtes Fussball-Team statt eines Kickbase-Managers.
+          </p>
+
+          {testError && (
+            <div className="card-surface rounded-2xl p-5 text-center text-sm text-red-400 mt-4">{testError}</div>
+          )}
+
+          {testTeam && (
+            <>
+              <div className="mt-4 mb-3 text-sm font-bold text-gray-300">
+                {testTeam.teamName} · {testTeam.score} {testTeam.isLive ? `· LIVE ${testTeam.minute}'` : ''}
+              </div>
+              {testLineup && <LiveLineupPitch lineup={testLineup} totalPoints={testTotalPoints} />}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

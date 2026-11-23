@@ -71,6 +71,17 @@ export async function loginAndFindLeague(leagueKey) {
   return null;
 }
 
+// Nur Login, ohne Liga-Zuordnung - fuer Abfragen, die KEINE Kickbase-Liga
+// brauchen (z.B. echte Wettbewerbs-/Spieldaten wie La Liga, siehe
+// live-team.js). playercenter funktioniert nachweislich auch ohne leagueId.
+export async function loginAny() {
+  for (const account of getConfiguredAccounts()) {
+    const token = await login(account.email, account.pass);
+    if (token) return token;
+  }
+  return null;
+}
+
 export async function getJson(url, token) {
   const res = await fetch(url, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } });
   if (!res.ok) return null;
