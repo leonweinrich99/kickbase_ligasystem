@@ -31,13 +31,17 @@ function App() {
         <div className="min-h-screen bg-[#000000]">
           <ScrollToTop />
 
-          {/* Deckt die Safe-Area oben (Notch/Dynamic Island/Statusleiste) permanent
-              mit der Hintergrundfarbe ab - fix positioniert, damit hochgescrollter
-              Inhalt nicht darunter/dahinter sichtbar wird. */}
-          <div
-            className="fixed top-0 left-0 right-0 z-[100] pointer-events-none bg-[#000000]"
-            style={{ height: 'env(safe-area-inset-top, 0px)' }}
-          ></div>
+          {/* Progressiver iOS-Safe-Area-Blur (angelehnt an Apples Liquid-Glass
+              Scroll-Edge-Effekt ab iOS 26): statt eines harten schwarzen Balkens
+              gleiten hochgescrollte Inhalte weich und zunehmend unscharf unter
+              Notch / Dynamic Island aus. Auf Geraeten ohne Notch (safe-area=0)
+              automatisch 0px hoch und unsichtbar. */}
+          <div className="ios-top-progressive-blur" aria-hidden="true">
+            <div className="ios-top-blur-layer ios-top-blur-1" />
+            <div className="ios-top-blur-layer ios-top-blur-2" />
+            <div className="ios-top-blur-layer ios-top-blur-3" />
+            <div className="ios-top-blur-tint" />
+          </div>
 
           <TourProvider>
             <AuthGate>

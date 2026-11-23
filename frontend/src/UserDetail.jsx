@@ -551,7 +551,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
       )}
 
       {/* Header mit Zurueck-Button (Page-Look, wie Advisor::PlayerDetailView) */}
-      <div className="sticky top-0 z-40 bg-[#000000]/90 backdrop-blur-md px-4 sm:px-6 py-4 flex items-center justify-between border-b border-[#2e2e2e]/50">
+      <div className="sticky sticky-safe-top z-50 bg-[#000000]/90 backdrop-blur-md px-4 sm:px-6 py-4 flex items-center justify-between border-b border-[#2e2e2e]/50">
         <BackButton onClick={goBack} />
         <button
           onClick={() => setIsModalOpen(true)}

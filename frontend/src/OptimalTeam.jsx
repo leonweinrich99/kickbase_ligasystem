@@ -99,7 +99,7 @@ const OptimalTeam = ({ dataBase = '', routeBase = '' }) => {
   return (
     <div className="w-full bg-[#000000] min-h-screen relative flex flex-col pb-10">
       {/* Header mit Zurueck-Button (Page-Look, wie Advisor::PlayerDetailView) */}
-      <div className="sticky top-0 z-40 bg-[#000000]/90 backdrop-blur-md px-4 sm:px-6 py-4 flex items-center justify-between border-b border-[#2e2e2e]/50">
+      <div className="sticky sticky-safe-top z-50 bg-[#000000]/90 backdrop-blur-md px-4 sm:px-6 py-4 flex items-center justify-between border-b border-[#2e2e2e]/50">
         <BackButton onClick={goBack} />
         <div className="flex items-center gap-2 text-[#ff5c3e]">
           <Star size={16} strokeWidth={2.5} fill="#ff5c3e" />
