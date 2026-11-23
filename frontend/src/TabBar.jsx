@@ -1,24 +1,24 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Radio } from 'lucide-react';
 import ligaLogo from './assets/logo.png';
 import pokalLogo from './assets/pokal_logo.png';
 import accountLogo from './assets/account_logo.png';
 
-// Live-Punkte-Tab (Owner-Wunsch 24.11.2026: "als extra Tab unten vor der
-// Liga machen und mit einem roten Punkt der pulsiert, wenn man auf ihm ist")
-// - pulsierender roter Punkt (animate-ping-Ring + fester Kern) signalisiert
-// "live", erscheint nur solange der Tab aktiv ausgewaehlt ist.
+// Live-Punkte-Tab (Owner-Wunsch 24.11.2026: "nur den pulsierenden Punkt und
+// nicht das andere Icon") - der Punkt IST das Icon, kein zusaetzliches
+// Symbol dahinter. Gleiche w-6 h-6-Box wie die anderen Tabs, damit Label und
+// Abstand identisch bleiben; inaktiv ein gedaempfter grauer Punkt (passend
+// zur grayscale/opacity-Behandlung der anderen Icons), aktiv ein pulsierender
+// roter Punkt.
 const LiveIcon = ({ active }) => (
-  <span className="relative inline-flex">
-    <Radio className="w-6 h-6" strokeWidth={2.25} />
-    {active && (
-      <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
+  <div className="w-6 h-6 flex items-center justify-center">
+    <span className="relative flex h-3 w-3">
+      {active && (
         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-      </span>
-    )}
-  </span>
+      )}
+      <span className={`relative inline-flex rounded-full h-3 w-3 ${active ? 'bg-red-500' : 'bg-[#8b92a5] opacity-50'}`}></span>
+    </span>
+  </div>
 );
 
 const LigaIcon = ({ active }) => (

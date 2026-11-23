@@ -145,6 +145,32 @@ const RoundColumn = ({ matches, title, schedule, markFirst = false, leagueColors
 
 const rounds = ['Sechzehntelfinale', 'Achtelfinale', 'Viertelfinale', 'Halbfinale', 'Finale'];
 
+const ROUND_MATCHES_KEYS = {
+  Sechzehntelfinale: ['roundOf32Left', 'roundOf32Right'],
+  Achtelfinale: ['roundOf16Left', 'roundOf16Right'],
+  Viertelfinale: ['quarterFinalsLeft', 'quarterFinalsRight'],
+  Halbfinale: ['semiFinalsLeft', 'semiFinalsRight'],
+  Finale: ['final'],
+};
+
+// Owner-Wunsch 24.11.2026: "im Pokaltab immer in der aktuellen Runde
+// angezeigt, nicht am Anfang" - eine Runde gilt als "gestartet", sobald
+// mindestens eine Partie ein echtes Ergebnis hat (Sieger steht fest oder
+// Punkte > 0 - provisorisch waehrend eines laufenden Spieltags zaehlt
+// ebenfalls). Die zuletzt gestartete Runde wird beim Laden automatisch
+// ausgewaehlt, ohne Treffer bleibt es beim Sechzehntelfinale.
+const isRoundStarted = (matches) =>
+  (matches || []).some((m) => m.provisional || m.winner != null || m.score1 || m.score2);
+
+const getCurrentRound = (data) => {
+  for (let i = rounds.length - 1; i >= 0; i--) {
+    const keys = ROUND_MATCHES_KEYS[rounds[i]];
+    const matches = keys.flatMap((k) => data?.[k] || []);
+    if (isRoundStarted(matches)) return rounds[i];
+  }
+  return rounds[0];
+};
+
 const variants = {
   enter: (direction) => ({
     x: direction > 0 ? 50 : -50,
@@ -233,7 +259,10 @@ const Pokal = () => {
   useEffect(() => {
     fetch('/pokal-data.json')
       .then((res) => res.json())
-      .then((json) => setData(json))
+      .then((json) => {
+        setData(json);
+        setActiveRound(getCurrentRound(json));
+      })
       .catch((err) => console.error("Error loading pokal data:", err));
 
     // Für die Farbmarkierung: Zuordnung Name -> Liga-Farbe aus dem
