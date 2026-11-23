@@ -276,10 +276,26 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
       .catch(() => setAllPlayersMap(null));
   }, [mode]);
 
+  // liveLineupLoading ist WICHTIG fuer die Anzeige unten: ohne diesen Status
+  // wuerde waehrend des (langsameren, mehrere Kickbase-Live-Calls brauchenden)
+  // live-lineup-Fetches kurz die ALTE statische Startelf-Ansicht aufblitzen
+  // (startelfData kommt aus einer vorgenerierten Datei und ist praktisch
+  // sofort da), bevor sie dann auf die neue Live-Ansicht umspringt - genau
+  // das battelt das Owner-Feedback 23.11.2026: "im Managerprofil wird immer
+  // noch die alte Darstellung angezeigt, bevor das neue Design gezeigt wird".
+  // Mit diesem Status bleibt die Seite waehrend des Ladens im Loading-Zustand
+  // (siehe weiter unten) statt kurz die alte Ansicht zu zeigen.
   const [liveLineup, setLiveLineup] = useState(null);
+  const [liveLineupLoading, setLiveLineupLoading] = useState(true);
   useEffect(() => {
     let cancelled = false;
-    if (mode === 'archive' || !userData?.id) return () => { cancelled = true; };
+    if (mode === 'archive') return () => { cancelled = true; };
+    if (!userData?.id) return () => { cancelled = true; };
+    // Muss hier (statt in der Startelf-Anzeige abgeleitet) zurueckgesetzt
+    // werden, damit beim Managerwechsel (userData.id aendert sich) wieder
+    // "lade" statt der alten Live-Daten des VORHERIGEN Managers gezeigt wird.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLiveLineupLoading(true);
     fetch('/history/manager-ratings.json')
       .then((res) => res.json())
       .then((ratings) => {
@@ -288,7 +304,8 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
         return fetch(`/api/live-lineup?userId=${userData.id}&leagueKey=${leagueKey}`).then((res) => res.ok ? res.json() : null);
       })
       .then((json) => { if (!cancelled) setLiveLineup(json?.players?.length ? json : null); })
-      .catch(() => { if (!cancelled) setLiveLineup(null); });
+      .catch(() => { if (!cancelled) setLiveLineup(null); })
+      .finally(() => { if (!cancelled) setLiveLineupLoading(false); });
     return () => { cancelled = true; };
   }, [mode, userData?.id]);
 
@@ -541,7 +558,19 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
           )}
         </div>
 
-        {liveLineupEnriched ? (
+        {liveLineupLoading && mode !== 'archive' ? (
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <h3 className="text-lg font-semibold text-white">Startelf</h3>
+            </div>
+            <div
+              className="rounded-2xl overflow-hidden relative min-h-[500px] sm:min-h-[600px] flex items-center justify-center mt-4 shadow-2xl"
+              style={{ backgroundImage: 'radial-gradient(circle at center, #1a1a1a 0%, #050505 100%)' }}
+            >
+              <div className="text-[#626978] text-sm">Lade Live-Daten…</div>
+            </div>
+          </div>
+        ) : liveLineupEnriched ? (
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-4">
               <h3 className="text-lg font-semibold text-white">
