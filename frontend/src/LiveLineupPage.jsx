@@ -447,7 +447,7 @@ const LiveLineupPage = () => {
   const isBusy = ownLoading || refreshing || managerRefreshing || teamRefreshing;
 
   return (
-    <div className="min-h-screen bg-[#000000] p-4 sm:p-10">
+    <div className="min-h-screen bg-[#000000] p-4 sm:p-10 pb-28 sm:pb-28">
       <div className="max-w-[700px] mx-auto">
         <div className="flex items-center justify-between gap-3 mb-6">
           <div className="flex items-center gap-3 sm:gap-4 min-w-0">

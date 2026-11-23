@@ -189,7 +189,10 @@ const LiveMinuteScrubber = ({
               const isFive = m % 5 === 0;
               const isActive = m === activeMinute;
               const netDelta = minuteDeltas?.get(m) || 0;
-              const showLabel = isMajor || (isFifteen && Math.abs(m - maxMinute) >= 4);
+              const showLabel =
+                m === 0 ||
+                m === maxMinute ||
+                ((m === 45 || m === 90 || isFifteen) && Math.abs(m - maxMinute) >= 4);
 
               return (
                 <button

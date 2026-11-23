@@ -223,14 +223,13 @@ const AnimatedPoints = ({
       <span className="inline-flex items-center justify-end gap-1.5">
         {showDelta && (
           <span
-            key={activeDeltaKey}
+            key={`delta:${activeDeltaKey}`}
             className={`text-[10px] font-black leading-none px-1.5 py-0.5 rounded-full border tabular-nums live-delta-badge ${deltaPillStyle}`}
           >
             {deltaText}
           </span>
         )}
         <span
-          key={instant && showDelta ? activeDeltaKey : 'val'}
           className={`inline-block tabular-nums transition-colors duration-200 ${colorClass} ${className} ${directionClass}`}
         >
           {formatted}
@@ -242,14 +241,13 @@ const AnimatedPoints = ({
   return (
     <span className="relative inline-flex items-center justify-center">
       <span
-        key={instant && showDelta ? activeDeltaKey : 'val'}
         className={`inline-block tabular-nums transition-colors duration-200 ${colorClass} ${className} ${directionClass}`}
       >
         {formatted}
       </span>
       {showDelta && (
         <span
-          key={activeDeltaKey}
+          key={`delta:${activeDeltaKey}`}
           className={`absolute -bottom-3 left-1/2 -translate-x-1/2 text-[9px] font-black leading-none whitespace-nowrap pointer-events-none tabular-nums live-delta-badge ${deltaColor}`}
         >
           {deltaText}
