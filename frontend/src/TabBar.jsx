@@ -8,7 +8,7 @@ const LigaIcon = ({ active }) => (
   <img
     src={ligaLogo}
     alt="Liga"
-    className="w-7 h-7 object-contain transition-all duration-200"
+    className="w-6 h-6 object-contain transition-all duration-200"
     style={active ? {} : { filter: 'grayscale(1)', opacity: 0.5 }}
   />
 );
@@ -17,7 +17,7 @@ const PokalIcon = ({ active }) => (
   <img
     src={pokalLogo}
     alt="Pokal"
-    className="w-7 h-7 object-contain transition-all duration-200"
+    className="w-6 h-6 object-contain transition-all duration-200"
     style={active ? {} : { filter: 'grayscale(1)', opacity: 0.5 }}
   />
 );
@@ -26,7 +26,7 @@ const AccountIcon = ({ active }) => (
   <img
     src={accountLogo}
     alt="Account"
-    className="w-7 h-7 object-contain transition-all duration-200"
+    className="w-6 h-6 object-contain transition-all duration-200"
     style={active ? {} : { filter: 'grayscale(1)', opacity: 0.5 }}
   />
 );
@@ -55,8 +55,8 @@ const TabBar = () => {
   return (
     <nav
       data-tabbar="true"
-      className="fixed left-1/2 -translate-x-1/2 z-40 flex items-stretch gap-1 px-2.5 py-2.5 rounded-full bg-white/10 border border-white/25 backdrop-blur-xl backdrop-saturate-[1.8] shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_20px_40px_-16px_rgba(0,0,0,0.85)]"
-      style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
+      className="fixed left-1/2 -translate-x-1/2 z-40 flex items-stretch gap-1 px-2 py-1.5 rounded-full bg-white/10 border border-white/25 backdrop-blur-xl backdrop-saturate-[1.8] shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_20px_40px_-16px_rgba(0,0,0,0.85)]"
+      style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)' }}
     >
       {TABS.map((tab) => {
         const active = tab.match(pathname);
@@ -65,14 +65,14 @@ const TabBar = () => {
             key={tab.to}
             to={tab.to}
             data-tour={tab.tourId}
-            className={`relative flex flex-col items-center justify-center gap-1 px-5 py-2 rounded-full active:scale-95 transition-all duration-200 ${
+            className={`relative flex flex-col items-center justify-center gap-0.5 px-4 py-1.5 rounded-full active:scale-95 transition-all duration-200 ${
               active ? 'bg-[#ff5c3e]/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]' : ''
             }`}
           >
             <span className={active ? 'text-[#ff5c3e]' : 'text-[#8b92a5]'}>
               {React.createElement(tab.Icon, { active })}
             </span>
-            <span className={`text-[9px] font-semibold uppercase tracking-widest ${active ? 'text-white' : 'text-[#8b92a5]'}`}>
+            <span className={`text-[8px] font-semibold uppercase tracking-widest ${active ? 'text-white' : 'text-[#8b92a5]'}`}>
               {tab.label}
             </span>
           </Link>
