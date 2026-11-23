@@ -1,80 +1,41 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { RefreshCw, ChevronDown } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { RefreshCw } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import { useBackNavigation } from './useBackNavigation';
 import { BackButton } from './ui/CloseButton';
-import StatusPill from './ui/StatusPill';
+import PositionRow from './ui/PositionRow';
 
 // Live-Punkte der eigenen Startelf waehrend eines laufenden Spieltags (Owner-
 // Wunsch 23.11.2026) - On-Demand ueber frontend/api/live-lineup.js, KEIN
 // Hintergrund-Polling: Daten werden nur beim Oeffnen der Seite bzw. per
-// manuellem "Aktualisieren" neu abgerufen, genau wie in der echten
-// Kickbase-App unter Matches -> Aufstellungen -> Spieler.
+// manuellem "Aktualisieren" neu abgerufen.
+//
+// Nutzt BEWUSST dasselbe Spielfeld-Design wie die "Startelf"-Sektion im
+// Mannschaftsprofil (siehe UserDetail.jsx: radialer Feld-Hintergrund +
+// PositionRow/PlayerPhotoCard in ST->MF->ABW->TW-Reihen) statt einer eigenen
+// Listenansicht (Owner-Feedback 23.11.2026, "Kader Übersicht als Startelf").
+// Die Live-Punkte selbst kommen aus live-lineup.js, Name/Position/Foto aus
+// der ohnehin schon vorhandenen globalen Spielerdatenbank (all_players.json).
 
-const POSITION_LABEL = { 1: 'TW', 2: 'ABW', 3: 'MF', 4: 'ST' };
+const buildLineupWithDummies = (players) => {
+  const lineup = [...players];
+  let twCount = lineup.filter((p) => p.position === 1).length;
+  let awCount = lineup.filter((p) => p.position === 2).length;
+  let mfCount = lineup.filter((p) => p.position === 3).length;
+  let stCount = lineup.filter((p) => p.position === 4).length;
 
-// Gleiche 3er-Klassifizierung wie der match-status-Code aus der Kickbase-API
-// (0 = noch nicht gestartet, 1/8 = laeuft, 2 = beendet).
-const matchPhase = (mst) => {
-  if (mst === 2) return 'finished';
-  if (mst === 1 || mst === 8) return 'running';
-  return 'pending';
-};
-
-const PHASE_PILL = {
-  running: { variant: 'green', label: 'Live' },
-  finished: { variant: 'gray', label: 'Beendet' },
-  pending: { variant: 'yellow', label: 'Vor Anpfiff' },
-};
-
-const KEY_EVENT_LABEL = { 1: '⚽ Tor', 4: '🟨 Gelb', 5: '🟨 2. Gelb', 6: '🟥 Rot', 8: '🔄 Eingewechselt', 9: '🔄 Ausgewechselt' };
-
-const PlayerRow = ({ player, isOpen, onToggle }) => {
-  const phase = matchPhase(player.matchStatus);
-  const pill = PHASE_PILL[phase];
-  const pointsPositive = (player.points ?? 0) >= 0;
-
-  return (
-    <div className="card-surface rounded-2xl overflow-hidden">
-      <button onClick={onToggle} className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-[#1e1e1e] transition-colors">
-        <div className="w-9 h-9 rounded-lg bg-[#1f1f1f] border border-[#2e2e2e] flex items-center justify-center text-[10px] font-black text-[#8b92a5] shrink-0">
-          {POSITION_LABEL[player.position] || '?'}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="text-sm font-bold text-gray-100 truncate">{player.name || `Spieler ${player.playerId}`}</div>
-          <div className="flex items-center gap-2 mt-1">
-            <StatusPill variant={pill.variant}>{pill.label}</StatusPill>
-            {phase !== 'pending' && <span className="text-[10px] text-[#8b92a5] font-bold">{player.matchDisplay}'</span>}
-          </div>
-        </div>
-        <div className={`text-lg font-black shrink-0 ${pointsPositive ? 'text-green-400' : 'text-red-400'}`}>
-          {pointsPositive ? '+' : ''}{player.points ?? 0}
-        </div>
-        <ChevronDown size={16} className={`text-[#4b5563] shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-      </button>
-
-      {isOpen && (
-        <div className="px-4 pb-4 pt-1 border-t border-[#2a2a2a]">
-          {player.events?.length ? (
-            <div className="flex flex-col gap-1.5 mt-2">
-              {player.events.map((e, i) => (
-                <div key={i} className="flex items-center justify-between text-xs">
-                  <span className="text-[#8b92a5]">
-                    {e.minute}' {KEY_EVENT_LABEL[e.keyEvent] || ''}
-                  </span>
-                  <span className={`font-bold ${e.points >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    {e.points >= 0 ? '+' : ''}{e.points}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-xs text-[#626978] mt-2">Noch keine punkterelevanten Aktionen.</div>
-          )}
-        </div>
-      )}
-    </div>
-  );
+  let dummyIndex = 1;
+  while (lineup.length < 11) {
+    const dummy = { id: 'dummy-' + dummyIndex++, isDummy: true, name: 'Unbekannt', lastName: 'Unbekannt', liveScore: null, imagePath: null };
+    if (twCount < 1) { dummy.position = 1; twCount++; }
+    else if (awCount < 3) { dummy.position = 2; awCount++; }
+    else if (mfCount < 3) { dummy.position = 3; mfCount++; }
+    else if (stCount < 2) { dummy.position = 4; stCount++; }
+    else if (mfCount < 5) { dummy.position = 3; mfCount++; }
+    else { dummy.position = 4; stCount++; }
+    lineup.push(dummy);
+  }
+  return lineup;
 };
 
 const LiveLineupPage = () => {
@@ -83,17 +44,24 @@ const LiveLineupPage = () => {
   const goBack = useBackNavigation('/account');
 
   const [data, setData] = useState(null);
+  const [playerMap, setPlayerMap] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [openPlayerId, setOpenPlayerId] = useState(null);
 
   const load = useCallback(async () => {
     if (!kickbaseId) { setLoading(false); return; }
     setLoading(true);
     setError(null);
     try {
-      const ratingsRes = await fetch('/history/manager-ratings.json');
+      const [ratingsRes, playersRes] = await Promise.all([
+        fetch('/history/manager-ratings.json'),
+        fetch('/history/all_players.json'),
+      ]);
       const ratings = await ratingsRes.json();
+      const allPlayers = await playersRes.json();
+      const map = new Map(allPlayers.map((p) => [String(p.i), p]));
+      setPlayerMap(map);
+
       const leagueKey = ratings[kickbaseId]?.league;
       if (!leagueKey) throw new Error('Liga konnte nicht ermittelt werden');
 
@@ -110,7 +78,30 @@ const LiveLineupPage = () => {
 
   useEffect(() => { load(); }, [load]);
 
+  const lineup = useMemo(() => {
+    if (!data?.players?.length || !playerMap) return null;
+    const enriched = data.players
+      .filter((p) => !p.error)
+      .map((p) => {
+        const full = playerMap.get(String(p.playerId));
+        return {
+          id: p.playerId,
+          position: full?.pos || 3,
+          name: full ? `${full.fn || ''} ${full.ln || ''}`.trim() : p.name,
+          lastName: full?.ln || p.name,
+          liveScore: p.points ?? 0,
+          imagePath: full?.pim || null,
+        };
+      });
+    return buildLineupWithDummies(enriched);
+  }, [data, playerMap]);
+
   const totalPoints = data?.players?.reduce((sum, p) => sum + (p.points || 0), 0) ?? null;
+
+  const st = lineup?.filter((p) => p.position === 4) || [];
+  const mf = lineup?.filter((p) => p.position === 3 || p.position === 0) || [];
+  const aw = lineup?.filter((p) => p.position === 2) || [];
+  const tw = lineup?.filter((p) => p.position === 1) || [];
 
   return (
     <div className="w-full bg-[#000000] min-h-screen relative flex flex-col pb-10">
@@ -126,10 +117,10 @@ const LiveLineupPage = () => {
         </button>
       </div>
 
-      <div className="max-w-[600px] w-full mx-auto pt-6 pb-8 px-4 sm:px-6 flex flex-col gap-4">
-        <div>
-          <h2 className="text-[17px] sm:text-3xl font-black tracking-tight uppercase leading-[1.1] break-words">Live Punkte</h2>
-          <p className="text-sm text-[#8b92a5] mt-1">
+      <div className="max-w-[1400px] w-full mx-auto pt-6 sm:pt-8 pb-8 px-4 sm:px-6">
+        <div className="mb-3">
+          <h2 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight leading-tight">Live Punkte</h2>
+          <p className="text-[#8b92a5] font-medium text-sm mt-1">
             {data ? `Spieltag ${data.matchday}${totalPoints != null ? ` · ${totalPoints} Punkte bisher` : ''}` : 'Deine Startelf im aktuellen Spieltag'}
           </p>
         </div>
@@ -139,25 +130,31 @@ const LiveLineupPage = () => {
         )}
 
         {error && (
-          <div className="card-surface rounded-2xl p-5 text-center text-sm text-red-400">{error}</div>
+          <div className="card-surface rounded-2xl p-5 text-center text-sm text-red-400 mt-4">{error}</div>
         )}
 
         {!loading && !error && data?.players?.length === 0 && (
-          <div className="card-surface rounded-2xl p-5 text-center text-sm text-[#8b92a5]">
+          <div className="card-surface rounded-2xl p-5 text-center text-sm text-[#8b92a5] mt-4">
             {data.note || 'Keine Startelf-Daten verfügbar.'}
           </div>
         )}
 
-        {data?.players?.length > 0 && (
-          <div className="flex flex-col gap-2.5">
-            {data.players.map((p) => (
-              <PlayerRow
-                key={p.playerId}
-                player={p}
-                isOpen={openPlayerId === p.playerId}
-                onToggle={() => setOpenPlayerId(openPlayerId === p.playerId ? null : p.playerId)}
-              />
-            ))}
+        {lineup && (
+          <div
+            className="rounded-2xl overflow-hidden relative min-h-[500px] sm:min-h-[600px] flex flex-col justify-center py-6 sm:py-8 mt-4 shadow-2xl"
+            style={{ backgroundImage: 'radial-gradient(circle at center, #1a1a1a 0%, #050505 100%)' }}
+          >
+            <div className="absolute inset-0 pointer-events-none opacity-5 border border-white rounded-lg m-4 sm:m-6">
+              <div className="absolute top-1/2 left-0 w-full h-[1px] bg-white"></div>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 sm:w-32 sm:h-32 border border-white rounded-full"></div>
+            </div>
+
+            <div className="relative z-10 w-full px-2 sm:px-4 h-full flex flex-col justify-between">
+              <PositionRow players={st} />
+              <PositionRow players={mf} />
+              <PositionRow players={aw} />
+              <PositionRow players={tw} />
+            </div>
           </div>
         )}
       </div>

@@ -22,6 +22,7 @@ const PositionRow = ({ players, onPlayerClick }) => {
               name={p.name}
               displayName={p.lastName || p.name}
               badgeValue={p.points}
+              liveScore={p.liveScore}
               marketValue={p.marketValue}
               baseSize={baseSize}
               containerSize={containerSize}

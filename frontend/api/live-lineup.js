@@ -128,6 +128,12 @@ export default async function handler(req, res) {
         token
       );
       if (!pc) return { playerId, error: true };
+      // Die Kickbase-API liefert fuer jede Mini-Aktion (pro Pass, Zweikampf
+      // etc.) einen Punktewert in `events[].p`, aber KEIN Klartext-Label fuer
+      // die zugehoerige Aktion (nur einen vierstelligen `eti`-Code ohne
+      // bekannte Bedeutung) - eine "Erfolgreicher Pass +2"-Anzeige liesse sich
+      // damit nicht ehrlich bauen. Deshalb nur der Gesamtpunktestand je
+      // Spieler (siehe Chat 23.11.2026).
       return {
         playerId,
         name: pc.n,
@@ -139,12 +145,6 @@ export default async function handler(req, res) {
         opponentTeamId: pc.t1 === Number(pc.tid) ? pc.t2 : pc.t1,
         goalsFor: pc.t1g,
         goalsAgainst: pc.t2g,
-        events: (pc.events || []).map((e) => ({
-          points: e.p,
-          minute: e.mt,
-          eventTypeId: e.eti,
-          keyEvent: e.ke,
-        })),
       };
     })
   );

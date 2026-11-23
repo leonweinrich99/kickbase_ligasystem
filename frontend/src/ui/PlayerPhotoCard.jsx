@@ -6,8 +6,8 @@ import React from 'react';
 // denselben Kartenstil nutzen kann statt ihn zu duplizieren. Groesse/Zeilen-
 // Layout bleibt Sache des jeweiligen Aufrufers (Optimale Elf: feste 11er-
 // Reihen, Kader: variable Groesse pro Position).
-const PlayerPhotoCard = ({ imagePath, name, displayName, badgeValue, marketValue, baseSize = 'w-14 h-14 sm:w-16 sm:h-16', containerSize = 'w-[75px] sm:w-[90px]', highlighted = false, onClick }) => (
-  <div 
+const PlayerPhotoCard = ({ imagePath, name, displayName, badgeValue, liveScore, marketValue, baseSize = 'w-14 h-14 sm:w-16 sm:h-16', containerSize = 'w-[75px] sm:w-[90px]', highlighted = false, onClick }) => (
+  <div
     className={`relative flex flex-col items-center group ${containerSize} ${onClick ? 'cursor-pointer hover:scale-105 transition-transform' : ''}`}
     onClick={onClick}
   >
@@ -25,6 +25,16 @@ const PlayerPhotoCard = ({ imagePath, name, displayName, badgeValue, marketValue
       {badgeValue != null && (
         <div className="absolute -bottom-1.5 -right-1.5 bg-green-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-md border-2 border-[#202020] shadow-xl flex items-center justify-center min-w-[26px] z-20">
           {badgeValue}
+        </div>
+      )}
+      {/* Live-Punkte: oben rechts, gross, ohne Vorzeichen (Owner-Wunsch
+          23.11.2026) - separat von badgeValue, damit andere Seiten (Optimale
+          Elf etc.) unveraendert bleiben. */}
+      {liveScore != null && (
+        <div
+          className={`absolute -top-2 -right-2 text-white text-sm sm:text-base font-black px-1.5 py-0.5 rounded-md border-2 border-[#202020] shadow-xl z-20 ${liveScore < 0 ? 'bg-red-500' : 'bg-green-500'}`}
+        >
+          {liveScore}
         </div>
       )}
     </div>
