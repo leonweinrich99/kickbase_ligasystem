@@ -2,7 +2,7 @@ import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { useBackNavigation } from './useBackNavigation';
 import { BackButton } from './ui/CloseButton';
-import { pointColor } from './ui/LivePlayerCircle';
+import AnimatedPoints from './ui/AnimatedPoints';
 
 // Eigene Seite statt Overlay/Modal fuer die Live-Punkte-Event-Liste eines
 // Spielers (Owner-Wunsch 23.11.2026: "als extra Seite machen und nicht als
@@ -152,8 +152,12 @@ const PlayerLiveDetailPage = () => {
 
             <div className="absolute inset-x-0 bottom-0 flex flex-col items-center px-4 sm:px-6 pb-4">
               <div className="text-lg font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">{player.lastName || player.name}</div>
-              <div className={`text-6xl sm:text-7xl font-black leading-none mt-1 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] ${pointColor(player.points)}`}>
-                {player.points ?? '–'}
+              <div className="mt-1">
+                <AnimatedPoints
+                  value={player.points}
+                  usePointColor
+                  className="text-6xl sm:text-7xl font-black leading-none drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]"
+                />
               </div>
 
               {hasScore && (
