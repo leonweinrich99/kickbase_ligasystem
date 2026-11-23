@@ -200,14 +200,15 @@ body {
 }
 
 /* iOS PWA Progressive Top Blur (Liquid-Glass-Scroll-Edge-Effekt zur Notch/Dynamic Island):
-   Hoehe skaliert automatisch mit env(safe-area-inset-top) -> 0px auf Desktop,
-   ~68px auf Notch-iPhones, ~85px auf Dynamic-Island-iPhones. */
+   Bleibt strikt innerhalb von env(safe-area-inset-top), damit Seitenueberschriften
+   im ungescrollten Zustand 100% scharf bleiben und erst beim Hochscrollen weich
+   hinter Notch / Dynamic Island ausblenden. */
 .ios-top-progressive-blur {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  height: calc(env(safe-area-inset-top, 0px) * 1.45);
+  height: env(safe-area-inset-top, 0px);
   z-index: 40;
   pointer-events: none;
   overflow: hidden;
