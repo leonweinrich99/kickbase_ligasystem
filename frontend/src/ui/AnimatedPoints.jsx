@@ -7,6 +7,15 @@ const isReducedMotion = () =>
   window.matchMedia &&
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+// Natuerliche Easing-Kurve (Mischung aus easeOutCubic + easeInOutCubic):
+// startet ohne Verzoegerung, bleibt in der Mitte gut lesbar und landet
+// weich auf den letzten Ziffern.
+const easeNatural = (p) => {
+  const easeOutCubic = 1 - Math.pow(1 - p, 3);
+  const easeInOutCubic = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+  return 0.65 * easeOutCubic + 0.35 * easeInOutCubic;
+};
+
 // Animierte Punktzahl fuer Live-Ansichten:
 // 1) Initialer Aufruf (`animateOnMount`, Standard: true): zaehlt beim ersten
 //    Einblenden sanft von 0 auf den aktuellen Stand (ohne Delta-Badge).
@@ -75,7 +84,7 @@ const AnimatedPoints = ({
       const from = previousValue;
       const to = value;
       const diff = to - from;
-      const duration = Math.min(1100, Math.max(600, 520 + Math.abs(diff) * 12));
+      const duration = Math.min(1550, Math.max(950, 850 + Math.abs(diff) * 18));
 
       let rafId = null;
       let settleTimeoutId = null;
@@ -89,7 +98,7 @@ const AnimatedPoints = ({
         }
         const elapsed = timestamp - startTime;
         const progress = Math.min(1, elapsed / duration);
-        const eased = 1 - Math.pow(1 - progress, 3);
+        const eased = easeNatural(progress);
         const current = Math.round(from + diff * eased);
         currentDisplayedRef.current = current;
         setDisplayValue(current);
@@ -105,7 +114,7 @@ const AnimatedPoints = ({
           settleTimeoutId = window.setTimeout(() => {
             setDelta(null);
             setPhase('idle');
-          }, 1800);
+          }, 1900);
         }
       };
 
@@ -124,7 +133,7 @@ const AnimatedPoints = ({
       const from = typeof currentDisplayedRef.current === 'number' ? currentDisplayedRef.current : 0;
       const to = value;
       const diff = to - from;
-      const duration = Math.min(850, Math.max(480, 460 + Math.min(Math.abs(diff), 400) * 0.95));
+      const duration = Math.min(1700, Math.max(1050, 950 + Math.min(Math.abs(diff), 450) * 1.65));
 
       let rafId = null;
       let startTime = null;
@@ -135,7 +144,7 @@ const AnimatedPoints = ({
         }
         const elapsed = timestamp - startTime;
         const progress = Math.min(1, elapsed / duration);
-        const eased = 1 - Math.pow(1 - progress, 3);
+        const eased = easeNatural(progress);
         const current = Math.round(from + diff * eased);
         currentDisplayedRef.current = current;
         setDisplayValue(current);
