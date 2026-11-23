@@ -282,6 +282,9 @@ API_FOOTBALL_SEASON = int(env_or_default("API_FOOTBALL_SEASON", "2026"))
 OUTPUT_PATH = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "..", "..", "frontend", "public", "advisor-data.json"
 )
+HISTORY_OUTPUT_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "..", "..", "frontend", "public", "player-history.json"
+)
 
 
 def df_records(df, column_map):
@@ -348,14 +351,13 @@ def history_key(player_id):
     return str(player_id) if player_id is not None else None
 
 
-def build_history_by_player(player_df, days=HISTORY_DAYS):
-    """Baut je Spieler eine kompakte Marktwert-/Punkte-Historie der letzten
-    `days` Tage (fuer den Marktwert-Chart auf Klick einer Spielerkarte).
+def build_history_by_player(player_df, days=None):
+    """Baut je Spieler eine kompakte Marktwert-/Punkte-Historie (fuer den
+    Marktwert-Chart auf Klick einer Spielerkarte).
 
     Format bewusst als Tupel-Array [datum, marktwert, punkte] statt als
     Liste von Objekten mit Schluesseln - spart bei hunderten Spielern x
-    mehreren Wochen Historie spuerbar JSON-Groesse (keine wiederholten
-    Feldnamen pro Eintrag).
+    mehreren hundert Tagen spuerbar JSON-Groesse.
     """
 
     if player_df.empty:
@@ -367,13 +369,70 @@ def build_history_by_player(player_df, days=HISTORY_DAYS):
 
     history = {}
     for player_id, group in cols.groupby("player_id"):
-        recent = group.tail(days)
-        history[history_key(player_id)] = [
-            [row.date, None if pd.isna(row.mv) else round(float(row.mv)), None if pd.isna(row.p) else int(row.p)]
-            for row in recent.itertuples()
-        ]
+        recent = group.tail(days) if days else group
+        entries = []
+        for row in recent.itertuples():
+            mv_val = None if pd.isna(row.mv) else round(float(row.mv))
+            p_val = None if pd.isna(row.p) else int(row.p)
+            if mv_val is None and p_val is None:
+                continue
+            entries.append([row.date, mv_val, p_val])
+        if entries:
+            history[history_key(player_id)] = entries
 
     return history
+
+
+def load_existing_history(path=HISTORY_OUTPUT_PATH):
+    """Liest die bereits gespeicherte Langzeit-Historie aus player-history.json,
+    damit aeltere Tage (>365 Tage) bei zukuenftigen Laeufen nie verloren gehen."""
+
+    if not os.path.exists(path):
+        return {}
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return data if isinstance(data, dict) else {}
+    except Exception as e:
+        print(f"Warning: Bestehende player-history.json konnte nicht geladen werden: {e}")
+        return {}
+
+
+def merge_player_histories(existing, fresh):
+    """Fuehrt bestehende Langzeit-Historie und frische 365-Tage-Daten pro
+    Spieler zusammen (dedupliziert nach Datum, frische Werte haben Vorrang)."""
+
+    merged = {}
+    all_ids = set(existing.keys()) | set(fresh.keys())
+    for pid in all_ids:
+        by_date = {}
+        for row in existing.get(pid) or []:
+            if not isinstance(row, list) or len(row) < 2 or not row[0]:
+                continue
+            mv_val = row[1]
+            p_val = row[2] if len(row) > 2 else None
+            if mv_val is None and p_val is None:
+                continue
+            by_date[str(row[0])] = [str(row[0]), mv_val, p_val]
+        for row in fresh.get(pid) or []:
+            if not isinstance(row, list) or len(row) < 2 or not row[0]:
+                continue
+            mv_val = row[1]
+            p_val = row[2] if len(row) > 2 else None
+            if mv_val is None and p_val is None:
+                continue
+            prev = by_date.get(str(row[0]))
+            if prev is not None:
+                by_date[str(row[0])] = [
+                    str(row[0]),
+                    mv_val if mv_val is not None else prev[1],
+                    p_val if p_val is not None else prev[2],
+                ]
+            else:
+                by_date[str(row[0])] = [str(row[0]), mv_val, p_val]
+        if by_date:
+            merged[pid] = [by_date[d] for d in sorted(by_date.keys())]
+    return merged
 
 
 def build_player_stats(player_df):
@@ -504,10 +563,8 @@ def build_market_payload(token, league_id, live_predictions_df, history_by_playe
         "expiring_today": "expiringToday",
     })
 
-    if history_by_player:
-        for entry in records:
-            entry["history"] = history_by_player.get(history_key(entry.get("playerId")), [])
-            entry["onMarket"] = True
+    for entry in records:
+        entry["onMarket"] = True
     _attach_player_stats(records, player_stats)
     _attach_predicted_probability(records, predicted_probabilities)
     _attach_football_enrichment(records, football_enrichment)
@@ -582,10 +639,8 @@ def build_squad_records(token, league_id, live_predictions_df, history_by_player
         "image_path": "imagePath",
     })
 
-    if history_by_player:
-        for entry in records:
-            entry["history"] = history_by_player.get(history_key(entry.get("playerId")), [])
-            entry["inSquad"] = True
+    for entry in records:
+        entry["inSquad"] = True
     _attach_player_stats(records, player_stats)
     _attach_predicted_probability(records, predicted_probabilities)
     _attach_football_enrichment(records, football_enrichment)
@@ -680,9 +735,6 @@ def build_all_players_payload(live_predictions_df, history_by_player=None, playe
         "image_path": "imagePath",
     })
 
-    if history_by_player:
-        for entry in records:
-            entry["history"] = history_by_player.get(history_key(entry.get("playerId")), [])
     _attach_player_stats(records, player_stats)
     _attach_predicted_probability(records, predicted_probabilities)
     _attach_football_enrichment(records, football_enrichment)
@@ -906,6 +958,13 @@ def main():
 
     with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
         json.dump(result, f, ensure_ascii=False, indent=2)
+
+    if history_by_player:
+        existing_history = load_existing_history(HISTORY_OUTPUT_PATH)
+        merged_history = merge_player_histories(existing_history, history_by_player)
+        with open(HISTORY_OUTPUT_PATH, "w", encoding="utf-8") as f:
+            json.dump(merged_history, f, ensure_ascii=False, separators=(",", ":"))
+        print(f"Langzeit-Historie aktualisiert: {len(merged_history)} Spieler unter {os.path.abspath(HISTORY_OUTPUT_PATH)}")
 
     save_image_cache()
     print(f"\nFertig. Ergebnis gespeichert unter: {os.path.abspath(OUTPUT_PATH)}")

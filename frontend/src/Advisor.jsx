@@ -82,10 +82,23 @@ const formatSignedCompactMoney = (val) => {
   return `${sign}${Math.round(val / 1000)}k €`;
 };
 
-const formatShortDate = (dateStr) => {
+const formatShortDate = (dateStr, withYear = false) => {
   if (!dateStr) return '';
-  const [, month, day] = dateStr.split('-');
-  return `${day}.${month}.`;
+  const [year, month, day] = dateStr.split('-');
+  return withYear && year ? `${day}.${month}.${year.slice(2)}` : `${day}.${month}.`;
+};
+
+// Zentraler, gecachter Loader fuer die deduplizierte Langzeit-Marktwerthistorie
+// (frontend/public/player-history.json) - wird einmal pro Sitzung geladen und
+// von PlayerDetailView (im Advisor, Manager-Profil & AccountStats) geteilt.
+let playerHistoryPromise = null;
+const loadPlayerHistoryMap = () => {
+  if (!playerHistoryPromise) {
+    playerHistoryPromise = fetch(`/player-history.json?t=${Date.now()}`)
+      .then((res) => (res.ok ? res.json() : {}))
+      .catch(() => ({}));
+  }
+  return playerHistoryPromise;
 };
 
 // Historie kommt aus Platzgruenden als kompaktes Tupel-Array [datum, mv, punkte]
@@ -440,7 +453,7 @@ const ChartTooltip = ({ active, payload, label }) => {
   return (
     <div className="bg-[#0a0a0a] border border-[#2e2e2e] rounded-xl px-3 py-2 shadow-xl">
       <div className="text-[10px] text-[#8b92a5] mb-1">
-        {formatShortDate(label)}
+        {formatShortDate(label, true)}
         {point.isPredicted && " (Prognose)"}
       </div>
       <div className={`text-sm font-bold ${point.isPredicted ? 'text-[#eab308]' : 'text-cyan-400'}`}>
@@ -613,10 +626,29 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, 
     };
   }, []);
 
-  const fullBaseHistory = normalizeHistory(player.history);
+  const [remoteHistory, setRemoteHistory] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    loadPlayerHistoryMap().then((map) => {
+      if (cancelled || !map) return;
+      const list = map[String(player.playerId)];
+      if (Array.isArray(list) && list.length > 0) {
+        setRemoteHistory(list);
+      }
+    });
+    return () => { cancelled = true; };
+  }, [player.playerId]);
+
+  const fullBaseHistory = useMemo(() => {
+    const raw = (remoteHistory && remoteHistory.length >= (player.history?.length || 0))
+      ? remoteHistory
+      : player.history;
+    return normalizeHistory(raw).filter((pt) => pt && pt.mv !== null && pt.mv !== undefined);
+  }, [remoteHistory, player.history]);
   const [timeRange, setTimeRange] = useState('3m');
   
   const baseHistory = useMemo(() => {
+    if (timeRange === 'max') return fullBaseHistory;
     let days = 365;
     if (timeRange === '1w') days = 7;
     else if (timeRange === '1m') days = 30;
@@ -773,7 +805,7 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, 
                     fontSize={9}
                     tickLine={false}
                     axisLine={false}
-                    tickFormatter={formatShortDate}
+                    tickFormatter={(d) => formatShortDate(d, timeRange === '1y' || timeRange === 'max')}
                     minTickGap={30}
                   />
                   <YAxis
@@ -806,14 +838,21 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, 
 
           {/* Time Toggles */}
           <div className="px-4 sm:px-6 mb-8">
-            <div className="flex justify-between items-center max-w-[260px] mx-auto border-b border-[#2e2e2e] pb-2">
-              {['1w', '1m', '3m', '6m', '1y'].map((range) => (
+            <div className="flex justify-between items-center max-w-[310px] mx-auto border-b border-[#2e2e2e] pb-2">
+              {[
+                { key: '1w', label: '1W' },
+                { key: '1m', label: '1M' },
+                { key: '3m', label: '3M' },
+                { key: '6m', label: '6M' },
+                { key: '1y', label: '1J' },
+                { key: 'max', label: 'MAX' },
+              ].map((range) => (
                 <button
-                  key={range}
-                  onClick={() => setTimeRange(range)}
-                  className={`text-xs sm:text-[13px] font-medium pb-2 -mb-[9px] transition-colors border-b-2 ${timeRange === range ? 'text-white border-white' : 'text-[#6b7280] border-transparent hover:text-gray-300'}`}
+                  key={range.key}
+                  onClick={() => setTimeRange(range.key)}
+                  className={`text-xs sm:text-[13px] font-medium pb-2 -mb-[9px] transition-colors border-b-2 ${timeRange === range.key ? 'text-white border-white' : 'text-[#6b7280] border-transparent hover:text-gray-300'}`}
                 >
-                  {range.toUpperCase()}
+                  {range.label}
                 </button>
               ))}
             </div>
