@@ -40,7 +40,7 @@ const LivePlayerCircle = ({
       className={`relative flex flex-col items-center ${containerSize} ${onClick ? 'cursor-pointer hover:scale-105 transition-transform' : ''}`}
       onClick={onClick}
     >
-      <div className={`relative ${size} rounded-full ${imagePath ? '' : 'bg-[#202020]'} overflow-hidden flex items-center justify-center shadow-lg ring-2 ring-[#2a2a2a]`}>
+      <div className={`relative ${size} rounded-full ${imagePath ? '' : 'bg-[#202020]'} overflow-hidden flex items-center justify-center shadow-md ring-1 ring-white/15`}>
         {imagePath ? (
           <img
             src={`https://kickbase.b-cdn.net/${imagePath}`}
@@ -49,12 +49,12 @@ const LivePlayerCircle = ({
             onError={(e) => { e.target.style.display = 'none'; }}
           />
         ) : (
-          <div className="text-gray-500 font-bold text-xs uppercase">{name?.substring(0, 2)}</div>
+          <div className="text-gray-500 font-semibold text-xs uppercase">{name?.substring(0, 2)}</div>
         )}
       </div>
 
       <div className="mt-1.5 text-center w-full">
-        <div className="text-[9px] sm:text-[10px] font-bold text-gray-300 truncate w-full">
+        <div className="text-[9px] sm:text-[10px] font-medium text-gray-300 truncate w-full">
           {displayName || name}
         </div>
         <div className="leading-tight">
@@ -66,7 +66,7 @@ const LivePlayerCircle = ({
             instantDelta={instantDelta}
             instantKey={instantKey}
             usePointColor
-            className="text-base sm:text-lg font-black leading-tight"
+            className="text-base sm:text-lg font-extrabold leading-tight"
             deltaPlacement="bottom"
           />
         </div>

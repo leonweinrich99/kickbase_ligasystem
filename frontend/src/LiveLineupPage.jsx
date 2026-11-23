@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { RefreshCw, ChevronDown, Users } from 'lucide-react';
+import { RefreshCw, ChevronDown } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import ManagerAvatar from './ui/ManagerAvatar';
 import PageHeader from './ui/PageHeader';
@@ -41,43 +41,63 @@ const COMPETITIONS = [
   { id: '9', name: 'MLS' },
 ];
 
-const RankingList = ({ ranking, selectedUserId, onSelect, prevPointsMap, animId }) => (
-  <div className="card-surface rounded-2xl overflow-hidden divide-y divide-[#2a2a2a]">
+const LEAGUE_COLORS = {
+  L1: '#4ba6ff',
+  L2: '#ff5c3e',
+  L3: '#22c55e',
+};
+
+// Einheitliche Karten-Darstellung fuer das Live-Ranking, identisch zur
+// UserRow im Liga-Tab (Dashboard.jsx): einzelne card-surface-Kacheln mit
+// Rang, 40px Avatar, Manager-Name und rechts Punktzahl + "PUNKTE"-Untertitel.
+const RankingList = ({ ranking, selectedUserId, onSelect, prevPointsMap, animId, accentColor = '#ff5c3e' }) => (
+  <div className="flex flex-col">
     {ranking.map((r, i) => {
       const isSelected = r.userId === selectedUserId;
       return (
         <button
           key={r.userId}
+          type="button"
           onClick={() => onSelect(r.userId)}
-          className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${isSelected ? 'bg-[#1e1e1e]' : 'hover:bg-[#171717]'}`}
+          className={`w-full flex items-center p-3 mb-2.5 card-surface rounded-[14px] shadow-sm text-left relative overflow-hidden transition-all active:scale-[0.99] cursor-pointer ${
+            isSelected ? 'border-[#ff5c3e]/60 bg-[#1e1e1e]' : 'hover:border-[#ff5c3e]/50 hover:bg-[#202020]'
+          }`}
         >
-          <span className="text-xs font-black text-[#626978] w-5 shrink-0">{i + 1}</span>
-          <ManagerAvatar name={r.name} size={32} ringColor={isSelected ? '#ff5c3e' : undefined} />
-          <span className="text-sm font-bold text-gray-100 flex-1 truncate">{r.name}</span>
-          <AnimatedPoints
-            value={r.livePoints}
-            previousValue={prevPointsMap?.[String(r.userId)]}
-            animKey={animId != null ? `${animId}:rank:${r.userId}` : null}
-            usePointColor
-            className="text-base font-black"
-            deltaPlacement="left"
-          />
+          <div className="w-8 flex justify-center items-center text-xs font-semibold text-[#8b92a5] shrink-0">
+            {i + 1}
+          </div>
+          <div className="w-10 h-10 rounded-full ml-2 overflow-hidden border border-white/10 shrink-0">
+            <ManagerAvatar name={r.name} size={40} ringColor={isSelected ? '#ff5c3e' : undefined} />
+          </div>
+          <div className="ml-3 flex-1 flex flex-col justify-center min-w-0">
+            <div className="text-[15px] font-semibold tracking-wide text-gray-100 truncate">{r.name}</div>
+          </div>
+          <div className="text-right mr-2 shrink-0">
+            <div className="text-[17px] font-bold leading-none" style={{ color: accentColor }}>
+              <AnimatedPoints
+                value={r.livePoints}
+                previousValue={prevPointsMap?.[String(r.userId)]}
+                animKey={animId != null ? `${animId}:rank:${r.userId}` : null}
+                format={(n) => n.toLocaleString('de-DE')}
+                className="text-[17px] font-bold"
+                deltaPlacement="left"
+              />
+            </div>
+            <div className="text-[10px] font-semibold text-[#626978] tracking-widest mt-1 uppercase">Punkte</div>
+          </div>
         </button>
       );
     })}
   </div>
 );
 
-// Kompakte Auswahl-Zeile statt dauerhaft sichtbarer Liste/Raster (Owner-
-// Feedback 24.11.2026: "ich finde es nicht gut wenn man alle Manager sieht
-// und dann darunter noch den Kader... beim echten Team ueber einen Button
-// auswaehlen, dann soll hauptsaechlich der Kader angezeigt werden") - toggelt
-// die Auswahl-Ansicht auf/zu, sobald etwas ausgewaehlt ist steht nur noch
-// diese eine Zeile zwischen Umschalter und Kader.
+// Kompakte Auswahl-Zeile statt dauerhaft sichtbarer Liste (Owner-Feedback
+// 24.11.2026) - toggelt die Manager-Liste auf/zu, im selben Karten-Stil.
 const SelectorButton = ({ onClick, children }) => (
   <button
+    type="button"
     onClick={onClick}
-    className="w-full flex items-center gap-3 card-surface rounded-2xl px-4 py-3 mb-4 hover:bg-[#171717] transition-colors"
+    className="w-full flex items-center gap-3 card-surface rounded-[14px] px-4 py-3 mb-4 hover:border-[#ff5c3e]/50 hover:bg-[#1a1a1a] transition-colors"
   >
     {children}
     <ChevronDown size={16} className="text-[#626978] shrink-0" />
@@ -85,7 +105,7 @@ const SelectorButton = ({ onClick, children }) => (
 );
 
 const ModeSwitch = ({ mode, onChange }) => (
-  <div className="flex gap-2 bg-[#171717] border border-[#2e2e2e] rounded-xl p-1 mb-5 overflow-x-auto no-scrollbar">
+  <div className="flex gap-1.5 bg-[#171717] border border-[#2e2e2e] rounded-xl p-1 overflow-x-auto no-scrollbar">
     {[
       { id: 'own', label: 'Mein Kader' },
       { id: 'managers', label: 'Liga-Manager' },
@@ -93,8 +113,13 @@ const ModeSwitch = ({ mode, onChange }) => (
     ].map((opt) => (
       <button
         key={opt.id}
+        type="button"
         onClick={() => onChange(opt.id)}
-        className={`px-4 py-2 rounded-lg whitespace-nowrap text-xs font-bold transition-all flex-1 ${mode === opt.id ? 'bg-white text-black' : 'text-[#8b92a5] hover:text-white'}`}
+        className={`px-3 py-2 rounded-lg whitespace-nowrap text-xs tracking-wide transition-all flex-1 ${
+          mode === opt.id
+            ? 'bg-white text-black font-semibold shadow-sm'
+            : 'text-[#8b92a5] font-medium hover:text-white'
+        }`}
       >
         {opt.label}
       </button>
@@ -148,9 +173,7 @@ const LiveLineupPage = () => {
   const [managerPickerOpen, setManagerPickerOpen] = useState(true);
   const managerReqRef = useRef(0);
 
-  // "teams": Wettbewerb + echtes Team waehlen. teamsPickerOpen startet
-  // geschlossen (Default false) - erst ein Button oeffnet die Auswahl, nach
-  // der Teamwahl schliesst sie sich wieder automatisch.
+  // "teams": Wettbewerb + horizontale Durchscroll-Kacheln mit Vereinslogos.
   const [competitionId, setCompetitionId] = useState('1');
   const [teamsList, setTeamsList] = useState(null);
   const [teamsLoading, setTeamsLoading] = useState(false);
@@ -162,7 +185,6 @@ const LiveLineupPage = () => {
   const [teamLoading, setTeamLoading] = useState(false);
   const [teamRefreshing, setTeamRefreshing] = useState(false);
   const [teamError, setTeamError] = useState(null);
-  const [teamsPickerOpen, setTeamsPickerOpen] = useState(false);
   const teamReqRef = useRef(0);
 
   // Lineup-Daten fuer EINEN Kickbase-Manager laden (Startelf + Live-Punkte pro Spieler).
@@ -284,7 +306,6 @@ const LiveLineupPage = () => {
 
   const selectTeam = useCallback(async (teamId, forceRefresh = false) => {
     setSelectedTeamId(teamId);
-    setTeamsPickerOpen(false);
     setTeamError(null);
 
     const reqId = ++teamReqRef.current;
@@ -445,31 +466,35 @@ const LiveLineupPage = () => {
   const displayedTeamTotalPoints = teamLineup ? teamTotalPoints : (teamCached?.totalPoints ?? null);
   const displayedTeamMeta = teamData || teamCached || null;
   const isBusy = ownLoading || refreshing || managerRefreshing || teamRefreshing;
+  const leagueAccentColor = LEAGUE_COLORS[leagueKey] || '#4ba6ff';
 
   return (
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10 pb-28 sm:pb-28">
       <div className="max-w-[700px] mx-auto">
-        <div className="flex items-center justify-between gap-3 mb-6">
-          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-            <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-[#ef4444]/10 flex items-center justify-center shrink-0">
-              <span className="relative flex h-3.5 w-3.5 sm:h-4 sm:w-4">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ef4444] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3.5 w-3.5 sm:h-4 sm:w-4 bg-[#ef4444]"></span>
-              </span>
+        <div className="flex flex-col mb-5 border-b border-[#2e2e2e] pb-4 gap-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+              <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-[#ef4444]/10 flex items-center justify-center shrink-0">
+                <span className="relative flex h-3.5 w-3.5 sm:h-4 sm:w-4">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ef4444] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3.5 w-3.5 sm:h-4 sm:w-4 bg-[#ef4444]"></span>
+                </span>
+              </div>
+              <PageHeader eyebrow={displayedMatchday ? `SPIELTAG ${displayedMatchday} · LIVE` : 'LIVE'} accentColor="#ef4444" title="Live Punkte" />
             </div>
-            <PageHeader eyebrow={displayedMatchday ? `SPIELTAG ${displayedMatchday} · LIVE` : 'LIVE'} accentColor="#ef4444" title="Live Punkte" />
+            <button
+              type="button"
+              onClick={handleRefresh}
+              disabled={isBusy}
+              aria-label="Live-Daten aktualisieren"
+              className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#8b92a5] hover:text-white transition-colors disabled:opacity-50 shrink-0"
+            >
+              <RefreshCw size={14} className={isBusy ? 'animate-spin' : ''} />
+            </button>
           </div>
-          <button
-            onClick={handleRefresh}
-            disabled={isBusy}
-            aria-label="Live-Daten aktualisieren"
-            className="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-[#8b92a5] hover:text-white transition-colors disabled:opacity-50 shrink-0"
-          >
-            <RefreshCw size={13} className={isBusy ? 'animate-spin' : ''} />
-          </button>
-        </div>
 
-        <ModeSwitch mode={mode} onChange={setMode} />
+          <ModeSwitch mode={mode} onChange={setMode} />
+        </div>
 
         {setupError && (
           <div className="card-surface rounded-2xl p-5 text-center text-sm text-red-400 mb-4">{setupError}</div>
@@ -509,6 +534,7 @@ const LiveLineupPage = () => {
                   onSelect={selectManager}
                   prevPointsMap={ranking ? rankingPrevPoints : null}
                   animId={ranking ? rankingAnimId : null}
+                  accentColor={leagueAccentColor}
                 />
               ) : (
                 <div className="text-center text-[#8b92a5] text-sm py-6">Lade Liga-Ranking…</div>
@@ -516,8 +542,10 @@ const LiveLineupPage = () => {
             ) : (
               <>
                 <SelectorButton onClick={() => setManagerPickerOpen(true)}>
-                  <ManagerAvatar name={selectedManagerName} size={28} />
-                  <span className="text-sm font-bold text-gray-100 flex-1 text-left truncate">
+                  <div className="w-8 h-8 rounded-full overflow-hidden border border-white/10 shrink-0">
+                    <ManagerAvatar name={selectedManagerName} size={32} />
+                  </div>
+                  <span className="text-[15px] font-semibold text-gray-100 flex-1 text-left truncate">
                     {selectedManagerName || 'Manager wählen'}
                   </span>
                 </SelectorButton>
@@ -540,73 +568,87 @@ const LiveLineupPage = () => {
 
         {mode === 'teams' && (
           <>
-            {teamsPickerOpen ? (
-              <>
-                <div className="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
-                  {COMPETITIONS.map((c) => (
-                    <button
-                      key={c.id}
-                      onClick={() => setCompetitionId(c.id)}
-                      className={`px-4 py-2 rounded-full whitespace-nowrap text-xs font-bold border transition-colors ${competitionId === c.id ? 'bg-[#ff5c3e]/15 border-[#ff5c3e] text-white' : 'border-[#2e2e2e] text-[#8b92a5] hover:text-white'}`}
-                    >
-                      {c.name}
-                    </button>
-                  ))}
-                </div>
+            <div className="flex gap-2 mb-3 overflow-x-auto no-scrollbar">
+              {COMPETITIONS.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setCompetitionId(c.id)}
+                  className={`px-3.5 py-1.5 rounded-full whitespace-nowrap text-xs border transition-colors ${
+                    competitionId === c.id
+                      ? 'bg-[#ff5c3e]/15 border-[#ff5c3e] text-white font-semibold'
+                      : 'border-[#2e2e2e] text-[#8b92a5] font-medium hover:text-white'
+                  }`}
+                >
+                  {c.name}
+                </button>
+              ))}
+            </div>
 
-                {teamsLoading ? (
-                  <div className="text-center text-[#8b92a5] text-sm py-6">Lade Teams…</div>
-                ) : teamsList && teamsList.length > 0 ? (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                    {teamsList.map((t) => (
-                      <button
-                        key={t.id}
-                        onClick={() => selectTeam(t.id)}
-                        className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-colors ${selectedTeamId === t.id ? 'bg-[#1e1e1e] border-[#ff5c3e]' : 'border-[#2e2e2e] hover:border-[#8b92a5]'}`}
-                      >
-                        {t.logo ? (
-                          <img src={t.logo} alt="" className="w-7 h-7 object-contain" onError={(e) => { e.target.style.display = 'none'; }} />
-                        ) : (
-                          <div className="w-7 h-7 rounded-full bg-[#202020]" />
-                        )}
-                        <span className="text-[10px] font-bold text-gray-300 text-center truncate w-full">{t.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center text-[#8b92a5] text-sm py-6">Keine Teams gefunden.</div>
-                )}
-              </>
-            ) : selectedTeam ? (
-              <SelectorButton onClick={() => setTeamsPickerOpen(true)}>
-                {selectedTeam.logo ? (
-                  <img src={selectedTeam.logo} alt="" className="w-7 h-7 object-contain shrink-0" onError={(e) => { e.target.style.display = 'none'; }} />
-                ) : (
-                  <div className="w-7 h-7 rounded-full bg-[#202020] shrink-0" />
-                )}
-                <span className="text-sm font-bold text-gray-100 flex-1 text-left truncate">{selectedTeam.name}</span>
-              </SelectorButton>
+            {/* Horizontale Durchscroll-Kacheln mit Mannschafts-Logos */}
+            {teamsLoading ? (
+              <div className="flex gap-2.5 overflow-x-auto no-scrollbar pb-1 mb-4">
+                {Array.from({ length: 6 }, (_, i) => (
+                  <div
+                    key={i}
+                    className="w-[84px] h-[82px] shrink-0 rounded-2xl card-surface animate-pulse"
+                  />
+                ))}
+              </div>
+            ) : teamsList && teamsList.length > 0 ? (
+              <div className="flex gap-2.5 overflow-x-auto no-scrollbar pb-1 mb-4">
+                {teamsList.map((t) => {
+                  const isActive = selectedTeamId === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => selectTeam(t.id)}
+                      className={`w-[84px] shrink-0 flex flex-col items-center justify-center gap-1.5 px-2 py-2.5 rounded-2xl border transition-all active:scale-95 ${
+                        isActive
+                          ? 'bg-[#ff5c3e]/12 border-[#ff5c3e] shadow-md'
+                          : 'card-surface hover:border-white/25'
+                      }`}
+                    >
+                      {t.logo ? (
+                        <img
+                          src={t.logo}
+                          alt={t.name}
+                          className="w-9 h-9 object-contain"
+                          onError={(e) => { e.target.style.display = 'none'; }}
+                        />
+                      ) : (
+                        <div className="w-9 h-9 rounded-full bg-[#202020] flex items-center justify-center text-[10px] font-semibold text-[#8b92a5]">
+                          {t.name?.substring(0, 2)}
+                        </div>
+                      )}
+                      <span className={`text-[10px] text-center truncate w-full ${isActive ? 'text-white font-semibold' : 'text-gray-300 font-medium'}`}>
+                        {t.name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             ) : (
-              <button
-                onClick={() => setTeamsPickerOpen(true)}
-                className="w-full flex items-center justify-center gap-2.5 border border-dashed border-[#ff5c3e]/40 rounded-2xl p-5 mb-4 hover:border-[#ff5c3e] transition-all active:scale-[0.98] text-[#ff5c3e] font-bold text-sm"
-              >
-                <Users size={18} strokeWidth={2.5} />
-                Team auswählen
-              </button>
+              <div className="text-center text-[#8b92a5] text-sm py-6">Keine Teams gefunden.</div>
             )}
 
             {teamError && (
-              <div className="card-surface rounded-2xl p-5 text-center text-sm text-red-400 mb-4 mt-4">{teamError}</div>
+              <div className="card-surface rounded-2xl p-5 text-center text-sm text-red-400 mb-4">{teamError}</div>
             )}
 
-            {!teamsPickerOpen && displayedTeamMeta?.score && (
-              <div className="mb-3 text-sm font-bold text-gray-300">
-                {displayedTeamMeta.score} {displayedTeamMeta.isLive ? `· LIVE ${displayedTeamMeta.minute}'` : ''}
+            {selectedTeam && displayedTeamMeta?.score && (
+              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-200">
+                <span>{selectedTeam.name}</span>
+                <span className="text-[#626978]">·</span>
+                <span className="tabular-nums">{displayedTeamMeta.score}</span>
+                {displayedTeamMeta.isLive && (
+                  <span className="text-xs font-semibold text-[#ef4444]">LIVE {displayedTeamMeta.minute}'</span>
+                )}
               </div>
             )}
 
-            {!teamsPickerOpen && displayedTeamLineup ? (
+            {displayedTeamLineup ? (
               <LiveLineupPitch
                 key={`team-${competitionId}-${selectedTeamId}`}
                 lineup={displayedTeamLineup}
@@ -614,8 +656,12 @@ const LiveLineupPage = () => {
                 prevPointsMap={teamLineup ? teamPrevPoints : null}
                 animId={teamLineup ? teamAnimId : null}
               />
-            ) : !teamsPickerOpen && teamLoading ? (
+            ) : teamLoading ? (
               <div className="text-center text-[#8b92a5] text-sm py-10">Lade Live-Daten…</div>
+            ) : !selectedTeamId && teamsList?.length > 0 ? (
+              <div className="card-surface rounded-2xl p-6 text-center text-xs text-[#8b92a5]">
+                Tippe oben auf ein Vereinslogo, um die Live-Startelf des Teams zu sehen.
+              </div>
             ) : null}
           </>
         )}

@@ -263,10 +263,10 @@ const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId }) => {
                 instantDelta={computed.totalMinuteDelta}
                 instantKey={isScrubbing ? `m:${activeMinute}:__total__` : null}
                 format={(n) => n.toLocaleString('de-DE')}
-                className="text-3xl sm:text-4xl font-black text-white leading-none"
+                className="text-3xl sm:text-4xl font-extrabold text-white leading-none"
                 deltaPlacement="left"
               />
-              <div className="text-[10px] font-black uppercase tracking-widest text-[#8b92a5] mt-1">Punkte</div>
+              <div className="text-[10px] font-semibold uppercase tracking-widest text-[#8b92a5] mt-1">Punkte</div>
             </div>
           </div>
         )}

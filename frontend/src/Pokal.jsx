@@ -353,8 +353,8 @@ const Pokal = () => {
               <img src={logo} alt="Kickbase Liga Logo" className="w-full h-full object-contain" />
             </div>
             <div className="min-w-0 pr-1">
-              <div className="text-[9px] sm:text-[11px] font-bold tracking-wider text-[#8b5cf6] mb-1">SAISON 26/27</div>
-              <h1 className="text-[17px] sm:text-3xl font-black tracking-tight uppercase leading-[1.1] break-words">Pokal</h1>
+              <div className="text-[9px] sm:text-[11px] font-semibold tracking-wider text-[#8b5cf6] mb-0.5">SAISON 26/27</div>
+              <h1 className="text-[19px] sm:text-3xl font-bold tracking-tight uppercase leading-[1.1] break-words">Pokal</h1>
             </div>
           </div>
 
@@ -376,7 +376,7 @@ const Pokal = () => {
                 key={round}
                 data-round={round}
                 onClick={() => handleRoundChange(round)}
-                className={`px-4 py-2 rounded-lg whitespace-nowrap text-xs font-bold transition-all flex-shrink-0 ${activeRound === round ? 'bg-white text-black' : 'text-[#8b92a5] hover:text-white'}`}
+                className={`px-4 py-2 rounded-lg whitespace-nowrap text-xs transition-all flex-shrink-0 ${activeRound === round ? 'bg-white text-black font-semibold' : 'text-[#8b92a5] font-medium hover:text-white'}`}
               >
                 <span>{round}</span>
                 {roundSchedule[round] && <span className="block text-[9px] font-normal text-[#8b5cf6] mt-0.5">BL-Spieltag {roundSchedule[round].matchday} · {roundSchedule[round].date}</span>}

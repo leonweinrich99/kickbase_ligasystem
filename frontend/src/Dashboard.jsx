@@ -38,13 +38,13 @@ export const Header = ({
             <img src={logo} alt="Kickbase Liga Logo" className="w-full h-full object-contain" />
           </div>
           <div className="min-w-0 pr-1">
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <div className="text-[9px] sm:text-[11px] font-bold tracking-wider text-[#ff5c3e]">SAISON 26/27</div>
+            <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+              <div className="text-[9px] sm:text-[11px] font-semibold tracking-wider text-[#ff5c3e]">SAISON 26/27</div>
               {mode === 'archive' && (
-                <div className="text-[8px] sm:text-[9px] font-black tracking-widest text-[#8b92a5] bg-[#1f1f1f] border border-[#2e2e2e] rounded-full px-2 py-0.5 uppercase">Archiv</div>
+                <div className="text-[8px] sm:text-[9px] font-semibold tracking-widest text-[#8b92a5] bg-[#1f1f1f] border border-[#2e2e2e] rounded-full px-2 py-0.5 uppercase">Archiv</div>
               )}
             </div>
-            <h1 className="text-[17px] sm:text-3xl font-black tracking-tight uppercase leading-[1.1] break-words">
+            <h1 className="text-[19px] sm:text-3xl font-bold tracking-tight uppercase leading-[1.1] break-words">
               {mode === 'archive' ? <>Qualifikations<br />gruppe</> : 'Ligasystem'}
             </h1>
           </div>
@@ -134,24 +134,24 @@ export const UserRow = ({ item, color, isSaisonView, displayRank, prevRank, rout
         {isSaisonView && item.status && (
           <div className="absolute left-0 top-0 bottom-0 w-[4px]" style={{ backgroundColor: statusColors[item.status] }}></div>
         )}
-        <div className="w-8 flex justify-center items-center text-xs font-bold text-[#8b92a5]">
+        <div className="w-8 flex justify-center items-center text-xs font-semibold text-[#8b92a5]">
           {item.isTrophy && isSaisonView ? <TrophyIcon type={item.trophyColor} /> : displayRank}
         </div>
-        <div className="w-10 h-10 rounded-full ml-2 overflow-hidden border border-[#2e2e2e]">
+        <div className="w-10 h-10 rounded-full ml-2 overflow-hidden border border-white/10">
           <ManagerAvatar name={item.name} size={40} />
         </div>
         <div className="ml-3 flex-1 flex flex-col justify-center min-w-0">
           <div className="flex items-center gap-2">
-            <div className="text-[16px] font-bold tracking-wide text-gray-100 truncate">{item.name}</div>
+            <div className="text-[15px] font-semibold tracking-wide text-gray-100 truncate">{item.name}</div>
             {rankChange !== 0 && isSaisonView && (
-              <div className={`flex items-center gap-1 text-[10px] font-black shrink-0 ${rankChange > 0 ? 'text-green-500' : 'text-red-500'}`}>
+              <div className={`flex items-center gap-1 text-[10px] font-bold shrink-0 ${rankChange > 0 ? 'text-green-500' : 'text-red-500'}`}>
                 {rankChange > 0 ? <TrendingUp size={11} /> : <TrendingDown size={11} />} {Math.abs(rankChange)}
               </div>
             )}
           </div>
           {leagueBadge && (
             <span
-              className="mt-1 inline-flex items-center self-start text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded"
+              className="mt-1 inline-flex items-center self-start text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded"
               style={{ backgroundColor: `${leagueBadge.color}26`, color: leagueBadge.color }}
             >
               {leagueBadge.name}
@@ -162,7 +162,7 @@ export const UserRow = ({ item, color, isSaisonView, displayRank, prevRank, rout
           <div className="text-[17px] font-bold" style={{ color: color }}>
             {pointsToShow}
           </div>
-          <div className="text-[10px] font-bold text-[#626978] tracking-widest mt-0.5 uppercase">Punkte</div>
+          <div className="text-[10px] font-semibold text-[#626978] tracking-widest mt-0.5 uppercase">Punkte</div>
         </div>
       </div>
     </Link>
@@ -174,7 +174,7 @@ export const LeagueColumn = ({ league, isSaisonView, rankOffset, prevRanks, rout
     <div className="flex-1 w-full lg:w-1/3 min-w-0 px-0 sm:px-2.5">
       <div className="flex items-center mb-4 mt-4 lg:mt-0">
         <div className="w-1 h-5 mr-3 rounded-full" style={{ backgroundColor: league.color }}></div>
-        <h2 className="text-base sm:text-lg font-black tracking-wider uppercase text-gray-200">{league.name}</h2>
+        <h2 className="text-sm sm:text-base font-bold tracking-wider uppercase text-gray-200">{league.name}</h2>
       </div>
       <div className="flex flex-col">
         {league.users.map((u, index) => (
