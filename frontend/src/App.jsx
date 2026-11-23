@@ -51,7 +51,7 @@ function App() {
                   <Route path="/account" element={<Account />} />
                   <Route path="/account/profile" element={<Profile />} />
                   <Route path="/account/manager-rating" element={<ManagerRatingPage />} />
-                  <Route path="/account/live" element={<LiveLineupPage />} />
+                  <Route path="/live" element={<LiveLineupPage />} />
                   <Route path="/live-player" element={<PlayerLiveDetailPage />} />
                   <Route path="/account/reminders" element={<Reminders />} />
 

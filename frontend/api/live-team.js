@@ -1,18 +1,18 @@
-// TEST-Route (Owner-Wunsch 23.11.2026: "koennen wir einen Test mit Live-
-// Daten zum aktuellen Spiel in der La Liga machen? Baue das kurz in die App
-// ein um das zu ueberpruefen") - zeigt die Live-Punkte der Startelf eines
-// ECHTEN Fussball-Teams (nicht eines Kickbase-Fantasy-Kaders) waehrend eines
-// laufenden Spiels, unabhaengig von Liga/Wettbewerb. Beweist, dass der
-// gleiche Live-Punkte-Mechanismus (playercenter) auch ausserhalb Bundesliga/
-// Kickbase-Fantasy-Ligen funktioniert - playercenter braucht nachweislich
-// KEINE leagueId.
+// Live-Punkte der Startelf eines ECHTEN Fussball-Teams (nicht eines
+// Kickbase-Fantasy-Kaders) - Owner-Wunsch 24.11.2026: "auch auf gesamte
+// Teams zwischen denen man auswaehlen kann" (urspruenglich als Test fuer die
+// La Liga eingebaut, jetzt fester Bestandteil des "Echte Teams"-Umschalters
+// auf der Live-Seite). Funktioniert fuer jeden Wettbewerb/jedes Team, da
+// playercenter nachweislich KEINE leagueId braucht.
 //
-// Ohne matchId: sucht automatisch das erste LIVE-Spiel im angegebenen
-// Wettbewerb (Default: competitionId=3 = La Liga).
+// Mit teamId: sucht das aktuell relevanteste Spiel DIESES Teams (laufendes
+// Spiel bevorzugt, sonst das zuletzt beendete, sonst das naechste
+// angesetzte). Ohne teamId (Legacy/Fallback): erstes LIVE-Spiel im
+// Wettbewerb, wie zuvor.
 import { API_BASE, getJson, loginAny, getEventTypeMap } from './_kickbaseClient.js';
 
 export default async function handler(req, res) {
-  const { competitionId = '3', matchId: requestedMatchId, team = 't1' } = req.query;
+  const { competitionId = '1', matchId: requestedMatchId, teamId, team: teamSideParam } = req.query;
 
   const token = await loginAny();
   if (!token) {
@@ -21,14 +21,28 @@ export default async function handler(req, res) {
 
   let matchId = requestedMatchId;
   let day = null;
+  let teamSide = teamSideParam || 't1';
 
   if (!matchId) {
     const matchdays = await getJson(`${API_BASE}/competitions/${competitionId}/matchdays`, token);
     const allMatches = (matchdays?.it || []).flatMap((md) => (md.it || []).map((m) => ({ ...m, day: md.day })));
-    const live = allMatches.find((m) => m.il === true);
-    const chosen = live || [...allMatches].reverse().find((m) => m.st === 2) || allMatches[allMatches.length - 1];
-    if (!chosen) {
-      return res.status(404).json({ error: 'Kein Spiel in diesem Wettbewerb gefunden' });
+
+    let chosen;
+    if (teamId) {
+      const candidates = allMatches.filter((m) => m.t1 === String(teamId) || m.t2 === String(teamId));
+      const live = candidates.find((m) => m.il === true);
+      const finished = [...candidates].reverse().find((m) => m.st === 2);
+      chosen = live || finished || candidates[candidates.length - 1];
+      if (!chosen) {
+        return res.status(404).json({ error: 'Kein Spiel fuer dieses Team gefunden' });
+      }
+      teamSide = chosen.t1 === String(teamId) ? 't1' : 't2';
+    } else {
+      const live = allMatches.find((m) => m.il === true);
+      chosen = live || [...allMatches].reverse().find((m) => m.st === 2) || allMatches[allMatches.length - 1];
+      if (!chosen) {
+        return res.status(404).json({ error: 'Kein Spiel in diesem Wettbewerb gefunden' });
+      }
     }
     matchId = chosen.mi;
     day = chosen.day;
@@ -43,14 +57,16 @@ export default async function handler(req, res) {
     day = details.mdln ? parseInt(String(details.mdln).match(/\d+/)?.[0], 10) : null;
   }
 
-  const lineupKey = team === 't2' ? 't2lp' : 't1lp';
-  const teamName = team === 't2' ? details.t2n : details.t1n;
+  const lineupKey = teamSide === 't2' ? 't2lp' : 't1lp';
+  const teamName = teamSide === 't2' ? details.t2n : details.t1n;
   const lineup = details[lineupKey] || [];
 
   const eventTypeMap = await getEventTypeMap(token);
 
-  const ownGoals = team === 't2' ? details.t2g : details.t1g;
-  const opponentGoals = team === 't2' ? details.t1g : details.t2g;
+  const ownGoals = teamSide === 't2' ? details.t2g : details.t1g;
+  const opponentGoals = teamSide === 't2' ? details.t1g : details.t2g;
+  const ownCrest = teamSide === 't2' ? details.t2im : details.t1im;
+  const opponentCrest = teamSide === 't2' ? details.t1im : details.t2im;
 
   const players = await Promise.all(
     lineup.map(async (p) => {
@@ -71,6 +87,8 @@ export default async function handler(req, res) {
         goalsAgainst: opponentGoals ?? null,
         matchStatus: details.il ? null : 2,
         matchMinute: details.mt ?? null,
+        teamLogo: ownCrest ? `https://kickbase.b-cdn.net/${ownCrest}` : null,
+        opponentLogo: opponentCrest ? `https://kickbase.b-cdn.net/${opponentCrest}` : null,
       };
     })
   );

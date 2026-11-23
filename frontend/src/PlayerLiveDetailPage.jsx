@@ -34,7 +34,7 @@ const EventCard = ({ label, points, right }) => (
 const PlayerLiveDetailPage = () => {
   const { state } = useLocation();
   const player = state?.player;
-  const goBack = useBackNavigation('/account/live');
+  const goBack = useBackNavigation('/live');
   const [correctionsOpen, setCorrectionsOpen] = useState(false);
 
   const events = player?.events || [];

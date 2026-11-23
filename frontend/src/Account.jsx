@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion as Motion } from 'framer-motion';
-import { BookOpen, Trophy, Archive, Shield, TrendingUp, HelpCircle, Bell, Link2, ChevronRight, Activity } from 'lucide-react';
+import { BookOpen, Trophy, Archive, Shield, TrendingUp, HelpCircle, Bell, Link2, ChevronRight } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import { useTour } from './Tour';
 import accountLogo from './assets/account_logo.png';
@@ -112,7 +112,6 @@ const Account = () => {
         </MenuGroup>
 
         <MenuGroup title="Persönlich" index={4}>
-          {profile?.kickbaseId && <MenuRow to="/account/live" icon={Activity} label="Live Punkte" color="#22c55e" />}
           <MenuRow to="/account/reminders" icon={Bell} label="Erinnerungen" />
           <MenuRow onClick={tour.start} icon={HelpCircle} label="App-Tutorial ansehen" />
         </MenuGroup>

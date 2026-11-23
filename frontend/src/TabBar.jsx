@@ -1,8 +1,25 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
+import { Radio } from 'lucide-react';
 import ligaLogo from './assets/logo.png';
 import pokalLogo from './assets/pokal_logo.png';
 import accountLogo from './assets/account_logo.png';
+
+// Live-Punkte-Tab (Owner-Wunsch 24.11.2026: "als extra Tab unten vor der
+// Liga machen und mit einem roten Punkt der pulsiert, wenn man auf ihm ist")
+// - pulsierender roter Punkt (animate-ping-Ring + fester Kern) signalisiert
+// "live", erscheint nur solange der Tab aktiv ausgewaehlt ist.
+const LiveIcon = ({ active }) => (
+  <span className="relative inline-flex">
+    <Radio className="w-6 h-6" strokeWidth={2.25} />
+    {active && (
+      <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+      </span>
+    )}
+  </span>
+);
 
 const LigaIcon = ({ active }) => (
   <img
@@ -32,6 +49,7 @@ const AccountIcon = ({ active }) => (
 );
 
 const TABS = [
+  { to: '/live', label: 'Live', Icon: LiveIcon, tourId: 'tab-live', match: (p) => p.startsWith('/live') },
   { to: '/', label: 'Liga', Icon: LigaIcon, tourId: 'tab-liga', match: (p) => p === '/' || p.startsWith('/archiv') || p.startsWith('/user/') || p.startsWith('/compare/') },
   { to: '/pokal', label: 'Pokal', Icon: PokalIcon, tourId: 'tab-pokal', match: (p) => p.startsWith('/pokal') },
   { to: '/account', label: 'Account', Icon: AccountIcon, tourId: 'tab-account', match: (p) => p.startsWith('/account') || p === '/admin' || p === '/rules' }
