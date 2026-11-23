@@ -84,7 +84,7 @@ const PlayerLiveDetailPage = () => {
   const openInTrading = () => {
     if (!canOpenTrading) return;
     navigate(`/admin/advisor?playerId=${encodeURIComponent(String(player.id))}`, {
-      state: { openPlayerId: String(player.id) },
+      state: { openPlayerId: String(player.id), returnOnClose: true },
     });
   };
 

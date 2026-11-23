@@ -1293,7 +1293,12 @@ const Advisor = () => {
     }
   }, [requestedPlayerId, data, marketPlayersAnnotated, currentSquad, dbPlayersAnnotated]);
 
+  const returnOnClose = Boolean(location.state?.returnOnClose);
   const handleClosePlayerDetail = () => {
+    if (returnOnClose) {
+      goBack();
+      return;
+    }
     setSelectedPlayer(null);
     if (searchParams.has('playerId')) {
       const next = new URLSearchParams(searchParams);
