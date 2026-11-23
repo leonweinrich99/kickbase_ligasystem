@@ -102,11 +102,20 @@ const PlayerLiveDetailPage = () => {
         </div>
       ) : (
         <>
-          <div className="relative w-full overflow-hidden">
+          {/* Feste Hoehe statt natuerlichem Seitenverhaeltnis (Owner-Feedback
+              24.11.2026: "Name, Punkte und vorherige Partie liegen direkt auf
+              dem Bild, das Bild ist noch groesser" - im Original liegen Name,
+              Punktzahl UND die Wappen/Endstand-Zeile allesamt noch auf dem
+              Foto, nicht erst darunter). object-cover statt object-contain
+              fuellt diese Flaeche zuverlaessig unabhaengig vom Seitenverhaeltnis
+              des jeweiligen Spielerfotos, object-top haelt dabei den Kopf im
+              Bild. Text sitzt absolut am unteren Rand dieser Flaeche, darunter
+              ein Vignetten-Verlauf ueber ca. drei Viertel der Hoehe fuer
+              durchgehenden Kontrast (nicht nur ein schmaler Streifen am Fuss). */}
+          <div className="relative w-full h-[440px] sm:h-[520px] overflow-hidden">
             {/* Punkte-Raster-Hintergrund als eigene Ebene HINTER Foto/Text,
                 faedet nach aussen aus (Owner-Feedback: "die Punkte im
-                Hintergrund muessen ausfaden") - eigene Maske, damit sie nicht
-                auch Foto/Schrift mit ausblendet. */}
+                Hintergrund muessen ausfaden" - bestaetigt gut, unveraendert). */}
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
@@ -117,36 +126,30 @@ const PlayerLiveDetailPage = () => {
               }}
             />
 
-            <div className="relative w-full flex justify-center">
-              {player.imagePath ? (
-                <div className="relative w-full">
-                  <img
-                    src={`https://kickbase.b-cdn.net/${player.imagePath}`}
-                    alt={player.lastName || player.name}
-                    className="w-full h-auto object-contain"
-                    style={{
-                      maskImage: 'linear-gradient(to bottom, black 88%, transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to bottom, black 88%, transparent 100%)',
-                    }}
-                    onError={(e) => { e.target.style.display = 'none'; }}
-                  />
-                  {/* Abdunkelung am Fuss des Fotos, damit Name/Punkte lesbar
-                      bleiben (Owner-Feedback: "die Schrift liegt schon auf
-                      dem Profilbild, hebt sich aber nicht genug davon ab"). */}
-                  <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black via-black/70 to-transparent pointer-events-none" />
+            {player.imagePath ? (
+              <img
+                src={`https://kickbase.b-cdn.net/${player.imagePath}`}
+                alt={player.lastName || player.name}
+                className="absolute inset-0 w-full h-full object-cover object-top"
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden shadow-2xl ring-2 ring-[#2a2a2a] bg-[#171717] flex items-center justify-center">
+                  <span className="text-gray-500 font-bold text-2xl uppercase">
+                    {(player.lastName || player.name || '?').substring(0, 2)}
+                  </span>
                 </div>
-              ) : (
-                <div className="h-64 sm:h-80 flex items-center justify-center">
-                  <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden shadow-2xl ring-2 ring-[#2a2a2a] bg-[#171717] flex items-center justify-center">
-                    <span className="text-gray-500 font-bold text-2xl uppercase">
-                      {(player.lastName || player.name || '?').substring(0, 2)}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
+              </div>
+            )}
 
-            <div className="relative -mt-10 sm:-mt-12 flex flex-col items-center px-4 sm:px-6 pb-2">
+            {/* Durchgehende Abdunkelung ueber die untere Bildhaelfte, damit
+                Name, Punkte UND die Wappen-Zeile - alle direkt auf dem Foto -
+                lesbar bleiben (Owner-Feedback: "heben sich noch nicht genug
+                vom Bild ab"). */}
+            <div className="absolute inset-x-0 bottom-0 h-[70%] bg-gradient-to-t from-black via-black/75 to-transparent pointer-events-none" />
+
+            <div className="absolute inset-x-0 bottom-0 flex flex-col items-center px-4 sm:px-6 pb-4">
               <div className="text-lg font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">{player.lastName || player.name}</div>
               <div className={`text-6xl sm:text-7xl font-black leading-none mt-1 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] ${pointColor(player.points)}`}>
                 {player.points ?? '–'}
@@ -173,7 +176,7 @@ const PlayerLiveDetailPage = () => {
             </div>
           </div>
 
-          <div className="max-w-[500px] w-full mx-auto px-4 sm:px-6">
+          <div className="max-w-[500px] w-full mx-auto px-4 sm:px-6 mt-3">
             {timeline.length === 0 ? (
               <div className="card-surface rounded-2xl p-5 text-center text-sm text-[#626978]">
                 Noch keine punkterelevanten Aktionen.
