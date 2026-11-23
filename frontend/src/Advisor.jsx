@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Info, RefreshCw, CheckCircle2, XCircle, Star, SlidersHorizontal, X, ChevronDown, AlertTriangle } from 'lucide-react';
 import { useAuth } from './AuthContext';
@@ -914,6 +914,8 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, 
 
 const Advisor = () => {
   const { isAdmin, profile } = useAuth();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const goBack = useBackNavigation('/account');
   const { isFavorite, toggleFavorite, favoritePlayers } = useFavorites();
   const [data, setData] = useState(null);
@@ -921,6 +923,7 @@ const Advisor = () => {
   const [error, setError] = useState(false);
   const [activeLeague, setActiveLeague] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const autoOpenedPlayerRef = useRef(null);
   const [marketFilters, setMarketFilters] = useState(DEFAULT_MARKET_FILTERS);
   const [dbFilters, setDbFilters] = useState(DEFAULT_FILTERS);
   const [squadFilters, setSquadFilters] = useState(DEFAULT_FILTERS);
@@ -1229,6 +1232,37 @@ const Advisor = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effectiveManagerSquads, profile?.kickbaseId]);
 
+  // Direkt-Sprung zu einem bestimmten Spieler (z.B. per Klick auf Foto/Name in
+  // PlayerLiveDetailPage -> /admin/advisor?playerId=17288): sucht zuerst im
+  // Markt/eigenen Kader (reichste Kontextdaten) und dann in der vollstaendigen
+  // Datenbank (inkl. all_players.json-Fallback).
+  const requestedPlayerId = searchParams.get('playerId') || location.state?.openPlayerId || null;
+  useEffect(() => {
+    if (!requestedPlayerId || !data) return;
+    const targetId = String(requestedPlayerId);
+    if (autoOpenedPlayerRef.current === targetId) return;
+
+    const found =
+      marketPlayersAnnotated.find((p) => String(p.playerId) === targetId) ||
+      currentSquad.find((p) => String(p.playerId) === targetId) ||
+      dbPlayersAnnotated.find((p) => String(p.playerId) === targetId);
+
+    if (found) {
+      autoOpenedPlayerRef.current = targetId;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSelectedPlayer(found);
+    }
+  }, [requestedPlayerId, data, marketPlayersAnnotated, currentSquad, dbPlayersAnnotated]);
+
+  const handleClosePlayerDetail = () => {
+    setSelectedPlayer(null);
+    if (searchParams.has('playerId')) {
+      const next = new URLSearchParams(searchParams);
+      next.delete('playerId');
+      setSearchParams(next, { replace: true });
+    }
+  };
+
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-[#000000] flex items-center justify-center p-4">
@@ -1247,7 +1281,7 @@ const Advisor = () => {
         <PlayerDetailView
           player={selectedPlayer}
           teamLogos={teamLogos}
-          onClose={() => setSelectedPlayer(null)}
+          onClose={handleClosePlayerDetail}
           isFavorite={isFavorite(selectedPlayer.playerId)}
           onToggleFavorite={toggleFavorite}
         />

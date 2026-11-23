@@ -1,5 +1,7 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { ChevronRight } from 'lucide-react';
+import { useAuth } from './AuthContext';
 import { useBackNavigation } from './useBackNavigation';
 import { BackButton } from './ui/CloseButton';
 import AnimatedPoints from './ui/AnimatedPoints';
@@ -73,8 +75,18 @@ const buildTimeline = (events, matchStatus, matchMinute) => {
 
 const PlayerLiveDetailPage = () => {
   const { state } = useLocation();
+  const navigate = useNavigate();
+  const { isAdmin } = useAuth();
   const player = state?.player;
   const goBack = useBackNavigation('/live');
+
+  const canOpenTrading = Boolean(isAdmin && player?.id);
+  const openInTrading = () => {
+    if (!canOpenTrading) return;
+    navigate(`/admin/advisor?playerId=${encodeURIComponent(String(player.id))}`, {
+      state: { openPlayerId: String(player.id) },
+    });
+  };
 
   const timeline = player ? buildTimeline(player.events || [], player.matchStatus, player.matchMinute) : [];
 
@@ -131,11 +143,15 @@ const PlayerLiveDetailPage = () => {
               <img
                 src={`https://kickbase.b-cdn.net/${player.imagePath}`}
                 alt={player.lastName || player.name}
-                className="absolute inset-0 w-full h-full object-cover object-top"
+                onClick={canOpenTrading ? openInTrading : undefined}
+                className={`absolute inset-0 w-full h-full object-cover object-top ${canOpenTrading ? 'cursor-pointer' : ''}`}
                 onError={(e) => { e.target.style.display = 'none'; }}
               />
             ) : (
-              <div className="absolute inset-0 flex items-center justify-center">
+              <div
+                onClick={canOpenTrading ? openInTrading : undefined}
+                className={`absolute inset-0 flex items-center justify-center ${canOpenTrading ? 'cursor-pointer' : ''}`}
+              >
                 <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden shadow-2xl ring-2 ring-[#2a2a2a] bg-[#171717] flex items-center justify-center">
                   <span className="text-gray-500 font-bold text-2xl uppercase">
                     {(player.lastName || player.name || '?').substring(0, 2)}
@@ -150,8 +166,19 @@ const PlayerLiveDetailPage = () => {
                 vom Bild ab"). */}
             <div className="absolute inset-x-0 bottom-0 h-[70%] bg-gradient-to-t from-black via-black/75 to-transparent pointer-events-none" />
 
-            <div className="absolute inset-x-0 bottom-0 flex flex-col items-center px-4 sm:px-6 pb-4">
-              <div className="text-lg font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">{player.lastName || player.name}</div>
+            <div className="absolute inset-x-0 bottom-0 flex flex-col items-center px-4 sm:px-6 pb-4 pointer-events-none">
+              {canOpenTrading ? (
+                <button
+                  type="button"
+                  onClick={openInTrading}
+                  className="pointer-events-auto group inline-flex items-center gap-1 text-lg font-bold text-white hover:text-cyan-400 transition-colors drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] cursor-pointer"
+                >
+                  <span>{player.lastName || player.name}</span>
+                  <ChevronRight size={16} className="text-white/60 group-hover:text-cyan-400 group-hover:translate-x-0.5 transition-all" />
+                </button>
+              ) : (
+                <div className="text-lg font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">{player.lastName || player.name}</div>
+              )}
               <div className="mt-1">
                 <AnimatedPoints
                   value={player.points}
