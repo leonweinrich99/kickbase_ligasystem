@@ -244,25 +244,26 @@ const FeedPage = () => {
                       alt={leadArticle.title}
                       className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-transparent" />
                     <span
                       className={`absolute top-3 left-3 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border backdrop-blur-md bg-black/65 ${meta.badgeClass}`}
                     >
                       <CategoryIcon id={leadArticle.category} size={11} />
                       {meta.shortLabel}
                     </span>
+                    {/* Headline ueberdeckt leicht den unteren Bildrand statt
+                        erst darunter zu stehen (Owner-Wunsch 24.11.2026). */}
+                    <h2
+                      className={`absolute inset-x-0 bottom-0 p-4 sm:p-5 text-lg sm:text-2xl font-bold leading-snug drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] group-hover:text-white transition-colors ${
+                        isWsj ? 'font-serif text-[#f5f1e8] tracking-normal' : 'text-white tracking-tight'
+                      }`}
+                    >
+                      {leadArticle.title}
+                    </h2>
                   </div>
                 )}
 
-                <div className="p-4 sm:p-5">
-                  <h2
-                    className={`text-lg sm:text-2xl font-bold leading-snug mb-2 group-hover:text-white transition-colors ${
-                      isWsj ? 'font-serif text-[#f5f1e8] tracking-normal' : 'text-white tracking-tight'
-                    }`}
-                  >
-                    {leadArticle.title}
-                  </h2>
-
+                <div className="p-4 sm:p-5 pt-3">
                   <p className="text-sm text-gray-300/90 leading-relaxed line-clamp-3">
                     {leadArticle.subtitle}
                   </p>
@@ -301,30 +302,30 @@ const FeedPage = () => {
                           loading="lazy"
                           className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
                         <span
                           className={`absolute top-2.5 left-2.5 inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border backdrop-blur-md bg-black/65 ${meta.badgeClass}`}
                         >
                           <CategoryIcon id={article.category} size={10} />
                           {meta.shortLabel}
                         </span>
-                      </div>
-                    )}
-
-                    <div className="p-4 flex-1 flex flex-col justify-between">
-                      <div>
+                        {/* Headline ueberdeckt leicht den unteren Bildrand
+                            statt erst darunter zu stehen (Owner-Wunsch
+                            24.11.2026). */}
                         <h3
-                          className={`text-base font-bold leading-snug mb-1.5 group-hover:text-white transition-colors ${
+                          className={`absolute inset-x-0 bottom-0 p-4 text-base font-bold leading-snug drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] group-hover:text-white transition-colors ${
                             isWsj ? 'font-serif text-[#f3efe6]' : 'text-gray-100'
                           }`}
                         >
                           {article.title}
                         </h3>
-
-                        <p className="text-xs text-[#a1a8b8] leading-relaxed line-clamp-2">
-                          {article.subtitle}
-                        </p>
                       </div>
+                    )}
+
+                    <div className="p-4 pt-3 flex-1 flex flex-col justify-between">
+                      <p className="text-xs text-[#a1a8b8] leading-relaxed line-clamp-2">
+                        {article.subtitle}
+                      </p>
 
                       <div className="flex items-center gap-2 mt-3 text-[11px] text-[#8b92a5]">
                         <span className="tabular-nums">{formatArticleDate(article.date)}</span>

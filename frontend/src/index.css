@@ -281,7 +281,9 @@ body {
   display: flex;
   width: max-content;
   will-change: transform;
-  animation: feed-marquee 85s linear infinite;
+  /* Owner-Feedback 24.11.2026: "die Banderole mit den Marktfakten langsamer
+     durchlaufen lassen" - von 85s auf 160s, fast doppelt so langsam. */
+  animation: feed-marquee 160s linear infinite;
 }
 
 .feed-marquee-wrap:hover .feed-marquee-track,
