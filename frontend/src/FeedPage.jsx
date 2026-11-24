@@ -5,6 +5,7 @@ import PageHeader from './ui/PageHeader';
 import { FEED_CATEGORIES, getCategoryMeta, formatArticleDate, sortArticlesByDateDesc } from './feedMeta';
 import newsLogo from './assets/news_logo.svg';
 import AdBanner from './ui/AdBanner';
+import HotShotsSection from './ui/HotShotsSection';
 
 const CategoryIcon = ({ id, size = 13 }) => {
   if (id === 'spieltag') return <Flame size={size} />;
@@ -446,6 +447,8 @@ const FeedPage = () => {
               onSeeAll={() => setCategory(shelf.id)}
             />
           ))}
+
+          <HotShotsSection />
         </div>
       )}
 
@@ -565,6 +568,8 @@ const FeedPage = () => {
               })}
             </div>
           )}
+
+          {isTradingView && <HotShotsSection />}
         </div>
       )}
     </div>
