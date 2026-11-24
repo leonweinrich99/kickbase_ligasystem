@@ -1,8 +1,8 @@
 {
   "matchday": 10,
-  "totalPoints": 2963,
-  "totalBudget": 147410558,
-  "timestamp": "2026-11-23T01:34:09.374Z",
+  "totalPoints": 2937,
+  "totalBudget": 148991657,
+  "timestamp": "2026-11-24T05:16:32.280Z",
   "lineup": [
     {
       "id": "3019",
@@ -10,7 +10,7 @@
       "name": "Atubolu",
       "lastName": "Atubolu",
       "position": 1,
-      "marketValue": 14765503,
+      "marketValue": 14870863,
       "points": 236,
       "imagePath": "content/file/1a428dbd61524b48bb209d1ebee4ac6d.png",
       "teamName": "Frankfurt"
@@ -21,8 +21,8 @@
       "name": "Friedl",
       "lastName": "Friedl",
       "position": 2,
-      "marketValue": 17263443,
-      "points": 257,
+      "marketValue": 17403492,
+      "points": 240,
       "imagePath": "content/file/7ab07056637e493d80590700542ee887.png",
       "teamName": "Bremen"
     },
@@ -32,7 +32,7 @@
       "name": "Bah",
       "lastName": "Bah",
       "position": 2,
-      "marketValue": 7369099,
+      "marketValue": 7561257,
       "points": 196,
       "imagePath": "content/file/5627c3fa11834a97ae7c6963d68a09a6.png",
       "teamName": "Augsburg"
@@ -43,21 +43,10 @@
       "name": "Baku",
       "lastName": "Baku",
       "position": 2,
-      "marketValue": 17834420,
-      "points": 302,
+      "marketValue": 18040249,
+      "points": 282,
       "imagePath": "content/file/938a124759354a928af165b155e6925a.png",
       "teamName": "Leipzig"
-    },
-    {
-      "id": "3069",
-      "teamId": 3,
-      "name": "Nmecha",
-      "lastName": "Nmecha",
-      "position": 3,
-      "marketValue": 30352129,
-      "points": 287,
-      "imagePath": "content/file/f83b3a24df594aaf81be1d58da773656.png",
-      "teamName": "Dortmund"
     },
     {
       "id": "2863",
@@ -65,21 +54,10 @@
       "name": "Knauff",
       "lastName": "Knauff",
       "position": 3,
-      "marketValue": 2761390,
-      "points": 202,
+      "marketValue": 3151070,
+      "points": 203,
       "imagePath": "content/file/df49f152f9bc4fd99f45742758ff5cfc.png",
       "teamName": "Frankfurt"
-    },
-    {
-      "id": "2846",
-      "teamId": 7,
-      "name": "Tillman",
-      "lastName": "Tillman",
-      "position": 3,
-      "marketValue": 6779451,
-      "points": 185,
-      "imagePath": "content/file/04966a0af0e2477db734c91fdd98d4e1.png",
-      "teamName": "Leverkusen"
     },
     {
       "id": "7269",
@@ -87,10 +65,32 @@
       "name": "Tella",
       "lastName": "Tella",
       "position": 3,
-      "marketValue": 4157851,
-      "points": 247,
+      "marketValue": 4607396,
+      "points": 250,
       "imagePath": "content/file/e0df07546d38465080767efd17a0898e.png",
       "teamName": "Leverkusen"
+    },
+    {
+      "id": "11956",
+      "teamId": 7,
+      "name": "Fernández",
+      "lastName": "Fernández",
+      "position": 3,
+      "marketValue": 13805641,
+      "points": 215,
+      "imagePath": "content/file/2c37f7daf46f4c9693ffa9ef33ff980b.png",
+      "teamName": "Leverkusen"
+    },
+    {
+      "id": "4596",
+      "teamId": 43,
+      "name": "Gruda",
+      "lastName": "Gruda",
+      "position": 3,
+      "marketValue": 22941827,
+      "points": 266,
+      "imagePath": "content/file/fc98ceda9d134bd09d5526a600465611.png",
+      "teamName": "Leipzig"
     },
     {
       "id": "15199",
@@ -98,8 +98,8 @@
       "name": "Moreira",
       "lastName": "Moreira",
       "position": 4,
-      "marketValue": 16547725,
-      "points": 441,
+      "marketValue": 16778797,
+      "points": 452,
       "imagePath": "content/file/91b4b5c394a1464f98589ffa59af5aec.png",
       "teamName": "Leverkusen"
     },
@@ -109,8 +109,8 @@
       "name": "Füllkrug",
       "lastName": "Füllkrug",
       "position": 4,
-      "marketValue": 25430538,
-      "points": 287,
+      "marketValue": 25536194,
+      "points": 273,
       "imagePath": "content/file/b83a0c4ef29b40d99020bb11e9e1bc7f.png",
       "teamName": "Bremen"
     },
@@ -120,8 +120,8 @@
       "name": "Njinmah",
       "lastName": "Njinmah",
       "position": 4,
-      "marketValue": 4149009,
-      "points": 323,
+      "marketValue": 4294871,
+      "points": 324,
       "imagePath": "content/file/aecaedfbbfac4fc189856b5b5d560b2d.png",
       "teamName": "Bremen"
     }
