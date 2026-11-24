@@ -1,4 +1,5 @@
 import React from 'react';
+import StartProbBadge from './StartProbBadge';
 
 const POSITION_COLORS = { TW: '#eab308', ABW: '#3b82f6', MF: '#22c55e', ST: '#ef4444' };
 const IMAGE_BASE = 'https://kickbase.b-cdn.net/';
@@ -108,9 +109,8 @@ const AdvisorPlayerCard = ({
           </div>
         </div>
 
-        {/* Ohne Mannschaftsname auf der Karte (Owner-Wunsch 24.11.2026) - nur das
-            klare Empfehlungs-Label basierend auf eigenem Kader & Marktwert. */}
-        <div className="text-[9px] text-[#8b92a5] mt-1 flex items-center gap-1.5 flex-wrap min-h-[14px]">
+        {/* Empfehlungs-Label + 5-stufige Kickbase Startelf-Prognose */}
+        <div className="text-[9px] text-[#8b92a5] mt-1 flex items-center gap-1.5 flex-nowrap overflow-hidden min-h-[16px]">
           {(() => {
             if (showSellBadge) {
               return <span className="text-[8px] font-bold uppercase tracking-wider bg-red-500/15 text-red-400 border border-red-500/40 rounded px-1.5 py-0.5 shrink-0">⚠ Verkaufen</span>;
@@ -129,6 +129,7 @@ const AdvisorPlayerCard = ({
             }
             return null;
           })()}
+          <StartProbBadge prob={entry.startElfProbability ?? entry.prob} variant="compact" />
         </div>
       </div>
 

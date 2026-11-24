@@ -9,6 +9,8 @@ import PageHeader from './ui/PageHeader';
 import CloseButton, { BackButton } from './ui/CloseButton';
 import StatTile from './ui/StatTile';
 import PlayerCard from './ui/AdvisorPlayerCard';
+import StartProbBadge, { StartProbLegend } from './ui/StartProbBadge';
+import { START_PROB_LEVELS, normalizeStartProbCode } from './startProbMeta';
 import { countPositions, missingPositions, estimateReserveForMissingPositions } from './squadRules';
 import {
   enrichPlayerWithCatalog,
@@ -111,7 +113,7 @@ const normalizeHistory = (history) => {
   return history.map((entry) => (Array.isArray(entry) ? { date: entry[0], mv: entry[1], points: entry[2] } : entry));
 };
 
-const DEFAULT_FILTERS = { search: '', position: 'ALL', team: 'ALL', sort: 'predictedDesc', risingOnly: false, recommendedOnly: false, onMarketOnly: false, ownedOnly: false };
+const DEFAULT_FILTERS = { search: '', position: 'ALL', team: 'ALL', startProb: 'ALL', sort: 'predictedDesc', risingOnly: false, recommendedOnly: false, onMarketOnly: false, ownedOnly: false };
 const DEFAULT_MARKET_FILTERS = { ...DEFAULT_FILTERS, sort: 'expiryAsc' };
 
 function applyFilters(list, filters, recommendationMode) {
@@ -125,6 +127,13 @@ function applyFilters(list, filters, recommendationMode) {
   }
   if (filters.team && filters.team !== 'ALL') {
     result = result.filter((p) => p.team === filters.team);
+  }
+  if (filters.startProb && filters.startProb !== 'ALL') {
+    result = result.filter((p) => {
+      const code = normalizeStartProbCode(p.startElfProbability ?? p.prob);
+      if (filters.startProb === 'LIKELY') return code === 1 || code === 2;
+      return code === Number(filters.startProb);
+    });
   }
   if (filters.risingOnly) {
     result = result.filter((p) => (p.predictedChange || 0) > 0);
@@ -179,6 +188,7 @@ const FilterBar = ({ filters, onChange, teams, showTeamFilter = false, showAvail
   const activeCount = [
     filters.position !== 'ALL',
     showTeamFilter && filters.team !== 'ALL',
+    filters.startProb && filters.startProb !== 'ALL',
     filters.sort !== defaultSort,
     filters.risingOnly,
     recommendationMode && filters.recommendedOnly,
@@ -244,6 +254,21 @@ const FilterBar = ({ filters, onChange, teams, showTeamFilter = false, showAvail
                 </select>
               </div>
             )}
+
+            <div>
+              <label className="block text-[9px] font-bold uppercase tracking-widest text-[#626978] mb-1">Startelf-Prognose</label>
+              <select
+                value={filters.startProb || 'ALL'}
+                onChange={(e) => onChange({ ...filters, startProb: e.target.value })}
+                className="w-full bg-[#000] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-cyan-500"
+              >
+                <option value="ALL">Alle Prognosen</option>
+                <option value="LIKELY">Sicher &amp; Erwartet</option>
+                {START_PROB_LEVELS.map((lvl) => (
+                  <option key={lvl.code} value={String(lvl.code)}>{lvl.label}</option>
+                ))}
+              </select>
+            </div>
 
             <div>
               <label className="block text-[9px] font-bold uppercase tracking-widest text-[#626978] mb-1">Sortierung</label>
@@ -735,8 +760,9 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, 
           </div>
 
           {/* Badges / Trading Recommendations */}
-          {(showStartelfBadge || showPlayBadge || showTradeBadge || showSellBadge || !isFit || player.teamOfTheWeek) && (
-            <div className="px-4 sm:px-6 mb-6 flex flex-wrap gap-2">
+          {(showStartelfBadge || showPlayBadge || showTradeBadge || showSellBadge || !isFit || player.teamOfTheWeek || normalizeStartProbCode(player.startElfProbability ?? player.prob) != null) && (
+            <div className="px-4 sm:px-6 mb-6 flex flex-wrap items-center gap-2">
+              <StartProbBadge prob={player.startElfProbability ?? player.prob} variant="pill" size={14} />
               {showSellBadge && (
                 <div className="bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-1 rounded-md text-[10px] sm:text-xs font-medium">
                   ⚠ Verkaufen
@@ -1264,6 +1290,7 @@ const Advisor = () => {
                 )}
               </div>
             )}
+            <StartProbLegend className="mt-4" />
           </div>
         )}
 

@@ -72,6 +72,8 @@ export const enrichPlayerWithCatalog = (entry, catalogMap) => {
       : (typeof raw.tp === 'number' ? raw.tp : entry.seasonPoints),
     status: entry.status ?? raw.st ?? 0,
     statusLabel: entry.statusLabel || statusLabelFromCode(raw.st),
+    prob: typeof raw.prob === 'number' ? raw.prob : (entry.prob ?? null),
+    startElfProbability: entry.startElfProbability ?? (typeof raw.prob === 'number' ? raw.prob : null),
     imagePath: entry.imagePath || raw.pim || null,
     imageUrl: entry.imageUrl || rawImgUrl,
   };
@@ -110,6 +112,8 @@ export const buildCompletePlayerCatalog = (advisorPlayers, allPlayersRaw, catalo
       predictedChange7d: undefined,
       status: raw.st ?? 0,
       statusLabel: statusLabelFromCode(raw.st),
+      prob: typeof raw.prob === 'number' ? raw.prob : null,
+      startElfProbability: typeof raw.prob === 'number' ? raw.prob : null,
       imagePath: raw.pim || null,
       imageUrl: raw.pim ? `${IMAGE_BASE}${raw.pim}` : null,
       history: [],

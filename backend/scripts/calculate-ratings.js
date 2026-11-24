@@ -152,20 +152,26 @@ function loadManagerSquadValues() {
 // durch die Summe der TATSAECHLICHEN Wahrscheinlichkeiten der jeweils besten
 // Spieler je Position - ein Kader voller Ersatzbank-Spieler sieht dadurch
 // nicht mehr wie ein "voll einsatzfaehiger" Kader aus.
-const PROB_SCALE_MAX = 5; // Kickbase/Ligainsider-Skala: 1 (unwahrscheinlich) bis 5 (sehr wahrscheinlich)
-const PROB_FALLBACK_UNKNOWN = 3; // neutraler Mittelwert, falls fuer einen Spieler keine prob-Daten vorliegen (z.B. Datenluecke) - lieber neutral als der Manager fuer eine Datenluecke bestraft wird
+// Offizielle Kickbase-Startelf-Prognose (`prob`, 1..5):
+// 1 = Sicher, 2 = Erwartet, 3 = Unsicher, 4 = Unwahrscheinlich, 5 = Ausgeschlossen
+const PROB_WEIGHT_BY_CODE = {
+    1: 1.0, // Sicher
+    2: 0.8, // Erwartet
+    3: 0.5, // Unsicher
+    4: 0.2, // Unwahrscheinlich
+    5: 0.0, // Ausgeschlossen
+};
+const PROB_FALLBACK_WEIGHT = 0.5; // neutraler Mittelwert bei fehlenden prob-Daten
 
 function playerStartProbability(playerId, playerMap) {
     const player = playerMap.get(playerId) || playerMap.get(String(playerId));
-    // `prob` ist eine langfristige "ist normalerweise Stammspieler"-Einschaetzung
-    // und wird NICHT automatisch aktualisiert, wenn ein Spieler aktuell verletzt/
-    // angeschlagen/gesperrt ist (Kickbase-Statusfeld `st`, 0 = fit) - ein Spieler
-    // kann z.B. `prob: 5` UND `st: 1` (verletzt) gleichzeitig haben. Ohne diese
-    // Pruefung wuerde ein Kader voller aktuell nicht spielberechtigter Spieler
-    // trotzdem als "startelf-faehig" gelten.
+    // Verletzt/angeschlagen/gesperrt (`st !== 0`) zaehlt nicht als einsatzbereit.
     if (player && typeof player.st === 'number' && player.st !== 0) return 0;
-    const prob = player && typeof player.prob === 'number' ? player.prob : null;
-    return prob != null ? prob : PROB_FALLBACK_UNKNOWN;
+    const prob = player && typeof player.prob === 'number' ? Math.round(player.prob) : null;
+    if (prob != null && Object.prototype.hasOwnProperty.call(PROB_WEIGHT_BY_CODE, prob)) {
+        return PROB_WEIGHT_BY_CODE[prob];
+    }
+    return PROB_FALLBACK_WEIGHT;
 }
 
 function computeRealisticSquadReadiness(squadPlayers, playerMap, totalCount) {
@@ -174,17 +180,16 @@ function computeRealisticSquadReadiness(squadPlayers, playerMap, totalCount) {
     const positionGroups = {};
     (squadPlayers || []).forEach(sp => {
         if (!sp.position) return;
-        const prob = playerStartProbability(sp.id, playerMap);
-        (positionGroups[sp.position] = positionGroups[sp.position] || []).push(prob);
+        const weight = playerStartProbability(sp.id, playerMap);
+        (positionGroups[sp.position] = positionGroups[sp.position] || []).push(weight);
     });
 
     for (const [pos, need] of Object.entries(SQUAD_MIN_POSITIONS)) {
         required += need;
-        // Nur die N besten (wahrscheinlichsten) Spieler je Position zaehlen fuer
-        // die geforderte Anzahl - fehlende Slots (weniger Spieler als noetig,
-        // oder ueberzaehlige Bankspieler) zaehlen als 0.
+        // Nur die N wahrscheinlichsten Starter je Position zaehlen fuer die
+        // geforderte Anzahl - fehlende Slots zaehlen als 0.
         const taken = (positionGroups[pos] || []).sort((a, b) => b - a).slice(0, need);
-        satisfied += taken.reduce((sum, prob) => sum + prob / PROB_SCALE_MAX, 0);
+        satisfied += taken.reduce((sum, weight) => sum + weight, 0);
     }
 
     const positionalReadiness = required > 0 ? satisfied / required : 1;

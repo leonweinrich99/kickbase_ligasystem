@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Flame, Sparkles, ChevronRight } from 'lucide-react';
+import { Flame, Sparkles, ChevronRight, Info } from 'lucide-react';
 import { useAuth } from '../AuthContext';
 import { enrichPlayerWithCatalog } from '../advisorSquadEval';
 import { formatArticleDate } from '../feedMeta';
 import AdvisorPlayerCard from './AdvisorPlayerCard';
+import { StartProbLegend } from './StartProbBadge';
 
 const HOT_SHOTS_LIMIT = 10;
 
@@ -38,6 +39,7 @@ const HotShotsSection = () => {
   const navigate = useNavigate();
   const [bundle, setBundle] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showLegend, setShowLegend] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -114,20 +116,31 @@ const HotShotsSection = () => {
         </div>
 
         <div className="text-right shrink-0">
-          {isAdmin ? (
+          <div className="flex items-center justify-end gap-1.5">
             <button
               type="button"
-              onClick={() => navigate('/admin/advisor')}
-              className="inline-flex items-center gap-0.5 text-xs font-bold text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer"
+              onClick={() => setShowLegend((v) => !v)}
+              aria-label="Legende Startelf-Prognose anzeigen"
+              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer ${
+                showLegend
+                  ? 'bg-cyan-500/20 border-cyan-400/50 text-cyan-300'
+                  : 'bg-white/[0.04] border-white/15 text-[#8b92a5] hover:text-white'
+              }`}
             >
-              <span>Advisor</span>
-              <ChevronRight size={14} />
+              <Info size={10} />
+              <span>Legende</span>
             </button>
-          ) : (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-[10px] font-bold uppercase tracking-wider text-cyan-300">
-              Top 10
-            </span>
-          )}
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => navigate('/admin/advisor')}
+                className="inline-flex items-center gap-0.5 text-xs font-bold text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer"
+              >
+                <span>Advisor</span>
+                <ChevronRight size={14} />
+              </button>
+            )}
+          </div>
           {generatedDate && (
             <div className="text-[10px] text-[#626978] tabular-nums mt-1">
               Stand {formatArticleDate(generatedDate)}
@@ -135,6 +148,8 @@ const HotShotsSection = () => {
           )}
         </div>
       </div>
+
+      {showLegend && <StartProbLegend className="mb-3.5" />}
 
       {loading ? (
         <div className="space-y-2">

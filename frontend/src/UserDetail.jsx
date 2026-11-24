@@ -22,6 +22,7 @@ import {
   saveCachedSnapshot,
 } from './livePointsStore';
 import { buildLineupWithDummies, buildTeamLogoMap } from './liveLineupUtils';
+import { isLikelyStarterProb } from './startProbMeta';
 import { PlayerDetailView } from './Advisor';
 
 // Gleiche Positions-Labels/Reihenfolge wie AccountStats.jsx/Advisor.jsx.
@@ -730,7 +731,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                             displayName={p.name}
                             badgeValue={p.lastPoints != null ? Math.round(p.lastPoints) : null}
                             marketValue={p.marketValue}
-                            highlighted={p.startElfProbability != null && p.startElfProbability >= 0.5}
+                            highlighted={isLikelyStarterProb(p.startElfProbability ?? p.prob)}
                             onClick={() => {
                               const fp = getFullPlayer(p.playerId);
                               if (fp === 'LOADING') {

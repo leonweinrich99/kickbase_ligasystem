@@ -79,8 +79,33 @@ STATUS_LABELS = {
 # damit man sie leicht nachjustieren kann, ohne die Logik zu durchsuchen.
 BUY_MIN_PREDICTED_CHANGE = 5000       # Mindest-Prognose fuer eine Kaufempfehlung
 SELL_MAX_PREDICTED_CHANGE = -3000     # Ab hier gilt die Prognose als "fallend"
-LOW_START_PROBABILITY = 0.3           # Darunter: Verkaufsgrund "selten Startelf"
-HIGH_START_PROBABILITY = 0.6          # Darueber: Kaufgrund "wahrscheinlich Startelf"
+# Offizielle Kickbase-Startelf-Prognose (`prob`, 1..5):
+# 1 = Sicher, 2 = Erwartet, 3 = Unsicher, 4 = Unwahrscheinlich, 5 = Ausgeschlossen
+HIGH_START_PROB_CODES = {1, 2}        # Sicher / Erwartet -> Kaufgrund "wahrscheinlich Startelf"
+LOW_START_PROB_CODES = {4, 5}         # Unwahrscheinlich / Ausgeschlossen -> Verkaufsgrund "selten Startelf"
+
+
+def normalize_start_prob_code(prob):
+    """Normalisiert Kickbases 1..5-Startelf-Codes (und defensiv 0.0..1.0-Floats) auf 1..5."""
+    if prob is None or (isinstance(prob, float) and pd.isna(prob)):
+        return None
+    try:
+        val = float(prob)
+    except (TypeError, ValueError):
+        return None
+    if 1 <= val <= 5:
+        return int(round(val))
+    if 0 <= val < 1:
+        if val >= 0.85:
+            return 1
+        if val >= 0.6:
+            return 2
+        if val >= 0.35:
+            return 3
+        if val >= 0.15:
+            return 4
+        return 5
+    return None
 
 
 def status_label(code):
@@ -184,7 +209,7 @@ def compute_recommendations(entry):
 
     predicted = entry.get("predictedChange") or 0
     status = entry.get("status")
-    prob = entry.get("startElfProbability")
+    prob_code = normalize_start_prob_code(entry.get("startElfProbability"))
     last_minutes = entry.get("lastMinutesPlayed")
     appearances = entry.get("appearances") or entry.get("officialSeasonAppearances") or 0
     position = entry.get("position")
@@ -196,7 +221,7 @@ def compute_recommendations(entry):
     buy_reasons = []
     
     trade_recommended = predicted >= BUY_MIN_PREDICTED_CHANGE
-    play_recommended = is_fit and prob is not None and prob >= HIGH_START_PROBABILITY
+    play_recommended = is_fit and prob_code in HIGH_START_PROB_CODES
     
     if trade_recommended:
         buy_reasons.append("rising_value")
@@ -224,13 +249,13 @@ def compute_recommendations(entry):
         strong_sell_reasons.append("injured_or_suspended")
     if externally_injured:
         strong_sell_reasons.append("confirmed_injured_external")
-    if prob is not None and prob < LOW_START_PROBABILITY:
+    if prob_code in LOW_START_PROB_CODES:
         strong_sell_reasons.append("low_starting_probability")
     if predicted <= SELL_MAX_PREDICTED_CHANGE:
         weak_sell_reasons.append("falling_value")
 
     has_season_data = appearances > 0
-    high_prob_override = prob is not None and prob >= HIGH_START_PROBABILITY
+    high_prob_override = prob_code in HIGH_START_PROB_CODES
     if last_minutes == 0 and has_season_data and not high_prob_override:
         weak_sell_reasons.append("benched_last_matchday")
 
@@ -499,11 +524,33 @@ def _attach_football_enrichment(records, football_enrichment):
 # (Trikot-/Portraetbilder je Team), KEINE strukturierten Wahrscheinlichkeiten
 # pro Spieler - daher wieder entfernt. _attach_predicted_probability bleibt
 # als Hook bestehen, falls zukuenftig eine echte Quelle dafuer gefunden wird.
+def _load_catalog_start_probabilities():
+    """Liest Kickbases offizielle 1..5-Startelf-Prognose (`prob`) aus
+    frontend/public/history/all_players.json (0 Extra-Kickbase-Calls)."""
+    catalog_path = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "..", "..", "frontend", "public", "history", "all_players.json",
+    )
+    if not os.path.exists(catalog_path):
+        return {}
+    try:
+        with open(catalog_path, "r", encoding="utf-8") as f:
+            players = json.load(f)
+        probs = {}
+        for p in players or []:
+            pid = history_key(p.get("i"))
+            code = normalize_start_prob_code(p.get("prob"))
+            if pid and code is not None:
+                probs[pid] = code
+        return probs
+    except Exception:
+        return {}
+
+
 def _attach_predicted_probability(records, predicted_probabilities):
-    """Fuellt startElfProbability nur auf, wenn sie noch fehlt (z.B. bei
-    Kader-Spielern, fuer die es bisher keine eigene Quelle gab) - die
-    liga-spezifische Markt-Wahrscheinlichkeit hat weiterhin Vorrang, falls
-    vorhanden."""
+    """Fuellt startElfProbability (Kickbase-Skala 1..5) aus all_players.json
+    auf, wenn sie noch fehlt (z.B. bei Datenbank- und Kader-Spielern) - die
+    liga-spezifische Markt-Wahrscheinlichkeit hat weiterhin Vorrang."""
 
     if not predicted_probabilities:
         return
@@ -512,7 +559,7 @@ def _attach_predicted_probability(records, predicted_probabilities):
             continue
         fallback = predicted_probabilities.get(history_key(entry.get("playerId")))
         if fallback is not None:
-            entry["startElfProbability"] = round(float(fallback), 3)
+            entry["startElfProbability"] = int(fallback)
 
 
 def build_market_payload(token, league_id, live_predictions_df, history_by_player=None, player_stats=None, predicted_probabilities=None, football_enrichment=None):
@@ -868,11 +915,10 @@ def main():
     player_stats = {}
     football_enrichment = {}
 
-    # Startelf-Prognose fuer Kader-Spieler: der einzige gefundene Kickbase-
-    # Endpoint dafuer (/base/predictions/teams) liefert nur Bildvorschauen,
-    # keine Wahrscheinlichkeiten (siehe _attach_predicted_probability) -
-    # bleibt daher vorerst leer, bis eine echte Quelle gefunden wird.
-    predicted_probabilities = {}
+    # Offizielle 1..5-Startelf-Prognose aus all_players.json (1=Sicher .. 5=Ausgeschlossen)
+    predicted_probabilities = _load_catalog_start_probabilities()
+    if predicted_probabilities:
+        print(f"Startelf-Prognosen aus all_players.json geladen: {len(predicted_probabilities)} Spieler")
 
     try:
         print("Lade Spielerdaten (Marktwert- + Performance-Historie)...")
