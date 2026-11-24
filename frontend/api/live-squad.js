@@ -54,6 +54,8 @@ export default async function handler(req, res) {
         position: typeof p.pos === 'number' ? p.pos : null,
         teamId: p.tid != null ? String(p.tid) : null,
         marketValue: typeof p.mv === 'number' ? p.mv : null,
+        mvTrendAmount: typeof p.tfhmvt === 'number' ? p.tfhmvt : null,
+        mvTrendDir: typeof p.mvt === 'number' ? p.mvt : null,
         status: typeof p.st === 'number' ? p.st : null,
         prob: typeof p.prob === 'number' ? p.prob : null,
         points: typeof p.p === 'number' ? p.p : null,

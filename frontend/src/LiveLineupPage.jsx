@@ -30,21 +30,18 @@ import {
 
 // Live-Tab Struktur (Owner-Wunsch 24.11.2026):
 // - "own" ("Mein Kader"): aktueller Kader mit Startelf auf dem Fussballfeld
-//   (Marktwert & 5-stufiges Startelf-Icon) + Auswechselspieler & kompletter
-//   Kader als Liste darunter (Marktwert & Startelfwahrscheinlichkeit).
+//   (Marktwert & 5-stufiges Startelf-Icon) + nach Positionen gruppierte Liste
+//   darunter mit Marktwert, 24h-Marktwert-Tendenz & Startelfwahrscheinlichkeit.
 // - "live" ("Live"): Spieltagself mit Live-Punkten (Standard: eigene
 //   Spieltagself + kompakter Umschalter zum Liga-Ranking / anderen Managern).
-// - "teams" ("Spieltag"): Bundesliga-Partien via OpenLigaDB (Live-Ergebnisse
-//   & Ereignisse) + echte Team-Startelfen (Bundesliga, La Liga, MLS).
+// - "teams" ("Spieltag"): reine Bundesliga-Spieltags-Partien via OpenLigaDB
+//   (Live-Ergebnisse & Spielereignisse, aus den Partien direkter Sprung in die
+//   Live-Startelf beider Teams).
 //
 // Alle Kickbase-Live-Abfragen laufen gesteuert ueber das Backend im 60s-Takt
 // (Partial-Refresh `onlyPlayerIds` fuer laufende Partien) + 30s-OpenLigaDB-
 // Event-Trigger + Server-/Edge-Caches + 429-Backoff (kein manueller Refresh).
-const COMPETITIONS = [
-  { id: '1', name: 'Bundesliga' },
-  { id: '3', name: 'La Liga' },
-  { id: '9', name: 'MLS' },
-];
+const BUNDESLIGA_COMPETITION_ID = '1';
 
 const LEAGUE_COLORS = {
   L1: '#4ba6ff',
@@ -223,7 +220,7 @@ const LiveLineupPage = () => {
     [kickbaseId]
   );
 
-  // "own" ("Mein Kader"): aktueller Kader inkl. Auswechselspieler (Marktwert & Startelf-Prognose).
+  // "own" ("Mein Kader"): aktueller Kader inkl. Auswechselspieler (Marktwert, Tendenz & Startelf-Prognose).
   const [currentSquadRaw, setCurrentSquadRaw] = useState(null);
   const [squadLoading, setSquadLoading] = useState(true);
 
@@ -243,10 +240,8 @@ const LiveLineupPage = () => {
   const [managerPickerOpen, setManagerPickerOpen] = useState(true);
   const managerReqRef = useRef(0);
 
-  // "teams" ("Spieltag"): Wettbewerb + Bundesliga-Partien (OpenLigaDB) + Team-Startelfen.
-  const [competitionId, setCompetitionId] = useState('1');
+  // "teams" ("Spieltag"): Bundesliga-Partien (OpenLigaDB) + optionale Team-Startelf aus einer Partie.
   const [teamsList, setTeamsList] = useState(null);
-  const [teamsLoading, setTeamsLoading] = useState(false);
   const [selectedTeamId, setSelectedTeamId] = useState(null);
   const [teamData, setTeamData] = useState(null);
   const [teamCached, setTeamCached] = useState(null);
@@ -298,8 +293,8 @@ const LiveLineupPage = () => {
   const liveWatcherReqRef = useRef(0);
 
   const allBlKickbaseTeams = useMemo(
-    () => mergeKickbaseTeams(competitionId === '1' ? teamsList : null, blKickbaseTeams),
-    [competitionId, teamsList, blKickbaseTeams]
+    () => mergeKickbaseTeams(teamsList, blKickbaseTeams),
+    [teamsList, blKickbaseTeams]
   );
 
   // Aktueller View-Snapshot als Ref fuer zeitversetzte Live-Sync-Callbacks.
@@ -308,7 +303,6 @@ const LiveLineupPage = () => {
     viewStateRef.current = {
       mode,
       liveSubView,
-      competitionId,
       blMatchday,
       blCurrentMatchday,
       selectedTeamId,
@@ -325,7 +319,6 @@ const LiveLineupPage = () => {
   }, [
     mode,
     liveSubView,
-    competitionId,
     blMatchday,
     blCurrentMatchday,
     selectedTeamId,
@@ -574,22 +567,17 @@ const LiveLineupPage = () => {
     }
   }, [leagueKey, selectedManagerId, managerData, isClientRateLimited, loadLineup]);
 
-  // Teamliste laden, sobald der "Spieltag"-Modus den Wettbewerb wechselt.
+  // Bundesliga-Teamliste (Wappen + Team-IDs) einmalig im Hintergrund laden,
+  // damit aus den Partien direkt die Kickbase-Startelf geoeffnet werden kann.
   useEffect(() => {
-    if (mode !== 'teams') return;
+    if (mode !== 'teams' || teamsList !== null) return;
     let cancelled = false;
-    setTeamsLoading(true);
-    setSelectedTeamId(null);
-    setTeamData(null);
-    setTeamCached(null);
-    setTeamPrevPoints(null);
-    fetch(`/api/live-teams-list?competitionId=${competitionId}`)
+    fetch(`/api/live-teams-list?competitionId=${BUNDESLIGA_COMPETITION_ID}`)
       .then((res) => (res.ok ? res.json() : null))
       .then((json) => { if (!cancelled) setTeamsList(json?.teams || []); })
-      .catch(() => { if (!cancelled) setTeamsList([]); })
-      .finally(() => { if (!cancelled) setTeamsLoading(false); });
+      .catch(() => { if (!cancelled) setTeamsList([]); });
     return () => { cancelled = true; };
-  }, [mode, competitionId]);
+  }, [mode, teamsList]);
 
   const selectTeam = useCallback(async (teamId, forceRefresh = false) => {
     setSelectedTeamId(teamId);
@@ -597,7 +585,7 @@ const LiveLineupPage = () => {
     if (isClientRateLimited()) return null;
 
     const reqId = ++teamReqRef.current;
-    const cacheKey = `team:${competitionId}:${teamId}`;
+    const cacheKey = `team:${BUNDESLIGA_COMPETITION_ID}:${teamId}`;
     const cached = readCachedSnapshot(cacheKey);
     if (!forceRefresh) {
       setTeamCached(cached);
@@ -606,14 +594,14 @@ const LiveLineupPage = () => {
       setTeamLoading(!cached);
     }
     try {
-      const res = await fetch(`/api/live-team?competitionId=${competitionId}&teamId=${teamId}`);
+      const res = await fetch(`/api/live-team?competitionId=${BUNDESLIGA_COMPETITION_ID}&teamId=${teamId}`);
       if (handleRateLimitResponse(res)) return null;
       if (!res.ok) throw new Error('Team-Daten konnten nicht geladen werden');
       const json = await res.json();
       if (teamReqRef.current !== reqId) return null;
       const teamScope = json.matchId
         ? `team:m:${json.matchId}:${teamId}`
-        : `team:c:${competitionId}:${teamId}`;
+        : `team:c:${BUNDESLIGA_COMPETITION_ID}:${teamId}`;
       const prevTeam = diffAndSavePoints(teamScope, buildLineupPointsMap(json.players));
       setTeamPrevPoints(prevTeam);
       setTeamAnimId(nextAnimId());
@@ -629,7 +617,7 @@ const LiveLineupPage = () => {
         setTeamLoading(false);
       }
     }
-  }, [competitionId, isClientRateLimited, handleRateLimitResponse]);
+  }, [isClientRateLimited, handleRateLimitResponse]);
 
   const clearSelectedTeam = useCallback(() => {
     teamReqRef.current += 1;
@@ -714,12 +702,8 @@ const LiveLineupPage = () => {
         }
       } else if (state.mode === 'teams') {
         if (!state.selectedTeamId) return;
-        if (state.competitionId === '1') {
-          const activeTeamIds = getActiveBundesligaKickbaseTeamIds(blMatches, state.allBlKickbaseTeams);
-          if (activeTeamIds.size > 0 && !activeTeamIds.has(String(state.selectedTeamId))) return;
-        } else if (!state.teamData?.isLive) {
-          return;
-        }
+        const activeTeamIds = getActiveBundesligaKickbaseTeamIds(blMatches, state.allBlKickbaseTeams);
+        if (activeTeamIds.size > 0 && !activeTeamIds.has(String(state.selectedTeamId))) return;
         lastKickbaseTickAtRef.current = Date.now();
         await selectTeam(state.selectedTeamId, true);
       }
@@ -763,7 +747,7 @@ const LiveLineupPage = () => {
         action = 'ranking_only';
       }
     } else if (state.mode === 'teams') {
-      if (state.competitionId !== '1' || !state.selectedTeamId) return;
+      if (!state.selectedTeamId) return;
       const relevantIds = new Set([String(state.selectedTeamId)]);
       const hits = matchTriggeredEventsToTeamIds(triggeredMatches, relevantIds, state.allBlKickbaseTeams);
       if (hits.length === 0) return;
@@ -836,7 +820,7 @@ const LiveLineupPage = () => {
           return { performed: true, beforePoints: null, afterPoints: null };
         }
 
-        if (action === 'team' && current.mode === 'teams' && current.competitionId === '1' && current.selectedTeamId) {
+        if (action === 'team' && current.mode === 'teams' && current.selectedTeamId) {
           const beforePoints = sumPlayersPoints(current.teamData?.players);
           const afterPoints = await selectTeam(current.selectedTeamId, true);
           return { performed: true, beforePoints, afterPoints };
@@ -1033,16 +1017,13 @@ const LiveLineupPage = () => {
 
   // OpenLigaDB-Partien nachladen, sobald im "Spieltag"-Tab der Spieltag gewechselt wird.
   useEffect(() => {
-    if (mode !== 'teams' || competitionId !== '1') return;
+    if (mode !== 'teams') return;
     if (blMatchday == null && blMatchesDataRef.current) return;
     loadBundesligaMatches(blMatchday, { silent: false, nocache: false });
-  }, [mode, competitionId, blMatchday, loadBundesligaMatches]);
+  }, [mode, blMatchday, loadBundesligaMatches]);
 
   // Zentrales 30s-OpenLigaDB-Live-Polling ueber den gesamten Live-Tab.
   const blLiveActive = Boolean(blLiveWatcherMeta.hasLiveMatch || blLiveWatcherMeta.hasImminentMatch);
-  const kickbaseLivePollActive = Boolean(
-    blLiveActive || (mode === 'teams' && competitionId !== '1' && teamData?.isLive)
-  );
 
   useEffect(() => {
     if (!blLiveActive) return undefined;
@@ -1068,7 +1049,7 @@ const LiveLineupPage = () => {
 
   // Zentraler 60s-Kickbase-Live-Takt (Backend-gesteuert, kein manueller Refresh).
   useEffect(() => {
-    if (!kickbaseLivePollActive) return undefined;
+    if (!blLiveActive) return undefined;
 
     let intervalId = null;
     const phaseOffsetMs = 2000 + Math.floor(Math.random() * 7000);
@@ -1091,7 +1072,7 @@ const LiveLineupPage = () => {
       if (intervalId) window.clearInterval(intervalId);
       document.removeEventListener('visibilitychange', onVisibilityChange);
     };
-  }, [kickbaseLivePollActive, runScheduledKickbaseTick]);
+  }, [blLiveActive, runScheduledKickbaseTick]);
 
   useEffect(() => () => {
     cancelPendingEventTimers();
@@ -1101,8 +1082,8 @@ const LiveLineupPage = () => {
   }, [cancelPendingEventTimers]);
 
   // Aktuellen Kader (aus /api/live-squad oder advisor-data.json) mit
-  // all_players.json (Marktwert, Startelfwahrscheinlichkeit `prob`, Fotos,
-  // Vereinswappen) anreichern fuer den "Mein Kader"-Tab.
+  // all_players.json (Marktwert, 24h-Tendenz `tfhmvt`/`mvt`, Startelf-Prognose
+  // `prob`, Fotos, Vereinswappen) anreichern fuer den "Mein Kader"-Tab.
   const enrichedCurrentSquad = useMemo(() => {
     if (!Array.isArray(currentSquadRaw) || currentSquadRaw.length === 0) return null;
     return currentSquadRaw.map((p) => {
@@ -1114,6 +1095,20 @@ const LiveLineupPage = () => {
           ? `${p.firstName} ${p.name || ''}`.trim()
           : (p.name || `Spieler ${pid}`);
       const tid = p.teamId != null ? String(p.teamId) : (full?.tid != null ? String(full.tid) : null);
+      const mvTrendAmount =
+        typeof p.mvTrendAmount === 'number'
+          ? p.mvTrendAmount
+          : typeof full?.tfhmvt === 'number'
+            ? full.tfhmvt
+            : typeof p.changeYesterday === 'number'
+              ? p.changeYesterday
+              : null;
+      const mvTrendDir =
+        typeof p.mvTrendDir === 'number'
+          ? p.mvTrendDir
+          : typeof full?.mvt === 'number'
+            ? full.mvt
+            : null;
       return {
         id: pid,
         position: full?.pos || p.position || 3,
@@ -1123,6 +1118,8 @@ const LiveLineupPage = () => {
         teamLogo: (tid && teamLogoMap?.get(tid)) || (full?.tim ? `https://kickbase.b-cdn.net/${full.tim}` : null),
         imagePath: full?.pim || p.imagePath || null,
         marketValue: typeof full?.mv === 'number' && full.mv > 0 ? full.mv : (p.marketValue ?? 0),
+        mvTrendAmount,
+        mvTrendDir,
         prob: typeof full?.prob === 'number' ? full.prob : (p.prob ?? p.startElfProbability ?? null),
         status: typeof full?.st === 'number' ? full.st : (p.status ?? 0),
         lineupOrder: typeof p.lineupOrder === 'number' ? p.lineupOrder : null,
@@ -1181,7 +1178,7 @@ const LiveLineupPage = () => {
   const displayedRanking = ranking || cachedRanking?.ranking || null;
   const displayedMatchday = matchday ?? cachedOwn?.matchday ?? cachedRanking?.matchday ?? null;
   const selectedManagerName = displayedRanking?.find((r) => r.userId === selectedManagerId)?.name;
-  const selectedTeam = teamsList?.find((t) => t.id === selectedTeamId);
+  const selectedTeam = allBlKickbaseTeams.find((t) => String(t.id) === String(selectedTeamId));
 
   const teamLineup = useMemo(() => {
     if (!teamData?.players?.length) return null;
@@ -1252,13 +1249,12 @@ const LiveLineupPage = () => {
     return null;
   }, [blMatchesData, blMatchday, cachedBlMatches]);
   const selectedTeamOpenLigaMatch = useMemo(() => {
-    if (competitionId !== '1' || !selectedTeam || !displayedBlMatches?.matches) return null;
+    if (!selectedTeam || !displayedBlMatches?.matches) return null;
     return findOpenLigaMatchForKickbaseTeam(displayedBlMatches.matches, selectedTeam);
-  }, [competitionId, selectedTeam, displayedBlMatches]);
+  }, [selectedTeam, displayedBlMatches]);
   const leagueAccentColor = LEAGUE_COLORS[leagueKey] || '#4ba6ff';
   const blAutoPollingActive = Boolean(
     mode === 'teams' &&
-    competitionId === '1' &&
     blLiveActive &&
     (blMatchday == null || blMatchday === blCurrentMatchday)
   );
@@ -1284,7 +1280,7 @@ const LiveLineupPage = () => {
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border bg-amber-500/10 border-amber-400/35 text-[10px] font-bold uppercase tracking-wider text-amber-300">
                   <span>Pause</span>
                 </span>
-              ) : kickbaseLivePollActive ? (
+              ) : blLiveActive ? (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border bg-[#ef4444]/15 border-[#ef4444]/40 text-[10px] font-bold uppercase tracking-wider text-[#ef4444]">
                   {bgSyncing ? (
                     <RefreshCw size={11} className="animate-spin" />
@@ -1330,7 +1326,7 @@ const LiveLineupPage = () => {
           <div className="card-surface rounded-2xl p-5 text-center text-sm text-red-400 mb-4">{setupError}</div>
         )}
 
-        {/* TAB 1: MEIN KADER (aktueller Kader auf dem Feld + Auswechselspieler & Liste darunter) */}
+        {/* TAB 1: MEIN KADER (aktueller Kader auf dem Feld + nach Positionen gruppierte Liste darunter) */}
         {mode === 'own' && (
           <>
             {!kickbaseId ? (
@@ -1435,113 +1431,61 @@ const LiveLineupPage = () => {
           </>
         )}
 
-        {/* TAB 3: SPIELTAG (Bundesliga-Partien OpenLigaDB + echte Team-Startelfen) */}
+        {/* TAB 3: SPIELTAG (nur Bundesliga-Partien via OpenLigaDB, Team-Startelf per Klick aus Partie) */}
         {mode === 'teams' && (
           <>
-            <div className="flex gap-2 mb-3 overflow-x-auto no-scrollbar">
-              {COMPETITIONS.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => setCompetitionId(c.id)}
-                  className={`px-3.5 py-1.5 rounded-full whitespace-nowrap text-xs border transition-colors cursor-pointer ${
-                    competitionId === c.id
-                      ? 'bg-[#ff5c3e]/15 border-[#ff5c3e] text-white font-semibold'
-                      : 'border-[#2e2e2e] text-[#8b92a5] font-medium hover:text-white'
-                  }`}
-                >
-                  {c.name}
-                </button>
-              ))}
-            </div>
-
-            {/* Horizontale Durchscroll-Kacheln mit Mannschafts-Logos */}
-            {teamsLoading ? (
-              <div className="flex gap-2.5 overflow-x-auto no-scrollbar pb-1 mb-4">
-                {Array.from({ length: 6 }, (_, i) => (
-                  <div
-                    key={i}
-                    className="w-[84px] h-[82px] shrink-0 rounded-2xl card-surface animate-pulse"
-                  />
-                ))}
-              </div>
-            ) : teamsList && teamsList.length > 0 ? (
-              <div className="flex gap-2.5 overflow-x-auto no-scrollbar pb-1 mb-4">
-                {teamsList.map((t) => {
-                  const isActive = selectedTeamId === t.id;
-                  return (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => (isActive && competitionId === '1' ? clearSelectedTeam() : selectTeam(t.id))}
-                      className={`w-[84px] shrink-0 flex flex-col items-center justify-center gap-1.5 px-2 py-2.5 rounded-2xl border transition-all active:scale-95 cursor-pointer ${
-                        isActive
-                          ? 'bg-[#ff5c3e]/12 border-[#ff5c3e] shadow-md'
-                          : 'card-surface hover:border-white/25'
-                      }`}
-                    >
-                      {t.logo ? (
-                        <img
-                          src={t.logo}
-                          alt={t.name}
-                          className="w-9 h-9 object-contain"
-                          onError={(e) => { e.target.style.display = 'none'; }}
-                        />
-                      ) : (
-                        <div className="w-9 h-9 rounded-full bg-[#202020] flex items-center justify-center text-[10px] font-semibold text-[#8b92a5]">
-                          {t.name?.substring(0, 2)}
-                        </div>
-                      )}
-                      <span className={`text-[10px] text-center truncate w-full ${isActive ? 'text-white font-semibold' : 'text-gray-300 font-medium'}`}>
-                        {t.name}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            ) : competitionId !== '1' ? (
-              <div className="text-center text-[#8b92a5] text-sm py-6">Keine Teams gefunden.</div>
-            ) : null}
-
             {teamError && (
               <div className="card-surface rounded-2xl p-5 text-center text-sm text-red-400 mb-4">{teamError}</div>
             )}
 
-            {competitionId === '1' && selectedTeamId && selectedTeamOpenLigaMatch ? (
-              <SelectedTeamMatchBanner
-                key={`banner-${selectedTeamOpenLigaMatch.match.matchId}-${selectedTeamOpenLigaMatch.side}`}
-                match={selectedTeamOpenLigaMatch.match}
-                selectedSide={selectedTeamOpenLigaMatch.side}
-                teamsList={teamsList}
-                onSelectTeam={selectTeam}
-                onShowAllMatches={clearSelectedTeam}
-                isUpdated={blChangedMatchIds.has(selectedTeamOpenLigaMatch.match.matchId)}
-                newEventIds={blNewEventIds}
-              />
-            ) : selectedTeam && displayedTeamMeta?.score ? (
-              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-200">
-                <span>{selectedTeam.name}</span>
-                <span className="text-[#626978]">·</span>
-                <span className="tabular-nums">{displayedTeamMeta.score}</span>
-                {displayedTeamMeta.isLive && (
-                  <span className="text-xs font-semibold text-[#ef4444]">LIVE {displayedTeamMeta.minute}'</span>
-                )}
-              </div>
-            ) : null}
-
             {selectedTeamId ? (
-              displayedTeamLineup ? (
-                <LiveLineupPitch
-                  key={`team-${competitionId}-${selectedTeamId}`}
-                  lineup={displayedTeamLineup}
-                  totalPoints={displayedTeamTotalPoints}
-                  prevPointsMap={teamLineup ? teamPrevPoints : null}
-                  animId={teamLineup ? teamAnimId : null}
-                />
-              ) : teamLoading ? (
-                <div className="text-center text-[#8b92a5] text-sm py-10">Lade Live-Daten…</div>
-              ) : null
-            ) : competitionId === '1' ? (
+              <>
+                {selectedTeamOpenLigaMatch ? (
+                  <SelectedTeamMatchBanner
+                    key={`banner-${selectedTeamOpenLigaMatch.match.matchId}-${selectedTeamOpenLigaMatch.side}`}
+                    match={selectedTeamOpenLigaMatch.match}
+                    selectedSide={selectedTeamOpenLigaMatch.side}
+                    teamsList={allBlKickbaseTeams}
+                    onSelectTeam={selectTeam}
+                    onShowAllMatches={clearSelectedTeam}
+                    isUpdated={blChangedMatchIds.has(selectedTeamOpenLigaMatch.match.matchId)}
+                    newEventIds={blNewEventIds}
+                  />
+                ) : (
+                  <div className="mb-3 flex items-center justify-between gap-2">
+                    <button
+                      type="button"
+                      onClick={clearSelectedTeam}
+                      className="text-xs font-semibold text-[#8b92a5] hover:text-white transition-colors cursor-pointer"
+                    >
+                      ← Alle Partien
+                    </button>
+                    {selectedTeam && displayedTeamMeta?.score && (
+                      <div className="flex items-center gap-2 text-sm font-semibold text-gray-200">
+                        <span>{selectedTeam.name}</span>
+                        <span className="text-[#626978]">·</span>
+                        <span className="tabular-nums">{displayedTeamMeta.score}</span>
+                        {displayedTeamMeta.isLive && (
+                          <span className="text-xs font-semibold text-[#ef4444]">LIVE {displayedTeamMeta.minute}'</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {displayedTeamLineup ? (
+                  <LiveLineupPitch
+                    key={`team-${selectedTeamId}`}
+                    lineup={displayedTeamLineup}
+                    totalPoints={displayedTeamTotalPoints}
+                    prevPointsMap={teamLineup ? teamPrevPoints : null}
+                    animId={teamLineup ? teamAnimId : null}
+                  />
+                ) : teamLoading ? (
+                  <div className="text-center text-[#8b92a5] text-sm py-10">Lade Live-Daten…</div>
+                ) : null}
+              </>
+            ) : (
               <BundesligaMatchesSection
                 matchesData={displayedBlMatches}
                 loading={blMatchesLoading}
@@ -1550,17 +1494,13 @@ const LiveLineupPage = () => {
                 currentMatchday={blCurrentMatchday}
                 onChangeMatchday={setBlMatchday}
                 onRetry={() => loadBundesligaMatches(blMatchday, { silent: false, nocache: false })}
-                teamsList={teamsList}
+                teamsList={allBlKickbaseTeams}
                 onSelectKickbaseTeam={selectTeam}
                 changedMatchIds={blChangedMatchIds}
                 newEventIds={blNewEventIds}
                 autoPollingActive={blAutoPollingActive}
               />
-            ) : teamsList?.length > 0 ? (
-              <div className="card-surface rounded-2xl p-6 text-center text-xs text-[#8b92a5]">
-                Tippe oben auf ein Vereinslogo, um die Live-Startelf des Teams zu sehen.
-              </div>
-            ) : null}
+            )}
           </>
         )}
       </div>

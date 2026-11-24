@@ -6,6 +6,7 @@ import StartProbBadge, { StartProbLegend } from './StartProbBadge';
 
 const IMAGE_BASE = 'https://kickbase.b-cdn.net/';
 const POS_CODE_TO_LABEL = { 1: 'TW', 2: 'ABW', 3: 'MF', 4: 'ST' };
+const POS_CODE_TO_FULL = { 1: 'Torwart', 2: 'Abwehr', 3: 'Mittelfeld', 4: 'Sturm' };
 const POS_LABEL_TO_CODE = { TW: 1, ABW: 2, MF: 3, ST: 4 };
 const POSITION_COLORS = { 1: '#eab308', 2: '#3b82f6', 3: '#22c55e', 4: '#ef4444' };
 const MIN_SLOTS = { 1: 1, 2: 3, 3: 3, 4: 2 };
@@ -30,6 +31,16 @@ const formatCompactMoney = (val) => {
   return `${Math.round(num / 1000)}k €`;
 };
 
+const formatSignedCompactMoney = (val) => {
+  if (val === null || val === undefined || Number.isNaN(Number(val))) return null;
+  const num = Number(val);
+  if (num === 0) return '±0 €';
+  const sign = num > 0 ? '+' : '-';
+  const abs = Math.abs(num);
+  if (abs >= 1_000_000) return `${sign}${(abs / 1_000_000).toFixed(2).replace('.', ',')} Mio €`;
+  return `${sign}${Math.round(abs / 1000)}k €`;
+};
+
 const toPosCode = (pos) => {
   if (typeof pos === 'number' && pos >= 1 && pos <= 4) return pos;
   return POS_LABEL_TO_CODE[String(pos || '').toUpperCase()] || 3;
@@ -39,7 +50,7 @@ const toPosCode = (pos) => {
 // Auswechselspieler (Bank) sauber ab.
 const splitStartersAndBench = (players, liveStartingIds) => {
   if (!Array.isArray(players) || players.length === 0) {
-    return { starters: [], bench: [] };
+    return { starters: [], bench: [], starterIds: new Set() };
   }
 
   // 1) Falls Kickbase explizite lineupOrder (`lo`) liefert, direkt nutzen.
@@ -49,6 +60,7 @@ const splitStartersAndBench = (players, liveStartingIds) => {
     return {
       starters: players.filter((p) => starterSet.has(String(p.id))),
       bench: players.filter((p) => !starterSet.has(String(p.id))),
+      starterIds: starterSet,
     };
   }
 
@@ -112,15 +124,37 @@ const splitStartersAndBench = (players, liveStartingIds) => {
     }
   }
 
-  const bench = players
-    .filter((p) => !chosenIds.has(String(p.id)))
-    .sort((a, b) => {
-      const posDiff = toPosCode(a.position) - toPosCode(b.position);
-      if (posDiff !== 0) return posDiff;
-      return (b.marketValue || 0) - (a.marketValue || 0);
-    });
+  const bench = players.filter((p) => !chosenIds.has(String(p.id)));
+  return { starters: chosen, bench, starterIds: chosenIds };
+};
 
-  return { starters: chosen, bench };
+const MarketTrendBadge = ({ amount, dir }) => {
+  const hasAmount = typeof amount === 'number' && !Number.isNaN(amount);
+  const isRising = hasAmount ? amount > 0 : dir === 1;
+  const isFalling = hasAmount ? amount < 0 : dir === 2;
+
+  if (!hasAmount && dir == null) return null;
+
+  const colorClass = isRising
+    ? 'text-green-400'
+    : isFalling
+      ? 'text-red-400'
+      : 'text-[#626978]';
+
+  const arrow = isRising ? '▲' : isFalling ? '▼' : '▬';
+  const label = hasAmount
+    ? formatSignedCompactMoney(amount)
+    : isRising
+      ? 'Steigend'
+      : isFalling
+        ? 'Fallend'
+        : 'Stabil';
+
+  return (
+    <div className={`text-[10px] sm:text-[11px] font-bold tabular-nums leading-none mt-1 ${colorClass}`}>
+      {arrow} {label}
+    </div>
+  );
 };
 
 const SquadPitchCircle = ({ player, size, containerSize }) => {
@@ -183,7 +217,7 @@ const SquadPitchRow = ({ players }) => {
   );
 };
 
-const SquadListRow = ({ player, roleLabel }) => {
+const SquadListRow = ({ player, isBench }) => {
   const [imgFailed, setImgFailed] = useState(false);
   const posCode = toPosCode(player.position);
   const posLabel = POS_CODE_TO_LABEL[posCode] || 'MF';
@@ -230,9 +264,9 @@ const SquadListRow = ({ player, roleLabel }) => {
           <span className="text-[13px] sm:text-sm font-bold text-white truncate">
             {player.name}
           </span>
-          {roleLabel && (
+          {isBench && (
             <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/[0.06] text-[#8b92a5] border border-white/10 shrink-0">
-              {roleLabel}
+              Bank
             </span>
           )}
         </div>
@@ -250,14 +284,12 @@ const SquadListRow = ({ player, roleLabel }) => {
         </div>
       </div>
 
-      {/* Marktwert */}
+      {/* Marktwert + 24h Marktwert-Tendenz */}
       <div className="text-right shrink-0">
         <div className="text-[13px] sm:text-sm font-bold text-gray-100 tabular-nums leading-none">
           {formatCompactMoney(player.marketValue)}
         </div>
-        <div className="text-[9px] font-semibold uppercase tracking-wider text-[#626978] mt-1">
-          Marktwert
-        </div>
+        <MarketTrendBadge amount={player.mvTrendAmount} dir={player.mvTrendDir} />
       </div>
     </div>
   );
@@ -266,28 +298,65 @@ const SquadListRow = ({ player, roleLabel }) => {
 const CurrentSquadView = ({ players, liveStartingIds, loading }) => {
   const [showLegend, setShowLegend] = useState(false);
 
-  const { pitchLineup, starters, bench, totalValue, formationLabel } = useMemo(() => {
+  const {
+    pitchLineup,
+    startersCount,
+    benchCount,
+    starterIds,
+    groupedByPosition,
+    totalValue,
+    totalTrend,
+    hasAnyTrend,
+    formationLabel,
+  } = useMemo(() => {
     const normalized = (players || []).map((p) => ({
       ...p,
       position: toPosCode(p.position),
     }));
-    const { starters: stList, bench: bnList } = splitStartersAndBench(normalized, liveStartingIds);
+    const { starters: stList, bench: bnList, starterIds: stIds } = splitStartersAndBench(normalized, liveStartingIds);
     const padded = buildLineupWithDummies(stList);
     const awCount = stList.filter((p) => p.position === 2).length;
     const mfCount = stList.filter((p) => p.position === 3).length;
     const stCount = stList.filter((p) => p.position === 4).length;
     const sumMv = normalized.reduce((sum, p) => sum + (p.marketValue || 0), 0);
 
-    const startersSorted = [...stList].sort((a, b) => {
-      if (a.position !== b.position) return a.position - b.position;
-      return (b.marketValue || 0) - (a.marketValue || 0);
-    });
+    let sumTrend = 0;
+    let trendFound = false;
+    for (const p of normalized) {
+      if (typeof p.mvTrendAmount === 'number' && !Number.isNaN(p.mvTrendAmount)) {
+        sumTrend += p.mvTrendAmount;
+        trendFound = true;
+      }
+    }
+
+    const groups = [1, 2, 3, 4]
+      .map((posCode) => {
+        const list = normalized
+          .filter((p) => p.position === posCode)
+          .sort((a, b) => {
+            const aStart = stIds.has(String(a.id)) ? 1 : 0;
+            const bStart = stIds.has(String(b.id)) ? 1 : 0;
+            if (aStart !== bStart) return bStart - aStart;
+            return (b.marketValue || 0) - (a.marketValue || 0);
+          });
+        return {
+          posCode,
+          label: POS_CODE_TO_FULL[posCode],
+          color: POSITION_COLORS[posCode],
+          players: list,
+        };
+      })
+      .filter((g) => g.players.length > 0);
 
     return {
       pitchLineup: padded,
-      starters: startersSorted,
-      bench: bnList,
+      startersCount: stList.length,
+      benchCount: bnList.length,
+      starterIds: stIds,
+      groupedByPosition: groups,
       totalValue: sumMv,
+      totalTrend: sumTrend,
+      hasAnyTrend: trendFound,
       formationLabel: stList.length > 0 ? `${awCount}-${mfCount}-${stCount}` : null,
     };
   }, [players, liveStartingIds]);
@@ -340,7 +409,7 @@ const CurrentSquadView = ({ players, liveStartingIds, loading }) => {
               {players.length} Spieler
             </div>
             <div className="text-[10px] font-semibold uppercase tracking-widest text-[#8b92a5] mt-0.5 tabular-nums">
-              {starters.length} Startelf · {bench.length} Bank
+              {startersCount} Startelf · {benchCount} Bank
             </div>
           </div>
 
@@ -348,18 +417,22 @@ const CurrentSquadView = ({ players, liveStartingIds, loading }) => {
             <div className="text-xl sm:text-2xl font-extrabold text-white leading-none tabular-nums">
               {formatCompactMoney(totalValue)}
             </div>
-            <div className="text-[10px] font-semibold uppercase tracking-widest text-[#8b92a5] mt-1">
-              Kaderwert
-            </div>
+            {hasAnyTrend ? (
+              <MarketTrendBadge amount={totalTrend} dir={null} />
+            ) : (
+              <div className="text-[10px] font-semibold uppercase tracking-widest text-[#8b92a5] mt-1">
+                Kaderwert
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Liste unterhalb des Fussballfelds: Auswechselspieler + kompletter Kader mit Marktwert & Startelfwahrscheinlichkeit */}
+      {/* Liste unterhalb des Fussballfelds: nach Positionen gruppiert mit Marktwert, Tendenz & Startelf-Prognose */}
       <div className="mt-5">
         <div className="flex items-center justify-between gap-2 mb-3">
           <h3 className="text-xs font-black uppercase tracking-widest text-gray-200">
-            Kader &amp; Auswechselspieler
+            Kader nach Position
           </h3>
           <button
             type="button"
@@ -377,28 +450,26 @@ const CurrentSquadView = ({ players, liveStartingIds, loading }) => {
 
         {showLegend && <StartProbLegend className="mb-3.5" />}
 
-        {bench.length > 0 && (
-          <div className="mb-4">
-            <div className="text-[10px] font-bold uppercase tracking-widest text-[#8b92a5] mb-2">
-              Auswechselspieler ({bench.length})
+        <div className="flex flex-col gap-4">
+          {groupedByPosition.map((group) => (
+            <div key={group.posCode}>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: group.color }} />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[#8b92a5]">
+                  {group.label} ({group.players.length})
+                </span>
+              </div>
+              <div className="flex flex-col gap-2">
+                {group.players.map((player) => (
+                  <SquadListRow
+                    key={player.id}
+                    player={player}
+                    isBench={!starterIds.has(String(player.id))}
+                  />
+                ))}
+              </div>
             </div>
-            <div className="flex flex-col gap-2">
-              {bench.map((player) => (
-                <SquadListRow key={player.id} player={player} roleLabel="Bank" />
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-[#8b92a5] mb-2">
-            Startelf ({starters.length})
-          </div>
-          <div className="flex flex-col gap-2">
-            {starters.map((player) => (
-              <SquadListRow key={player.id} player={player} />
-            ))}
-          </div>
+          ))}
         </div>
       </div>
     </div>
