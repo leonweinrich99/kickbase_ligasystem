@@ -78,6 +78,12 @@ export const HIGHLIGHT_ACCENT_COLOR = {
   penalty_save: '#f59e0b',
 };
 
+export const HIGHLIGHT_ICON = {
+  goal: '⚽',
+  assist: '👟',
+  penalty_save: '🧤',
+};
+
 export const HIGHLIGHT_PRIORITY = {
   goal: 3,
   penalty_save: 2,

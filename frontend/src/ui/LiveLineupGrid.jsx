@@ -7,6 +7,7 @@ import LiveHighlightOverlay from './LiveHighlightOverlay';
 import {
   classifyHighlightEvent,
   HIGHLIGHT_ACCENT_COLOR,
+  HIGHLIGHT_ICON,
   HIGHLIGHT_PRIORITY,
 } from '../liveLineupUtils';
 
@@ -78,7 +79,7 @@ const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId }) => {
   const navigate = useNavigate();
   const openPlayer = (player) => navigate('/live-player', { state: { player } });
 
-  // Minuten-Metadaten aus den vorhandenen Spieler-Events ableiten (kein Extra-Fetch).
+  // Minuten-Metadaten + Highlight-Index (Tore, Vorlagen, gehaltene 11m) aus den Events ableiten.
   const timelineMeta = useMemo(() => {
     const realPlayers = (lineup || []).filter((p) => !p.isDummy);
     let maxEventMin = 0;
@@ -87,6 +88,8 @@ const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId }) => {
     let hasLive = false;
     let anyFinished = false;
     const minuteDeltas = new Map();
+    const minuteHighlights = new Map();
+    const highlightsByType = { goal: [], assist: [], penalty_save: [] };
 
     for (const p of realPlayers) {
       if (p.matchStatus === 2) {
@@ -103,8 +106,23 @@ const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId }) => {
           const m = Math.max(0, Math.min(120, typeof ev.minute === 'number' ? ev.minute : 0));
           if (m > maxEventMin) maxEventMin = m;
           minuteDeltas.set(m, (minuteDeltas.get(m) || 0) + (ev.points || 0));
+
+          const hlType = classifyHighlightEvent(ev);
+          if (hlType) {
+            const item = { type: hlType, player: p, points: ev.points, minute: m };
+            highlightsByType[hlType].push(item);
+            if (!minuteHighlights.has(m)) minuteHighlights.set(m, []);
+            minuteHighlights.get(m).push(item);
+          }
         }
       }
+    }
+
+    for (const list of minuteHighlights.values()) {
+      list.sort((a, b) => (HIGHLIGHT_PRIORITY[b.type] || 0) - (HIGHLIGHT_PRIORITY[a.type] || 0));
+    }
+    for (const list of Object.values(highlightsByType)) {
+      list.sort((a, b) => a.minute - b.minute);
     }
 
     const baseMax = Math.max(maxEventMin, maxMatchMin, anyFinished ? 90 : 0);
@@ -116,6 +134,8 @@ const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId }) => {
       hasLive,
       anyFinished,
       minuteDeltas,
+      minuteHighlights,
+      highlightsByType,
     };
   }, [lineup]);
 
@@ -226,6 +246,7 @@ const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId }) => {
   const landedTimerRef = useRef(null);
   const lastScrubHighlightRef = useRef('');
   const seenLiveHighlightsRef = useRef(null);
+  const highlightCycleRef = useRef({ goal: 0, assist: 0, penalty_save: 0 });
 
   const [activeHighlight, setActiveHighlight] = useState(null);
   const [landedHighlight, setLandedHighlight] = useState(null);
@@ -238,7 +259,7 @@ const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId }) => {
     }
   }, []);
 
-  const triggerHighlight = useCallback((type, player, points = null) => {
+  const triggerHighlight = useCallback((type, player, points = null, minute = null) => {
     if (!player) return;
     const pitchEl = pitchRef.current;
     const avatarEl = avatarRefs.current.get(String(player.id));
@@ -266,6 +287,7 @@ const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId }) => {
       type,
       player,
       points,
+      minute,
       targetX,
       targetY,
       targetScale,
@@ -300,20 +322,8 @@ const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId }) => {
       return undefined;
     }
 
-    let best = null;
-    for (const p of lineup || []) {
-      if (p.isDummy || !Array.isArray(p.events)) continue;
-      for (const ev of p.events) {
-        const em = Math.max(0, Math.min(120, typeof ev.minute === 'number' ? ev.minute : 0));
-        if (em !== activeMinute) continue;
-        const type = classifyHighlightEvent(ev);
-        if (!type) continue;
-        const prio = HIGHLIGHT_PRIORITY[type] || 0;
-        if (!best || prio > best.prio) {
-          best = { type, player: p, points: ev.points, prio };
-        }
-      }
-    }
+    const hlList = timelineMeta.minuteHighlights.get(activeMinute);
+    const best = hlList?.[0] || null;
 
     if (!best) return undefined;
     const dedupKey = `${activeMinute}:${best.player.id}:${best.type}`;
@@ -321,10 +331,10 @@ const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId }) => {
     lastScrubHighlightRef.current = dedupKey;
 
     const rafId = window.requestAnimationFrame(() => {
-      triggerHighlight(best.type, best.player, best.points);
+      triggerHighlight(best.type, best.player, best.points, best.minute);
     });
     return () => window.cancelAnimationFrame(rafId);
-  }, [isScrubbing, activeMinute, lineup, triggerHighlight]);
+  }, [isScrubbing, activeMinute, timelineMeta.minuteHighlights, triggerHighlight]);
 
   // Auto-Trigger 2: Bei Live-Updates, sobald ein neues Tor / eine neue Vorlage / ein gehaltener 11m eintrifft
   useEffect(() => {
@@ -338,13 +348,14 @@ const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId }) => {
       for (const ev of p.events || []) {
         const type = classifyHighlightEvent(ev);
         if (!type) continue;
-        const key = `${p.id}:${ev.minute ?? 0}:${ev.points ?? 0}:${type}`;
+        const minute = Math.max(0, Math.min(120, typeof ev.minute === 'number' ? ev.minute : 0));
+        const key = `${p.id}:${minute}:${ev.points ?? 0}:${type}`;
         currentKeys.add(key);
 
         if (seenLiveHighlightsRef.current && !seenLiveHighlightsRef.current.has(key)) {
           const prio = HIGHLIGHT_PRIORITY[type] || 0;
           if (!newestBest || prio > newestBest.prio) {
-            newestBest = { type, player: p, points: ev.points, prio };
+            newestBest = { type, player: p, points: ev.points, minute, prio };
           }
         }
       }
@@ -360,18 +371,29 @@ const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId }) => {
     if (!newestBest || isScrubbing) return undefined;
 
     const rafId = window.requestAnimationFrame(() => {
-      triggerHighlight(newestBest.type, newestBest.player, newestBest.points);
+      triggerHighlight(newestBest.type, newestBest.player, newestBest.points, newestBest.minute);
     });
     return () => window.cancelAnimationFrame(rafId);
   }, [lineup, animId, isScrubbing, triggerHighlight]);
 
-  // Vorschau-Auswahl fuer die 3 Test-Buttons unten links auf dem Spielfeld
+  // Interaktive Highlight-Buttons unten links:
+  // - Bei echten Spieltags-Aktionen werden diese der Reihe nach abgespielt (mit Anzahl-Zaehler).
+  // - Bei 0 Aktionen dient der Button als Vorschau mit einem passenden Spieler aus dem Kader.
   const realPlayers = useMemo(
     () => computed.players.filter((p) => !p.isDummy),
     [computed.players],
   );
 
-  const handleTestHighlight = useCallback((type) => {
+  const handleHighlightButtonClick = useCallback((type) => {
+    const realEvents = timelineMeta.highlightsByType[type] || [];
+    if (realEvents.length > 0) {
+      const idx = highlightCycleRef.current[type] % realEvents.length;
+      highlightCycleRef.current[type] = (idx + 1) % realEvents.length;
+      const ev = realEvents[idx];
+      triggerHighlight(ev.type, ev.player, ev.points, ev.minute);
+      return;
+    }
+
     if (realPlayers.length === 0) return;
     const realSt = realPlayers.filter((p) => p.position === 4);
     const realMf = realPlayers.filter((p) => p.position === 3 || p.position === 0);
@@ -390,8 +412,38 @@ const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId }) => {
       target = realTw[0] || realPlayers[0];
       demoPoints = 75;
     }
-    triggerHighlight(type, target, demoPoints);
-  }, [realPlayers, triggerHighlight]);
+    triggerHighlight(type, target, demoPoints, null);
+  }, [timelineMeta.highlightsByType, realPlayers, triggerHighlight]);
+
+  const handleSelectHighlightMinute = useCallback((minute, hl) => {
+    if (!hl?.player) return;
+    lastScrubHighlightRef.current = `${minute}:${hl.player.id}:${hl.type}`;
+    triggerHighlight(hl.type, hl.player, hl.points, minute);
+  }, [triggerHighlight]);
+
+  const highlightButtons = [
+    {
+      type: 'goal',
+      label: 'Tore',
+      count: timelineMeta.highlightsByType.goal.length,
+      activeStyle: 'bg-emerald-500/15 border-emerald-400/40 text-emerald-300 hover:bg-emerald-500/25',
+      idleStyle: 'border-transparent text-gray-400 opacity-55 hover:opacity-100 hover:bg-emerald-500/15',
+    },
+    {
+      type: 'assist',
+      label: 'Vorlagen',
+      count: timelineMeta.highlightsByType.assist.length,
+      activeStyle: 'bg-sky-500/15 border-sky-400/40 text-sky-300 hover:bg-sky-500/25',
+      idleStyle: 'border-transparent text-gray-400 opacity-55 hover:opacity-100 hover:bg-sky-500/15',
+    },
+    {
+      type: 'penalty_save',
+      label: 'Elfmeter gehalten',
+      count: timelineMeta.highlightsByType.penalty_save.length,
+      activeStyle: 'bg-amber-500/15 border-amber-400/40 text-amber-300 hover:bg-amber-500/25',
+      idleStyle: 'border-transparent text-gray-400 opacity-55 hover:opacity-100 hover:bg-amber-500/15',
+    },
+  ];
 
   const cornerMinuteLabel = activeMinute > 90
     ? `90+${activeMinute - 90}'`
@@ -446,36 +498,36 @@ const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId }) => {
 
         {(realPlayers.length > 0 || computed.total != null) && (
           <div className="relative z-10 flex items-end justify-between px-4 sm:px-8 mt-4">
-            {/* Dezente Probe-Buttons zum direkten Ausprobieren der 3 Aktions-Animationen */}
+            {/* Highlight-Buttons unten links (mit Anzahl-Zaehler bei echten Spieltags-Aktionen) */}
             {realPlayers.length > 0 ? (
-              <div className="flex items-center gap-1 bg-black/45 border border-white/10 rounded-full p-1 backdrop-blur-md">
-                <button
-                  type="button"
-                  onClick={() => handleTestHighlight('goal')}
-                  title="Tor-Animation testen"
-                  aria-label="Tor-Animation testen"
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-sm hover:bg-green-500/20 active:scale-90 transition-all cursor-pointer"
-                >
-                  ⚽
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleTestHighlight('assist')}
-                  title="Vorlage-Animation testen"
-                  aria-label="Vorlage-Animation testen"
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-sm hover:bg-sky-500/20 active:scale-90 transition-all cursor-pointer"
-                >
-                  👟
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleTestHighlight('penalty_save')}
-                  title="Elfmeter-gehalten-Animation testen"
-                  aria-label="Elfmeter-gehalten-Animation testen"
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-sm hover:bg-amber-500/20 active:scale-90 transition-all cursor-pointer"
-                >
-                  🧤
-                </button>
+              <div className="flex items-center gap-1 bg-black/55 border border-white/10 rounded-full p-1 backdrop-blur-md">
+                {highlightButtons.map((btn) => (
+                  <button
+                    key={btn.type}
+                    type="button"
+                    onClick={() => handleHighlightButtonClick(btn.type)}
+                    title={
+                      btn.count > 0
+                        ? `${btn.label} abspielen (${btn.count})`
+                        : `${btn.label}-Animation testen`
+                    }
+                    aria-label={
+                      btn.count > 0
+                        ? `${btn.label} abspielen (${btn.count})`
+                        : `${btn.label}-Animation testen`
+                    }
+                    className={`h-7 ${btn.count > 0 ? 'px-2 gap-1' : 'w-7 justify-center'} rounded-full border flex items-center text-sm active:scale-90 transition-all cursor-pointer ${
+                      btn.count > 0 ? btn.activeStyle : btn.idleStyle
+                    }`}
+                  >
+                    <span className="leading-none">{HIGHLIGHT_ICON[btn.type]}</span>
+                    {btn.count > 0 && (
+                      <span className="text-[11px] font-bold tabular-nums leading-none">
+                        {btn.count}
+                      </span>
+                    )}
+                  </button>
+                ))}
               </div>
             ) : (
               <div />
@@ -520,9 +572,11 @@ const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId }) => {
           hasLive={timelineMeta.hasLive}
           anyFinished={timelineMeta.anyFinished}
           minuteDeltas={timelineMeta.minuteDeltas}
+          minuteHighlights={timelineMeta.minuteHighlights}
           isPlaying={isPlaying}
           resetToken={resetToken}
           onSelectMinute={handleSelectMinute}
+          onSelectHighlightMinute={handleSelectHighlightMinute}
           onResetToLive={handleResetToLive}
           onTogglePlay={handleTogglePlay}
           onPausePlay={() => setIsPlaying(false)}

@@ -1,10 +1,29 @@
 import React, { useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import { Play, Pause, RotateCcw } from 'lucide-react';
+import { HIGHLIGHT_ICON } from '../liveLineupUtils';
 
 const STEP_PX = 14;
 // Fluessige Wiedergabe-Geschwindigkeit: ~8 Minuten/Sekunde (~11s fuer 90 Min)
 // per 60/120fps requestAnimationFrame statt abgehackter 1-Minuten-Spruenge.
 const PLAY_MINUTES_PER_SEC = 8;
+
+const HIGHLIGHT_TICK_STYLES = {
+  goal: {
+    badge: 'bg-[#10291a] border-emerald-400/90 shadow-[0_0_8px_rgba(34,197,94,0.6)]',
+    tick: 'bg-emerald-400 shadow-[0_0_6px_rgba(34,197,94,0.75)]',
+    label: 'text-emerald-400',
+  },
+  assist: {
+    badge: 'bg-[#0c2333] border-sky-400/90 shadow-[0_0_8px_rgba(56,189,248,0.6)]',
+    tick: 'bg-sky-400 shadow-[0_0_6px_rgba(56,189,248,0.75)]',
+    label: 'text-sky-400',
+  },
+  penalty_save: {
+    badge: 'bg-[#2b1d08] border-amber-400/90 shadow-[0_0_8px_rgba(245,158,11,0.65)]',
+    tick: 'bg-amber-400 shadow-[0_0_6px_rgba(245,158,11,0.75)]',
+    label: 'text-amber-400',
+  },
+};
 
 const formatMinuteLabel = (minute, maxMinute, hasLive, anyFinished) => {
   if (minute >= maxMinute) {
@@ -29,9 +48,11 @@ const LiveMinuteScrubber = ({
   hasLive,
   anyFinished,
   minuteDeltas,
+  minuteHighlights,
   isPlaying,
   resetToken = 0,
   onSelectMinute,
+  onSelectHighlightMinute,
   onResetToLive,
   onTogglePlay,
   onPausePlay,
@@ -188,6 +209,10 @@ const LiveMinuteScrubber = ({
     lastReportedMinuteRef.current = minute;
     onSelectMinute(minute);
     scrollToMinute(minute, 'smooth');
+    const hlList = minuteHighlights?.get(minute);
+    if (hlList && hlList.length > 0) {
+      onSelectHighlightMinute?.(minute, hlList[0]);
+    }
   };
 
   const handleJumpLive = () => {
@@ -200,7 +225,7 @@ const LiveMinuteScrubber = ({
 
   return (
     <div className="mt-3 card-surface rounded-2xl px-3.5 py-3 select-none">
-      <div className="flex items-center justify-between gap-2 mb-2.5">
+      <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -232,14 +257,14 @@ const LiveMinuteScrubber = ({
         </div>
       </div>
 
-      {/* Scrollbares Minuten-Lineal mit fester Mittelmarkierung */}
-      <div className="relative h-12">
+      {/* Scrollbares Minuten-Lineal mit fester Mittelmarkierung & prominenten Highlight-Badges */}
+      <div className="relative h-16">
         {/* Fade-Kanten links & rechts */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-[#101010] to-transparent z-10 rounded-l-lg" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[#101010] to-transparent z-10 rounded-r-lg" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-[#101010] to-transparent z-20 rounded-l-lg" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[#101010] to-transparent z-20 rounded-r-lg" />
 
         {/* Feste rote Mittel-Nadel */}
-        <div className="pointer-events-none absolute top-1 bottom-3 left-1/2 -translate-x-1/2 w-[2px] rounded-full bg-[#ff5c3e] shadow-[0_0_8px_rgba(255,92,62,0.8)] z-20" />
+        <div className="pointer-events-none absolute top-6 bottom-3 left-1/2 -translate-x-1/2 w-[2px] rounded-full bg-[#ff5c3e] shadow-[0_0_8px_rgba(255,92,62,0.85)] z-30" />
 
         <div
           ref={scrollerRef}
@@ -259,53 +284,94 @@ const LiveMinuteScrubber = ({
               const isFive = m % 5 === 0;
               const isActive = m === activeMinute;
               const netDelta = minuteDeltas?.get(m) || 0;
-              const showLabel =
-                m === 0 ||
-                m === maxMinute ||
-                ((m === 45 || m === 90 || isFifteen) && Math.abs(m - maxMinute) >= 4);
+              const hlList = minuteHighlights?.get(m) || null;
+              const primaryHl = hlList?.[0] || null;
+              const hlStyle = primaryHl ? HIGHLIGHT_TICK_STYLES[primaryHl.type] : null;
+
+              const hasHighlightNearby =
+                !primaryHl &&
+                ((minuteHighlights?.has(m - 1)) ||
+                  (minuteHighlights?.has(m + 1)) ||
+                  (minuteHighlights?.has(m - 2)) ||
+                  (minuteHighlights?.has(m + 2)));
+              const prevMinuteHasHighlight = Boolean(primaryHl && minuteHighlights?.has(m - 1));
+
+              const showLabel = primaryHl
+                ? !prevMinuteHasHighlight
+                : m === 0 ||
+                  m === maxMinute ||
+                  (!hasHighlightNearby && (m === 45 || m === 90 || isFifteen) && Math.abs(m - maxMinute) >= 4);
+
+              const hlTooltip = hlList
+                ? hlList
+                    .map((h) => `${HIGHLIGHT_ICON[h.type]} ${h.player?.lastName || h.player?.name} (${m}')`)
+                    .join(' · ')
+                : undefined;
 
               return (
                 <button
                   key={m}
                   type="button"
                   onClick={() => handleTickClick(m)}
-                  aria-label={`Minute ${m}`}
+                  title={hlTooltip}
+                  aria-label={hlTooltip || `Minute ${m}`}
                   style={{ width: `${STEP_PX}px` }}
-                  className="shrink-0 flex flex-col items-center justify-end h-12 pb-0.5 focus:outline-none group"
+                  className={`shrink-0 relative flex flex-col items-center justify-end h-16 pb-0.5 focus:outline-none group overflow-visible ${
+                    primaryHl ? 'z-10' : ''
+                  }`}
                 >
-                  {/* Kleiner Event-Punkt ueber Minuten mit Punkt-Aktionen */}
-                  <span className="h-1.5 flex items-center justify-center mb-1">
-                    {netDelta !== 0 && (
+                  {/* Oberer Marker-Bereich: Prominentes Highlight-Icon ODER normaler Event-Punkt */}
+                  <span className="h-6 flex items-end justify-center mb-1 overflow-visible">
+                    {primaryHl ? (
                       <span
-                        className={`rounded-full ${
+                        className={`relative w-[22px] h-[22px] rounded-full border flex items-center justify-center text-[11px] leading-none transition-transform group-hover:scale-110 ${hlStyle.badge} ${
+                          isActive ? 'scale-115' : ''
+                        }`}
+                      >
+                        {HIGHLIGHT_ICON[primaryHl.type]}
+                        {hlList.length > 1 && (
+                          <span className="absolute -top-1 -right-1 min-w-[12px] h-[12px] px-0.5 rounded-full bg-white text-black text-[8px] font-black leading-none flex items-center justify-center shadow">
+                            {hlList.length}
+                          </span>
+                        )}
+                      </span>
+                    ) : netDelta !== 0 ? (
+                      <span
+                        className={`mb-0.5 rounded-full ${
                           Math.abs(netDelta) >= 15 ? 'w-1.5 h-1.5' : 'w-1 h-1'
                         } ${netDelta > 0 ? 'bg-emerald-400' : 'bg-[#ff5c3e]'}`}
                       />
-                    )}
+                    ) : null}
                   </span>
 
                   {/* Strich-Markierung */}
                   <span
                     className={`rounded-full transition-colors ${
-                      isActive
-                        ? 'h-5 w-[2px] bg-[#ff5c3e]'
-                        : isMajor
-                          ? 'h-4 w-[1.5px] bg-white/75 group-hover:bg-white'
-                          : isFive
-                            ? 'h-3 w-[1.5px] bg-white/40 group-hover:bg-white/70'
-                            : 'h-2 w-[1px] bg-white/20 group-hover:bg-white/50'
+                      primaryHl
+                        ? `h-5 w-[2.5px] ${hlStyle.tick}`
+                        : isActive
+                          ? 'h-5 w-[2px] bg-[#ff5c3e]'
+                          : isMajor
+                            ? 'h-4 w-[1.5px] bg-white/75 group-hover:bg-white'
+                            : isFive
+                              ? 'h-3 w-[1.5px] bg-white/40 group-hover:bg-white/70'
+                              : 'h-2 w-[1px] bg-white/20 group-hover:bg-white/50'
                     }`}
                   />
 
                   {/* Minuten-Beschriftung */}
-                  <span className="h-3.5 mt-0.5 flex items-center justify-center">
+                  <span className="h-3.5 mt-0.5 flex items-center justify-center overflow-visible">
                     {showLabel && (
                       <span
                         className={`text-[9px] font-bold leading-none tabular-nums whitespace-nowrap ${
-                          isActive ? 'text-[#ff5c3e]' : 'text-[#8b92a5]'
+                          primaryHl
+                            ? hlStyle.label
+                            : isActive
+                              ? 'text-[#ff5c3e]'
+                              : 'text-[#8b92a5]'
                         }`}
                       >
-                        {m === 45 ? 'HZ' : `${m}'`}
+                        {m === 45 && !primaryHl ? 'HZ' : `${m}'`}
                       </span>
                     )}
                   </span>
