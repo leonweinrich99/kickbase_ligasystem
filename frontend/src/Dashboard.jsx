@@ -5,6 +5,7 @@ import logo from './assets/logo.png';
 import PageHeader from './ui/PageHeader';
 import CloseButton from './ui/CloseButton';
 import ManagerAvatar from './ui/ManagerAvatar';
+import AdBanner from './ui/AdBanner';
 
 export const TrophyIcon = ({ type }) => {
   const colors = { gold: '#eab308', silver: '#94a3b8', bronze: '#ca8a04' };
@@ -312,6 +313,11 @@ const Dashboard = ({ data, currentView, onNext, onPrev, prevRanks, mode = 'live'
           ))}
         </div>
       )}
+
+      {/* Werbe-Easter-Egg unter der Tabelle (Owner-Wunsch 24.11.2026). */}
+      <div className="max-w-md mx-auto mt-4">
+        <AdBanner />
+      </div>
 
       {isInfoOpen && <TrueTableInfoModal onClose={() => setIsInfoOpen(false)} />}
     </div>

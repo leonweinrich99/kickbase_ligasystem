@@ -7,6 +7,7 @@ import LoadingScreen from './LoadingScreen';
 import useMinimumDelay from './useMinimumDelay';
 import { shouldShowSplash, markSplashShown } from './appLoadState';
 import ManagerAvatar from './ui/ManagerAvatar';
+import AdBanner from './ui/AdBanner';
 
 // "Sieger SF13" & Co. sind Platzhalter für noch nicht ausgespielte Partien,
 // "Freilos" für einen direkten Aufstieg ohne Gegner - beides ist (noch) kein
@@ -475,7 +476,14 @@ const Pokal = () => {
         </div>
         </div>
       </div>
-      
+
+      {/* Werbe-Easter-Egg unter dem Turnierbaum (Owner-Wunsch 24.11.2026) -
+          ausserhalb der mobile/xl:block-Weichen, damit genau EIN Banner
+          unabhaengig vom Viewport erscheint. */}
+      <div className="max-w-md mx-auto px-4 xl:px-0 pb-6">
+        <AdBanner />
+      </div>
+
     </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { Newspaper, Trophy, TrendingUp, Flame, Clock, BarChart3, ChevronRight } 
 import PageHeader from './ui/PageHeader';
 import { FEED_CATEGORIES, getCategoryMeta, formatArticleDate } from './feedMeta';
 import newsLogo from './assets/news_logo.svg';
+import AdBanner from './ui/AdBanner';
 
 const CategoryIcon = ({ id, size = 13 }) => {
   if (id === 'spieltag') return <Flame size={size} />;
@@ -427,6 +428,13 @@ const FeedPage = () => {
       {!loading && !error && activeCat === 'all' && (
         <div>
           <HeroCarousel articles={heroArticles} activeCat={activeCat} />
+
+          {/* Werbe-Easter-Egg als native "Anzeige" zwischen Karussell und
+              Regalen (Owner-Wunsch 24.11.2026). */}
+          <div className="mb-7">
+            <AdBanner />
+          </div>
+
           {shelves.map((shelf) => (
             <CategoryShelf
               key={shelf.id}
