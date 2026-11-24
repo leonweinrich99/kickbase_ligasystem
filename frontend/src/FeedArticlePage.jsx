@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Clock, Flame, Trophy, TrendingUp, Newspaper, ArrowUpRight, Quote } from 'lucide-react';
 import { getCategoryMeta, formatArticleDate } from './feedMeta';
+import AdBanner from './ui/AdBanner';
 
 const CategoryIcon = ({ id, size = 12 }) => {
   if (id === 'spieltag') return <Flame size={size} />;
@@ -191,10 +192,13 @@ const FeedArticlePage = () => {
           </div>
         )}
 
-        {/* Artikel-Sektionen */}
+        {/* Artikel-Sektionen (inkl. nativem Werbe-Easter-Egg zwischen den Abschnitten) */}
         <div className="space-y-7">
-          {(article.sections || []).map((sec, idx) => (
-            <section key={idx} className="space-y-3.5">
+          {(article.sections || []).map((sec, idx, arr) => {
+            const showAdAfter = arr.length >= 2 && idx === Math.floor((arr.length - 1) / 2);
+            return (
+              <React.Fragment key={idx}>
+                <section className="space-y-3.5">
               {sec.heading && (
                 <h2
                   className={`text-lg sm:text-xl font-bold leading-snug ${
@@ -322,8 +326,15 @@ const FeedArticlePage = () => {
                   </ul>
                 </div>
               )}
-            </section>
-          ))}
+                </section>
+                {showAdAfter && (
+                  <div className="my-2">
+                    <AdBanner key={`ad-${article.slug}`} />
+                  </div>
+                )}
+              </React.Fragment>
+            );
+          })}
         </div>
 
         {/* Tags */}

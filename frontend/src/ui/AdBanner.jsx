@@ -1,27 +1,37 @@
 import React, { useEffect, useState } from 'react';
 import { AD_BANNERS } from '../adBanners';
 
+// Gemischter Deck-Generator im Modul-Scope: garantiert zufaellige Rotation,
+// verhindert aber gleichzeitig, dass zwei <AdBanner /> auf derselben Seite
+// (z.B. zwischen LIGA 1/2 und LIGA 2/3) zufaellig dieselbe Anzeige doppeln.
+let shuffledDeck = [];
+let lastPickedId = null;
+
+function drawNextBanner() {
+  if (shuffledDeck.length === 0) {
+    shuffledDeck = [...AD_BANNERS];
+    for (let i = shuffledDeck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledDeck[i], shuffledDeck[j]] = [shuffledDeck[j], shuffledDeck[i]];
+    }
+    if (shuffledDeck.length > 1 && shuffledDeck[0].id === lastPickedId) {
+      [shuffledDeck[0], shuffledDeck[1]] = [shuffledDeck[1], shuffledDeck[0]];
+    }
+  }
+  const picked = shuffledDeck.shift();
+  lastPickedId = picked.id;
+  return picked;
+}
+
 // Fake-Werbebanner-Easter-Egg (Owner-Wunsch 24.11.2026) - sieht aus wie eine
 // native Anzeige (kleines "ANZEIGE"-Label, Logo/Tagline), ist aber ein reiner
-// Insider-Gag fuer den Liga-Freundeskreis. Waehlt bei jedem Mount zufaellig
-// EINEN Eintrag aus adBanners.js, damit an derselben Stelle nicht immer
-// dieselbe Werbung haengt. Faellt die Stelle (z.B. durch Re-Render der
-// Elternkomponente) neu aus, ist das gewollt - macht den Running Gag
-// ueberraschender.
-//
-// Math.random() darf laut React-Regeln nicht waehrend des Renderns laufen
-// (impure) - die Auswahl passiert deshalb in einem Effect NACH dem ersten
-// Render, nicht in useMemo/useState-Initializer.
+// Insider-Gag fuer den Liga-Freundeskreis.
 const AdBanner = ({ className = '' }) => {
   const [banner, setBanner] = useState(null);
 
   useEffect(() => {
-    // Einmalige zufaellige Auswahl nach dem ersten Render - kann nicht
-    // synchron in Render/useMemo passieren (impure), muss aber auch nicht an
-    // einen externen Systemzustand synchronisiert werden, daher hier als
-    // bewusste Ausnahme (gleiches Muster wie in UserDetail.jsx/Advisor.jsx).
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setBanner(AD_BANNERS[Math.floor(Math.random() * AD_BANNERS.length)]);
+    setBanner(drawNextBanner());
   }, []);
 
   if (!banner) {

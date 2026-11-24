@@ -301,21 +301,28 @@ const Dashboard = ({ data, currentView, onNext, onPrev, prevRanks, mode = 'live'
       ) : (
         <div className="flex flex-col lg:flex-row gap-4">
           {processedLeagues.map((league, idx) => (
-            <LeagueColumn
-              key={league.name}
-              league={league}
-              isSaisonView={isSaisonView}
-              rankOffset={mode === 'archive' ? idx * 9 : 0}
-              prevRanks={prevRanks}
-              routeBase={routeBase}
-              isFirstColumn={idx === 0}
-            />
+            <React.Fragment key={league.name}>
+              <LeagueColumn
+                league={league}
+                isSaisonView={isSaisonView}
+                rankOffset={mode === 'archive' ? idx * 9 : 0}
+                prevRanks={prevRanks}
+                routeBase={routeBase}
+                isFirstColumn={idx === 0}
+              />
+              {/* Werbe-Easter-Egg zwischen den Ligen auf Mobile (gestapelte Spalten) */}
+              {idx < processedLeagues.length - 1 && (
+                <div className="lg:hidden my-1">
+                  <AdBanner />
+                </div>
+              )}
+            </React.Fragment>
           ))}
         </div>
       )}
 
-      {/* Werbe-Easter-Egg unter der Tabelle (Owner-Wunsch 24.11.2026). */}
-      <div className="max-w-md mx-auto mt-4">
+      {/* Werbe-Easter-Egg unter der Tabelle (Desktop-3-Spalten & Wahre Tabelle). */}
+      <div className={`max-w-md mx-auto mt-4 ${isTrueTable ? '' : 'hidden lg:block'}`}>
         <AdBanner />
       </div>
 
