@@ -266,3 +266,25 @@ body {
 .sticky-safe-top {
   top: env(safe-area-inset-top, 0px);
 }
+
+/* Durchlaufender News-Sender-Marktticker (nahtlose Endlosschleife) */
+@keyframes feed-marquee {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.feed-marquee-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: feed-marquee 85s linear infinite;
+}
+
+.feed-marquee-wrap:hover .feed-marquee-track,
+.feed-marquee-wrap:active .feed-marquee-track {
+  animation-play-state: paused;
+}

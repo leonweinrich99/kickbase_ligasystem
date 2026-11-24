@@ -1,13 +1,234 @@
 {
   "updatedAt": "2026-11-24T01:35:00+01:00",
   "ticker": [
-    { "label": "LIGA 1 REALISIERT", "value": "+221,4M €", "positive": true },
-    { "label": "LIGA 2 REALISIERT", "value": "+216,9M €", "positive": true },
-    { "label": "LIGA 3 REALISIERT", "value": "+118,9M €", "positive": true },
-    { "label": "TOP TRADER", "value": "casper +104,0M €", "positive": true },
-    { "label": "TOP KADER-COUP", "value": "Scherhant +17,5M €", "positive": true },
-    { "label": "MD10 MVP", "value": "Moreira 441 Pkt", "positive": true },
-    { "label": "TOP WIN-RATE", "value": "Puliester 75 %", "positive": true }
+    {
+      "tag": "MAKRO",
+      "label": "LIGA 1 REALISIERT",
+      "value": "+221,4M €",
+      "positive": true
+    },
+    {
+      "tag": "MAKRO",
+      "label": "LIGA 2 REALISIERT",
+      "value": "+216,9M €",
+      "positive": true
+    },
+    {
+      "tag": "MAKRO",
+      "label": "LIGA 3 REALISIERT",
+      "value": "+118,9M €",
+      "positive": true
+    },
+    {
+      "tag": "DEALS",
+      "label": "GESAMT-VOLUMEN",
+      "value": "4.124 Transfers",
+      "positive": true
+    },
+    {
+      "tag": "COUP",
+      "label": "TOP REALISIERT · Daghim (AchtSieben)",
+      "value": "+9,65M €",
+      "positive": true
+    },
+    {
+      "tag": "COUP",
+      "label": "TOP TRADE · Muheim (Leon Weinrich)",
+      "value": "+6,50M €",
+      "positive": true
+    },
+    {
+      "tag": "KADER",
+      "label": "TOP KADER-COUP · Scherhant (franzi__j)",
+      "value": "+17,46M €",
+      "positive": true
+    },
+    {
+      "tag": "ROI",
+      "label": "TOP PENNY-STOCK · Batz (Enobi)",
+      "value": "+988 %",
+      "positive": true
+    },
+    {
+      "tag": "FLIP",
+      "label": "SCHNELLSTER FLIP · Wolf (Leon)",
+      "value": "+795k €/Tag",
+      "positive": true
+    },
+    {
+      "tag": "EFFIZIENZ",
+      "label": "BESTE WIN-RATE · Puliester",
+      "value": "75 % (Ø +789k €)",
+      "positive": true
+    },
+    {
+      "tag": "VALUE",
+      "label": "NIEDRIGSTES OVERPAY · Blake",
+      "value": "+8,1 %",
+      "positive": true
+    },
+    {
+      "tag": "RISK",
+      "label": "GRÖSSTER VERLUST · Moreira (Vinnie JR)",
+      "value": "-13,74M €",
+      "positive": false
+    },
+    {
+      "tag": "TRADER #1",
+      "label": "casper (L3)",
+      "value": "+103,97M € · 62% Win",
+      "positive": true
+    },
+    {
+      "tag": "TRADER #2",
+      "label": "Leon Weinrich (L1)",
+      "value": "+67,65M € · 60% Win",
+      "positive": true
+    },
+    {
+      "tag": "TRADER #3",
+      "label": "Stomping Tantrum (L2)",
+      "value": "+64,19M € · 62% Win",
+      "positive": true
+    },
+    {
+      "tag": "TRADER #4",
+      "label": "Puliester (L3)",
+      "value": "+58,22M € · 75% Win",
+      "positive": true
+    },
+    {
+      "tag": "TRADER #5",
+      "label": "DeinHomieEnobi (L1)",
+      "value": "+57,65M € · 61% Win",
+      "positive": true
+    },
+    {
+      "tag": "TRADER #6",
+      "label": "Ansgar Trinkmann (L2)",
+      "value": "+54,70M € · 58% Win",
+      "positive": true
+    },
+    {
+      "tag": "TRADER #7",
+      "label": "leongarcon (L2)",
+      "value": "+46,81M € · 60% Win",
+      "positive": true
+    },
+    {
+      "tag": "TRADER #8",
+      "label": "JulianD47 (L2)",
+      "value": "+43,75M € · 54% Win",
+      "positive": true
+    },
+    {
+      "tag": "TRADER #9",
+      "label": "Esel (L1)",
+      "value": "+38,57M € · 55% Win",
+      "positive": true
+    },
+    {
+      "tag": "TRADER #10",
+      "label": "Vinnie JR (L1)",
+      "value": "+36,12M € · 67% Win",
+      "positive": true
+    },
+    {
+      "tag": "TRADER #11",
+      "label": "Geißbock (L3)",
+      "value": "+36,04M € · 64% Win",
+      "positive": true
+    },
+    {
+      "tag": "TRADER #12",
+      "label": "kushler (L3)",
+      "value": "+34,93M € · 56% Win",
+      "positive": true
+    },
+    {
+      "tag": "TRADER #13",
+      "label": "Justin (L1)",
+      "value": "+34,16M € · 63% Win",
+      "positive": true
+    },
+    {
+      "tag": "TRADER #14",
+      "label": "franzi__j (L2)",
+      "value": "+21,86M € · +32,5M offen",
+      "positive": true
+    },
+    {
+      "tag": "TRADER #15",
+      "label": "J0tt (L2)",
+      "value": "+21,68M € · 61% Win",
+      "positive": true
+    },
+    {
+      "tag": "TRADER #16",
+      "label": "Wat Mamba (L1)",
+      "value": "+11,58M € · 47% Win",
+      "positive": true
+    },
+    {
+      "tag": "TRADER #17",
+      "label": "Blake (L1)",
+      "value": "+10,94M € · 8,1% OVP",
+      "positive": true
+    },
+    {
+      "tag": "TRADER #18",
+      "label": "Sebastian (L3)",
+      "value": "-8,94M € · +18,6M offen",
+      "positive": false
+    },
+    {
+      "tag": "TRADER #19",
+      "label": "Mo6 (L1)",
+      "value": "-16,15M € · +15,1M offen",
+      "positive": false
+    },
+    {
+      "tag": "TRADER #20",
+      "label": "AchtSieben (L2)",
+      "value": "-17,20M € · MD10-Sieger",
+      "positive": false
+    },
+    {
+      "tag": "TRADER #21",
+      "label": "Marci (L3)",
+      "value": "-18,49M € · 20% Win",
+      "positive": false
+    },
+    {
+      "tag": "TRADER #22",
+      "label": "CarlCarlsenCarlsen (L2)",
+      "value": "-18,87M € · 52% Win",
+      "positive": false
+    },
+    {
+      "tag": "TRADER #23",
+      "label": "Curl3z (L1)",
+      "value": "-19,15M € · 34% Win",
+      "positive": false
+    },
+    {
+      "tag": "TRADER #24",
+      "label": "KönigMichi (L3)",
+      "value": "-25,04M € · 42,1% OVP",
+      "positive": false
+    },
+    {
+      "tag": "TRADER #25",
+      "label": "Flocke (L3)",
+      "value": "-27,42M € · 40% Win",
+      "positive": false
+    },
+    {
+      "tag": "TRADER #26",
+      "label": "Fynn (L3)",
+      "value": "-34,35M € · 17% Win",
+      "positive": false
+    }
   ],
   "articles": [
     {
@@ -22,11 +243,26 @@
       "title": "Neun Punkte trennen Liga 1: Der 10. Spieltag bricht alle Rekorde – und AchtSieben stiehlt allen die Show",
       "subtitle": "Erstmals in dieser Saison knackt das gesamte Ligasystem die 1.000-Punkte-Marke im Schnitt. Oben in Liga 1 wechselt die Spitze zum dritten Mal – während ein Tabellensiebter aus Liga 2 den Gesamttagessieg abräumt.",
       "heroStats": [
-        { "label": "Liga-Schnitt MD10", "value": "1.033 Pkt" },
-        { "label": "Vorsprung Liga 1", "value": "+9 Pkt" },
-        { "label": "Tagessieger gesamt", "value": "1.324 Pkt" }
+        {
+          "label": "Liga-Schnitt MD10",
+          "value": "1.033 Pkt"
+        },
+        {
+          "label": "Vorsprung Liga 1",
+          "value": "+9 Pkt"
+        },
+        {
+          "label": "Tagessieger gesamt",
+          "value": "1.324 Pkt"
+        }
       ],
-      "tags": ["Spieltag 10", "Liga 1", "Rekord", "AchtSieben", "Moreira"],
+      "tags": [
+        "Spieltag 10",
+        "Liga 1",
+        "Rekord",
+        "AchtSieben",
+        "Moreira"
+      ],
       "sections": [
         {
           "heading": "Das erste 1.000er-Wochenende der Saison",
@@ -54,16 +290,70 @@
           ],
           "table": {
             "caption": "Top-Performer am 10. Spieltag (über alle Ligen)",
-            "columns": ["Rang", "Manager", "Liga", "MD 10", "Gesamt"],
+            "columns": [
+              "Rang",
+              "Manager",
+              "Liga",
+              "MD 10",
+              "Gesamt"
+            ],
             "rows": [
-              ["1.", "AchtSieben", "LIGA 2", "1.324", "8.058 (#7)"],
-              ["2.", "Esel", "LIGA 1", "1.282", "10.110 (#3)"],
-              ["3.", "casper", "LIGA 3", "1.268", "9.807 (#2)"],
-              ["4.", "Ansgar Trinkmann", "LIGA 2", "1.265", "9.153 (#4)"],
-              ["5.", "Geißbock", "LIGA 3", "1.260", "10.349 (#1)"],
-              ["6.", "Blake", "LIGA 1", "1.254", "9.612 (#4)"],
-              ["7.", "leongarcon", "LIGA 2", "1.236", "10.391 (#2)"],
-              ["8.", "Leon Weinrich", "LIGA 1", "1.225", "8.985 (#6)"]
+              [
+                "1.",
+                "AchtSieben",
+                "LIGA 2",
+                "1.324",
+                "8.058 (#7)"
+              ],
+              [
+                "2.",
+                "Esel",
+                "LIGA 1",
+                "1.282",
+                "10.110 (#3)"
+              ],
+              [
+                "3.",
+                "casper",
+                "LIGA 3",
+                "1.268",
+                "9.807 (#2)"
+              ],
+              [
+                "4.",
+                "Ansgar Trinkmann",
+                "LIGA 2",
+                "1.265",
+                "9.153 (#4)"
+              ],
+              [
+                "5.",
+                "Geißbock",
+                "LIGA 3",
+                "1.260",
+                "10.349 (#1)"
+              ],
+              [
+                "6.",
+                "Blake",
+                "LIGA 1",
+                "1.254",
+                "9.612 (#4)"
+              ],
+              [
+                "7.",
+                "leongarcon",
+                "LIGA 2",
+                "1.236",
+                "10.391 (#2)"
+              ],
+              [
+                "8.",
+                "Leon Weinrich",
+                "LIGA 1",
+                "1.225",
+                "8.985 (#6)"
+              ]
             ]
           }
         },
@@ -80,7 +370,8 @@
             ]
           }
         }
-      ]
+      ],
+      "image": "/feed-images/spieltag-10.jpg"
     },
     {
       "slug": "wsj-der-100-millionen-club-casper-und-die-top-trader",
@@ -94,11 +385,26 @@
       "title": "Der 100-Millionen-Club: Wie casper die Transfer-Börse sprengt – und warum Disziplin Rendite schlägt",
       "subtitle": "4.124 Transaktionen, über 557 Millionen Euro realisierte Gewinne über drei Ligen: Unsere Auswertung aller Käufe, Verkäufe und Startkader-Exits zeigt, wer auf dem Transfermarkt echtes Alpha generiert.",
       "heroStats": [
-        { "label": "Top Trader (Real.)", "value": "+103,97M €" },
-        { "label": "Marktvolumen", "value": "4.124 Deals" },
-        { "label": "Beste Win-Rate", "value": "75 %" }
+        {
+          "label": "Top Trader (Real.)",
+          "value": "+103,97M €"
+        },
+        {
+          "label": "Marktvolumen",
+          "value": "4.124 Deals"
+        },
+        {
+          "label": "Beste Win-Rate",
+          "value": "75 %"
+        }
       ],
-      "tags": ["Wall Street", "Top Trader", "casper", "Leon Weinrich", "Puliester"],
+      "tags": [
+        "Wall Street",
+        "Top Trader",
+        "casper",
+        "Leon Weinrich",
+        "Puliester"
+      ],
       "sections": [
         {
           "heading": "Ein einsamer Spitzenreiter über der 100-Millionen-Marke",
@@ -115,18 +421,95 @@
           ],
           "table": {
             "caption": "Top 10 Trader über alle Ligen (Realisierter Gewinn inkl. Startkader, Kickbase-nah)",
-            "columns": ["#", "Manager (Liga)", "Realisiert", "Trades", "Win %", "Ø OVP"],
+            "columns": [
+              "#",
+              "Manager (Liga)",
+              "Realisiert",
+              "Trades",
+              "Win %",
+              "Ø OVP"
+            ],
             "rows": [
-              ["1.", "casper (L3)", "+103,97M €", "136", "62 %", "+17,1 %"],
-              ["2.", "Leon Weinrich (L1)", "+67,65M €", "97", "60 %", "+10,2 %"],
-              ["3.", "Stomping Tantrum (L2)", "+64,19M €", "86", "62 %", "+21,3 %"],
-              ["4.", "tjalf (ehem. L3)", "+61,53M €", "114", "60 %", "+24,5 %"],
-              ["5.", "Puliester (L3)", "+58,22M €", "59", "75 %", "+9,0 %"],
-              ["6.", "DeinHomieEnobi (L1)", "+57,65M €", "100", "61 %", "+19,9 %"],
-              ["7.", "Ansgar Trinkmann (L2)", "+54,70M €", "99", "58 %", "+14,9 %"],
-              ["8.", "leongarcon (L2)", "+46,81M €", "103", "60 %", "+17,9 %"],
-              ["9.", "JulianD47 (L2)", "+43,75M €", "80", "54 %", "+18,5 %"],
-              ["10.", "Esel (L1)", "+38,57M €", "88", "55 %", "+24,8 %"]
+              [
+                "1.",
+                "casper (L3)",
+                "+103,97M €",
+                "136",
+                "62 %",
+                "+17,1 %"
+              ],
+              [
+                "2.",
+                "Leon Weinrich (L1)",
+                "+67,65M €",
+                "97",
+                "60 %",
+                "+10,2 %"
+              ],
+              [
+                "3.",
+                "Stomping Tantrum (L2)",
+                "+64,19M €",
+                "86",
+                "62 %",
+                "+21,3 %"
+              ],
+              [
+                "4.",
+                "tjalf (ehem. L3)",
+                "+61,53M €",
+                "114",
+                "60 %",
+                "+24,5 %"
+              ],
+              [
+                "5.",
+                "Puliester (L3)",
+                "+58,22M €",
+                "59",
+                "75 %",
+                "+9,0 %"
+              ],
+              [
+                "6.",
+                "DeinHomieEnobi (L1)",
+                "+57,65M €",
+                "100",
+                "61 %",
+                "+19,9 %"
+              ],
+              [
+                "7.",
+                "Ansgar Trinkmann (L2)",
+                "+54,70M €",
+                "99",
+                "58 %",
+                "+14,9 %"
+              ],
+              [
+                "8.",
+                "leongarcon (L2)",
+                "+46,81M €",
+                "103",
+                "60 %",
+                "+17,9 %"
+              ],
+              [
+                "9.",
+                "JulianD47 (L2)",
+                "+43,75M €",
+                "80",
+                "54 %",
+                "+18,5 %"
+              ],
+              [
+                "10.",
+                "Esel (L1)",
+                "+38,57M €",
+                "88",
+                "55 %",
+                "+24,8 %"
+              ]
             ]
           }
         },
@@ -141,7 +524,8 @@
             "attribution": "The Trading Journal · Market Desk"
           }
         }
-      ]
+      ],
+      "image": "/feed-images/wsj-100m-club.jpg"
     },
     {
       "slug": "pokal-viertelfinale-justin-eskaliert-und-drittliga-invasion",
@@ -155,11 +539,27 @@
       "title": "Viertelfinal-Beben: Justins 1.796-Punkte-Machtdemonstration und die Drittliga-Invasion",
       "subtitle": "Die vorläufigen Stände der Runde der letzten Acht stellen das Kräfteverhältnis auf den Kopf: Neben dem Liga-1-Gipfel stürmen gleich zwei Drittligisten Richtung Halbfinale am 5. Dezember.",
       "heroStats": [
-        { "label": "Top-Score VF", "value": "1.796 Pkt" },
-        { "label": "LIGA-3-Teams vorn", "value": "2 von 4" },
-        { "label": "Halbfinale", "value": "05.12. (MD12)" }
+        {
+          "label": "Top-Score VF",
+          "value": "1.796 Pkt"
+        },
+        {
+          "label": "LIGA-3-Teams vorn",
+          "value": "2 von 4"
+        },
+        {
+          "label": "Halbfinale",
+          "value": "05.12. (MD12)"
+        }
       ],
-      "tags": ["Pokal", "Viertelfinale", "Justin", "casper", "Ansgar Trinkmann", "Puliester"],
+      "tags": [
+        "Pokal",
+        "Viertelfinale",
+        "Justin",
+        "casper",
+        "Ansgar Trinkmann",
+        "Puliester"
+      ],
       "sections": [
         {
           "heading": "Das Liga-1-Gipfeltreffen wird zur einseitigen Gala",
@@ -176,12 +576,37 @@
           ],
           "table": {
             "caption": "Viertelfinale – Vorläufige Stände (Spieltag 10 · 21.11.2026)",
-            "columns": ["Duell", "Manager 1", "Stand", "Manager 2"],
+            "columns": [
+              "Duell",
+              "Manager 1",
+              "Stand",
+              "Manager 2"
+            ],
             "rows": [
-              ["VF 1", "Justin (L1)", "1.796 : 1.310", "DeinHomieEnobi (L1)"],
-              ["VF 2", "casper (L3)", "1.570 : 1.458", "Blake (L1)"],
-              ["VF 3", "Esel (L1)", "1.410 : 1.666", "Ansgar Trinkmann (L2)"],
-              ["VF 4", "Puliester (L3)", "1.451 : 0", "AchtSieben (L2)"]
+              [
+                "VF 1",
+                "Justin (L1)",
+                "1.796 : 1.310",
+                "DeinHomieEnobi (L1)"
+              ],
+              [
+                "VF 2",
+                "casper (L3)",
+                "1.570 : 1.458",
+                "Blake (L1)"
+              ],
+              [
+                "VF 3",
+                "Esel (L1)",
+                "1.410 : 1.666",
+                "Ansgar Trinkmann (L2)"
+              ],
+              [
+                "VF 4",
+                "Puliester (L3)",
+                "1.451 : 0",
+                "AchtSieben (L2)"
+              ]
             ]
           }
         },
@@ -197,7 +622,8 @@
             ]
           }
         }
-      ]
+      ],
+      "image": "/feed-images/pokal-viertelfinale.jpg"
     },
     {
       "slug": "wsj-penny-stocks-schnell-flips-und-scherhant-rallye",
@@ -211,11 +637,26 @@
       "title": "Penny-Stocks, Schnell-Flips & die 17,5-Millionen-Rallye: Die größten Transfercoups der Saison",
       "subtitle": "Von 500k-Schnäppchen mit fast 1.000 Prozent Rendite bis zu Derry Scherhants Marktwert-Explosion: Diese Deals haben ganze Kader finanziert.",
       "heroStats": [
-        { "label": "Top Realisiert", "value": "+9,65M €" },
-        { "label": "Top Kader-Coup", "value": "+17,46M €" },
-        { "label": "Höchster ROI", "value": "+988 %" }
+        {
+          "label": "Top Realisiert",
+          "value": "+9,65M €"
+        },
+        {
+          "label": "Top Kader-Coup",
+          "value": "+17,46M €"
+        },
+        {
+          "label": "Höchster ROI",
+          "value": "+988 %"
+        }
       ],
-      "tags": ["Transfercoups", "ROI", "Scherhant", "Muheim", "Daghim"],
+      "tags": [
+        "Transfercoups",
+        "ROI",
+        "Scherhant",
+        "Muheim",
+        "Daghim"
+      ],
       "sections": [
         {
           "heading": "Die Millionen-Exits: Daghim, Matsima und der Muheim-Coup",
@@ -225,16 +666,70 @@
           ],
           "table": {
             "caption": "Top 8 Realisierte Transfercoups (absoluter Gewinn €)",
-            "columns": ["Manager (Liga)", "Spieler", "Typ", "Deal", "Gewinn"],
+            "columns": [
+              "Manager (Liga)",
+              "Spieler",
+              "Typ",
+              "Deal",
+              "Gewinn"
+            ],
             "rows": [
-              ["AchtSieben (L2)", "Adam Daghim", "Startkader", "4,35M → 14,00M €", "+9,65M €"],
-              ["JulianD47 (L2)", "Chrislain Matsima", "Startkader", "10,70M → 17,57M €", "+6,87M €"],
-              ["Stomping T. (L2)", "Josip Juranović", "Startkader", "4,37M → 10,98M €", "+6,61M €"],
-              ["Leon Weinrich (L1)", "Miro Muheim", "Trade", "3,00M → 9,50M €", "+6,50M €"],
-              ["Justin (L1)", "Fabian Rieder", "Trade", "17,60M → 24,00M €", "+6,40M €"],
-              ["JulianD47 (L2)", "Ezechiel Banzuzi", "Startkader", "5,18M → 11,53M €", "+6,35M €"],
-              ["Puliester (L3)", "Fábio Silva", "Trade", "7,90M → 13,88M €", "+5,98M €"],
-              ["Ansgar T. (L2)", "Fisnik Asllani", "Trade", "12,00M → 17,95M €", "+5,95M €"]
+              [
+                "AchtSieben (L2)",
+                "Adam Daghim",
+                "Startkader",
+                "4,35M → 14,00M €",
+                "+9,65M €"
+              ],
+              [
+                "JulianD47 (L2)",
+                "Chrislain Matsima",
+                "Startkader",
+                "10,70M → 17,57M €",
+                "+6,87M €"
+              ],
+              [
+                "Stomping T. (L2)",
+                "Josip Juranović",
+                "Startkader",
+                "4,37M → 10,98M €",
+                "+6,61M €"
+              ],
+              [
+                "Leon Weinrich (L1)",
+                "Miro Muheim",
+                "Trade",
+                "3,00M → 9,50M €",
+                "+6,50M €"
+              ],
+              [
+                "Justin (L1)",
+                "Fabian Rieder",
+                "Trade",
+                "17,60M → 24,00M €",
+                "+6,40M €"
+              ],
+              [
+                "JulianD47 (L2)",
+                "Ezechiel Banzuzi",
+                "Startkader",
+                "5,18M → 11,53M €",
+                "+6,35M €"
+              ],
+              [
+                "Puliester (L3)",
+                "Fábio Silva",
+                "Trade",
+                "7,90M → 13,88M €",
+                "+5,98M €"
+              ],
+              [
+                "Ansgar T. (L2)",
+                "Fisnik Asllani",
+                "Trade",
+                "12,00M → 17,95M €",
+                "+5,95M €"
+              ]
             ]
           }
         },
@@ -252,19 +747,68 @@
           ],
           "table": {
             "caption": "Top 7 Verifizierte Laufende Kader-Coups (aktuell noch im Kader)",
-            "columns": ["Manager (Liga)", "Spieler", "Kauf → MW", "Buchgewinn", "Pkt (Ø)"],
+            "columns": [
+              "Manager (Liga)",
+              "Spieler",
+              "Kauf → MW",
+              "Buchgewinn",
+              "Pkt (Ø)"
+            ],
             "rows": [
-              ["franzi__j (L2)", "Derry Scherhant", "5,56M → 23,01M €", "+17,46M €", "1.235 (124)"],
-              ["Sebastian (L3)", "Derry Scherhant", "11,50M → 23,01M €", "+11,51M €", "1.235 (124)"],
-              ["Esel (L1)", "Ludovit Reis", "5,00M → 14,72M €", "+9,72M €", "1.072 (107)"],
-              ["Sebastian (L3)", "Keidel", "5,19M → 13,46M €", "+8,27M €", "957 (68)"],
-              ["Puliester (L3)", "Philipp Lienhart", "14,00M → 20,95M €", "+6,95M €", "1.077 (108)"],
-              ["Mo6 (L1)", "Farès Chaïbi", "6,46M → 13,40M €", "+6,94M €", "832 (104)"],
-              ["Leon Weinrich (L1)", "Youri Regeer", "10,94M → 16,58M €", "+5,64M €", "943 (105)"]
+              [
+                "franzi__j (L2)",
+                "Derry Scherhant",
+                "5,56M → 23,01M €",
+                "+17,46M €",
+                "1.235 (124)"
+              ],
+              [
+                "Sebastian (L3)",
+                "Derry Scherhant",
+                "11,50M → 23,01M €",
+                "+11,51M €",
+                "1.235 (124)"
+              ],
+              [
+                "Esel (L1)",
+                "Ludovit Reis",
+                "5,00M → 14,72M €",
+                "+9,72M €",
+                "1.072 (107)"
+              ],
+              [
+                "Sebastian (L3)",
+                "Keidel",
+                "5,19M → 13,46M €",
+                "+8,27M €",
+                "957 (68)"
+              ],
+              [
+                "Puliester (L3)",
+                "Philipp Lienhart",
+                "14,00M → 20,95M €",
+                "+6,95M €",
+                "1.077 (108)"
+              ],
+              [
+                "Mo6 (L1)",
+                "Farès Chaïbi",
+                "6,46M → 13,40M €",
+                "+6,94M €",
+                "832 (104)"
+              ],
+              [
+                "Leon Weinrich (L1)",
+                "Youri Regeer",
+                "10,94M → 16,58M €",
+                "+5,64M €",
+                "943 (105)"
+              ]
             ]
           }
         }
-      ]
+      ],
+      "image": "/feed-images/wsj-transfercoups.jpg"
     },
     {
       "slug": "liga-2-schweizer-uhrwerk-leongarcon-jagt-stomping-tantrum",
@@ -278,11 +822,25 @@
       "title": "Das Schweizer Uhrwerk von Liga 2: Wie leongarcon die 1.142-Punkte-Lücke schmilzt",
       "subtitle": "Nach Spieltag 6 schien Stomping Tantrum uneinholbar enteilt. Vier Wochen später sind es nur noch 210 Punkte – dank der erstaunlichsten Konstanz-Serie im gesamten Ligasystem.",
       "heroStats": [
-        { "label": "Min-Score leongarcon", "value": "940 Pkt" },
-        { "label": "Streuung (Std)", "value": "±109 Pkt" },
-        { "label": "Rest-Abstand", "value": "210 Pkt" }
+        {
+          "label": "Min-Score leongarcon",
+          "value": "940 Pkt"
+        },
+        {
+          "label": "Streuung (Std)",
+          "value": "±109 Pkt"
+        },
+        {
+          "label": "Rest-Abstand",
+          "value": "210 Pkt"
+        }
       ],
-      "tags": ["Liga 2", "leongarcon", "Stomping Tantrum", "Konstanz"],
+      "tags": [
+        "Liga 2",
+        "leongarcon",
+        "Stomping Tantrum",
+        "Konstanz"
+      ],
       "sections": [
         {
           "heading": "Von +1.142 auf +210 in nur vier Spieltagen",
@@ -299,16 +857,70 @@
           ],
           "table": {
             "caption": "Konstanz vs. Risiko – Die Top-Punktesammler nach 10 Spieltagen",
-            "columns": ["Manager (Liga)", "Gesamt", "Ø / MD", "Min – Max", "Streuung"],
+            "columns": [
+              "Manager (Liga)",
+              "Gesamt",
+              "Ø / MD",
+              "Min – Max",
+              "Streuung"
+            ],
             "rows": [
-              ["leongarcon (L2)", "10.391", "1.039", "940 – 1.236", "±109"],
-              ["Blake (L1)", "9.612", "961", "717 – 1.254", "±159"],
-              ["J0tt (L2)", "9.397", "940", "688 – 1.199", "±159"],
-              ["Esel (L1)", "10.110", "1.011", "687 – 1.282", "±183"],
-              ["Geißbock (L3)", "10.349", "1.035", "593 – 1.290", "±198"],
-              ["Stomping T. (L2)", "10.601", "1.060", "637 – 1.454", "±246"],
-              ["DeinHomieEnobi (L1)", "10.307", "1.031", "508 – 1.359", "±276"],
-              ["Justin (L1)", "10.316", "1.032", "613 – 1.636", "±305"]
+              [
+                "leongarcon (L2)",
+                "10.391",
+                "1.039",
+                "940 – 1.236",
+                "±109"
+              ],
+              [
+                "Blake (L1)",
+                "9.612",
+                "961",
+                "717 – 1.254",
+                "±159"
+              ],
+              [
+                "J0tt (L2)",
+                "9.397",
+                "940",
+                "688 – 1.199",
+                "±159"
+              ],
+              [
+                "Esel (L1)",
+                "10.110",
+                "1.011",
+                "687 – 1.282",
+                "±183"
+              ],
+              [
+                "Geißbock (L3)",
+                "10.349",
+                "1.035",
+                "593 – 1.290",
+                "±198"
+              ],
+              [
+                "Stomping T. (L2)",
+                "10.601",
+                "1.060",
+                "637 – 1.454",
+                "±246"
+              ],
+              [
+                "DeinHomieEnobi (L1)",
+                "10.307",
+                "1.031",
+                "508 – 1.359",
+                "±276"
+              ],
+              [
+                "Justin (L1)",
+                "10.316",
+                "1.032",
+                "613 – 1.636",
+                "±305"
+              ]
             ]
           }
         },
@@ -324,7 +936,8 @@
             ]
           }
         }
-      ]
+      ],
+      "image": "/feed-images/liga-2-uhrwerk.jpg"
     },
     {
       "slug": "wsj-overpay-fieber-und-kapitalvernichtung-crash-report",
@@ -338,11 +951,26 @@
       "title": "Overpay-Fieber & Kapitalvernichtung: Wo die Millionen auf dem Parkett versickerten",
       "subtitle": "Zwischen 13,7-Millionen-Abschreibungen, 42 Prozent Durchschnitts-Overpay und der ironischsten Wende der Saison rund um Afonso Moreira.",
       "heroStats": [
-        { "label": "Größter Verlust", "value": "-13,74M €" },
-        { "label": "Höchstes Ø-OVP", "value": "+42,1 %" },
-        { "label": "M2M-Deals gesamt", "value": "97 Transfers" }
+        {
+          "label": "Größter Verlust",
+          "value": "-13,74M €"
+        },
+        {
+          "label": "Höchstes Ø-OVP",
+          "value": "+42,1 %"
+        },
+        {
+          "label": "M2M-Deals gesamt",
+          "value": "97 Transfers"
+        }
       ],
-      "tags": ["Overpay", "Crash Report", "M2M Deals", "Moreira", "Risk"],
+      "tags": [
+        "Overpay",
+        "Crash Report",
+        "M2M Deals",
+        "Moreira",
+        "Risk"
+      ],
       "sections": [
         {
           "heading": "Die schmerzhaftesten Abschreibungen der Hinrunde",
@@ -352,14 +980,56 @@
           ],
           "table": {
             "caption": "Größte realisierte Verlust-Trades der Saison (Kauf → Verkauf)",
-            "columns": ["Manager (Liga)", "Spieler", "Kauf → Verkauf", "Verlust", "Tage"],
+            "columns": [
+              "Manager (Liga)",
+              "Spieler",
+              "Kauf → Verkauf",
+              "Verlust",
+              "Tage"
+            ],
             "rows": [
-              ["Vinnie JR (L1)", "Afonso Moreira", "29,01M → 15,27M €", "-13,74M €", "43d"],
-              ["Curl3z (L1)", "Jamie Leweling", "30,00M → 17,94M €", "-12,06M €", "25d"],
-              ["Sebastian (L3)", "Said El Mala", "29,57M → 19,43M €", "-10,14M €", "95d"],
-              ["leongarcon (L2)", "Ragnar Ache", "15,58M → 6,69M €", "-8,89M €", "35d"],
-              ["kushler (L3)", "Joey Veerman", "23,51M → 15,17M €", "-8,34M €", "54d"],
-              ["Flocke (L3)", "Nicolai Remberg", "8,69M → 0,50M €", "-8,19M €", "50d"]
+              [
+                "Vinnie JR (L1)",
+                "Afonso Moreira",
+                "29,01M → 15,27M €",
+                "-13,74M €",
+                "43d"
+              ],
+              [
+                "Curl3z (L1)",
+                "Jamie Leweling",
+                "30,00M → 17,94M €",
+                "-12,06M €",
+                "25d"
+              ],
+              [
+                "Sebastian (L3)",
+                "Said El Mala",
+                "29,57M → 19,43M €",
+                "-10,14M €",
+                "95d"
+              ],
+              [
+                "leongarcon (L2)",
+                "Ragnar Ache",
+                "15,58M → 6,69M €",
+                "-8,89M €",
+                "35d"
+              ],
+              [
+                "kushler (L3)",
+                "Joey Veerman",
+                "23,51M → 15,17M €",
+                "-8,34M €",
+                "54d"
+              ],
+              [
+                "Flocke (L3)",
+                "Nicolai Remberg",
+                "8,69M → 0,50M €",
+                "-8,19M €",
+                "50d"
+              ]
             ]
           }
         },
@@ -380,7 +1050,8 @@
             "attribution": "The Trading Journal · Risk & Macro"
           }
         }
-      ]
+      ],
+      "image": "/feed-images/wsj-crash-report.jpg"
     },
     {
       "slug": "pokal-achtelfinale-favoritensturz-und-2843-punkte-spektakel",
@@ -394,11 +1065,26 @@
       "title": "Achtelfinal-Rückblick: Als AchtSieben den Spitzenreiter stürzte und Blake das 2.843-Punkte-Spektakel gewann",
       "subtitle": "Ein Rückblick auf den wilden 8. Spieltag im Pokal: Ein Erstrunden-Außenseiter schockt die Nummer 1 aller Ligen, und ein Zweitligist scheidet trotz 1.400 Punkten aus.",
       "heroStats": [
-        { "label": "Top-Match (Gesamt)", "value": "2.843 Pkt" },
-        { "label": "Runden-Bestwert", "value": "1.497 Pkt" },
-        { "label": "Größter Upset", "value": "982 : 828" }
+        {
+          "label": "Top-Match (Gesamt)",
+          "value": "2.843 Pkt"
+        },
+        {
+          "label": "Runden-Bestwert",
+          "value": "1.497 Pkt"
+        },
+        {
+          "label": "Größter Upset",
+          "value": "982 : 828"
+        }
       ],
-      "tags": ["Pokal", "Achtelfinale", "Blake", "AchtSieben", "Esel"],
+      "tags": [
+        "Pokal",
+        "Achtelfinale",
+        "Blake",
+        "AchtSieben",
+        "Esel"
+      ],
       "sections": [
         {
           "heading": "Pokal-Gesetze pur: Platz 7 schlägt die Nummer 1 aller Ligen",
@@ -414,20 +1100,66 @@
           ],
           "table": {
             "caption": "Alle Ergebnisse im Achtelfinale (Spieltag 8 · 31.10.2026)",
-            "columns": ["Partie", "Sieger", "Ergebnis", "Ausgeschieden"],
+            "columns": [
+              "Partie",
+              "Sieger",
+              "Ergebnis",
+              "Ausgeschieden"
+            ],
             "rows": [
-              ["AF 1", "Justin (L1)", "1.265 : 1.028", "Sebastian (L3)"],
-              ["AF 2", "DeinHomieEnobi (L1)", "1.347 : -236", "Vinnie JR (L1)"],
-              ["AF 3", "casper (L3)", "1.329 : 1.028", "Leon Weinrich (L1)"],
-              ["AF 4", "Blake (L1)", "1.443 : 1.400", "leongarcon (L2)"],
-              ["AF 5", "Esel (L1)", "1.497 : 1.246", "JulianD47 (L2)"],
-              ["AF 6", "Ansgar Trinkmann (L2)", "1.192 : 909", "J0tt (L2)"],
-              ["AF 7", "Puliester (L3)", "1.344 : 0*", "Mo6 (L1)"],
-              ["AF 8", "AchtSieben (L2)", "982 : 828", "Stomping Tantrum (L2)"]
+              [
+                "AF 1",
+                "Justin (L1)",
+                "1.265 : 1.028",
+                "Sebastian (L3)"
+              ],
+              [
+                "AF 2",
+                "DeinHomieEnobi (L1)",
+                "1.347 : -236",
+                "Vinnie JR (L1)"
+              ],
+              [
+                "AF 3",
+                "casper (L3)",
+                "1.329 : 1.028",
+                "Leon Weinrich (L1)"
+              ],
+              [
+                "AF 4",
+                "Blake (L1)",
+                "1.443 : 1.400",
+                "leongarcon (L2)"
+              ],
+              [
+                "AF 5",
+                "Esel (L1)",
+                "1.497 : 1.246",
+                "JulianD47 (L2)"
+              ],
+              [
+                "AF 6",
+                "Ansgar Trinkmann (L2)",
+                "1.192 : 909",
+                "J0tt (L2)"
+              ],
+              [
+                "AF 7",
+                "Puliester (L3)",
+                "1.344 : 0*",
+                "Mo6 (L1)"
+              ],
+              [
+                "AF 8",
+                "AchtSieben (L2)",
+                "982 : 828",
+                "Stomping Tantrum (L2)"
+              ]
             ]
           }
         }
-      ]
+      ],
+      "image": "/feed-images/pokal-achtelfinale.jpg"
     },
     {
       "slug": "liga-3-die-teuerste-nullnummer-casper-vs-geissbock",
@@ -441,11 +1173,25 @@
       "title": "Die teuerste Nullnummer der Saison: Warum casper trotz 1.090er-Rekordschnitt nur Zweiter ist",
       "subtitle": "In seinen neun gewerteten Spieltagen punktet niemand im gesamten Ligasystem besser als casper. Doch ein einziger schwarzer Freitag am 5. Spieltag öffnete Geißbock die Tür zur Tabellenführung.",
       "heroStats": [
-        { "label": "casper Ø (9 MD)", "value": "1.090 Pkt" },
-        { "label": "Geißbock Gesamt", "value": "10.349 Pkt" },
-        { "label": "Rückstand casper", "value": "-542 Pkt" }
+        {
+          "label": "casper Ø (9 MD)",
+          "value": "1.090 Pkt"
+        },
+        {
+          "label": "Geißbock Gesamt",
+          "value": "10.349 Pkt"
+        },
+        {
+          "label": "Rückstand casper",
+          "value": "-542 Pkt"
+        }
       ],
-      "tags": ["Liga 3", "casper", "Geißbock", "Aufstieg"],
+      "tags": [
+        "Liga 3",
+        "casper",
+        "Geißbock",
+        "Aufstieg"
+      ],
       "sections": [
         {
           "heading": "Ein Ausrutscher, der über 1.000 Punkte kostete",
@@ -462,17 +1208,54 @@
           ],
           "table": {
             "caption": "Spitzengruppe Liga 3 nach Spieltag 10",
-            "columns": ["Rang", "Manager", "Punkte", "Ø (gew.)", "Budget"],
+            "columns": [
+              "Rang",
+              "Manager",
+              "Punkte",
+              "Ø (gew.)",
+              "Budget"
+            ],
             "rows": [
-              ["1.", "Geißbock", "10.349", "1.035", "255,00M €"],
-              ["2.", "casper", "9.807", "1.090*", "284,19M €"],
-              ["3.", "Sebastian", "8.767", "877", "206,67M €"],
-              ["4.", "Puliester", "8.438", "938*", "253,25M €"],
-              ["5.", "kushler", "7.935", "794", "229,97M €"]
+              [
+                "1.",
+                "Geißbock",
+                "10.349",
+                "1.035",
+                "255,00M €"
+              ],
+              [
+                "2.",
+                "casper",
+                "9.807",
+                "1.090*",
+                "284,19M €"
+              ],
+              [
+                "3.",
+                "Sebastian",
+                "8.767",
+                "877",
+                "206,67M €"
+              ],
+              [
+                "4.",
+                "Puliester",
+                "8.438",
+                "938*",
+                "253,25M €"
+              ],
+              [
+                "5.",
+                "kushler",
+                "7.935",
+                "794",
+                "229,97M €"
+              ]
             ]
           }
         }
-      ]
+      ],
+      "image": "/feed-images/liga-3-aufholjagd.jpg"
     },
     {
       "slug": "pokal-sechzehntelfinale-acht-punkte-krimi-zum-auftakt",
@@ -486,11 +1269,25 @@
       "title": "Acht Punkte zwischen Jubel und Aus: Der Sechzehntelfinal-Krimi zum Pokal-Auftakt",
       "subtitle": "Zum Start der K.-o.-Runde am 5. Spieltag zitterte sich Leon Weinrich hauchdünn gegen Fynn weiter, während DeinHomieEnobi das erste Top-Duell gegen Geißbock für sich entschied.",
       "heroStats": [
-        { "label": "Knappstes Duell", "value": "8 Punkte" },
-        { "label": "Top-Score R1", "value": "1.495 Pkt" },
-        { "label": "Teilnehmer", "value": "28 Manager" }
+        {
+          "label": "Knappstes Duell",
+          "value": "8 Punkte"
+        },
+        {
+          "label": "Top-Score R1",
+          "value": "1.495 Pkt"
+        },
+        {
+          "label": "Teilnehmer",
+          "value": "28 Manager"
+        }
       ],
-      "tags": ["Pokal", "Sechzehntelfinale", "Leon Weinrich", "DeinHomieEnobi"],
+      "tags": [
+        "Pokal",
+        "Sechzehntelfinale",
+        "Leon Weinrich",
+        "DeinHomieEnobi"
+      ],
       "sections": [
         {
           "heading": "1.238 zu 1.230: Herzschlagfinale zwischen Liga 1 und Liga 3",
@@ -506,17 +1303,48 @@
           ],
           "table": {
             "caption": "Die packendsten & stärksten Duelle im Sechzehntelfinale (MD 5)",
-            "columns": ["Partie", "Sieger", "Ergebnis", "Gegner"],
+            "columns": [
+              "Partie",
+              "Sieger",
+              "Ergebnis",
+              "Gegner"
+            ],
             "rows": [
-              ["SF 5", "Leon Weinrich (L1)", "1.238 : 1.230", "Fynn (L3) · +8 Pkt"],
-              ["SF 13", "Mo6 (L1)", "1.368 : 1.292", "tjalf (L3) · +76 Pkt"],
-              ["SF 8", "leongarcon (L2)", "1.198 : 1.078", "Marci (L3) · +120 Pkt"],
-              ["SF 3", "DeinHomieEnobi (L1)", "1.495 : 1.289", "Geißbock (L3) · Top-Score"],
-              ["SF 11", "Ansgar Trinkmann (L2)", "1.479 : 951", "KönigMichi (L3)"]
+              [
+                "SF 5",
+                "Leon Weinrich (L1)",
+                "1.238 : 1.230",
+                "Fynn (L3) · +8 Pkt"
+              ],
+              [
+                "SF 13",
+                "Mo6 (L1)",
+                "1.368 : 1.292",
+                "tjalf (L3) · +76 Pkt"
+              ],
+              [
+                "SF 8",
+                "leongarcon (L2)",
+                "1.198 : 1.078",
+                "Marci (L3) · +120 Pkt"
+              ],
+              [
+                "SF 3",
+                "DeinHomieEnobi (L1)",
+                "1.495 : 1.289",
+                "Geißbock (L3) · Top-Score"
+              ],
+              [
+                "SF 11",
+                "Ansgar Trinkmann (L2)",
+                "1.479 : 951",
+                "KönigMichi (L3)"
+              ]
             ]
           }
         }
-      ]
+      ],
+      "image": "/feed-images/pokal-auftakt.jpg"
     }
   ]
 }

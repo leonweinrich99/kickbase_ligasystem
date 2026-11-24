@@ -158,6 +158,17 @@ const FeedArticlePage = () => {
           </div>
         </header>
 
+        {/* Artikel-Titelbild */}
+        {article.image && (
+          <div className="relative aspect-[16/9] w-full rounded-2xl overflow-hidden border border-white/10 mb-6 bg-[#0e0e10]">
+            <img
+              src={article.image}
+              alt={article.title}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+
         {/* Kennzahlen-Leiste */}
         {Array.isArray(article.heroStats) && article.heroStats.length > 0 && (
           <div className="grid grid-cols-3 gap-2.5 mb-7">

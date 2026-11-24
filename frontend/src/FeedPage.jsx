@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Newspaper, Trophy, TrendingUp, Flame, Clock, ArrowUpRight, BarChart3 } from 'lucide-react';
+import { Newspaper, Trophy, TrendingUp, Flame, Clock, BarChart3 } from 'lucide-react';
 import PageHeader from './ui/PageHeader';
 import { FEED_CATEGORIES, getCategoryMeta, formatArticleDate } from './feedMeta';
 
@@ -10,6 +10,39 @@ const CategoryIcon = ({ id, size = 13 }) => {
   if (id === 'trading') return <TrendingUp size={size} />;
   return <Newspaper size={size} />;
 };
+
+const TickerTrackItems = ({ items, keyPrefix }) => (
+  <div className="flex items-center shrink-0">
+    {items.map((item, idx) => (
+      <div
+        key={`${keyPrefix}-${idx}`}
+        className="shrink-0 flex items-center gap-2 pr-5 mr-5 border-r border-white/10 text-[11px] whitespace-nowrap"
+      >
+        {item.tag && (
+          <span
+            className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${
+              item.tag.startsWith('TRADER')
+                ? 'bg-emerald-500/15 text-emerald-300'
+                : item.positive
+                  ? 'bg-white/10 text-gray-300'
+                  : 'bg-[#ff5c3e]/15 text-[#ff5c3e]'
+            }`}
+          >
+            {item.tag}
+          </span>
+        )}
+        <span className="text-gray-300 font-medium">{item.label}</span>
+        <span
+          className={`font-bold tabular-nums ${
+            item.positive ? 'text-emerald-400' : 'text-[#ff5c3e]'
+          }`}
+        >
+          {item.value}
+        </span>
+      </div>
+    ))}
+  </div>
+);
 
 const FeedPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -77,7 +110,6 @@ const FeedPage = () => {
     }
   };
 
-  const activeCategoryMeta = getCategoryMeta(activeCat);
   const isTradingView = activeCat === 'trading';
 
   return (
@@ -87,7 +119,15 @@ const FeedPage = () => {
         <PageHeader
           eyebrow={isTradingView ? 'MARKET DESK & ANALYSEN' : 'REDAKTION & ANALYSEN'}
           accentColor={isTradingView ? '#10b981' : activeCat === 'pokal' ? '#f59e0b' : '#ff5c3e'}
-          title={isTradingView ? 'THE TRADING JOURNAL' : activeCat === 'pokal' ? 'POKAL-CHRONIK' : activeCat === 'spieltag' ? 'SPIELTAGSBERICHTE' : 'NEWSFEED'}
+          title={
+            isTradingView
+              ? 'THE TRADING JOURNAL'
+              : activeCat === 'pokal'
+                ? 'POKAL-CHRONIK'
+                : activeCat === 'spieltag'
+                  ? 'SPIELTAGSBERICHTE'
+                  : 'NEWSFEED'
+          }
         />
         {feedData?.updatedAt && (
           <div className="text-right shrink-0 pb-0.5">
@@ -132,12 +172,12 @@ const FeedPage = () => {
         })}
       </div>
 
-      {/* Wall Street Journal Masthead + Market Ticker (bei Trading News & Alle) */}
-      {(isTradingView || activeCat === 'all') && ticker.length > 0 && (
+      {/* Dauerhaft durchlaufender News-Sender-Marktticker (inkl. kompletter 26er-Trader-Rangliste) */}
+      {ticker.length > 0 && (
         <div className="mb-5 rounded-2xl border border-emerald-500/20 bg-[#07110d] overflow-hidden">
           {isTradingView && (
-            <div className="px-4 pt-3.5 pb-2.5 border-b border-emerald-500/15 text-center">
-              <div className="text-[9px] font-semibold uppercase tracking-[0.28em] text-emerald-400/80 mb-1">
+            <div className="px-4 pt-3 pb-2 border-b border-emerald-500/15 text-center">
+              <div className="text-[9px] font-semibold uppercase tracking-[0.28em] text-emerald-400/80 mb-0.5">
                 FINANCE · TRANSFERMARKT · MAKRO-ANALYSE
               </div>
               <div className="font-serif text-lg sm:text-xl font-bold tracking-wide text-[#f3efe6]">
@@ -145,28 +185,37 @@ const FeedPage = () => {
               </div>
             </div>
           )}
-          <div className="flex items-center gap-4 overflow-x-auto no-scrollbar px-3.5 py-2.5">
-            <div className="shrink-0 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400 pr-2 border-r border-white/10">
-              <BarChart3 size={12} />
-              <span>Markt-Ticker</span>
+          <div className="relative flex items-center h-9 feed-marquee-wrap overflow-hidden">
+            {/* Festes Live-Ticker-Label links */}
+            <div className="relative z-20 shrink-0 h-full flex items-center gap-1.5 pl-3 pr-3.5 bg-[#07110d] border-r border-emerald-500/20 text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+              </span>
+              <BarChart3 size={11} />
+              <span className="hidden sm:inline">Markt-Ticker</span>
             </div>
-            {ticker.map((item) => (
-              <div key={item.label} className="shrink-0 flex items-center gap-1.5 text-[11px] whitespace-nowrap">
-                <span className="text-[#8b92a5] font-medium uppercase tracking-wider text-[10px]">{item.label}</span>
-                <span className={`font-bold tabular-nums ${item.positive ? 'text-emerald-400' : 'text-[#ff5c3e]'}`}>
-                  {item.value}
-                </span>
+
+            {/* Sanfte Ein-/Ausblend-Kanten */}
+            <div className="pointer-events-none absolute inset-y-0 left-[46px] sm:left-[126px] w-6 bg-gradient-to-r from-[#07110d] to-transparent z-10" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-[#07110d] to-transparent z-10" />
+
+            {/* Nahtlos endlos durchlaufende Ticker-Spur (2x dupliziert) */}
+            <div className="flex-1 overflow-hidden">
+              <div className="feed-marquee-track py-2 pl-4">
+                <TickerTrackItems items={ticker} keyPrefix="a" />
+                <TickerTrackItems items={ticker} keyPrefix="b" />
               </div>
-            ))}
+            </div>
           </div>
         </div>
       )}
 
       {loading && (
         <div className="space-y-4">
-          <div className="h-64 rounded-2xl card-surface animate-pulse" />
-          <div className="h-36 rounded-2xl card-surface animate-pulse" />
-          <div className="h-36 rounded-2xl card-surface animate-pulse" />
+          <div className="h-72 rounded-2xl card-surface animate-pulse" />
+          <div className="h-56 rounded-2xl card-surface animate-pulse" />
+          <div className="h-56 rounded-2xl card-surface animate-pulse" />
         </div>
       )}
 
@@ -178,7 +227,7 @@ const FeedPage = () => {
 
       {!loading && !error && leadArticle && (
         <div className="space-y-4">
-          {/* Titelstory / Lead Article Card */}
+          {/* Titelstory: Grosses Bild + klare Headline + kurzer Teaser (ohne Schnickschnack) */}
           {(() => {
             const meta = getCategoryMeta(leadArticle.category);
             const isWsj = Boolean(meta.isWsj);
@@ -186,76 +235,44 @@ const FeedPage = () => {
               <Link
                 to={`/feed/${leadArticle.slug}`}
                 state={{ fromCategory: activeCat }}
-                className={`block rounded-2xl overflow-hidden transition-all active:scale-[0.99] border group ${
-                  isWsj
-                    ? 'bg-gradient-to-b from-[#0b1611] via-[#0a0f0d] to-[#08090a] border-emerald-500/25 hover:border-emerald-400/50'
-                    : leadArticle.category === 'pokal'
-                      ? 'bg-gradient-to-b from-[#1a1409] via-[#12100b] to-[#0b0b0c] border-amber-500/25 hover:border-amber-400/50'
-                      : 'bg-gradient-to-b from-[#1b110f] via-[#121010] to-[#0b0b0c] border-[#ff5c3e]/25 hover:border-[#ff5c3e]/50'
-                }`}
+                className="block card-surface rounded-2xl overflow-hidden hover:border-white/20 transition-all active:scale-[0.99] group"
               >
-                <div className="p-5 sm:p-6">
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${meta.badgeClass}`}>
+                {leadArticle.image && (
+                  <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#0e0e10]">
+                    <img
+                      src={leadArticle.image}
+                      alt={leadArticle.title}
+                      className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent" />
+                    <span
+                      className={`absolute top-3 left-3 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border backdrop-blur-md bg-black/65 ${meta.badgeClass}`}
+                    >
                       <CategoryIcon id={leadArticle.category} size={11} />
-                      {leadArticle.kicker}
-                    </span>
-                    <span className="text-[11px] text-[#8b92a5] font-medium flex items-center gap-1 shrink-0">
-                      <Clock size={11} />
-                      {leadArticle.readTimeMin} Min.
+                      {meta.shortLabel}
                     </span>
                   </div>
+                )}
 
-                  {isWsj && (
-                    <div className="text-[10px] uppercase tracking-[0.22em] text-emerald-400/75 font-semibold mb-1.5">
-                      The Trading Journal · Titelstory
-                    </div>
-                  )}
-
+                <div className="p-4 sm:p-5">
                   <h2
-                    className={`text-xl sm:text-2xl font-bold leading-snug mb-2.5 group-hover:text-white transition-colors ${
+                    className={`text-lg sm:text-2xl font-bold leading-snug mb-2 group-hover:text-white transition-colors ${
                       isWsj ? 'font-serif text-[#f5f1e8] tracking-normal' : 'text-white tracking-tight'
                     }`}
                   >
                     {leadArticle.title}
                   </h2>
 
-                  <p className="text-sm text-gray-300/90 leading-relaxed mb-4">
+                  <p className="text-sm text-gray-300/90 leading-relaxed line-clamp-3">
                     {leadArticle.subtitle}
                   </p>
 
-                  {/* Hero KPI Ribbon */}
-                  {Array.isArray(leadArticle.heroStats) && leadArticle.heroStats.length > 0 && (
-                    <div className="grid grid-cols-3 gap-2 mb-4">
-                      {leadArticle.heroStats.map((st) => (
-                        <div
-                          key={st.label}
-                          className="rounded-xl bg-black/50 border border-white/10 px-2.5 py-2"
-                        >
-                          <div className="text-[9px] font-semibold uppercase tracking-wider text-[#8b92a5] truncate">
-                            {st.label}
-                          </div>
-                          <div
-                            className="text-sm sm:text-base font-bold tabular-nums mt-0.5 truncate"
-                            style={{ color: meta.accent }}
-                          >
-                            {st.value}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between pt-3 border-t border-white/10 text-xs">
-                    <div className="text-[#8b92a5] font-medium">
-                      {leadArticle.author} · {formatArticleDate(leadArticle.date)}
-                    </div>
-                    <span
-                      className="inline-flex items-center gap-1 font-semibold group-hover:translate-x-0.5 transition-transform"
-                      style={{ color: meta.accent }}
-                    >
-                      Artikel lesen
-                      <ArrowUpRight size={14} />
+                  <div className="flex items-center gap-2 mt-3 text-[11px] text-[#8b92a5]">
+                    <span className="tabular-nums">{formatArticleDate(leadArticle.date)}</span>
+                    <span>·</span>
+                    <span className="inline-flex items-center gap-1 tabular-nums">
+                      <Clock size={11} />
+                      {leadArticle.readTimeMin} Min.
                     </span>
                   </div>
                 </div>
@@ -263,89 +280,66 @@ const FeedPage = () => {
             );
           })()}
 
-          {/* Abschnitts-Trenner */}
+          {/* Weitere Artikel: cleanes Karten-Layout mit Bild, Headline & kurzem Text */}
           {restArticles.length > 0 && (
-            <div className="flex items-center justify-between pt-2">
-              <h3 className="text-[11px] font-semibold uppercase tracking-widest text-[#8b92a5]">
-                {activeCat === 'all'
-                  ? 'Weitere Artikel & Analysen'
-                  : `Weitere ${activeCategoryMeta.label}`}
-              </h3>
-              <span className="text-[11px] text-[#8b92a5] tabular-nums">
-                {restArticles.length} {restArticles.length === 1 ? 'Beitrag' : 'Beiträge'}
-              </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+              {restArticles.map((article) => {
+                const meta = getCategoryMeta(article.category);
+                const isWsj = Boolean(meta.isWsj);
+                return (
+                  <Link
+                    key={article.slug}
+                    to={`/feed/${article.slug}`}
+                    state={{ fromCategory: activeCat }}
+                    className="flex flex-col card-surface rounded-2xl overflow-hidden hover:border-white/20 transition-all active:scale-[0.99] group"
+                  >
+                    {article.image && (
+                      <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#0e0e10]">
+                        <img
+                          src={article.image}
+                          alt={article.title}
+                          loading="lazy"
+                          className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                        <span
+                          className={`absolute top-2.5 left-2.5 inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border backdrop-blur-md bg-black/65 ${meta.badgeClass}`}
+                        >
+                          <CategoryIcon id={article.category} size={10} />
+                          {meta.shortLabel}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="p-4 flex-1 flex flex-col justify-between">
+                      <div>
+                        <h3
+                          className={`text-base font-bold leading-snug mb-1.5 group-hover:text-white transition-colors ${
+                            isWsj ? 'font-serif text-[#f3efe6]' : 'text-gray-100'
+                          }`}
+                        >
+                          {article.title}
+                        </h3>
+
+                        <p className="text-xs text-[#a1a8b8] leading-relaxed line-clamp-2">
+                          {article.subtitle}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2 mt-3 text-[11px] text-[#8b92a5]">
+                        <span className="tabular-nums">{formatArticleDate(article.date)}</span>
+                        <span>·</span>
+                        <span className="inline-flex items-center gap-1 tabular-nums">
+                          <Clock size={10} />
+                          {article.readTimeMin} Min.
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           )}
-
-          {/* Weitere Einzelartikel als vollwertige Editorial-Karten */}
-          <div className="space-y-3">
-            {restArticles.map((article) => {
-              const meta = getCategoryMeta(article.category);
-              const isWsj = Boolean(meta.isWsj);
-              return (
-                <Link
-                  key={article.slug}
-                  to={`/feed/${article.slug}`}
-                  state={{ fromCategory: activeCat }}
-                  className={`block card-surface rounded-2xl p-4 sm:p-5 border-l-2 ${meta.borderAccent} hover:border-white/20 transition-all active:scale-[0.99] group`}
-                >
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className={`inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border shrink-0 ${meta.badgeClass}`}>
-                        <CategoryIcon id={article.category} size={10} />
-                        {meta.shortLabel}
-                      </span>
-                      <span className="text-[10px] font-medium text-[#8b92a5] truncate">
-                        {article.edition}
-                      </span>
-                    </div>
-                    <span className="text-[10px] text-[#8b92a5] flex items-center gap-1 shrink-0 tabular-nums">
-                      <Clock size={10} />
-                      {article.readTimeMin} Min.
-                    </span>
-                  </div>
-
-                  <h3
-                    className={`text-base sm:text-lg font-bold leading-snug mb-1.5 group-hover:text-white transition-colors ${
-                      isWsj ? 'font-serif text-[#f3efe6]' : 'text-gray-100'
-                    }`}
-                  >
-                    {article.title}
-                  </h3>
-
-                  <p className="text-xs sm:text-sm text-[#a1a8b8] leading-relaxed line-clamp-2 mb-3">
-                    {article.subtitle}
-                  </p>
-
-                  {/* Kompakte KPI-Pills */}
-                  {Array.isArray(article.heroStats) && article.heroStats.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mb-3">
-                      {article.heroStats.map((st) => (
-                        <span
-                          key={st.label}
-                          className="inline-flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-lg bg-white/[0.04] border border-white/10"
-                        >
-                          <span className="text-[#8b92a5]">{st.label}:</span>
-                          <span className="font-bold tabular-nums text-white">{st.value}</span>
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between text-[11px] text-[#8b92a5] pt-2 border-t border-white/[0.06]">
-                    <span>{formatArticleDate(article.date)} · {article.author}</span>
-                    <span
-                      className="inline-flex items-center gap-0.5 font-semibold"
-                      style={{ color: meta.accent }}
-                    >
-                      Lesen
-                      <ArrowUpRight size={13} />
-                    </span>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
         </div>
       )}
     </div>
