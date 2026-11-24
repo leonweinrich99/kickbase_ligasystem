@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Clock, Flame, Trophy, TrendingUp, Newspaper, ArrowUpRight, Quote } from 'lucide-react';
-import { getCategoryMeta, formatArticleDate } from './feedMeta';
+import { getCategoryMeta, formatArticleDate, sortArticlesByDateDesc } from './feedMeta';
 import AdBanner from './ui/AdBanner';
 
 const CategoryIcon = ({ id, size = 12 }) => {
@@ -26,7 +26,7 @@ const FeedArticlePage = () => {
       .then((r) => r.json())
       .then((json) => {
         if (!cancelled) {
-          setArticles(json.articles || []);
+          setArticles(sortArticlesByDateDesc(json.articles || []));
           setLoading(false);
         }
       })

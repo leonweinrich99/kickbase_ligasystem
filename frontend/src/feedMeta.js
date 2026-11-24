@@ -50,3 +50,21 @@ export const formatArticleDate = (isoDate) => {
   if (parts.length !== 3) return isoDate;
   return `${parts[2]}.${parts[1]}.${parts[0]}`;
 };
+
+// Sortiert Artikel absteigend nach ISO-Datum (neueste zuerst), bei gleichem
+// Datum kommen "featured"-Artikel zuerst und die bestehende Reihenfolge bleibt stabil.
+export const sortArticlesByDateDesc = (articles) => {
+  if (!Array.isArray(articles)) return [];
+  return articles
+    .map((article, idx) => ({ article, idx }))
+    .sort((a, b) => {
+      const da = String(a.article?.date || '');
+      const db = String(b.article?.date || '');
+      if (da !== db) return db.localeCompare(da);
+      if (Boolean(a.article?.featured) !== Boolean(b.article?.featured)) {
+        return a.article?.featured ? -1 : 1;
+      }
+      return a.idx - b.idx;
+    })
+    .map((entry) => entry.article);
+};

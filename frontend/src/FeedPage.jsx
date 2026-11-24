@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Newspaper, Trophy, TrendingUp, Flame, Clock, BarChart3, ChevronRight } from 'lucide-react';
 import PageHeader from './ui/PageHeader';
-import { FEED_CATEGORIES, getCategoryMeta, formatArticleDate } from './feedMeta';
+import { FEED_CATEGORIES, getCategoryMeta, formatArticleDate, sortArticlesByDateDesc } from './feedMeta';
 import newsLogo from './assets/news_logo.svg';
 import AdBanner from './ui/AdBanner';
 
@@ -249,7 +249,7 @@ const FeedPage = () => {
     };
   }, []);
 
-  const articles = useMemo(() => feedData?.articles || [], [feedData]);
+  const articles = useMemo(() => sortArticlesByDateDesc(feedData?.articles || []), [feedData]);
   const ticker = useMemo(() => feedData?.ticker || [], [feedData]);
 
   const counts = useMemo(() => {
