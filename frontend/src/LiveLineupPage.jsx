@@ -5,6 +5,7 @@ import ManagerAvatar from './ui/ManagerAvatar';
 import PageHeader from './ui/PageHeader';
 import AnimatedPoints from './ui/AnimatedPoints';
 import LiveLineupPitch from './ui/LiveLineupGrid';
+import CurrentSquadView from './ui/CurrentSquadView';
 import BundesligaMatchesSection, { SelectedTeamMatchBanner } from './ui/BundesligaMatchesSection';
 import { buildLineupWithDummies, buildTeamLogoMap } from './liveLineupUtils';
 import {
@@ -27,17 +28,18 @@ import {
   saveCachedSnapshot,
 } from './livePointsStore';
 
-// Live-Punkte waehrend eines laufenden Spieltags - komplett ueber das Backend
-// gesteuert (Owner-Wunsch 24.11.2026: 60s-Takt + kein manueller Refresh-Button
-// fuer Nutzer, damit alle Abfragen kontrolliert ueber die Server-/Edge-Caches
-// laufen):
-// - 60s-Live-Takt (nur bei laufenden Spielen & sichtbarem Tab, mit zufaelligem
-//   Phasen-Offset und Partial-Refresh `onlyPlayerIds` fuer Spieler aus aktuell
-//   laufenden Partien).
-// - Zusaetzlicher 30s-OpenLigaDB-Watcher fuer sofortige Tor-/Halbzeit-/Abpfiff-
-//   Erkennung (5-14s Jitter, harter Cooldown, max. 1 Nachcheck nach 45s).
-// - Server-seitig in frontend/api/: Token-/Liga-/Teamcenter-/Playercenter-Cache
-//   (liga-uebergreifend), 4er-Batches, 25-30s Vercel-Edge-Cache & 429-Backoff.
+// Live-Tab Struktur (Owner-Wunsch 24.11.2026):
+// - "own" ("Mein Kader"): aktueller Kader mit Startelf auf dem Fussballfeld
+//   (Marktwert & 5-stufiges Startelf-Icon) + Auswechselspieler & kompletter
+//   Kader als Liste darunter (Marktwert & Startelfwahrscheinlichkeit).
+// - "live" ("Live"): Spieltagself mit Live-Punkten (Standard: eigene
+//   Spieltagself + kompakter Umschalter zum Liga-Ranking / anderen Managern).
+// - "teams" ("Spieltag"): Bundesliga-Partien via OpenLigaDB (Live-Ergebnisse
+//   & Ereignisse) + echte Team-Startelfen (Bundesliga, La Liga, MLS).
+//
+// Alle Kickbase-Live-Abfragen laufen gesteuert ueber das Backend im 60s-Takt
+// (Partial-Refresh `onlyPlayerIds` fuer laufende Partien) + 30s-OpenLigaDB-
+// Event-Trigger + Server-/Edge-Caches + 429-Backoff (kein manueller Refresh).
 const COMPETITIONS = [
   { id: '1', name: 'Bundesliga' },
   { id: '3', name: 'La Liga' },
@@ -157,8 +159,7 @@ const RankingList = ({ ranking, selectedUserId, onSelect, prevPointsMap, animId,
   </div>
 );
 
-// Kompakte Auswahl-Zeile statt dauerhaft sichtbarer Liste (Owner-Feedback
-// 24.11.2026) - toggelt die Manager-Liste auf/zu, im selben Karten-Stil.
+// Kompakte Auswahl-Zeile fuer die Manager-Auswahl im Liga-Ranking.
 const SelectorButton = ({ onClick, children }) => (
   <button
     type="button"
@@ -174,14 +175,14 @@ const ModeSwitch = ({ mode, onChange }) => (
   <div className="flex gap-1.5 bg-[#171717] border border-[#2e2e2e] rounded-xl p-1 overflow-x-auto no-scrollbar">
     {[
       { id: 'own', label: 'Mein Kader' },
-      { id: 'managers', label: 'Liga-Manager' },
-      { id: 'teams', label: 'Echte Teams' },
+      { id: 'live', label: 'Live' },
+      { id: 'teams', label: 'Spieltag' },
     ].map((opt) => (
       <button
         key={opt.id}
         type="button"
         onClick={() => onChange(opt.id)}
-        className={`px-3 py-2 rounded-lg whitespace-nowrap text-xs tracking-wide transition-all flex-1 ${
+        className={`px-3 py-2 rounded-lg whitespace-nowrap text-xs tracking-wide transition-all flex-1 cursor-pointer ${
           mode === opt.id
             ? 'bg-white text-black font-semibold shadow-sm'
             : 'text-[#8b92a5] font-medium hover:text-white'
@@ -198,6 +199,7 @@ const LiveLineupPage = () => {
   const kickbaseId = profile?.kickbaseId;
 
   const [mode, setMode] = useState('own');
+  const [liveSubView, setLiveSubView] = useState('own'); // 'own' (Spieltagself) | 'ranking' (Liga-Ranking)
 
   const [leagueKey, setLeagueKey] = useState(null);
   const [playerMap, setPlayerMap] = useState(null);
@@ -210,22 +212,28 @@ const LiveLineupPage = () => {
   const [rankingAnimId, setRankingAnimId] = useState(null);
   const [matchday, setMatchday] = useState(null);
 
-  // Zwischengespeicherte Staende fuer sofortige Anzeige beim Oeffnen (kein
-  // "Lade Live-Daten..."-Flackern), waehrend die frischen Werte im Hintergrund
-  // geladen und danach direkt ueber die Zahlen-Animation eingeblendet werden.
+  // Zwischengespeicherte Staende fuer sofortige Anzeige beim Oeffnen.
   const cachedOwn = useMemo(
     () => (kickbaseId ? readCachedSnapshot(`own:${kickbaseId}`) : null),
     [kickbaseId]
   );
   const cachedRanking = useMemo(() => readCachedSnapshot('ranking'), []);
+  const cachedSquad = useMemo(
+    () => (kickbaseId ? readCachedSnapshot(`squad:${kickbaseId}`) : null),
+    [kickbaseId]
+  );
 
-  // "own": immer die Default-Ansicht (Owner-Wunsch 24.11.2026).
+  // "own" ("Mein Kader"): aktueller Kader inkl. Auswechselspieler (Marktwert & Startelf-Prognose).
+  const [currentSquadRaw, setCurrentSquadRaw] = useState(null);
+  const [squadLoading, setSquadLoading] = useState(true);
+
+  // "live" ("Live"): eigene Spieltagself mit Live-Punkten.
   const [ownData, setOwnData] = useState(null);
   const [ownPrevPoints, setOwnPrevPoints] = useState(null);
   const [ownAnimId, setOwnAnimId] = useState(null);
   const [ownLoading, setOwnLoading] = useState(true);
 
-  // "managers": Startelf eines ANDEREN Liga-Managers, erst nach Auswahl in der RankingList.
+  // Optional im "Live"-Tab: Liga-Ranking & Startelf eines anderen Managers.
   const [selectedManagerId, setSelectedManagerId] = useState(null);
   const [managerData, setManagerData] = useState(null);
   const [managerCached, setManagerCached] = useState(null);
@@ -235,7 +243,7 @@ const LiveLineupPage = () => {
   const [managerPickerOpen, setManagerPickerOpen] = useState(true);
   const managerReqRef = useRef(0);
 
-  // "teams": Wettbewerb + horizontale Durchscroll-Kacheln mit Vereinslogos.
+  // "teams" ("Spieltag"): Wettbewerb + Bundesliga-Partien (OpenLigaDB) + Team-Startelfen.
   const [competitionId, setCompetitionId] = useState('1');
   const [teamsList, setTeamsList] = useState(null);
   const [teamsLoading, setTeamsLoading] = useState(false);
@@ -299,6 +307,7 @@ const LiveLineupPage = () => {
   useEffect(() => {
     viewStateRef.current = {
       mode,
+      liveSubView,
       competitionId,
       blMatchday,
       blCurrentMatchday,
@@ -315,6 +324,7 @@ const LiveLineupPage = () => {
     };
   }, [
     mode,
+    liveSubView,
     competitionId,
     blMatchday,
     blCurrentMatchday,
@@ -399,7 +409,7 @@ const LiveLineupPage = () => {
     return nextRanking;
   }, [isClientRateLimited, handleRateLimitResponse]);
 
-  // Eigene Startelf neu laden (vollstaendig oder nur fuer `onlyPlayerIds`).
+  // Eigene Spieltagself neu laden (vollstaendig oder nur fuer `onlyPlayerIds`).
   const refreshOwnOnly = useCallback(async (league, { onlyPlayerIds = null } = {}) => {
     if (!kickbaseId || !league || isClientRateLimited()) return null;
     const lineupJson = await loadLineup(league, kickbaseId, { onlyPlayerIds });
@@ -426,10 +436,62 @@ const LiveLineupPage = () => {
     return sumPlayersPoints(mergedPlayers);
   }, [kickbaseId, isClientRateLimited, loadLineup]);
 
+  // Aktuellen Kader (inkl. Auswechselspieler) laden: primaer live ueber
+  // /api/live-squad (1 Call, 60s Edge-Cache), Fallback auf advisor-data.json.
+  const loadCurrentSquad = useCallback(async (league) => {
+    if (!kickbaseId) {
+      setSquadLoading(false);
+      return;
+    }
+    setSquadLoading(true);
+    try {
+      if (league && !isClientRateLimited()) {
+        try {
+          const res = await fetch(
+            `/api/live-squad?userId=${encodeURIComponent(kickbaseId)}&leagueKey=${encodeURIComponent(league)}`
+          );
+          if (!handleRateLimitResponse(res) && res.ok) {
+            const contentType = res.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+              const json = await res.json();
+              if (Array.isArray(json?.players) && json.players.length > 0) {
+                setCurrentSquadRaw(json.players);
+                return;
+              }
+            }
+          }
+        } catch {
+          // Fallback auf advisor-data.json
+        }
+      }
+
+      const advRes = await fetch('/advisor-data.json', { cache: 'no-cache' });
+      if (advRes.ok) {
+        const advJson = await advRes.json();
+        for (const lg of Object.values(advJson?.leagues || {})) {
+          const found = lg?.managerSquads?.[String(kickbaseId)];
+          if (Array.isArray(found) && found.length > 0) {
+            setCurrentSquadRaw(found);
+            return;
+          }
+        }
+      }
+      setCurrentSquadRaw([]);
+    } catch {
+      setCurrentSquadRaw([]);
+    } finally {
+      setSquadLoading(false);
+    }
+  }, [kickbaseId, isClientRateLimited, handleRateLimitResponse]);
+
   // Grundsetup beim Oeffnen: Liga ermitteln, Spieler-/Vereinswappen laden,
-  // Ranking + eigenen Kader EINMAL abrufen.
+  // aktuellen Kader + Live-Ranking + eigene Spieltagself abrufen.
   const loadAll = useCallback(async () => {
-    if (!kickbaseId) { setOwnLoading(false); return; }
+    if (!kickbaseId) {
+      setOwnLoading(false);
+      setSquadLoading(false);
+      return;
+    }
     setOwnLoading(true);
     setSetupError(null);
     try {
@@ -448,6 +510,7 @@ const LiveLineupPage = () => {
       setLeagueKey(resolvedLeague);
 
       await Promise.all([
+        loadCurrentSquad(resolvedLeague),
         refreshRankingOnly(resolvedLeague),
         refreshOwnOnly(resolvedLeague),
       ]);
@@ -456,7 +519,7 @@ const LiveLineupPage = () => {
     } finally {
       setOwnLoading(false);
     }
-  }, [kickbaseId, refreshRankingOnly, refreshOwnOnly]);
+  }, [kickbaseId, loadCurrentSquad, refreshRankingOnly, refreshOwnOnly]);
 
   useEffect(() => { loadAll(); }, [loadAll]);
 
@@ -511,7 +574,7 @@ const LiveLineupPage = () => {
     }
   }, [leagueKey, selectedManagerId, managerData, isClientRateLimited, loadLineup]);
 
-  // Teamliste laden, sobald der "Echte Teams"-Modus den Wettbewerb wechselt.
+  // Teamliste laden, sobald der "Spieltag"-Modus den Wettbewerb wechselt.
   useEffect(() => {
     if (mode !== 'teams') return;
     let cancelled = false;
@@ -607,8 +670,7 @@ const LiveLineupPage = () => {
   }, []);
 
   // Backend-gesteuerter 60s-Live-Tick: aktualisiert NUR aktuell laufende
-  // Spieler/Teams bzw. das liga-weit gecachte Ranking (kein voller 11er-Reload
-  // wenn nur 1-3 Spieler gerade spielen).
+  // Spieler/Teams bzw. das liga-weit gecachte Ranking (im "Live"- & "Spieltag"-Tab).
   const runScheduledKickbaseTick = useCallback(async ({ ignoreMinGap = false } = {}) => {
     if (document.visibilityState !== 'visible') return;
     if (isClientRateLimited()) return;
@@ -621,33 +683,35 @@ const LiveLineupPage = () => {
 
     setBgSyncing(true);
     try {
-      if (state.mode === 'own') {
-        if (!state.leagueKey || !state.kickbaseId || !state.ownData?.players?.length) return;
-        const liveIds = getActivePlayerIdsForLineup(
-          state.ownData.players,
-          state.playerMap,
-          blMatches,
-          state.allBlKickbaseTeams
-        );
-        if (liveIds.length === 0) return;
-        lastKickbaseTickAtRef.current = Date.now();
-        await refreshOwnOnly(state.leagueKey, { onlyPlayerIds: liveIds });
-      } else if (state.mode === 'managers') {
+      if (state.mode === 'live') {
         if (!state.leagueKey) return;
-        lastKickbaseTickAtRef.current = Date.now();
-        const tasks = [refreshRankingOnly(state.leagueKey)];
-        if (!state.managerPickerOpen && state.selectedManagerId && state.managerData?.players?.length) {
+        if (state.liveSubView === 'own') {
+          if (!state.kickbaseId || !state.ownData?.players?.length) return;
           const liveIds = getActivePlayerIdsForLineup(
-            state.managerData.players,
+            state.ownData.players,
             state.playerMap,
             blMatches,
             state.allBlKickbaseTeams
           );
-          if (liveIds.length > 0) {
-            tasks.push(selectManager(state.selectedManagerId, true, { onlyPlayerIds: liveIds }));
+          if (liveIds.length === 0) return;
+          lastKickbaseTickAtRef.current = Date.now();
+          await refreshOwnOnly(state.leagueKey, { onlyPlayerIds: liveIds });
+        } else {
+          lastKickbaseTickAtRef.current = Date.now();
+          const tasks = [refreshRankingOnly(state.leagueKey)];
+          if (!state.managerPickerOpen && state.selectedManagerId && state.managerData?.players?.length) {
+            const liveIds = getActivePlayerIdsForLineup(
+              state.managerData.players,
+              state.playerMap,
+              blMatches,
+              state.allBlKickbaseTeams
+            );
+            if (liveIds.length > 0) {
+              tasks.push(selectManager(state.selectedManagerId, true, { onlyPlayerIds: liveIds }));
+            }
           }
+          await Promise.all(tasks);
         }
-        await Promise.all(tasks);
       } else if (state.mode === 'teams') {
         if (!state.selectedTeamId) return;
         if (state.competitionId === '1') {
@@ -660,7 +724,7 @@ const LiveLineupPage = () => {
         await selectTeam(state.selectedTeamId, true);
       }
     } catch {
-      // Stiller 60s-Hintergrund-Tick: bestehende Anzeige bleibt unberuehrt.
+      // Stiller 60s-Hintergrund-Tick
     } finally {
       setBgSyncing(false);
     }
@@ -674,19 +738,19 @@ const LiveLineupPage = () => {
     if (document.visibilityState !== 'visible' || isClientRateLimited()) return;
 
     const state = viewStateRef.current;
-    let action = null; // 'own' | 'manager_lineup' | 'ranking_only' | 'team'
+    let action = null; // 'own_live' | 'manager_lineup' | 'ranking_only' | 'team'
     let primaryTrigger = triggeredMatches[0];
 
-    if (state.mode === 'own') {
-      if (!state.leagueKey || !state.kickbaseId || !state.ownData?.players?.length) return;
-      const relevantIds = collectLineupTeamIds(state.ownData.players, state.playerMap);
-      const hits = matchTriggeredEventsToTeamIds(triggeredMatches, relevantIds, state.allBlKickbaseTeams);
-      if (hits.length === 0) return;
-      primaryTrigger = hits[0];
-      action = 'own';
-    } else if (state.mode === 'managers') {
+    if (state.mode === 'live') {
       if (!state.leagueKey) return;
-      if (!state.managerPickerOpen && state.selectedManagerId && state.managerData?.players?.length) {
+      if (state.liveSubView === 'own') {
+        if (!state.kickbaseId || !state.ownData?.players?.length) return;
+        const relevantIds = collectLineupTeamIds(state.ownData.players, state.playerMap);
+        const hits = matchTriggeredEventsToTeamIds(triggeredMatches, relevantIds, state.allBlKickbaseTeams);
+        if (hits.length === 0) return;
+        primaryTrigger = hits[0];
+        action = 'own_live';
+      } else if (!state.managerPickerOpen && state.selectedManagerId && state.managerData?.players?.length) {
         const relevantIds = collectLineupTeamIds(state.managerData.players, state.playerMap);
         const hits = matchTriggeredEventsToTeamIds(triggeredMatches, relevantIds, state.allBlKickbaseTeams);
         if (hits.length > 0) {
@@ -736,7 +800,7 @@ const LiveLineupPage = () => {
       try {
         const blMatches = liveWatcherRef.current.matches;
 
-        if (action === 'own' && current.mode === 'own' && current.leagueKey) {
+        if (action === 'own_live' && current.mode === 'live' && current.liveSubView === 'own' && current.leagueKey) {
           const beforePoints = sumPlayersPoints(current.ownData?.players);
           const liveIds = getActivePlayerIdsForLineup(
             current.ownData?.players,
@@ -750,7 +814,7 @@ const LiveLineupPage = () => {
           return { performed: true, beforePoints, afterPoints };
         }
 
-        if (action === 'manager_lineup' && current.mode === 'managers' && current.selectedManagerId && current.leagueKey) {
+        if (action === 'manager_lineup' && current.mode === 'live' && current.liveSubView === 'ranking' && current.selectedManagerId && current.leagueKey) {
           const beforePoints = sumPlayersPoints(current.managerData?.players);
           const liveIds = getActivePlayerIdsForLineup(
             current.managerData?.players,
@@ -767,7 +831,7 @@ const LiveLineupPage = () => {
           return { performed: true, beforePoints, afterPoints };
         }
 
-        if (action === 'ranking_only' && current.mode === 'managers' && current.leagueKey) {
+        if (action === 'ranking_only' && current.mode === 'live' && current.liveSubView === 'ranking' && current.leagueKey) {
           await refreshRankingOnly(current.leagueKey);
           return { performed: true, beforePoints: null, afterPoints: null };
         }
@@ -883,7 +947,7 @@ const LiveLineupPage = () => {
     }
   }, [flashMatchHighlights, scheduleAutoKickbaseSync]);
 
-  // Bundesliga-Partien fuer den im "Echte Teams"-Tab gewaehlten Spieltag laden.
+  // Bundesliga-Partien fuer den im "Spieltag"-Tab gewaehlten Spieltag laden.
   const loadBundesligaMatches = useCallback(async (
     targetMatchday = null,
     { silent = false, nocache = false } = {}
@@ -967,7 +1031,7 @@ const LiveLineupPage = () => {
     pollCurrentBundesliga({ checkLastChangeOnly: false, allowTrigger: false });
   }, [pollCurrentBundesliga]);
 
-  // OpenLigaDB-Partien nachladen, sobald im "Echte Teams"-Tab der Spieltag gewechselt wird.
+  // OpenLigaDB-Partien nachladen, sobald im "Spieltag"-Tab der Spieltag gewechselt wird.
   useEffect(() => {
     if (mode !== 'teams' || competitionId !== '1') return;
     if (blMatchday == null && blMatchesDataRef.current) return;
@@ -1002,9 +1066,7 @@ const LiveLineupPage = () => {
     };
   }, [blLiveActive, pollCurrentBundesliga]);
 
-  // Zentraler 60s-Kickbase-Live-Takt (Backend-gesteuert, kein manueller Refresh):
-  // Mit zufaelligem Start-Versatz (2-9s), damit sich alle Nutzer ueber die
-  // Minute verteilen, und nur aktiv solange mindestens ein Spiel laeuft.
+  // Zentraler 60s-Kickbase-Live-Takt (Backend-gesteuert, kein manueller Refresh).
   useEffect(() => {
     if (!kickbaseLivePollActive) return undefined;
 
@@ -1038,8 +1100,54 @@ const LiveLineupPage = () => {
     if (rateLimitTimerRef.current) window.clearTimeout(rateLimitTimerRef.current);
   }, [cancelPendingEventTimers]);
 
+  // Aktuellen Kader (aus /api/live-squad oder advisor-data.json) mit
+  // all_players.json (Marktwert, Startelfwahrscheinlichkeit `prob`, Fotos,
+  // Vereinswappen) anreichern fuer den "Mein Kader"-Tab.
+  const enrichedCurrentSquad = useMemo(() => {
+    if (!Array.isArray(currentSquadRaw) || currentSquadRaw.length === 0) return null;
+    return currentSquadRaw.map((p) => {
+      const pid = String(p.playerId ?? p.id);
+      const full = playerMap?.get(pid);
+      const fullName = full
+        ? `${full.fn || ''} ${full.ln || ''}`.trim()
+        : p.firstName
+          ? `${p.firstName} ${p.name || ''}`.trim()
+          : (p.name || `Spieler ${pid}`);
+      const tid = p.teamId != null ? String(p.teamId) : (full?.tid != null ? String(full.tid) : null);
+      return {
+        id: pid,
+        position: full?.pos || p.position || 3,
+        name: fullName,
+        lastName: full?.ln || p.name || fullName,
+        teamName: full?.tn || p.team || null,
+        teamLogo: (tid && teamLogoMap?.get(tid)) || (full?.tim ? `https://kickbase.b-cdn.net/${full.tim}` : null),
+        imagePath: full?.pim || p.imagePath || null,
+        marketValue: typeof full?.mv === 'number' && full.mv > 0 ? full.mv : (p.marketValue ?? 0),
+        prob: typeof full?.prob === 'number' ? full.prob : (p.prob ?? p.startElfProbability ?? null),
+        status: typeof full?.st === 'number' ? full.st : (p.status ?? 0),
+        lineupOrder: typeof p.lineupOrder === 'number' ? p.lineupOrder : null,
+      };
+    });
+  }, [currentSquadRaw, playerMap, teamLogoMap]);
+
+  useEffect(() => {
+    if (kickbaseId && enrichedCurrentSquad && enrichedCurrentSquad.length > 0) {
+      saveCachedSnapshot(`squad:${kickbaseId}`, enrichedCurrentSquad);
+    }
+  }, [kickbaseId, enrichedCurrentSquad]);
+
+  const displayedCurrentSquad = enrichedCurrentSquad || cachedSquad || null;
+
+  const liveStartingIds = useMemo(() => {
+    const ids = new Set();
+    for (const p of ownData?.players || []) {
+      if (p?.playerId != null && !p.error) ids.add(String(p.playerId));
+    }
+    return ids;
+  }, [ownData]);
+
   // Gemeinsame Anreicherung: live-lineup.js-Rohdaten -> Name/Position/Foto aus
-  // all_players.json + Vereinswappen - identisch fuer "own" und "managers".
+  // all_players.json + Vereinswappen - identisch fuer eigene Spieltagself & Liga-Manager.
   const enrichKickbaseLineup = useCallback((data) => {
     if (!data?.players?.length || !playerMap) return null;
     const enriched = data.players
@@ -1096,8 +1204,7 @@ const LiveLineupPage = () => {
   }, [teamData]);
   const teamTotalPoints = sumPlayersPoints(teamData?.players);
 
-  // Frische, fertig angereicherte Aufstellungen im Cache ablegen, damit beim
-  // naechsten Oeffnen sofort der letzte Stand sichtbar ist.
+  // Frische, fertig angereicherte Aufstellungen im Cache ablegen.
   useEffect(() => {
     if (kickbaseId && ownLineup && ownData) {
       saveCachedSnapshot(`own:${kickbaseId}`, {
@@ -1223,33 +1330,72 @@ const LiveLineupPage = () => {
           <div className="card-surface rounded-2xl p-5 text-center text-sm text-red-400 mb-4">{setupError}</div>
         )}
 
+        {/* TAB 1: MEIN KADER (aktueller Kader auf dem Feld + Auswechselspieler & Liste darunter) */}
         {mode === 'own' && (
           <>
             {!kickbaseId ? (
               <div className="card-surface rounded-2xl p-5 text-center text-sm text-[#8b92a5]">
                 Verbinde zuerst deinen Kickbase-Account in deinem Profil.
               </div>
-            ) : ownData?.players?.length === 0 ? (
-              <div className="card-surface rounded-2xl p-5 text-center text-sm text-[#8b92a5]">
-                {ownData.note || 'Keine Startelf-Daten verfügbar.'}
-              </div>
-            ) : displayedOwnLineup ? (
-              <LiveLineupPitch
-                key={`own-${kickbaseId}`}
-                lineup={displayedOwnLineup}
-                totalPoints={displayedOwnTotalPoints}
-                prevPointsMap={ownLineup ? ownPrevPoints : null}
-                animId={ownLineup ? ownAnimId : null}
+            ) : (
+              <CurrentSquadView
+                players={displayedCurrentSquad}
+                liveStartingIds={liveStartingIds}
+                loading={squadLoading}
               />
-            ) : ownLoading ? (
-              <div className="text-center text-[#8b92a5] text-sm py-10">Lade Live-Daten…</div>
-            ) : null}
+            )}
           </>
         )}
 
-        {mode === 'managers' && (
+        {/* TAB 2: LIVE (Spieltagself mit Live-Punkten + optionales Liga-Ranking) */}
+        {mode === 'live' && (
           <>
-            {managerPickerOpen ? (
+            <div className="flex gap-2 mb-3">
+              <button
+                type="button"
+                onClick={() => setLiveSubView('own')}
+                className={`px-3.5 py-1.5 rounded-full whitespace-nowrap text-xs border transition-colors cursor-pointer ${
+                  liveSubView === 'own'
+                    ? 'bg-[#ef4444]/15 border-[#ef4444] text-white font-semibold'
+                    : 'border-[#2e2e2e] text-[#8b92a5] font-medium hover:text-white'
+                }`}
+              >
+                Meine Spieltagself
+              </button>
+              <button
+                type="button"
+                onClick={() => setLiveSubView('ranking')}
+                className={`px-3.5 py-1.5 rounded-full whitespace-nowrap text-xs border transition-colors cursor-pointer ${
+                  liveSubView === 'ranking'
+                    ? 'bg-[#ef4444]/15 border-[#ef4444] text-white font-semibold'
+                    : 'border-[#2e2e2e] text-[#8b92a5] font-medium hover:text-white'
+                }`}
+              >
+                Liga-Ranking
+              </button>
+            </div>
+
+            {liveSubView === 'own' ? (
+              !kickbaseId ? (
+                <div className="card-surface rounded-2xl p-5 text-center text-sm text-[#8b92a5]">
+                  Verbinde zuerst deinen Kickbase-Account in deinem Profil.
+                </div>
+              ) : ownData?.players?.length === 0 ? (
+                <div className="card-surface rounded-2xl p-5 text-center text-sm text-[#8b92a5]">
+                  {ownData.note || 'Keine Startelf-Daten verfügbar.'}
+                </div>
+              ) : displayedOwnLineup ? (
+                <LiveLineupPitch
+                  key={`own-${kickbaseId}`}
+                  lineup={displayedOwnLineup}
+                  totalPoints={displayedOwnTotalPoints}
+                  prevPointsMap={ownLineup ? ownPrevPoints : null}
+                  animId={ownLineup ? ownAnimId : null}
+                />
+              ) : ownLoading ? (
+                <div className="text-center text-[#8b92a5] text-sm py-10">Lade Live-Daten…</div>
+              ) : null
+            ) : managerPickerOpen ? (
               displayedRanking && displayedRanking.length > 0 ? (
                 <RankingList
                   ranking={displayedRanking}
@@ -1289,6 +1435,7 @@ const LiveLineupPage = () => {
           </>
         )}
 
+        {/* TAB 3: SPIELTAG (Bundesliga-Partien OpenLigaDB + echte Team-Startelfen) */}
         {mode === 'teams' && (
           <>
             <div className="flex gap-2 mb-3 overflow-x-auto no-scrollbar">
@@ -1297,7 +1444,7 @@ const LiveLineupPage = () => {
                   key={c.id}
                   type="button"
                   onClick={() => setCompetitionId(c.id)}
-                  className={`px-3.5 py-1.5 rounded-full whitespace-nowrap text-xs border transition-colors ${
+                  className={`px-3.5 py-1.5 rounded-full whitespace-nowrap text-xs border transition-colors cursor-pointer ${
                     competitionId === c.id
                       ? 'bg-[#ff5c3e]/15 border-[#ff5c3e] text-white font-semibold'
                       : 'border-[#2e2e2e] text-[#8b92a5] font-medium hover:text-white'
@@ -1327,7 +1474,7 @@ const LiveLineupPage = () => {
                       key={t.id}
                       type="button"
                       onClick={() => (isActive && competitionId === '1' ? clearSelectedTeam() : selectTeam(t.id))}
-                      className={`w-[84px] shrink-0 flex flex-col items-center justify-center gap-1.5 px-2 py-2.5 rounded-2xl border transition-all active:scale-95 ${
+                      className={`w-[84px] shrink-0 flex flex-col items-center justify-center gap-1.5 px-2 py-2.5 rounded-2xl border transition-all active:scale-95 cursor-pointer ${
                         isActive
                           ? 'bg-[#ff5c3e]/12 border-[#ff5c3e] shadow-md'
                           : 'card-surface hover:border-white/25'
