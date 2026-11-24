@@ -451,7 +451,7 @@ const ChartTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   const point = payload[0].payload;
   return (
-    <div className="bg-[#0a0a0a] border border-[#2e2e2e] rounded-xl px-3 py-2 shadow-xl">
+    <div className="bg-[#0a0a0a]/80 backdrop-blur-sm border border-[#2e2e2e] rounded-xl px-3 py-2 shadow-xl">
       <div className="text-[10px] text-[#8b92a5] mb-1">
         {formatShortDate(label, true)}
         {point.isPredicted && " (Prognose)"}
