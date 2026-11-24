@@ -1,8 +1,12 @@
 import React, { useMemo, useState } from 'react';
-import { Info } from 'lucide-react';
+import { Info, ExternalLink } from 'lucide-react';
 import { buildLineupWithDummies } from '../liveLineupUtils';
 import { normalizeStartProbCode } from '../startProbMeta';
 import StartProbBadge, { StartProbLegend } from './StartProbBadge';
+
+// Offizieller Kickbase Universal Link (verifiziert fuer iOS apple-app-site-association
+// & Android assetlinks.json) - oeffnet die installierte Kickbase-App direkt.
+const KICKBASE_APP_URL = 'https://kickbase.go.link/?adj_t=1obst5s';
 
 const IMAGE_BASE = 'https://kickbase.b-cdn.net/';
 const POS_CODE_TO_LABEL = { 1: 'TW', 2: 'ABW', 3: 'MF', 4: 'ST' };
@@ -427,6 +431,17 @@ const CurrentSquadView = ({ players, liveStartingIds, loading }) => {
           </div>
         </div>
       </div>
+
+      {/* Direktlink in die installierte Kickbase-App (Universal Link / App Link) */}
+      <a
+        href={KICKBASE_APP_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-[#ff5c3e]/15 border border-[#ff5c3e]/45 text-xs sm:text-sm font-bold text-white hover:bg-[#ff5c3e]/25 hover:border-[#ff5c3e] transition-all active:scale-[0.99]"
+      >
+        <span>In der Kickbase App öffnen</span>
+        <ExternalLink size={14} className="text-[#ff5c3e] shrink-0" />
+      </a>
 
       {/* Liste unterhalb des Fussballfelds: nach Positionen gruppiert mit Marktwert, Tendenz & Startelf-Prognose */}
       <div className="mt-5">
