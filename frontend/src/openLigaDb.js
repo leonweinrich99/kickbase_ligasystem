@@ -377,12 +377,44 @@ export const findOpenLigaMatchForKickbaseTeam = (matches, kickbaseTeam) => {
   return null;
 };
 
-// Erkennt beim Live-Polling neu gefallene Tore / veraenderte Spielstaende.
+// Leitet die Bundesliga-Vereinsliste (Kickbase-Team-ID + Name + Logo) direkt
+// aus all_players.json ab, sodass das OpenLigaDB-Event-Matching auch im
+// "Mein Kader"- und "Liga-Manager"-Modus ganz ohne Extra-API-Call funktioniert.
+export const buildKickbaseTeamsFromPlayers = (allPlayers) => {
+  const byId = new Map();
+  for (const p of allPlayers || []) {
+    if (p?.tid == null || !p?.tn) continue;
+    const id = String(p.tid);
+    if (!byId.has(id)) {
+      byId.set(id, {
+        id,
+        name: p.tn,
+        logo: p.tim ? `https://kickbase.b-cdn.net/${p.tim}` : null,
+      });
+    }
+  }
+  return Array.from(byId.values());
+};
+
+export const mergeKickbaseTeams = (primaryTeams, secondaryTeams) => {
+  const byId = new Map();
+  for (const t of secondaryTeams || []) {
+    if (t?.id != null) byId.set(String(t.id), { ...t, id: String(t.id) });
+  }
+  for (const t of primaryTeams || []) {
+    if (t?.id != null) byId.set(String(t.id), { ...t, id: String(t.id) });
+  }
+  return Array.from(byId.values());
+};
+
+// Erkennt beim Live-Polling neu gefallene Tore, Spielstandsaenderungen,
+// Halbzeitpfiff und Abpfiff (relevant fuer Sieg-/Zu-Null-/Minutenboni).
 export const diffBundesligaMatches = (prevMatches, nextMatches) => {
   const changedMatchIds = new Set();
   const newEventIds = new Set();
+  const triggeredMatches = [];
   if (!Array.isArray(prevMatches) || prevMatches.length === 0 || !Array.isArray(nextMatches)) {
-    return { changedMatchIds, newEventIds };
+    return { changedMatchIds, newEventIds, triggeredMatches };
   }
 
   const prevById = new Map(prevMatches.map((m) => [m.matchId, m]));
@@ -392,20 +424,75 @@ export const diffBundesligaMatches = (prevMatches, nextMatches) => {
 
     const prevScoreKey = prev.score ? `${prev.score.home}:${prev.score.away}` : 'none';
     const nextScoreKey = next.score ? `${next.score.home}:${next.score.away}` : 'none';
-    if (prevScoreKey !== nextScoreKey) {
-      changedMatchIds.add(next.matchId);
-    }
+    const scoreChanged = prevScoreKey !== nextScoreKey;
 
     const prevEventSet = new Set((prev.events || []).map((e) => String(e.id)));
+    const freshEvents = [];
     for (const ev of next.events || []) {
       if (!prevEventSet.has(String(ev.id))) {
         newEventIds.add(String(ev.id));
-        changedMatchIds.add(next.matchId);
+        freshEvents.push(ev);
       }
+    }
+
+    const halfTimeReached = !prev.halfTimeScore && Boolean(next.halfTimeScore);
+    const matchJustFinished = !prev.isFinished && Boolean(next.isFinished);
+
+    if (freshEvents.length > 0 || scoreChanged || halfTimeReached || matchJustFinished) {
+      changedMatchIds.add(next.matchId);
+      const reason =
+        freshEvents.length > 0
+          ? 'goal'
+          : matchJustFinished
+            ? 'finished'
+            : halfTimeReached
+              ? 'halftime'
+              : 'score';
+      triggeredMatches.push({
+        match: next,
+        reason,
+        latestEvent: freshEvents[freshEvents.length - 1] || null,
+      });
     }
   }
 
-  return { changedMatchIds, newEventIds };
+  return { changedMatchIds, newEventIds, triggeredMatches };
+};
+
+// Filtert OpenLigaDB-Trigger auf Partien, an denen mindestens eine der
+// relevanten Kickbase-Team-IDs (Heim ODER Gast) beteiligt ist.
+export const matchTriggeredEventsToTeamIds = (triggeredMatches, relevantTeamIds, kickbaseTeams) => {
+  if (!Array.isArray(triggeredMatches) || triggeredMatches.length === 0) return [];
+  if (!relevantTeamIds || relevantTeamIds.size === 0) return [];
+  if (!Array.isArray(kickbaseTeams) || kickbaseTeams.length === 0) return [];
+
+  return triggeredMatches.filter((item) => {
+    const kbHome = matchOpenLigaTeamToKickbase(item.match?.home, kickbaseTeams);
+    const kbAway = matchOpenLigaTeamToKickbase(item.match?.away, kickbaseTeams);
+    const homeHit = kbHome && relevantTeamIds.has(String(kbHome.id));
+    const awayHit = kbAway && relevantTeamIds.has(String(kbAway.id));
+    return Boolean(homeHit || awayHit);
+  });
+};
+
+export const formatTriggerSummary = (triggered) => {
+  if (!triggered?.match) return 'Live-Ereignis erkannt';
+  const { match, reason, latestEvent } = triggered;
+  const fixture = `${match.home.shortName} – ${match.away.shortName}`;
+  const scoreText = match.score ? ` (${match.score.home}:${match.score.away})` : '';
+  if (reason === 'goal' && latestEvent) {
+    const icon = latestEvent.isOwnGoal ? '⚽' : '⚽';
+    const tag = latestEvent.isOwnGoal ? 'Eigentor' : latestEvent.isPenalty ? 'Elfmeter' : 'Tor';
+    const min = latestEvent.minuteLabel ? ` ${latestEvent.minuteLabel}` : '';
+    return `${icon} ${tag}${min} · ${latestEvent.scorer} · ${fixture}${scoreText}`;
+  }
+  if (reason === 'finished') {
+    return `🏁 Abpfiff · ${fixture}${scoreText}`;
+  }
+  if (reason === 'halftime') {
+    return `⏱ Halbzeit · ${fixture}${scoreText}`;
+  }
+  return `🔄 Spielstand · ${fixture}${scoreText}`;
 };
 
 export const formatKickoffLabel = (isoUtc) => {

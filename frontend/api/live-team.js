@@ -9,10 +9,10 @@
 // Spiel bevorzugt, sonst das zuletzt beendete, sonst das naechste
 // angesetzte). Ohne teamId (Legacy/Fallback): erstes LIVE-Spiel im
 // Wettbewerb, wie zuvor.
-import { API_BASE, getJson, loginAny, getEventTypeMap } from './_kickbaseClient.js';
+import { API_BASE, getJson, loginAny, getEventTypeMap, setLiveCacheHeaders } from './_kickbaseClient.js';
 
 export default async function handler(req, res) {
-  const { competitionId = '1', matchId: requestedMatchId, teamId, team: teamSideParam } = req.query;
+  const { competitionId = '1', matchId: requestedMatchId, teamId, team: teamSideParam, nocache } = req.query;
 
   const token = await loginAny();
   if (!token) {
@@ -93,6 +93,7 @@ export default async function handler(req, res) {
     })
   );
 
+  setLiveCacheHeaders(res, { nocache: nocache === '1', maxAge: 15, staleWhileRevalidate: 15 });
   return res.status(200).json({
     matchId,
     matchday: day,

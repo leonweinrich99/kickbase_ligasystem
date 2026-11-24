@@ -7,10 +7,10 @@
 // einmal (us[]-Array, siehe auch backend/reconstructStartingEleven.js) -
 // keine einzelnen playercenter-Abfragen pro Spieler noetig, das waeren sonst
 // bis zu 11 Calls PRO Manager nur fuer eine Rangliste.
-import { API_BASE, loginAndFindLeague, getJson, resolveMatchday, EXCLUDED_MANAGER_NAMES } from './_kickbaseClient.js';
+import { API_BASE, loginAndFindLeague, getJson, resolveMatchday, EXCLUDED_MANAGER_NAMES, setLiveCacheHeaders } from './_kickbaseClient.js';
 
 export default async function handler(req, res) {
-  const { userId, leagueKey, dayNumber } = req.query;
+  const { userId, leagueKey, dayNumber, nocache } = req.query;
   if (!userId || !leagueKey) {
     return res.status(400).json({ error: 'userId und leagueKey sind erforderlich' });
   }
@@ -36,5 +36,6 @@ export default async function handler(req, res) {
     .map((u) => ({ userId: String(u.i), name: u.unm, livePoints: u.mdp || 0 }))
     .sort((a, b) => b.livePoints - a.livePoints);
 
+  setLiveCacheHeaders(res, { nocache: nocache === '1', maxAge: 15, staleWhileRevalidate: 15 });
   return res.status(200).json({ matchday: day, ranking });
 }

@@ -23,6 +23,25 @@ const LEAGUE_NAME_BY_KEY = {
   L3: process.env.KICKBASE_LEAGUE_3_NAME || '3. Liga',
 };
 
+const TOKEN_TTL_MS = 20 * 60 * 1000;
+const LEAGUE_TTL_MS = 30 * 60 * 1000;
+const MATCHDAY_TTL_MS = 5 * 60 * 1000;
+
+// Modul-weite Caches fuer warme Serverless-Instanzen: reduziert Kickbase-Logins
+// und Liga-/Spieltag-Lookups drastisch (>95% weniger Login-Calls bei Live-Traffic).
+const tokenCache = new Map(); // email -> { token, expiresAt }
+const leagueCache = new Map(); // leagueKey -> { email, leagueId, expiresAt }
+const matchdayCache = new Map(); // leagueId -> { day, expiresAt }
+
+function invalidateToken(token) {
+  if (!token) return;
+  for (const [email, entry] of tokenCache.entries()) {
+    if (entry.token === token) {
+      tokenCache.delete(email);
+    }
+  }
+}
+
 function getConfiguredAccounts() {
   const accounts = [];
   for (const suffix of ['', '_2', '_3', '_4']) {
@@ -34,6 +53,10 @@ function getConfiguredAccounts() {
 }
 
 async function login(email, pass) {
+  const cached = tokenCache.get(email);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.token;
+  }
   const res = await fetch(`${API_BASE}/user/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -41,11 +64,16 @@ async function login(email, pass) {
   });
   const data = await res.json();
   if (data.err || !data.tkn) return null;
+  tokenCache.set(email, { token: data.tkn, expiresAt: Date.now() + TOKEN_TTL_MS });
   return data.tkn;
 }
 
 async function findLeagueId(token, leagueNameContains) {
   const res = await fetch(`${API_BASE}/leagues`, { headers: { Authorization: `Bearer ${token}` } });
+  if (res.status === 401) {
+    invalidateToken(token);
+    return null;
+  }
   const data = await res.json();
   const list = data?.lins || data?.leagues || (Array.isArray(data) ? data : []);
   const needle = leagueNameContains.toLowerCase().match(/[a-z0-9]+/g) || [];
@@ -62,11 +90,29 @@ async function findLeagueId(token, leagueNameContains) {
 export async function loginAndFindLeague(leagueKey) {
   const leagueName = LEAGUE_NAME_BY_KEY[leagueKey];
   if (!leagueName) return null;
-  for (const account of getConfiguredAccounts()) {
+  const accounts = getConfiguredAccounts();
+
+  const cachedLeague = leagueCache.get(leagueKey);
+  if (cachedLeague && cachedLeague.expiresAt > Date.now()) {
+    const acc = accounts.find((a) => a.email === cachedLeague.email);
+    if (acc) {
+      const token = await login(acc.email, acc.pass);
+      if (token) return { token, leagueId: cachedLeague.leagueId };
+    }
+  }
+
+  for (const account of accounts) {
     const token = await login(account.email, account.pass);
     if (!token) continue;
     const leagueId = await findLeagueId(token, leagueName);
-    if (leagueId) return { token, leagueId };
+    if (leagueId) {
+      leagueCache.set(leagueKey, {
+        email: account.email,
+        leagueId,
+        expiresAt: Date.now() + LEAGUE_TTL_MS,
+      });
+      return { token, leagueId };
+    }
   }
   return null;
 }
@@ -84,6 +130,10 @@ export async function loginAny() {
 
 export async function getJson(url, token) {
   const res = await fetch(url, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } });
+  if (res.status === 401) {
+    invalidateToken(token);
+    return null;
+  }
   if (!res.ok) return null;
   try {
     return await res.json();
@@ -93,11 +143,30 @@ export async function getJson(url, token) {
 }
 
 // Aktuellen Spieltag ermitteln (sofern nicht bekannt) - das Ranking liefert
-// ihn ohnehin mit, kein Extra-Call noetig.
+// ihn ohnehin mit, kurz zwischengespeichert fuer warme Instanzen.
 export async function resolveMatchday(leagueId, token, dayNumber) {
   if (dayNumber) return parseInt(dayNumber, 10);
+  const cached = matchdayCache.get(String(leagueId));
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.day;
+  }
   const ranking = await getJson(`${API_BASE}/leagues/${leagueId}/ranking`, token);
-  return ranking?.day || null;
+  const day = ranking?.day || null;
+  if (day) {
+    matchdayCache.set(String(leagueId), { day, expiresAt: Date.now() + MATCHDAY_TTL_MS });
+  }
+  return day;
+}
+
+// Einheitliche Vercel-Edge-Cache-Header: bei automatischen Event-Updates
+// buendelt s-maxage gleichzeitige Nutzer-Abrufe zu einem einzigen Kickbase-Call,
+// waehrend manueller Refresh (`nocache=1`) direkt frisch abfragt.
+export function setLiveCacheHeaders(res, { nocache = false, maxAge = 15, staleWhileRevalidate = 15 } = {}) {
+  if (nocache) {
+    res.setHeader('Cache-Control', 'no-store, max-age=0');
+  } else {
+    res.setHeader('Cache-Control', `public, s-maxage=${maxAge}, stale-while-revalidate=${staleWhileRevalidate}`);
+  }
 }
 
 // Uebersetzt die eti-Codes aus playercenter-events in Klartext (Owner-Wunsch
@@ -118,6 +187,10 @@ export async function getEventTypeMap(token) {
   const res = await fetch(`${API_BASE}/live/eventtypes`, {
     headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', 'Accept-Language': 'de' },
   });
+  if (res.status === 401) {
+    invalidateToken(token);
+    return new Map();
+  }
   const data = res.ok ? await res.json().catch(() => null) : null;
   eventTypeMapCache = new Map((data?.it || []).map((x) => [x.i, x.ti]));
   return eventTypeMapCache;

@@ -3,8 +3,8 @@
 // sehen", analog zur Spieler-Detail-Ansicht unter Matches -> Aufstellungen
 // -> Spieler in der offiziellen Kickbase-App; spaeter erweitert um die
 // Moeglichkeit, auch ANDERE Manager der eigenen Liga live anzuschauen).
-// Wird NUR aufgerufen, wenn ein Nutzer die Seite tatsaechlich oeffnet - kein
-// Hintergrund-Polling, kein Cron.
+// Wird beim Oeffnen, manuellem Refresh oder gezielt per OpenLigaDB-Event-
+// Trigger (mit Team-Filter, Jitter & Cooldown) aufgerufen - kein Dauer-Loop.
 //
 // Technischer Hintergrund (siehe Diagnose vom 23.11.2026): das Lineup eines
 // BELIEBIGEN Managers laesst sich nicht direkt mit "Live-Punkten pro Spieler"
@@ -15,10 +15,10 @@
 // backend/reconstructStartingEleven.js), danach liefert playercenter PRO
 // Spieler die Live-Punkte + minutengenaue Event-Liste fuer den aktuellen
 // Spieltag.
-import { API_BASE, COMPETITION_ID, loginAndFindLeague, getJson, resolveMatchday, getEventTypeMap } from './_kickbaseClient.js';
+import { API_BASE, COMPETITION_ID, loginAndFindLeague, getJson, resolveMatchday, getEventTypeMap, setLiveCacheHeaders } from './_kickbaseClient.js';
 
 export default async function handler(req, res) {
-  const { userId, leagueKey, dayNumber } = req.query;
+  const { userId, leagueKey, dayNumber, nocache } = req.query;
   if (!userId || !leagueKey) {
     return res.status(400).json({ error: 'userId und leagueKey sind erforderlich' });
   }
@@ -43,6 +43,7 @@ export default async function handler(req, res) {
   const playerIds = (myEntry?.lp || []).filter(Boolean);
 
   if (playerIds.length === 0) {
+    setLiveCacheHeaders(res, { nocache: nocache === '1', maxAge: 15, staleWhileRevalidate: 15 });
     return res.status(200).json({ matchday: day, players: [], note: 'Keine Startelf fuer diesen Spieltag gefunden' });
   }
 
@@ -81,5 +82,6 @@ export default async function handler(req, res) {
     })
   );
 
+  setLiveCacheHeaders(res, { nocache: nocache === '1', maxAge: 15, staleWhileRevalidate: 15 });
   return res.status(200).json({ matchday: day, players });
 }

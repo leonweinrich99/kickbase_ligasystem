@@ -3,7 +3,7 @@
 // liefert Name + Wappen (SVG) OHNE Liga-Kontext, reicht fuer eine simple
 // Auswahlliste. Wird NUR beim Oeffnen des "Echte Teams"-Umschalters
 // abgerufen, kein Hintergrund-Polling.
-import { API_BASE, getJson, loginAny } from './_kickbaseClient.js';
+import { API_BASE, getJson, loginAny, setLiveCacheHeaders } from './_kickbaseClient.js';
 
 export default async function handler(req, res) {
   const { competitionId = '1' } = req.query;
@@ -22,5 +22,6 @@ export default async function handler(req, res) {
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
 
+  setLiveCacheHeaders(res, { nocache: false, maxAge: 3600, staleWhileRevalidate: 86400 });
   return res.status(200).json({ teams });
 }
