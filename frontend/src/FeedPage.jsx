@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Newspaper, Trophy, TrendingUp, Flame, Clock, BarChart3, ChevronRight } from 'lucide-react';
 import PageHeader from './ui/PageHeader';
 import { FEED_CATEGORIES, getCategoryMeta, formatArticleDate } from './feedMeta';
+import newsLogo from './assets/news_logo.svg';
 
 const CategoryIcon = ({ id, size = 13 }) => {
   if (id === 'spieltag') return <Flame size={size} />;
@@ -306,21 +307,27 @@ const FeedPage = () => {
 
   return (
     <div className="min-h-screen bg-[#000000] text-white px-4 sm:px-6 pt-5 pb-12 max-w-3xl mx-auto">
-      {/* Ebene-1 Header */}
-      <div className="flex items-end justify-between gap-3 mb-4">
-        <PageHeader
-          eyebrow={isTradingView ? 'MARKET DESK & ANALYSEN' : 'REDAKTION & ANALYSEN'}
-          accentColor={isTradingView ? '#10b981' : activeCat === 'pokal' ? '#f59e0b' : '#ff5c3e'}
-          title={
-            isTradingView
-              ? 'THE TRADING JOURNAL'
-              : activeCat === 'pokal'
-                ? 'POKAL-CHRONIK'
-                : activeCat === 'spieltag'
-                  ? 'SPIELTAGSBERICHTE'
-                  : 'NEWSFEED'
-          }
-        />
+      {/* Ebene-1 Header - gleiches Icon-Box-Format wie Liga/Pokal/Account
+          (Owner-Wunsch 24.11.2026: "Header bei allen Tabs einheitlich"). */}
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <div className="flex items-center gap-3 sm:gap-6 min-w-0">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center overflow-hidden flex-shrink-0">
+            <img src={newsLogo} alt="News Logo" className="w-full h-full object-contain" />
+          </div>
+          <PageHeader
+            eyebrow={isTradingView ? 'MARKET DESK & ANALYSEN' : 'REDAKTION & ANALYSEN'}
+            accentColor={isTradingView ? '#10b981' : activeCat === 'pokal' ? '#f59e0b' : '#ff5c3e'}
+            title={
+              isTradingView
+                ? 'THE TRADING JOURNAL'
+                : activeCat === 'pokal'
+                  ? 'POKAL-CHRONIK'
+                  : activeCat === 'spieltag'
+                    ? 'SPIELTAGSBERICHTE'
+                    : 'NEWSFEED'
+            }
+          />
+        </div>
         {feedData?.updatedAt && (
           <div className="text-right shrink-0 pb-0.5">
             <div className="text-[9px] font-semibold uppercase tracking-widest text-[#8b92a5]">Ausgabe</div>

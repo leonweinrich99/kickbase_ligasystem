@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 468 533" width="468" height="533">
+  <!-- Hexagon-Rahmen mit kleiner Luecke oben fuer die Krone (gleicher Stil wie logo.png/pokal_logo.png/account_logo.png) -->
+  <g fill="none" stroke="#3a3a3a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 263 28 L 430 120 L 430 405 L 234 523 L 38 405 L 38 120 L 205 28" />
+  </g>
+
+  <!-- Krone -->
+  <g>
+    <polygon points="174,184 183,104 224,148 234,86 244,148 285,104 294,184" fill="#1e88e5" />
+    <polygon points="234,86 244,148 285,104 294,184 234,184" fill="#1565c0" />
+    <rect x="176" y="184" width="116" height="22" fill="#ffffff" />
+    <rect x="176" y="184" width="116" height="10" fill="#1976d2" />
+  </g>
+
+  <!-- Gestapelte "Zeitungs"-Lagen: blau -> orange -> gruen, gleiche Iso-Schraeg wie die Pyramide -->
+  <!-- Lage 1 (blau, oben, schmalste) -->
+  <polygon points="122,222 158,198 342,198 378,222" fill="#42a5f5" />
+  <rect x="122" y="222" width="256" height="54" fill="#1565c0" />
+  <polygon points="122,222 158,198 158,252 122,276" fill="#1e88e5" opacity="0.55" />
+
+  <!-- Lage 2 (orange, mitte) -->
+  <polygon points="96,282 136,254 364,254 404,282" fill="#ffa552" />
+  <rect x="96" y="282" width="308" height="62" fill="#e8590c" />
+  <polygon points="96,282 136,254 136,316 96,344" fill="#ff8a3d" opacity="0.55" />
+
+  <!-- Lage 3 (gruen, unten, breiteste) -->
+  <polygon points="66,350 112,316 356,316 402,350" fill="#8bc34a" />
+  <rect x="66" y="350" width="336" height="70" fill="#2e7d32" />
+  <polygon points="66,350 112,316 112,386 66,420" fill="#7cb342" opacity="0.55" />
+</svg>

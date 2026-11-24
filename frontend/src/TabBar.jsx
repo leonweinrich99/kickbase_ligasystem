@@ -1,9 +1,9 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Newspaper } from 'lucide-react';
 import ligaLogo from './assets/logo.png';
 import pokalLogo from './assets/pokal_logo.png';
 import accountLogo from './assets/account_logo.png';
+import newsLogo from './assets/news_logo.svg';
 
 // Live-Punkte-Tab (Owner-Wunsch 24.11.2026: "nur den pulsierenden Punkt und
 // nicht das andere Icon") - der Punkt IST das Icon, kein zusaetzliches
@@ -49,14 +49,17 @@ const AccountIcon = ({ active }) => (
   />
 );
 
+// Owner-Wunsch 24.11.2026: "custom Tab-Bar-Icon im gleichen Stil wie
+// Liga/Pokal/Account fuer News" - eigenes Hexagon-Icon (news_logo.svg) in
+// derselben Bildsprache (Sechseck-Rahmen, Krone, blau-orange-gruene
+// Farbstufen) statt des generischen Lucide-Zeitungssymbols.
 const FeedIcon = ({ active }) => (
-  <div className="w-6 h-6 flex items-center justify-center">
-    <Newspaper
-      size={20}
-      strokeWidth={active ? 2.2 : 1.8}
-      className={`transition-all duration-200 ${active ? 'text-[#ff5c3e]' : 'text-[#8b92a5] opacity-60'}`}
-    />
-  </div>
+  <img
+    src={newsLogo}
+    alt="News"
+    className="w-6 h-6 object-contain transition-all duration-200"
+    style={active ? {} : { filter: 'grayscale(1)', opacity: 0.5 }}
+  />
 );
 
 const TABS = [

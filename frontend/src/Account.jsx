@@ -58,8 +58,8 @@ const Account = () => {
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10">
       <div className="max-w-lg mx-auto">
         <Motion.div variants={fadeUp} initial="hidden" animate="show" custom={0} className="flex items-center justify-between gap-3 mb-6">
-          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-            <div className="w-11 h-11 sm:w-14 sm:h-14 flex items-center justify-center overflow-hidden flex-shrink-0">
+          <div className="flex items-center gap-3 sm:gap-6 min-w-0">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center overflow-hidden flex-shrink-0">
               <img src={accountLogo} alt="Account Logo" className="w-full h-full object-contain" />
             </div>
             <PageHeader eyebrow="SAISON 26/27" title={`${getGreeting()}${firstName ? `, ${firstName}` : ''}`} />

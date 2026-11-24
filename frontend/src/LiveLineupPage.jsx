@@ -473,8 +473,8 @@ const LiveLineupPage = () => {
       <div className="max-w-[700px] mx-auto">
         <div className="flex flex-col mb-5 border-b border-[#2e2e2e] pb-4 gap-4">
           <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-              <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-[#ef4444]/10 flex items-center justify-center shrink-0">
+            <div className="flex items-center gap-3 sm:gap-6 min-w-0">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-[#ef4444]/10 flex items-center justify-center shrink-0">
                 <span className="relative flex h-3.5 w-3.5 sm:h-4 sm:w-4">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ef4444] opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-3.5 w-3.5 sm:h-4 sm:w-4 bg-[#ef4444]"></span>
