@@ -1,0 +1,522 @@
+{
+  "updatedAt": "2026-11-24T01:35:00+01:00",
+  "ticker": [
+    { "label": "LIGA 1 REALISIERT", "value": "+221,4M €", "positive": true },
+    { "label": "LIGA 2 REALISIERT", "value": "+216,9M €", "positive": true },
+    { "label": "LIGA 3 REALISIERT", "value": "+118,9M €", "positive": true },
+    { "label": "TOP TRADER", "value": "casper +104,0M €", "positive": true },
+    { "label": "TOP KADER-COUP", "value": "Scherhant +17,5M €", "positive": true },
+    { "label": "MD10 MVP", "value": "Moreira 441 Pkt", "positive": true },
+    { "label": "TOP WIN-RATE", "value": "Puliester 75 %", "positive": true }
+  ],
+  "articles": [
+    {
+      "slug": "spieltag-10-rekord-und-neun-punkte-krimi",
+      "category": "spieltag",
+      "featured": true,
+      "edition": "Spieltag 10",
+      "date": "2026-11-24",
+      "readTimeMin": 4,
+      "author": "Redaktion Spieltag",
+      "kicker": "SPIELTAGSBERICHT · MD 10",
+      "title": "Neun Punkte trennen Liga 1: Der 10. Spieltag bricht alle Rekorde – und AchtSieben stiehlt allen die Show",
+      "subtitle": "Erstmals in dieser Saison knackt das gesamte Ligasystem die 1.000-Punkte-Marke im Schnitt. Oben in Liga 1 wechselt die Spitze zum dritten Mal – während ein Tabellensiebter aus Liga 2 den Gesamttagessieg abräumt.",
+      "heroStats": [
+        { "label": "Liga-Schnitt MD10", "value": "1.033 Pkt" },
+        { "label": "Vorsprung Liga 1", "value": "+9 Pkt" },
+        { "label": "Tagessieger gesamt", "value": "1.324 Pkt" }
+      ],
+      "tags": ["Spieltag 10", "Liga 1", "Rekord", "AchtSieben", "Moreira"],
+      "sections": [
+        {
+          "heading": "Das erste 1.000er-Wochenende der Saison",
+          "paragraphs": [
+            "Was für ein Offensiv-Feuerwerk zum Abschluss der ersten zehn Spieltage: Mit einem Durchschnitt von 1.033 Punkten über alle 26 Manager pulverisierte der 10. Spieltag den bisherigen Saisonbestwert von Spieltag 9 (956 Punkte im Schnitt) und ließ die Durststrecke von Spieltag 7 (745 Punkte) endgültig vergessen.",
+            "Sinnbildlich für dieses Ausnahme-Wochenende stand die Optimal-11 des Spieltags, die bei bärenstarken 2.963 Punkten landete – angeführt von Leverkusens Afonso Moreira, der mit unglaublichen 441 Punkten den höchsten Einzelwert der gesamten Saison markierte. Dahinter lieferten Njinmah (323), Baku (302), Nmecha (287) und Keeper Atubolu (236) echte Punkt-Lawinen."
+          ]
+        },
+        {
+          "heading": "Liga 1: Der engste Titelkampf des gesamten Systems",
+          "paragraphs": [
+            "Die dramatischste Geschichte schrieb einmal mehr das Oberhaus. Nach dem 5. Spieltag lag Justin noch mit komfortablen 1.277 Punkten Vorsprung an der Spitze – dann übernahm DeinHomieEnobi am 8. Spieltag das Kommando. Am 10. Spieltag schlug Justin (997 Punkte) gegen Enobi (918 Punkte) hauchdünn zurück und eroberte Platz 1 mit exakt neun Punkten Vorsprung (10.316 zu 10.307).",
+            "Doch das Duell an der Spitze ist längst ein Dreikampf: Esel feuerte mit 1.282 Punkten den LIGA-1-Tagessieg ab und verkürzte den Rückstand auf 206 Punkte (10.110). Auch Blake (1.254) und Leon Weinrich (1.225) überzeugten mit starken 1.200er-Scores im Verfolgerfeld."
+          ],
+          "quote": {
+            "text": "Neun Punkte nach zehn Spieltagen und über 10.300 Zählern: Ein einziger gelungener Pass oder ein gewonnenes Kopfballduell hätte die Tabellenführung in Liga 1 gedreht.",
+            "attribution": "Daten-Redaktion · Auswertung MD 10"
+          }
+        },
+        {
+          "heading": "Die Sensation des Wochenendes: AchtSieben toppt alle",
+          "paragraphs": [
+            "Während in Liga 1 und Liga 3 die Spitzenreiter im Rampenlicht standen, kam der stärkste Einzelspieltag des gesamten Wochenendes völlig überraschend aus dem Tabellenkeller von Liga 2: AchtSieben (Platz 7, 8.058 Gesamtpunkte) schoss mit 1.324 Punkten an die Spitze aller 26 Manager.",
+            "In Liga 2 profitierte davon vor allem das Titelrennen: Verfolger leongarcon (1.236) und Ansgar Trinkmann (1.265) machten massiv Boden auf Tabellenführer Stomping Tantrum (967) gut. In Liga 3 lieferten sich casper (1.268) und Spitzenreiter Geißbock (1.260) ein Kopf-an-Kopf-Rennen auf allerhöchstem Niveau."
+          ],
+          "table": {
+            "caption": "Top-Performer am 10. Spieltag (über alle Ligen)",
+            "columns": ["Rang", "Manager", "Liga", "MD 10", "Gesamt"],
+            "rows": [
+              ["1.", "AchtSieben", "LIGA 2", "1.324", "8.058 (#7)"],
+              ["2.", "Esel", "LIGA 1", "1.282", "10.110 (#3)"],
+              ["3.", "casper", "LIGA 3", "1.268", "9.807 (#2)"],
+              ["4.", "Ansgar Trinkmann", "LIGA 2", "1.265", "9.153 (#4)"],
+              ["5.", "Geißbock", "LIGA 3", "1.260", "10.349 (#1)"],
+              ["6.", "Blake", "LIGA 1", "1.254", "9.612 (#4)"],
+              ["7.", "leongarcon", "LIGA 2", "1.236", "10.391 (#2)"],
+              ["8.", "Leon Weinrich", "LIGA 1", "1.225", "8.985 (#6)"]
+            ]
+          }
+        },
+        {
+          "heading": "Die wichtigsten Fakten zum Mitnehmen",
+          "callout": {
+            "title": "Spieltag 10 in Zahlen",
+            "tone": "orange",
+            "items": [
+              "Saison-Bestwert im Gesamtschnitt: 1.033 Punkte pro Manager (erstmals über 1.000).",
+              "Afonso Moreira (Leverkusen) setzt mit 441 Punkten den neuen Saison-Einzelrekord.",
+              "Trotz Platz 6 in Liga 1 sammelte Leon Weinrich 1.225 Punkte – Platz 8 über alle Ligen.",
+              "Schlusslicht des Spieltags blieb Flocke (LIGA 3) mit 475 Punkten."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "slug": "wsj-der-100-millionen-club-casper-und-die-top-trader",
+      "category": "trading",
+      "featured": true,
+      "edition": "Market Desk · Saisonreport",
+      "date": "2026-11-24",
+      "readTimeMin": 5,
+      "author": "The Kickbase Street Journal",
+      "kicker": "MARKET DESK · SPEZIALANALYSE",
+      "title": "Der 100-Millionen-Club: Wie casper die Transfer-Börse sprengt – und warum Disziplin Rendite schlägt",
+      "subtitle": "4.124 Transaktionen, über 557 Millionen Euro realisierte Gewinne über drei Ligen: Unsere Auswertung aller Käufe, Verkäufe und Startkader-Exits zeigt, wer auf dem Transfermarkt echtes Alpha generiert.",
+      "heroStats": [
+        { "label": "Top Trader (Real.)", "value": "+103,97M €" },
+        { "label": "Marktvolumen", "value": "4.124 Deals" },
+        { "label": "Beste Win-Rate", "value": "75 %" }
+      ],
+      "tags": ["Wall Street", "Top Trader", "casper", "Leon Weinrich", "Puliester"],
+      "sections": [
+        {
+          "heading": "Ein einsamer Spitzenreiter über der 100-Millionen-Marke",
+          "paragraphs": [
+            "Vom Saisonstart am 14. August bis zum 23. November wurden über alle drei Ligen hinweg 4.124 Transfers abgewickelt – darunter 1.709 vollständig abgeschlossene Kauf-Verkauf-Zyklen sowie 389 veräußerte Startkader-Positionen. Rechnet man wie Kickbase beide Komponenten zusammen, steht ein Name wie ein Monolith über dem gesamten Markt: casper aus Liga 3.",
+            "Mit 136 abgeschlossenen Trades, einer Trefferquote von 62 Prozent und 103,97 Millionen Euro realisiertem Gewinn (+87,50M € aus reinem Trading, +16,48M € aus Startkader-Exits) hat casper als einziger Manager im gesamten Ligasystem die dreistellige Millionenmarke durchbrochen. Sein geschätztes Gesamtbudget von 284,19 Millionen Euro ist ligaübergreifender Rekord."
+          ]
+        },
+        {
+          "heading": "Liga 1 & Liga 2: Die Verfolger setzen auf Präzision",
+          "paragraphs": [
+            "Hinter dem Volumen-Giganten aus Liga 3 folgt ein hochinteressanter Stilvergleich. Auf Platz 2 über alle Ligen – und als unangefochtener Trading-Primus in Liga 1 – rangiert Leon Weinrich mit 67,65 Millionen Euro realisiertem Gewinn (+56,79M € aus 97 Trades, +10,85M € Startkader). Bemerkenswert: Er zahlte im Schnitt lediglich +10,2 Prozent Overpay und generierte dennoch +586k € Durchschnittsgewinn pro abgeschlossenem Deal.",
+            "In Liga 2 dominiert Gesamt-Tabellenführer Stomping Tantrum (+64,19M € realisiert), dicht gefolgt von Ansgar Trinkmann (+54,70M €) und leongarcon (+46,81M €). Den Titel des effizientesten Hedgefonds-Managers sichert sich jedoch Puliester (Liga 3): Bei nur 59 Trades kommt er auf eine überragende Win-Rate von 75 Prozent, den höchsten Durchschnittsgewinn pro Trade (+789k €) und eiserne +9,0 Prozent Overpay-Disziplin."
+          ],
+          "table": {
+            "caption": "Top 10 Trader über alle Ligen (Realisierter Gewinn inkl. Startkader, Kickbase-nah)",
+            "columns": ["#", "Manager (Liga)", "Realisiert", "Trades", "Win %", "Ø OVP"],
+            "rows": [
+              ["1.", "casper (L3)", "+103,97M €", "136", "62 %", "+17,1 %"],
+              ["2.", "Leon Weinrich (L1)", "+67,65M €", "97", "60 %", "+10,2 %"],
+              ["3.", "Stomping Tantrum (L2)", "+64,19M €", "86", "62 %", "+21,3 %"],
+              ["4.", "tjalf (ehem. L3)", "+61,53M €", "114", "60 %", "+24,5 %"],
+              ["5.", "Puliester (L3)", "+58,22M €", "59", "75 %", "+9,0 %"],
+              ["6.", "DeinHomieEnobi (L1)", "+57,65M €", "100", "61 %", "+19,9 %"],
+              ["7.", "Ansgar Trinkmann (L2)", "+54,70M €", "99", "58 %", "+14,9 %"],
+              ["8.", "leongarcon (L2)", "+46,81M €", "103", "60 %", "+17,9 %"],
+              ["9.", "JulianD47 (L2)", "+43,75M €", "80", "54 %", "+18,5 %"],
+              ["10.", "Esel (L1)", "+38,57M €", "88", "55 %", "+24,8 %"]
+            ]
+          }
+        },
+        {
+          "heading": "Makro-Vergleich: Liga 1 & Liga 2 auf Augenhöhe, Liga 3 gespalten",
+          "paragraphs": [
+            "Auf Makro-Ebene zeigt sich ein deutliches Gefälle zwischen den Ligen. Liga 1 ist mit 694 abgeschlossenen Trades der liquideste Marktplatz (+221,37M € realisiert, +41,68M € offene Buchgewinne), allerdings auch der teuerste (+22,0 % Durchschnitts-Overpay). Liga 2 agiert spürbar preisbewusster (+16,0 % Overpay) und liegt beim realisierten Gewinn (+216,92M €) praktisch gleichauf.",
+            "Liga 3 hingegen weist die extremste Vermögenskonzentration auf: Während casper, Puliester, Geißbock und kushler enorme Gewinne einfahren, drückt das untere Tabellendrittel den gesamten Liga-Überschuss auf +118,93M € realisiert – bei -32,60M € negativen Buchwerten in den aktuellen Kadern."
+          ],
+          "quote": {
+            "text": "Cash allein schießt keine Tore – aber wer wie Puliester bei 9 Prozent Overpay eine 75-Prozent-Trefferquote erzielt, druckt sich Monat für Monat einen strukturellen Wettbewerbsvorteil.",
+            "attribution": "Kickbase Street Journal · Market Desk"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "pokal-viertelfinale-justin-eskaliert-und-drittliga-invasion",
+      "category": "pokal",
+      "featured": true,
+      "edition": "Pokal · Viertelfinale (MD 10)",
+      "date": "2026-11-24",
+      "readTimeMin": 4,
+      "author": "Pokal-Chronik",
+      "kicker": "POKAL-REPORT · VIERTELFINALE",
+      "title": "Viertelfinal-Beben: Justins 1.796-Punkte-Machtdemonstration und die Drittliga-Invasion",
+      "subtitle": "Die vorläufigen Stände der Runde der letzten Acht stellen das Kräfteverhältnis auf den Kopf: Neben dem Liga-1-Gipfel stürmen gleich zwei Drittligisten Richtung Halbfinale am 5. Dezember.",
+      "heroStats": [
+        { "label": "Top-Score VF", "value": "1.796 Pkt" },
+        { "label": "LIGA-3-Teams vorn", "value": "2 von 4" },
+        { "label": "Halbfinale", "value": "05.12. (MD12)" }
+      ],
+      "tags": ["Pokal", "Viertelfinale", "Justin", "casper", "Ansgar Trinkmann", "Puliester"],
+      "sections": [
+        {
+          "heading": "Das Liga-1-Gipfeltreffen wird zur einseitigen Gala",
+          "paragraphs": [
+            "Auf dem Papier versprach das linke Viertelfinale zwischen Justin und DeinHomieEnobi ein Spiegelbild des hauchdünnen Liga-1-Titelkampfs zu werden. In der Pokal-Arena kam es jedoch völlig anders: Justin zündete mit vorläufigen 1.796 Punkten das höchste Pokalergebnis der gesamten Saison und distanzierte seinen Erzrivalen DeinHomieEnobi (1.310) um fast 500 Zähler.",
+            "Damit unterstreicht der Spitzenreiter von Liga 1 eindrucksvoll seine Double-Ambitionen – in dieser Pokal-Verfassung dürfte er im Halbfinale für jeden Gegner nur schwer zu knacken sein."
+          ]
+        },
+        {
+          "heading": "Zweite und dritte Liga stürzen die Favoriten aus dem Oberhaus",
+          "paragraphs": [
+            "Während Justin die Fahne der ersten Liga hochhielt, gerieten die übrigen Erstligisten massiv unter Druck. Im vielleicht packendsten Duell der Runde liegt Zweitligist Ansgar Trinkmann mit bärenstarken 1.666 Punkten klar vor Liga-1-Hochkaräter Esel (1.410) – ein eindrucksvolles Statement aus Liga 2.",
+            "Noch spektakulärer liest sich der Durchmarsch von Liga 3: Trading-König casper schlägt nach Leon Weinrich im Achtelfinale nun auch den nächsten Erstligisten und liegt gegen Blake mit 1.570 zu 1.458 vorn. Auf der rechten Turnierseite ließ Puliester (LIGA 3) mit 1.451 zu 0 gegen den Achtelfinal-Favoritenschreck AchtSieben nichts anbrennen."
+          ],
+          "table": {
+            "caption": "Viertelfinale – Vorläufige Stände (Spieltag 10 · 21.11.2026)",
+            "columns": ["Duell", "Manager 1", "Stand", "Manager 2"],
+            "rows": [
+              ["VF 1", "Justin (L1)", "1.796 : 1.310", "DeinHomieEnobi (L1)"],
+              ["VF 2", "casper (L3)", "1.570 : 1.458", "Blake (L1)"],
+              ["VF 3", "Esel (L1)", "1.410 : 1.666", "Ansgar Trinkmann (L2)"],
+              ["VF 4", "Puliester (L3)", "1.451 : 0", "AchtSieben (L2)"]
+            ]
+          }
+        },
+        {
+          "heading": "Ausblick auf das Halbfinale am 12. Spieltag",
+          "callout": {
+            "title": "Mögliche Halbfinals (05.12.2026 · Schalke – Dortmund)",
+            "tone": "gold",
+            "items": [
+              "HF 1: Justin (L1) vs. casper (L3) – Liga-1-Tabellenführer gegen den 104-Mio.-Trading-Giganten!",
+              "HF 2: Ansgar Trinkmann (L2) vs. Puliester (L3) – Zwei der effizientesten Strategen des gesamten Systems.",
+              "Das große Hinrunden-Finale steigt zwei Wochen später am 14. Spieltag (19.12.2026)."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "slug": "wsj-penny-stocks-schnell-flips-und-scherhant-rallye",
+      "category": "trading",
+      "featured": false,
+      "edition": "Deal Desk · Transfercoups",
+      "date": "2026-11-23",
+      "readTimeMin": 5,
+      "author": "The Kickbase Street Journal",
+      "kicker": "DEAL DESK · BESTE TRANSFERS",
+      "title": "Penny-Stocks, Schnell-Flips & die 17,5-Millionen-Rallye: Die größten Transfercoups der Saison",
+      "subtitle": "Von 500k-Schnäppchen mit fast 1.000 Prozent Rendite bis zu Derry Scherhants Marktwert-Explosion: Diese Deals haben ganze Kader finanziert.",
+      "heroStats": [
+        { "label": "Top Realisiert", "value": "+9,65M €" },
+        { "label": "Top Kader-Coup", "value": "+17,46M €" },
+        { "label": "Höchster ROI", "value": "+988 %" }
+      ],
+      "tags": ["Transfercoups", "ROI", "Scherhant", "Muheim", "Daghim"],
+      "sections": [
+        {
+          "heading": "Die Millionen-Exits: Daghim, Matsima und der Muheim-Coup",
+          "paragraphs": [
+            "Wer einen einzigen echten Durchbruch-Spieler rechtzeitig erkennt, spart sich zwanzig Kleinst-Trades. An der Spitze der realisierten Einzelgewinne (inkl. Startkader-Exits) thront AchtSieben aus Liga 2: Er hielt seinen Startkader-Spieler Adam Daghim (4,35M €) drei Wochen lang und verkaufte ihn am 4. September für 14,00 Millionen Euro – satte +9,65 Millionen Euro Gewinn (+222 %).",
+            "Bei den reinen Kauf-zu-Verkauf-Coups sicherte sich Leon Weinrich (L1) Platz 1: Am 10. Oktober für genau 3,00 Millionen Euro eingekauft, wechselte Miro Muheim nur 20 Tage später für 9,50 Millionen Euro direkt zu Liga-Konkurrent Mo6 (+6,50M €, +217 %). Direkt dahinter glänzte Justin mit Fabian Rieder (17,60M → 24,00M €, ebenfalls an Mo6, +6,40M €) sowie Puliester mit Fábio Silva (+5,98M €)."
+          ],
+          "table": {
+            "caption": "Top 8 Realisierte Transfercoups (absoluter Gewinn €)",
+            "columns": ["Manager (Liga)", "Spieler", "Typ", "Deal", "Gewinn"],
+            "rows": [
+              ["AchtSieben (L2)", "Adam Daghim", "Startkader", "4,35M → 14,00M €", "+9,65M €"],
+              ["JulianD47 (L2)", "Chrislain Matsima", "Startkader", "10,70M → 17,57M €", "+6,87M €"],
+              ["Stomping T. (L2)", "Josip Juranović", "Startkader", "4,37M → 10,98M €", "+6,61M €"],
+              ["Leon Weinrich (L1)", "Miro Muheim", "Trade", "3,00M → 9,50M €", "+6,50M €"],
+              ["Justin (L1)", "Fabian Rieder", "Trade", "17,60M → 24,00M €", "+6,40M €"],
+              ["JulianD47 (L2)", "Ezechiel Banzuzi", "Startkader", "5,18M → 11,53M €", "+6,35M €"],
+              ["Puliester (L3)", "Fábio Silva", "Trade", "7,90M → 13,88M €", "+5,98M €"],
+              ["Ansgar T. (L2)", "Fisnik Asllani", "Trade", "12,00M → 17,95M €", "+5,95M €"]
+            ]
+          }
+        },
+        {
+          "heading": "Die Penny-Stock-Vervielfacher & High-Frequency-Flips",
+          "paragraphs": [
+            "Fast noch faszinierender als absolute Euro-Beträge sind die extremen Renditen im 500k-Segment. DeinHomieEnobi (L1) machte aus 500.000 Euro für Keeper Daniel Batz in nur 17 Tagen unglaubliche 5,44 Millionen Euro – ein ROI von +988 Prozent. Dicht dahinter landeten Wat Mamba mit Cajetan Lenz (0,62M → 6,15M €, +889 %) und Geißbock mit Patrick Osterhage (0,50M → 4,87M €, +873 %).",
+            "In der Kategorie 'Schnellster Cash-Flip' (maximal 14 Tage Haltedauer) setzte Leon Weinrich den Bestwert: Marius Wolf kaufte er für 9,50 Millionen und reichte ihn 2,2 Tage später für 11,25 Millionen an Curl3z weiter – umgerechnet +795.000 Euro pro Tag. Stomping Tantrum kassierte mit András Schäfer +3,00M € in 6,9 Tagen (+433k €/Tag), Esel mit Keisuke Goto +4,23M € in 12,1 Tagen."
+          ]
+        },
+        {
+          "heading": "Die laufenden Goldgruben: Scherhant, Reis und Regeer",
+          "paragraphs": [
+            "Die größten Wertzuwächse liegen jedoch gar nicht auf dem Bankkonto, sondern stehen noch Woche für Woche auf dem Rasen. Der unangefochtene 'Buy-and-Hold'-Volltreffer der Saison gehört franzi__j (LIGA 2): Am 19. August für 5,56 Millionen Euro geholt, steht Derry Scherhant heute bei 23,01 Millionen Euro Marktwert – ein Buchgewinn von +17,46 Millionen Euro (+314 %) bei bereits 1.235 Saisonpunkten (Ø 124)!"
+          ],
+          "table": {
+            "caption": "Top 7 Verifizierte Laufende Kader-Coups (aktuell noch im Kader)",
+            "columns": ["Manager (Liga)", "Spieler", "Kauf → MW", "Buchgewinn", "Pkt (Ø)"],
+            "rows": [
+              ["franzi__j (L2)", "Derry Scherhant", "5,56M → 23,01M €", "+17,46M €", "1.235 (124)"],
+              ["Sebastian (L3)", "Derry Scherhant", "11,50M → 23,01M €", "+11,51M €", "1.235 (124)"],
+              ["Esel (L1)", "Ludovit Reis", "5,00M → 14,72M €", "+9,72M €", "1.072 (107)"],
+              ["Sebastian (L3)", "Keidel", "5,19M → 13,46M €", "+8,27M €", "957 (68)"],
+              ["Puliester (L3)", "Philipp Lienhart", "14,00M → 20,95M €", "+6,95M €", "1.077 (108)"],
+              ["Mo6 (L1)", "Farès Chaïbi", "6,46M → 13,40M €", "+6,94M €", "832 (104)"],
+              ["Leon Weinrich (L1)", "Youri Regeer", "10,94M → 16,58M €", "+5,64M €", "943 (105)"]
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "slug": "liga-2-schweizer-uhrwerk-leongarcon-jagt-stomping-tantrum",
+      "category": "spieltag",
+      "featured": false,
+      "edition": "Saison-Analyse · MD 1–10",
+      "date": "2026-11-23",
+      "readTimeMin": 4,
+      "author": "Redaktion Spieltag",
+      "kicker": "LIGA-2-ANALYSE · KONSTANZ",
+      "title": "Das Schweizer Uhrwerk von Liga 2: Wie leongarcon die 1.142-Punkte-Lücke schmilzt",
+      "subtitle": "Nach Spieltag 6 schien Stomping Tantrum uneinholbar enteilt. Vier Wochen später sind es nur noch 210 Punkte – dank der erstaunlichsten Konstanz-Serie im gesamten Ligasystem.",
+      "heroStats": [
+        { "label": "Min-Score leongarcon", "value": "940 Pkt" },
+        { "label": "Streuung (Std)", "value": "±109 Pkt" },
+        { "label": "Rest-Abstand", "value": "210 Pkt" }
+      ],
+      "tags": ["Liga 2", "leongarcon", "Stomping Tantrum", "Konstanz"],
+      "sections": [
+        {
+          "heading": "Von +1.142 auf +210 in nur vier Spieltagen",
+          "paragraphs": [
+            "Mitte Oktober sah die Tabelle in Liga 2 aus wie eine entschiedene Meisterschaft: Stomping Tantrum brannte an Spieltag 3 (1.454 Punkte) und Spieltag 5 (1.426 Punkte) wahre Offensiv-Feuerwerke ab und thronte nach dem 6. Spieltag mit 1.142 Punkten Vorsprung auf Platz 1. Noch heute führt er mit 10.601 Zählern das Gesamtranking aller 26 Manager über alle drei Ligen an.",
+            "Doch während Stomping Tantrum zwischen Geniestreichen und Ausrutschern (Tiefstwert 637 Punkte) schwankt, schraubt sich leongarcon mit maschineller Zuverlässigkeit heran: Nach 1.236 Punkten am 10. Spieltag schrumpfte der Rückstand auf hauchdünne 210 Zähler (10.391 Punkte)."
+          ]
+        },
+        {
+          "heading": "Nicht einmal unter 940 Punkten – ein einmaliger Wert",
+          "paragraphs": [
+            "Ein Blick auf die Standardabweichung über alle zehn Spieltage offenbart, wie außergewöhnlich leongarcons Saison verläuft: Sein allerschlechtester Spieltag lag bei 940 Punkten, sein bester bei 1.236 Punkten. Das ergibt eine Streuung von lediglich 109 Punkten – kein anderer Manager im gesamten Ligasystem kommt auch nur in die Nähe dieser Stabilität.",
+            "Zum Vergleich: Liga-1-Spitzenreiter Justin – Inhaber des All-Time-Saisonrekords von 1.636 Punkten an Spieltag 3 – schwankt mit einer Standardabweichung von 305 Punkten fast dreimal so stark. Auch Liga-2-Kollege franzi__j (Saison-Bestwert 1.456 an Spieltag 9, Tiefstwert 573) kommt auf eine Streuung von 304 Punkten."
+          ],
+          "table": {
+            "caption": "Konstanz vs. Risiko – Die Top-Punktesammler nach 10 Spieltagen",
+            "columns": ["Manager (Liga)", "Gesamt", "Ø / MD", "Min – Max", "Streuung"],
+            "rows": [
+              ["leongarcon (L2)", "10.391", "1.039", "940 – 1.236", "±109"],
+              ["Blake (L1)", "9.612", "961", "717 – 1.254", "±159"],
+              ["J0tt (L2)", "9.397", "940", "688 – 1.199", "±159"],
+              ["Esel (L1)", "10.110", "1.011", "687 – 1.282", "±183"],
+              ["Geißbock (L3)", "10.349", "1.035", "593 – 1.290", "±198"],
+              ["Stomping T. (L2)", "10.601", "1.060", "637 – 1.454", "±246"],
+              ["DeinHomieEnobi (L1)", "10.307", "1.031", "508 – 1.359", "±276"],
+              ["Justin (L1)", "10.316", "1.032", "613 – 1.636", "±305"]
+            ]
+          }
+        },
+        {
+          "heading": "Das Budget spricht für ein offenes Finish",
+          "callout": {
+            "title": "Liga-2-Faktencheck nach MD 10",
+            "tone": "orange",
+            "items": [
+              "leongarcon verfügt mit 276,79 Mio. € über das zweithöchste Budget im gesamten Ligasystem (hinter casper).",
+              "Stomping Tantrum kontert mit 263,77 Mio. € und dem höchsten Gesamtpunktestand aller Ligen (10.601).",
+              "Im Kampf um Rang 3 liegen J0tt (9.397), Ansgar Trinkmann (9.153) und franzi__j (9.086) innerhalb von nur 311 Punkten."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "slug": "wsj-overpay-fieber-und-kapitalvernichtung-crash-report",
+      "category": "trading",
+      "featured": false,
+      "edition": "Risk & Macro · Marktbericht",
+      "date": "2026-11-22",
+      "readTimeMin": 4,
+      "author": "The Kickbase Street Journal",
+      "kicker": "RISK & MACRO · VERLUST-ANALYSE",
+      "title": "Overpay-Fieber & Kapitalvernichtung: Wo die Millionen auf dem Parkett versickerten",
+      "subtitle": "Zwischen 13,7-Millionen-Abschreibungen, 42 Prozent Durchschnitts-Overpay und der ironischsten Wende der Saison rund um Afonso Moreira.",
+      "heroStats": [
+        { "label": "Größter Verlust", "value": "-13,74M €" },
+        { "label": "Höchstes Ø-OVP", "value": "+42,1 %" },
+        { "label": "M2M-Deals gesamt", "value": "97 Transfers" }
+      ],
+      "tags": ["Overpay", "Crash Report", "M2M Deals", "Moreira", "Risk"],
+      "sections": [
+        {
+          "heading": "Die schmerzhaftesten Abschreibungen der Hinrunde",
+          "paragraphs": [
+            "Wo zweistellige Millionen-Gewinne gefeiert werden, lauern auf der anderen Seite des Orderbuchs schmerzhafte Wertberichtigungen. Die bislang bitterste Einzelposition realisierte Vinnie JR (LIGA 1) mit Afonso Moreira: Für 29,01 Millionen Euro eingekauft, musste der Leverkusener nach 43 Tagen für 15,27 Millionen Euro mit einem Verlust von -13,74 Millionen Euro (-47 %) abgestoßen werden.",
+            "Die pure Ironie des Fußballs folgte am 10. Spieltag: Ausgerechnet jener Moreira explodierte mit 441 Punkten zum Saison-MVP. Auch Curl3z (Jamie Leweling, -12,06M € in 25 Tagen) und Sebastian (Said El Mala, -10,14M €) mussten zweistellige Millionenverluste verbuchen."
+          ],
+          "table": {
+            "caption": "Größte realisierte Verlust-Trades der Saison (Kauf → Verkauf)",
+            "columns": ["Manager (Liga)", "Spieler", "Kauf → Verkauf", "Verlust", "Tage"],
+            "rows": [
+              ["Vinnie JR (L1)", "Afonso Moreira", "29,01M → 15,27M €", "-13,74M €", "43d"],
+              ["Curl3z (L1)", "Jamie Leweling", "30,00M → 17,94M €", "-12,06M €", "25d"],
+              ["Sebastian (L3)", "Said El Mala", "29,57M → 19,43M €", "-10,14M €", "95d"],
+              ["leongarcon (L2)", "Ragnar Ache", "15,58M → 6,69M €", "-8,89M €", "35d"],
+              ["kushler (L3)", "Joey Veerman", "23,51M → 15,17M €", "-8,34M €", "54d"],
+              ["Flocke (L3)", "Nicolai Remberg", "8,69M → 0,50M €", "-8,19M €", "50d"]
+            ]
+          }
+        },
+        {
+          "heading": "Das Overpay-Spektrum: Wer zahlt Aufschläge, wer wartet ab?",
+          "paragraphs": [
+            "Die Auswertung aller Käufe mit bekanntem Transfer-Marktwert zeigt dramatische Kulturunterschiede zwischen den Managern. Während KönigMichi (L3, +42,1 %), Wat Mamba (L1, +34,5 %) und Justin (L1, +34,1 %) regelmäßig tief in die Tasche greifen, um Wunschspieler sofort zu sichern, arbeiten Value-Jäger wie Blake (+8,1 %), Puliester (+9,0 %) und Leon Weinrich (+10,2 %) konsequent nahe am Basis-Marktwert.",
+            "Interessant: Hoher Overpay ist nicht automatisch tödlich – Justin steht trotz +34,1 % Aufschlag auf Platz 1 in Liga 1. Aber er frisst die Sicherheitsmarge auf, sobald ein Spieler ausfällt oder formtief ist."
+          ]
+        },
+        {
+          "heading": "Der Manager-zu-Manager-Markt: Mo6 als Liquiditätsgeber von Liga 1",
+          "paragraphs": [
+            "97 der 4.124 Transfers liefen direkt von Manager zu Manager. Auffälligster Akteur in dieser Kategorie war Mo6 aus Liga 1: Allein in vier direkten Deals verschaffte er seinen Liga-Konkurrenten über 20,7 Millionen Euro realisierten Gewinn – darunter die beiden größten M2M-Coups der gesamten Saison: Miro Muheim (+6,50M € für Leon Weinrich) und Fabian Rieder (+6,40M € für Justin) sowie Derry Scherhant (+4,80M € für Justin) und Lukas Ullrich (+3,00M € für Vinnie JR)."
+          ],
+          "quote": {
+            "text": "Auf einem überhitzten Transfermarkt gewinnt selten derjenige, der am lautesten bietet – sondern derjenige, der Liquidität bereitstellt, wenn andere panisch werden.",
+            "attribution": "Kickbase Street Journal · Risk & Macro"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "pokal-achtelfinale-favoritensturz-und-2843-punkte-spektakel",
+      "category": "pokal",
+      "featured": false,
+      "edition": "Pokal · Achtelfinale (MD 8)",
+      "date": "2026-11-02",
+      "readTimeMin": 3,
+      "author": "Pokal-Chronik",
+      "kicker": "POKAL-CHRONIK · ACHTELFINALE",
+      "title": "Achtelfinal-Rückblick: Als AchtSieben den Spitzenreiter stürzte und Blake das 2.843-Punkte-Spektakel gewann",
+      "subtitle": "Ein Rückblick auf den wilden 8. Spieltag im Pokal: Ein Erstrunden-Außenseiter schockt die Nummer 1 aller Ligen, und ein Zweitligist scheidet trotz 1.400 Punkten aus.",
+      "heroStats": [
+        { "label": "Top-Match (Gesamt)", "value": "2.843 Pkt" },
+        { "label": "Runden-Bestwert", "value": "1.497 Pkt" },
+        { "label": "Größter Upset", "value": "982 : 828" }
+      ],
+      "tags": ["Pokal", "Achtelfinale", "Blake", "AchtSieben", "Esel"],
+      "sections": [
+        {
+          "heading": "Pokal-Gesetze pur: Platz 7 schlägt die Nummer 1 aller Ligen",
+          "paragraphs": [
+            "Wenn im Pokal die großen Namen straucheln, entsteht Legendenstoff. Im letzten Achtelfinale der rechten Turnierhälfte traf Stomping Tantrum – punktestärkster Manager des gesamten Ligasystems – auf Liga-2-Kollege AchtSieben. Doch an Spieltag 8 erwischte der Favorit einen gebrauchten Tag (828 Punkte), während AchtSieben mit 982 Zählern eiskalt zuschlug und das Viertelfinal-Ticket löste."
+          ]
+        },
+        {
+          "heading": "Das 2.843-Punkte-Feuerwerk und der Beginn von caspers Durchmarsch",
+          "paragraphs": [
+            "Ganz anders die Dramatik auf der linken Seite: Blake (L1) und leongarcon (L2) lieferten sich mit 1.443 zu 1.400 das hochklassigste K.-o.-Spiel der bisherigen Pokalsaison. Nur 43 Punkte trennten beide – leongarcon hätte mit seinem Score jedes andere Duell der linken Hälfte gewonnen.",
+            "Gleichzeitig startete Drittligist casper seinen Favoriten-Schreck-Lauf und warf Erstligist Leon Weinrich souverän mit 1.329 zu 1.028 aus dem Wettbewerb. Den absoluten Runden-Bestwert markierte Esel (L1) mit 1.497 Punkten gegen JulianD47 (1.246)."
+          ],
+          "table": {
+            "caption": "Alle Ergebnisse im Achtelfinale (Spieltag 8 · 31.10.2026)",
+            "columns": ["Partie", "Sieger", "Ergebnis", "Ausgeschieden"],
+            "rows": [
+              ["AF 1", "Justin (L1)", "1.265 : 1.028", "Sebastian (L3)"],
+              ["AF 2", "DeinHomieEnobi (L1)", "1.347 : -236", "Vinnie JR (L1)"],
+              ["AF 3", "casper (L3)", "1.329 : 1.028", "Leon Weinrich (L1)"],
+              ["AF 4", "Blake (L1)", "1.443 : 1.400", "leongarcon (L2)"],
+              ["AF 5", "Esel (L1)", "1.497 : 1.246", "JulianD47 (L2)"],
+              ["AF 6", "Ansgar Trinkmann (L2)", "1.192 : 909", "J0tt (L2)"],
+              ["AF 7", "Puliester (L3)", "1.344 : 0*", "Mo6 (L1)"],
+              ["AF 8", "AchtSieben (L2)", "982 : 828", "Stomping Tantrum (L2)"]
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "slug": "liga-3-die-teuerste-nullnummer-casper-vs-geissbock",
+      "category": "spieltag",
+      "featured": false,
+      "edition": "Liga-3-Report · MD 1–10",
+      "date": "2026-11-22",
+      "readTimeMin": 3,
+      "author": "Redaktion Spieltag",
+      "kicker": "LIGA-3-ANALYSE · AUFSTIEGSKAMPF",
+      "title": "Die teuerste Nullnummer der Saison: Warum casper trotz 1.090er-Rekordschnitt nur Zweiter ist",
+      "subtitle": "In seinen neun gewerteten Spieltagen punktet niemand im gesamten Ligasystem besser als casper. Doch ein einziger schwarzer Freitag am 5. Spieltag öffnete Geißbock die Tür zur Tabellenführung.",
+      "heroStats": [
+        { "label": "casper Ø (9 MD)", "value": "1.090 Pkt" },
+        { "label": "Geißbock Gesamt", "value": "10.349 Pkt" },
+        { "label": "Rückstand casper", "value": "-542 Pkt" }
+      ],
+      "tags": ["Liga 3", "casper", "Geißbock", "Aufstieg"],
+      "sections": [
+        {
+          "heading": "Ein Ausrutscher, der über 1.000 Punkte kostete",
+          "paragraphs": [
+            "Die ersten vier Spieltage gehörten in Liga 3 uneingeschränkt casper: Vier Wochen am Stück stand er auf Platz 1, gekrönt von 1.416 Punkten am 2. Spieltag. Doch am 5. Spieltag passierte das Undenkbare – 0 Punkte wegen eines negativen Kontostands zum Anpfiff. Aus einem komfortablen Vorsprung wurde schlagartig eine Aufholjagd.",
+            "Rechnet man nur seine neun gewerteten Spieltage, kommt casper auf herausragende 1.090 Punkte pro Wochenende und vier Spieltagssiege – der höchste Schnitt aller 26 Manager über alle drei Ligen! Dass er am 10. Spieltag (9.807 Punkte) überhaupt schon wieder bis auf 542 Zähler an Platz 1 herangekommen ist, spricht Bände."
+          ]
+        },
+        {
+          "heading": "Geißbock nutzt die Chance eiskalt",
+          "paragraphs": [
+            "Nutznießer der Nullnummer war Geißbock, der an Spieltag 5 die Führung übernahm, sie nach einem kurzen Intermezzo von Sebastian (MD 6) am 7. Spieltag endgültig zurückholte und seitdem souverän verteidigt. Mit 10.349 Gesamtpunkten würde Geißbock aktuell sogar in Liga 1 auf Platz 1 stehen!",
+            "Dahinter hat sich ein klarer Kampf um den dritten Relegations- bzw. Podestplatz entwickelt: Sebastian (8.767) liegt 329 Punkte vor Pokal-Überraschung Puliester (8.438), während kushler (7.935) auf Ausrutscher lauert."
+          ],
+          "table": {
+            "caption": "Spitzengruppe Liga 3 nach Spieltag 10",
+            "columns": ["Rang", "Manager", "Punkte", "Ø (gew.)", "Budget"],
+            "rows": [
+              ["1.", "Geißbock", "10.349", "1.035", "255,00M €"],
+              ["2.", "casper", "9.807", "1.090*", "284,19M €"],
+              ["3.", "Sebastian", "8.767", "877", "206,67M €"],
+              ["4.", "Puliester", "8.438", "938*", "253,25M €"],
+              ["5.", "kushler", "7.935", "794", "229,97M €"]
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "slug": "pokal-sechzehntelfinale-acht-punkte-krimi-zum-auftakt",
+      "category": "pokal",
+      "featured": false,
+      "edition": "Pokal · 1. Runde (MD 5)",
+      "date": "2026-10-12",
+      "readTimeMin": 3,
+      "author": "Pokal-Chronik",
+      "kicker": "POKAL-CHRONIK · SECHZEHNTELFINALE",
+      "title": "Acht Punkte zwischen Jubel und Aus: Der Sechzehntelfinal-Krimi zum Pokal-Auftakt",
+      "subtitle": "Zum Start der K.-o.-Runde am 5. Spieltag zitterte sich Leon Weinrich hauchdünn gegen Fynn weiter, während DeinHomieEnobi das erste Top-Duell gegen Geißbock für sich entschied.",
+      "heroStats": [
+        { "label": "Knappstes Duell", "value": "8 Punkte" },
+        { "label": "Top-Score R1", "value": "1.495 Pkt" },
+        { "label": "Teilnehmer", "value": "28 Manager" }
+      ],
+      "tags": ["Pokal", "Sechzehntelfinale", "Leon Weinrich", "DeinHomieEnobi"],
+      "sections": [
+        {
+          "heading": "1.238 zu 1.230: Herzschlagfinale zwischen Liga 1 und Liga 3",
+          "paragraphs": [
+            "Das engste Match der bisherigen Pokalsaison fand direkt zum Auftakt am 5. Spieltag (10. Oktober) statt. Drittligist Fynn brachte Erstligist Leon Weinrich mit starken 1.230 Punkten an den Rand einer Erstrunden-Blamage – am Ende rettete sich Weinrich mit 1.238 Zählern und ganzen acht Punkten Vorsprung ins Achtelfinale.",
+            "Ebenfalls richtig eng wurde es im nachträglich angesetzten Duell zwischen Mo6 (L1) und tjalf (L3), das Mo6 mit 1.368 zu 1.292 für sich entschied, sowie bei leongarcons 1.198:1.078 gegen Marci."
+          ]
+        },
+        {
+          "heading": "Schwergewichts-Duell gleich in Runde 1",
+          "paragraphs": [
+            "Für das sportliche Highlight sorgte die Auslosung zwischen DeinHomieEnobi (L1) und Geißbock (L3) – zwei echte Schwergewichte trafen schon im Sechzehntelfinale aufeinander. Enobi setzte mit 1.495 Punkten den Runden-Bestwert und warf den heutigen Liga-3-Tabellenführer trotz starker 1.289 Punkte aus dem Wettbewerb. Auch Ansgar Trinkmann (1.479 : 951 gegen KönigMichi) und J0tt (1.418 : 0 gegen Flocke) ließen direkt ihre Muskeln spielen."
+          ],
+          "table": {
+            "caption": "Die packendsten & stärksten Duelle im Sechzehntelfinale (MD 5)",
+            "columns": ["Partie", "Sieger", "Ergebnis", "Gegner"],
+            "rows": [
+              ["SF 5", "Leon Weinrich (L1)", "1.238 : 1.230", "Fynn (L3) · +8 Pkt"],
+              ["SF 13", "Mo6 (L1)", "1.368 : 1.292", "tjalf (L3) · +76 Pkt"],
+              ["SF 8", "leongarcon (L2)", "1.198 : 1.078", "Marci (L3) · +120 Pkt"],
+              ["SF 3", "DeinHomieEnobi (L1)", "1.495 : 1.289", "Geißbock (L3) · Top-Score"],
+              ["SF 11", "Ansgar Trinkmann (L2)", "1.479 : 951", "KönigMichi (L3)"]
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

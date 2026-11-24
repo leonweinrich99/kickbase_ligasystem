@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
+import { Newspaper } from 'lucide-react';
 import ligaLogo from './assets/logo.png';
 import pokalLogo from './assets/pokal_logo.png';
 import accountLogo from './assets/account_logo.png';
@@ -48,9 +49,20 @@ const AccountIcon = ({ active }) => (
   />
 );
 
+const FeedIcon = ({ active }) => (
+  <div className="w-6 h-6 flex items-center justify-center">
+    <Newspaper
+      size={20}
+      strokeWidth={active ? 2.2 : 1.8}
+      className={`transition-all duration-200 ${active ? 'text-[#ff5c3e]' : 'text-[#8b92a5] opacity-60'}`}
+    />
+  </div>
+);
+
 const TABS = [
   { to: '/live', label: 'Live', Icon: LiveIcon, tourId: 'tab-live', match: (p) => p.startsWith('/live') },
   { to: '/', label: 'Liga', Icon: LigaIcon, tourId: 'tab-liga', match: (p) => p === '/' || p.startsWith('/archiv') || p.startsWith('/user/') || p.startsWith('/compare/') },
+  { to: '/feed', label: 'Feed', Icon: FeedIcon, tourId: 'tab-feed', match: (p) => p.startsWith('/feed') },
   { to: '/pokal', label: 'Pokal', Icon: PokalIcon, tourId: 'tab-pokal', match: (p) => p.startsWith('/pokal') },
   { to: '/account', label: 'Account', Icon: AccountIcon, tourId: 'tab-account', match: (p) => p.startsWith('/account') || p === '/admin' || p === '/rules' }
 ];
@@ -83,7 +95,7 @@ const TabBar = () => {
             key={tab.to}
             to={tab.to}
             data-tour={tab.tourId}
-            className={`relative flex flex-col items-center justify-center gap-0.5 px-4 py-1.5 rounded-full active:scale-95 transition-all duration-200 ${
+            className={`relative flex flex-col items-center justify-center gap-0.5 px-3 sm:px-4 py-1.5 rounded-full active:scale-95 transition-all duration-200 ${
               active ? 'bg-[#ff5c3e]/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]' : ''
             }`}
           >
