@@ -60,9 +60,9 @@ const FeedIcon = ({ active }) => (
 );
 
 const TABS = [
-  { to: '/live', label: 'Live', Icon: LiveIcon, tourId: 'tab-live', match: (p) => p.startsWith('/live') },
+  { to: '/feed', label: 'News', Icon: FeedIcon, tourId: 'tab-feed', match: (p) => p.startsWith('/feed') },
   { to: '/', label: 'Liga', Icon: LigaIcon, tourId: 'tab-liga', match: (p) => p === '/' || p.startsWith('/archiv') || p.startsWith('/user/') || p.startsWith('/compare/') },
-  { to: '/feed', label: 'Feed', Icon: FeedIcon, tourId: 'tab-feed', match: (p) => p.startsWith('/feed') },
+  { to: '/live', label: 'Live', Icon: LiveIcon, tourId: 'tab-live', match: (p) => p.startsWith('/live') },
   { to: '/pokal', label: 'Pokal', Icon: PokalIcon, tourId: 'tab-pokal', match: (p) => p.startsWith('/pokal') },
   { to: '/account', label: 'Account', Icon: AccountIcon, tourId: 'tab-account', match: (p) => p.startsWith('/account') || p === '/admin' || p === '/rules' }
 ];
