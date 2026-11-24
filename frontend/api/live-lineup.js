@@ -1,67 +1,76 @@
-// On-Demand Live-Punkte fuer die Startelf EINES Managers (Owner-Wunsch
-// 23.11.2026: "Live Punkte seines eigenen Kaders waehrend des Spiels
-// sehen", analog zur Spieler-Detail-Ansicht unter Matches -> Aufstellungen
-// -> Spieler in der offiziellen Kickbase-App; spaeter erweitert um die
-// Moeglichkeit, auch ANDERE Manager der eigenen Liga live anzuschauen).
-// Wird beim Oeffnen, manuellem Refresh oder gezielt per OpenLigaDB-Event-
-// Trigger (mit Team-Filter, Jitter & Cooldown) aufgerufen - kein Dauer-Loop.
-//
-// Technischer Hintergrund (siehe Diagnose vom 23.11.2026): das Lineup eines
-// BELIEBIGEN Managers laesst sich nicht direkt mit "Live-Punkten pro Spieler"
-// in einem einzigen Call abfragen - /lineup/overview liefert nur den Kader
-// des GERADE eingeloggten Accounts (hier: des technischen Bot-Accounts
-// selbst). Stattdessen: teamcenter liefert die Startelf-Spieler-IDs des
-// angefragten Managers (gleicher Account, gleicher Mechanismus wie
-// backend/reconstructStartingEleven.js), danach liefert playercenter PRO
-// Spieler die Live-Punkte + minutengenaue Event-Liste fuer den aktuellen
-// Spieltag.
-import { API_BASE, COMPETITION_ID, loginAndFindLeague, getJson, resolveMatchday, getEventTypeMap, setLiveCacheHeaders } from './_kickbaseClient.js';
+// Live-Punkte fuer die Startelf EINES Managers - gesteuert ueber das Backend
+// mit Token-/Teamcenter-/Playercenter-Cache (liga-uebergreifend), 4er-Batches,
+// 429-Backoff und optionalem Partial-Refresh (`onlyPlayerIds`) fuer Spieler
+// aus aktuell laufenden Partien.
+import {
+  COMPETITION_ID,
+  loginAndFindLeague,
+  resolveMatchday,
+  getTeamCenterCached,
+  getPlayerCenterCached,
+  getEventTypeMap,
+  mapInBatches,
+  setLiveCacheHeaders,
+  sendRateLimitIfActive,
+} from './_kickbaseClient.js';
 
 export default async function handler(req, res) {
-  const { userId, leagueKey, dayNumber, nocache } = req.query;
+  if (sendRateLimitIfActive(res)) return;
+
+  const { userId, leagueKey, dayNumber, onlyPlayerIds } = req.query;
   if (!userId || !leagueKey) {
     return res.status(400).json({ error: 'userId und leagueKey sind erforderlich' });
   }
 
   const auth = await loginAndFindLeague(leagueKey);
+  if (sendRateLimitIfActive(res)) return;
   if (!auth) {
     return res.status(502).json({ error: 'Login bei Kickbase fehlgeschlagen oder Liga nicht gefunden' });
   }
   const { token, leagueId } = auth;
 
   const day = await resolveMatchday(leagueId, token, dayNumber);
+  if (sendRateLimitIfActive(res)) return;
   if (!day) {
     return res.status(502).json({ error: 'Aktueller Spieltag konnte nicht ermittelt werden' });
   }
 
-  // Startelf-Spieler-IDs des angefragten Managers fuer diesen Spieltag.
-  const teamcenter = await getJson(
-    `${API_BASE}/leagues/${leagueId}/users/${userId}/teamcenter?dayNumber=${day}`,
-    token
-  );
-  const myEntry = (teamcenter?.us || []).find((u) => String(u.i) === String(userId)) || teamcenter?.us?.[0];
-  const playerIds = (myEntry?.lp || []).filter(Boolean);
+  let playerIds = [];
+  let partial = false;
 
-  if (playerIds.length === 0) {
-    setLiveCacheHeaders(res, { nocache: nocache === '1', maxAge: 15, staleWhileRevalidate: 15 });
-    return res.status(200).json({ matchday: day, players: [], note: 'Keine Startelf fuer diesen Spieltag gefunden' });
+  if (typeof onlyPlayerIds === 'string' && onlyPlayerIds.trim().length > 0) {
+    const parsed = onlyPlayerIds
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => /^\d+$/.test(s))
+      .slice(0, 15);
+    if (parsed.length > 0) {
+      playerIds = parsed;
+      partial = true;
+    }
   }
 
-  // /v4/live/eventtypes liefert Klartext-Titel fuer die eti-Codes in den
-  // playercenter-events (z.B. "Accurate long Ball", "Shot Assist") - verifiziert
-  // per Diagnose-Workflow 23.11.2026 gegen echte Live-Daten, 18/18 Treffer.
-  // Damit laesst sich jetzt eine "Pass +2"-Liste pro Spieler zeigen (Owner-
-  // Wunsch: "Punkte mit Aktionen mappen... beim Anklicken des Spielers als
-  // Liste, wie im echten Live-Modus").
-  const eventTypeMap = await getEventTypeMap(token);
+  if (!partial) {
+    // Startelf-Spieler-IDs des angefragten Managers fuer diesen Spieltag (25s gecacht pro Liga).
+    const teamcenter = await getTeamCenterCached(leagueId, userId, day, token);
+    if (sendRateLimitIfActive(res)) return;
+    const myEntry = (teamcenter?.us || []).find((u) => String(u.i) === String(userId)) || teamcenter?.us?.[0];
+    playerIds = (myEntry?.lp || []).filter(Boolean);
+  }
 
-  // Live-Punkte + Event-Verlauf PRO Spieler, parallel abgefragt.
-  const players = await Promise.all(
-    playerIds.map(async (playerId) => {
-      const pc = await getJson(
-        `${API_BASE}/competitions/${COMPETITION_ID}/playercenter/${playerId}?dayNumber=${day}&leagueId=${leagueId}`,
-        token
-      );
+  if (playerIds.length === 0) {
+    setLiveCacheHeaders(res, { maxAge: 25, staleWhileRevalidate: 25 });
+    return res.status(200).json({ matchday: day, partial, players: [], note: 'Keine Startelf fuer diesen Spieltag gefunden' });
+  }
+
+  const eventTypeMap = await getEventTypeMap(token);
+  if (sendRateLimitIfActive(res)) return;
+
+  // Live-Punkte + Event-Verlauf in 4er-Batches ueber den liga-uebergreifenden 30s-Cache.
+  const players = await mapInBatches(
+    playerIds,
+    async (playerId) => {
+      const pc = await getPlayerCenterCached(COMPETITION_ID, playerId, day, token);
       if (!pc) return { playerId, error: true };
       return {
         playerId,
@@ -79,9 +88,13 @@ export default async function handler(req, res) {
           .map((e) => ({ label: eventTypeMap.get(e.eti) || 'Aktion', points: e.p, minute: e.mt }))
           .sort((a, b) => b.minute - a.minute),
       };
-    })
+    },
+    4,
+    60
   );
 
-  setLiveCacheHeaders(res, { nocache: nocache === '1', maxAge: 15, staleWhileRevalidate: 15 });
-  return res.status(200).json({ matchday: day, players });
+  if (sendRateLimitIfActive(res)) return;
+
+  setLiveCacheHeaders(res, { maxAge: 25, staleWhileRevalidate: 25 });
+  return res.status(200).json({ matchday: day, partial, players });
 }

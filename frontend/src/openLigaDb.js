@@ -475,6 +475,36 @@ export const matchTriggeredEventsToTeamIds = (triggeredMatches, relevantTeamIds,
   });
 };
 
+// Liefert alle Kickbase-Team-IDs, deren Bundesliga-Spiel gerade laeuft,
+// unmittelbar bevorsteht oder innerhalb der letzten 12 Minuten beendet wurde
+// (fuer Nachspiel-/Sieg-/Zu-Null-Boni). Damit fragt der 60s-Live-Takt nur
+// Spieler aus aktiven Partien ab statt aller 11 Spieler.
+export const getActiveBundesligaKickbaseTeamIds = (matches, kickbaseTeams, nowMs = Date.now()) => {
+  const activeIds = new Set();
+  if (!Array.isArray(matches) || !Array.isArray(kickbaseTeams) || kickbaseTeams.length === 0) {
+    return activeIds;
+  }
+
+  for (const m of matches) {
+    let isActive = Boolean(m?.isLive || m?.isImminent);
+    if (!isActive && m?.isFinished) {
+      const kickoffMs = m.kickoffUtc ? Date.parse(m.kickoffUtc) : NaN;
+      // Ca. 105-125 Min. Spielzeit + 12 Min. Puffer fuer Kickbase-Schlussboni
+      if (Number.isFinite(kickoffMs) && nowMs >= kickoffMs && nowMs - kickoffMs <= 140 * 60 * 1000) {
+        isActive = true;
+      }
+    }
+    if (!isActive) continue;
+
+    const kbHome = matchOpenLigaTeamToKickbase(m.home, kickbaseTeams);
+    const kbAway = matchOpenLigaTeamToKickbase(m.away, kickbaseTeams);
+    if (kbHome?.id != null) activeIds.add(String(kbHome.id));
+    if (kbAway?.id != null) activeIds.add(String(kbAway.id));
+  }
+
+  return activeIds;
+};
+
 export const formatTriggerSummary = (triggered) => {
   if (!triggered?.match) return 'Live-Ereignis erkannt';
   const { match, reason, latestEvent } = triggered;

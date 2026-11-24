@@ -1,20 +1,24 @@
 // Live-Punkte der Startelf eines ECHTEN Fussball-Teams (nicht eines
-// Kickbase-Fantasy-Kaders) - Owner-Wunsch 24.11.2026: "auch auf gesamte
-// Teams zwischen denen man auswaehlen kann" (urspruenglich als Test fuer die
-// La Liga eingebaut, jetzt fester Bestandteil des "Echte Teams"-Umschalters
-// auf der Live-Seite). Funktioniert fuer jeden Wettbewerb/jedes Team, da
-// playercenter nachweislich KEINE leagueId braucht.
-//
-// Mit teamId: sucht das aktuell relevanteste Spiel DIESES Teams (laufendes
-// Spiel bevorzugt, sonst das zuletzt beendete, sonst das naechste
-// angesetzte). Ohne teamId (Legacy/Fallback): erstes LIVE-Spiel im
-// Wettbewerb, wie zuvor.
-import { API_BASE, getJson, loginAny, getEventTypeMap, setLiveCacheHeaders } from './_kickbaseClient.js';
+// Kickbase-Fantasy-Kaders) - ueber das Backend gecacht (30s Edge + 30s
+// Playercenter-Cache + 4er-Batches + 429-Schutz).
+import {
+  API_BASE,
+  getJson,
+  loginAny,
+  getPlayerCenterCached,
+  getEventTypeMap,
+  mapInBatches,
+  setLiveCacheHeaders,
+  sendRateLimitIfActive,
+} from './_kickbaseClient.js';
 
 export default async function handler(req, res) {
-  const { competitionId = '1', matchId: requestedMatchId, teamId, team: teamSideParam, nocache } = req.query;
+  if (sendRateLimitIfActive(res)) return;
+
+  const { competitionId = '1', matchId: requestedMatchId, teamId, team: teamSideParam } = req.query;
 
   const token = await loginAny();
+  if (sendRateLimitIfActive(res)) return;
   if (!token) {
     return res.status(502).json({ error: 'Login bei Kickbase fehlgeschlagen' });
   }
@@ -25,6 +29,7 @@ export default async function handler(req, res) {
 
   if (!matchId) {
     const matchdays = await getJson(`${API_BASE}/competitions/${competitionId}/matchdays`, token);
+    if (sendRateLimitIfActive(res)) return;
     const allMatches = (matchdays?.it || []).flatMap((md) => (md.it || []).map((m) => ({ ...m, day: md.day })));
 
     let chosen;
@@ -49,11 +54,11 @@ export default async function handler(req, res) {
   }
 
   const details = await getJson(`${API_BASE}/matches/${matchId}/details`, token);
+  if (sendRateLimitIfActive(res)) return;
   if (!details) {
     return res.status(502).json({ error: 'Match-Details konnten nicht geladen werden' });
   }
   if (!day) {
-    // Spieltag aus den Events ableiten (details liefert selbst keinen "day").
     day = details.mdln ? parseInt(String(details.mdln).match(/\d+/)?.[0], 10) : null;
   }
 
@@ -62,16 +67,18 @@ export default async function handler(req, res) {
   const lineup = details[lineupKey] || [];
 
   const eventTypeMap = await getEventTypeMap(token);
+  if (sendRateLimitIfActive(res)) return;
 
   const ownGoals = teamSide === 't2' ? details.t2g : details.t1g;
   const opponentGoals = teamSide === 't2' ? details.t1g : details.t2g;
   const ownCrest = teamSide === 't2' ? details.t2im : details.t1im;
   const opponentCrest = teamSide === 't2' ? details.t1im : details.t2im;
 
-  const players = await Promise.all(
-    lineup.map(async (p) => {
+  const players = await mapInBatches(
+    lineup,
+    async (p) => {
       const pc = day
-        ? await getJson(`${API_BASE}/competitions/${competitionId}/playercenter/${p.i}?dayNumber=${day}`, token)
+        ? await getPlayerCenterCached(competitionId, p.i, day, token)
         : null;
       return {
         id: p.i,
@@ -90,10 +97,14 @@ export default async function handler(req, res) {
         teamLogo: ownCrest ? `https://kickbase.b-cdn.net/${ownCrest}` : null,
         opponentLogo: opponentCrest ? `https://kickbase.b-cdn.net/${opponentCrest}` : null,
       };
-    })
+    },
+    4,
+    60
   );
 
-  setLiveCacheHeaders(res, { nocache: nocache === '1', maxAge: 15, staleWhileRevalidate: 15 });
+  if (sendRateLimitIfActive(res)) return;
+
+  setLiveCacheHeaders(res, { maxAge: 30, staleWhileRevalidate: 30 });
   return res.status(200).json({
     matchId,
     matchday: day,
