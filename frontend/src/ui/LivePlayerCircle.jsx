@@ -31,6 +31,8 @@ const LivePlayerCircle = ({
   instant = false,
   instantDelta = 0,
   instantKey = null,
+  avatarRef = null,
+  highlightedColor = null,
   size = 'w-14 h-14 sm:w-16 sm:h-16',
   containerSize = 'w-[72px] sm:w-[86px]',
   onClick,
@@ -40,7 +42,11 @@ const LivePlayerCircle = ({
       className={`relative flex flex-col items-center ${containerSize} ${onClick ? 'cursor-pointer hover:scale-105 transition-transform' : ''}`}
       onClick={onClick}
     >
-      <div className={`relative ${size} rounded-full ${imagePath ? '' : 'bg-[#202020]'} overflow-hidden flex items-center justify-center shadow-md ring-1 ring-white/15`}>
+      <div
+        ref={avatarRef}
+        className={`relative ${size} rounded-full ${imagePath ? '' : 'bg-[#202020]'} overflow-hidden flex items-center justify-center shadow-md ring-1 ring-white/15 transition-shadow duration-300`}
+        style={highlightedColor ? { boxShadow: `0 0 0 2px ${highlightedColor}, 0 0 18px ${highlightedColor}` } : undefined}
+      >
         {imagePath ? (
           <img
             src={`https://kickbase.b-cdn.net/${imagePath}`}

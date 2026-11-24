@@ -1,8 +1,14 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LivePlayerCircle from './LivePlayerCircle';
 import AnimatedPoints from './AnimatedPoints';
 import LiveMinuteScrubber from './LiveMinuteScrubber';
+import LiveHighlightOverlay from './LiveHighlightOverlay';
+import {
+  classifyHighlightEvent,
+  HIGHLIGHT_ACCENT_COLOR,
+  HIGHLIGHT_PRIORITY,
+} from '../liveLineupUtils';
 
 // Gemeinsame Live-Pitch-Darstellung fuer alle Stellen, die eine Startelf mit
 // Live-Punkten zeigen (LiveLineupPage.jsx "Live Punkte" UND UserDetail.jsx
@@ -25,7 +31,16 @@ import LiveMinuteScrubber from './LiveMinuteScrubber';
 // aktuelle Minute), wobei die Spieler- und Gesamtpunkte live aus den geladenen
 // Events neu berechnet werden.
 
-export const LiveRow = ({ players, onPlayerClick, prevPointsMap, animId, isScrubbing, activeMinute }) => {
+export const LiveRow = ({
+  players,
+  onPlayerClick,
+  prevPointsMap,
+  animId,
+  isScrubbing,
+  activeMinute,
+  registerAvatarRef,
+  landedHighlight,
+}) => {
   if (!players || players.length === 0) return null;
   const itemCount = players.length;
   const size = itemCount > 4 ? 'w-12 h-12 sm:w-14 sm:h-14' : 'w-14 h-14 sm:w-16 sm:h-16';
@@ -44,6 +59,8 @@ export const LiveRow = ({ players, onPlayerClick, prevPointsMap, animId, isScrub
           instant={isScrubbing}
           instantDelta={p.minuteDelta || 0}
           instantKey={isScrubbing ? `m:${activeMinute}:${p.id}` : null}
+          avatarRef={!p.isDummy && registerAvatarRef ? (el) => registerAvatarRef(String(p.id), el) : null}
+          highlightedColor={landedHighlight && String(landedHighlight.playerId) === String(p.id) ? landedHighlight.color : null}
           size={size}
           containerSize={containerSize}
           onClick={!p.isDummy && onPlayerClick ? () => onPlayerClick(p) : undefined}
@@ -202,6 +219,180 @@ const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId }) => {
   const aw = computed.players.filter((p) => p.position === 2);
   const tw = computed.players.filter((p) => p.position === 1);
 
+  // Refs & State fuer die Aktions-Animationen (Tor, Vorlage, 11m gehalten)
+  const pitchRef = useRef(null);
+  const avatarRefs = useRef(new Map());
+  const highlightIdRef = useRef(0);
+  const landedTimerRef = useRef(null);
+  const lastScrubHighlightRef = useRef('');
+  const seenLiveHighlightsRef = useRef(null);
+
+  const [activeHighlight, setActiveHighlight] = useState(null);
+  const [landedHighlight, setLandedHighlight] = useState(null);
+
+  const registerAvatarRef = useCallback((id, el) => {
+    if (el) {
+      avatarRefs.current.set(id, el);
+    } else {
+      avatarRefs.current.delete(id);
+    }
+  }, []);
+
+  const triggerHighlight = useCallback((type, player, points = null) => {
+    if (!player) return;
+    const pitchEl = pitchRef.current;
+    const avatarEl = avatarRefs.current.get(String(player.id));
+
+    let targetX = 0;
+    let targetY = 0;
+    let targetScale = 0.45;
+    if (pitchEl && avatarEl) {
+      const pitchRect = pitchEl.getBoundingClientRect();
+      const avatarRect = avatarEl.getBoundingClientRect();
+      targetX = (avatarRect.left + avatarRect.width / 2) - (pitchRect.left + pitchRect.width / 2);
+      targetY = (avatarRect.top + avatarRect.height / 2) - (pitchRect.top + pitchRect.height / 2);
+      targetScale = Math.max(0.32, Math.min(0.8, avatarRect.width / 128));
+    }
+
+    if (landedTimerRef.current) {
+      window.clearTimeout(landedTimerRef.current);
+      landedTimerRef.current = null;
+    }
+    setLandedHighlight(null);
+
+    highlightIdRef.current += 1;
+    setActiveHighlight({
+      id: highlightIdRef.current,
+      type,
+      player,
+      points,
+      targetX,
+      targetY,
+      targetScale,
+    });
+  }, []);
+
+  const handleHighlightLand = useCallback((hl) => {
+    if (!hl?.player) return;
+    setLandedHighlight({
+      playerId: String(hl.player.id),
+      color: HIGHLIGHT_ACCENT_COLOR[hl.type] || '#22c55e',
+    });
+    if (landedTimerRef.current) window.clearTimeout(landedTimerRef.current);
+    landedTimerRef.current = window.setTimeout(() => {
+      setLandedHighlight(null);
+      landedTimerRef.current = null;
+    }, 900);
+  }, []);
+
+  const handleHighlightComplete = useCallback(() => {
+    setActiveHighlight(null);
+  }, []);
+
+  useEffect(() => () => {
+    if (landedTimerRef.current) window.clearTimeout(landedTimerRef.current);
+  }, []);
+
+  // Auto-Trigger 1: Beim Scrubben/Abspielen der Minuten-Timeline
+  useEffect(() => {
+    if (!isScrubbing) {
+      lastScrubHighlightRef.current = '';
+      return undefined;
+    }
+
+    let best = null;
+    for (const p of lineup || []) {
+      if (p.isDummy || !Array.isArray(p.events)) continue;
+      for (const ev of p.events) {
+        const em = Math.max(0, Math.min(120, typeof ev.minute === 'number' ? ev.minute : 0));
+        if (em !== activeMinute) continue;
+        const type = classifyHighlightEvent(ev);
+        if (!type) continue;
+        const prio = HIGHLIGHT_PRIORITY[type] || 0;
+        if (!best || prio > best.prio) {
+          best = { type, player: p, points: ev.points, prio };
+        }
+      }
+    }
+
+    if (!best) return undefined;
+    const dedupKey = `${activeMinute}:${best.player.id}:${best.type}`;
+    if (lastScrubHighlightRef.current === dedupKey) return undefined;
+    lastScrubHighlightRef.current = dedupKey;
+
+    const rafId = window.requestAnimationFrame(() => {
+      triggerHighlight(best.type, best.player, best.points);
+    });
+    return () => window.cancelAnimationFrame(rafId);
+  }, [isScrubbing, activeMinute, lineup, triggerHighlight]);
+
+  // Auto-Trigger 2: Bei Live-Updates, sobald ein neues Tor / eine neue Vorlage / ein gehaltener 11m eintrifft
+  useEffect(() => {
+    const realPlayers = (lineup || []).filter((p) => !p.isDummy);
+    if (realPlayers.length === 0) return undefined;
+
+    const currentKeys = new Set();
+    let newestBest = null;
+
+    for (const p of realPlayers) {
+      for (const ev of p.events || []) {
+        const type = classifyHighlightEvent(ev);
+        if (!type) continue;
+        const key = `${p.id}:${ev.minute ?? 0}:${ev.points ?? 0}:${type}`;
+        currentKeys.add(key);
+
+        if (seenLiveHighlightsRef.current && !seenLiveHighlightsRef.current.has(key)) {
+          const prio = HIGHLIGHT_PRIORITY[type] || 0;
+          if (!newestBest || prio > newestBest.prio) {
+            newestBest = { type, player: p, points: ev.points, prio };
+          }
+        }
+      }
+    }
+
+    // Beim allerersten Laden nur Bestand merken, keine alten Aktionen abfeuern
+    if (seenLiveHighlightsRef.current === null) {
+      seenLiveHighlightsRef.current = currentKeys;
+      return undefined;
+    }
+
+    seenLiveHighlightsRef.current = currentKeys;
+    if (!newestBest || isScrubbing) return undefined;
+
+    const rafId = window.requestAnimationFrame(() => {
+      triggerHighlight(newestBest.type, newestBest.player, newestBest.points);
+    });
+    return () => window.cancelAnimationFrame(rafId);
+  }, [lineup, animId, isScrubbing, triggerHighlight]);
+
+  // Vorschau-Auswahl fuer die 3 Test-Buttons unten links auf dem Spielfeld
+  const realPlayers = useMemo(
+    () => computed.players.filter((p) => !p.isDummy),
+    [computed.players],
+  );
+
+  const handleTestHighlight = useCallback((type) => {
+    if (realPlayers.length === 0) return;
+    const realSt = realPlayers.filter((p) => p.position === 4);
+    const realMf = realPlayers.filter((p) => p.position === 3 || p.position === 0);
+    const realAw = realPlayers.filter((p) => p.position === 2);
+    const realTw = realPlayers.filter((p) => p.position === 1);
+
+    let target = realPlayers[0];
+    let demoPoints = 100;
+    if (type === 'goal') {
+      target = realSt[0] || realMf[0] || realAw[0] || realPlayers[0];
+      demoPoints = 100;
+    } else if (type === 'assist') {
+      target = realMf[0] || realSt[1] || realAw[0] || realPlayers[0];
+      demoPoints = 40;
+    } else if (type === 'penalty_save') {
+      target = realTw[0] || realPlayers[0];
+      demoPoints = 75;
+    }
+    triggerHighlight(type, target, demoPoints);
+  }, [realPlayers, triggerHighlight]);
+
   const cornerMinuteLabel = activeMinute > 90
     ? `90+${activeMinute - 90}'`
     : `${activeMinute}'`;
@@ -209,6 +400,7 @@ const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId }) => {
   return (
     <div>
       <div
+        ref={pitchRef}
         className="rounded-2xl overflow-hidden relative min-h-[500px] sm:min-h-[600px] flex flex-col justify-between py-6 sm:py-8 mt-4 shadow-2xl"
         style={{ backgroundImage: 'radial-gradient(circle at center, #1a1a1a 0%, #050505 100%)' }}
       >
@@ -246,29 +438,76 @@ const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId }) => {
         )}
 
         <div className="relative z-10 w-full px-2 sm:px-4 flex flex-col pt-3 sm:pt-2">
-          <LiveRow players={st} onPlayerClick={openPlayer} prevPointsMap={prevPointsMap} animId={animId} isScrubbing={isScrubbing} activeMinute={activeMinute} />
-          <LiveRow players={mf} onPlayerClick={openPlayer} prevPointsMap={prevPointsMap} animId={animId} isScrubbing={isScrubbing} activeMinute={activeMinute} />
-          <LiveRow players={aw} onPlayerClick={openPlayer} prevPointsMap={prevPointsMap} animId={animId} isScrubbing={isScrubbing} activeMinute={activeMinute} />
-          <LiveRow players={tw} onPlayerClick={openPlayer} prevPointsMap={prevPointsMap} animId={animId} isScrubbing={isScrubbing} activeMinute={activeMinute} />
+          <LiveRow players={st} onPlayerClick={openPlayer} prevPointsMap={prevPointsMap} animId={animId} isScrubbing={isScrubbing} activeMinute={activeMinute} registerAvatarRef={registerAvatarRef} landedHighlight={landedHighlight} />
+          <LiveRow players={mf} onPlayerClick={openPlayer} prevPointsMap={prevPointsMap} animId={animId} isScrubbing={isScrubbing} activeMinute={activeMinute} registerAvatarRef={registerAvatarRef} landedHighlight={landedHighlight} />
+          <LiveRow players={aw} onPlayerClick={openPlayer} prevPointsMap={prevPointsMap} animId={animId} isScrubbing={isScrubbing} activeMinute={activeMinute} registerAvatarRef={registerAvatarRef} landedHighlight={landedHighlight} />
+          <LiveRow players={tw} onPlayerClick={openPlayer} prevPointsMap={prevPointsMap} animId={animId} isScrubbing={isScrubbing} activeMinute={activeMinute} registerAvatarRef={registerAvatarRef} landedHighlight={landedHighlight} />
         </div>
 
-        {computed.total != null && (
-          <div className="relative z-10 flex justify-end px-6 sm:px-8 mt-4">
-            <div className="text-right">
-              <AnimatedPoints
-                value={computed.total}
-                previousValue={prevPointsMap?.__total__}
-                animKey={animId != null ? `${animId}:__total__` : null}
-                instant={isScrubbing}
-                instantDelta={computed.totalMinuteDelta}
-                instantKey={isScrubbing ? `m:${activeMinute}:__total__` : null}
-                format={(n) => n.toLocaleString('de-DE')}
-                className="text-3xl sm:text-4xl font-extrabold text-white leading-none"
-                deltaPlacement="left"
-              />
-              <div className="text-[10px] font-semibold uppercase tracking-widest text-[#8b92a5] mt-1">Punkte</div>
-            </div>
+        {(realPlayers.length > 0 || computed.total != null) && (
+          <div className="relative z-10 flex items-end justify-between px-4 sm:px-8 mt-4">
+            {/* Dezente Probe-Buttons zum direkten Ausprobieren der 3 Aktions-Animationen */}
+            {realPlayers.length > 0 ? (
+              <div className="flex items-center gap-1 bg-black/45 border border-white/10 rounded-full p-1 backdrop-blur-md">
+                <button
+                  type="button"
+                  onClick={() => handleTestHighlight('goal')}
+                  title="Tor-Animation testen"
+                  aria-label="Tor-Animation testen"
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-sm hover:bg-green-500/20 active:scale-90 transition-all cursor-pointer"
+                >
+                  ⚽
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleTestHighlight('assist')}
+                  title="Vorlage-Animation testen"
+                  aria-label="Vorlage-Animation testen"
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-sm hover:bg-sky-500/20 active:scale-90 transition-all cursor-pointer"
+                >
+                  👟
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleTestHighlight('penalty_save')}
+                  title="Elfmeter-gehalten-Animation testen"
+                  aria-label="Elfmeter-gehalten-Animation testen"
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-sm hover:bg-amber-500/20 active:scale-90 transition-all cursor-pointer"
+                >
+                  🧤
+                </button>
+              </div>
+            ) : (
+              <div />
+            )}
+
+            {computed.total != null && (
+              <div className="text-right">
+                <AnimatedPoints
+                  value={computed.total}
+                  previousValue={prevPointsMap?.__total__}
+                  animKey={animId != null ? `${animId}:__total__` : null}
+                  instant={isScrubbing}
+                  instantDelta={computed.totalMinuteDelta}
+                  instantKey={isScrubbing ? `m:${activeMinute}:__total__` : null}
+                  format={(n) => n.toLocaleString('de-DE')}
+                  className="text-3xl sm:text-4xl font-extrabold text-white leading-none"
+                  deltaPlacement="left"
+                />
+                <div className="text-[10px] font-semibold uppercase tracking-widest text-[#8b92a5] mt-1">Punkte</div>
+              </div>
+            )}
           </div>
+        )}
+
+        {/* Aktions-Overlay (Tor, Vorlage, 11m gehalten) */}
+        {activeHighlight && (
+          <LiveHighlightOverlay
+            key={activeHighlight.id}
+            highlight={activeHighlight}
+            onLand={handleHighlightLand}
+            onComplete={handleHighlightComplete}
+          />
         )}
       </div>
 

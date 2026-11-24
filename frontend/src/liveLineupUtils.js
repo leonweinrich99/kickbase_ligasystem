@@ -40,3 +40,46 @@ export const buildTeamLogoMap = (allPlayers) => {
   });
   return map;
 };
+
+// Erkennt besondere Spielaktionen (Tor, Vorlage, Elfmeter gehalten) aus den
+// Kickbase-Events (deutsch & englisch, abgesichert ueber Mindestpunktzahl,
+// damit Torschuesse, Schussvorlagen oder Gegentore nie faelschlich ausloesen).
+export const classifyHighlightEvent = (ev) => {
+  if (!ev || typeof ev.points !== 'number' || ev.points <= 0) return null;
+  const label = String(ev.label || '').toLowerCase();
+
+  // 1. Elfmeter gehalten (TW)
+  const isPenaltySave =
+    ev.points >= 30 &&
+    (/(elfmeter|strafstoß|strafstoss|penalty).*(gehalten|pariert|abgewehrt|saved)/.test(label) ||
+      /(gehalten|pariert|saved).*(elfmeter|strafstoß|strafstoss|penalty)/.test(label));
+  if (isPenaltySave) return 'penalty_save';
+
+  // 2. Tor
+  const excludedGoal = /(gegentor|kassiert|eigentor|conceded|own goal|vorlage|assist|parade|gehalten|saved|torschuss|schuss|abgewehrt|verhindert|zu null|clean sheet)/i;
+  const matchesGoal = /(\btor\b|tor erzielt|elfmetertor|freistoßtor|freistosstor|kopfballtor|weitschusstor|\bgoal\b|penalty scored)/i;
+  if (ev.points >= 40 && !excludedGoal.test(label) && (matchesGoal.test(label) || ev.points >= 70)) {
+    return 'goal';
+  }
+
+  // 3. Torvorlage
+  const excludedAssist = /(torschussvorlage|schussvorlage|shot assist)/i;
+  const matchesAssist = /(torvorlage|\bvorlage\b|\bassist\b)/i;
+  if (ev.points >= 20 && !excludedAssist.test(label) && matchesAssist.test(label)) {
+    return 'assist';
+  }
+
+  return null;
+};
+
+export const HIGHLIGHT_ACCENT_COLOR = {
+  goal: '#22c55e',
+  assist: '#38bdf8',
+  penalty_save: '#f59e0b',
+};
+
+export const HIGHLIGHT_PRIORITY = {
+  goal: 3,
+  penalty_save: 2,
+  assist: 1,
+};
