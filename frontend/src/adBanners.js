@@ -2,6 +2,7 @@ import krokodilLogo from './assets/ads/krokodil.webp';
 import heimatLogo from './assets/ads/heimat.png';
 import freeformLogo from './assets/ads/freeform.png';
 import crunchyLogo from './assets/ads/crunchy.png';
+import schlachpediaLogo from './assets/ads/schlachpedia.svg';
 
 // Fake-Werbebanner-Easter-Eggs (Owner-Wunsch 24.11.2026: "Werbe-Banner fuer
 // unsere Lieblingskneipen, ein Freundes-Unternehmen und Schlachpedia an
@@ -70,13 +71,13 @@ export const AD_BANNERS = [
   {
     id: 'schlachpedia',
     name: 'Schlachpedia',
-    tagline: "Das Wiki für alles, was bei uns 'schlach' ist",
-    meta: 'schlachpedia.vercel.app',
-    emoji: '📖',
+    tagline: 'Das Nachschlachwerk · „Wir machen Schlach“ – Satzung, Kultur & Chronik',
+    meta: 'schlachpedia.web.app',
+    logo: schlachpediaLogo,
     logoBg: '#0f1a2a',
     cardBg: 'linear-gradient(135deg, #0f1a2a 0%, #0a0a0a 100%)',
     accent: '#60a5fa',
-    url: 'https://schlachpedia.vercel.app',
+    url: 'https://schlachpedia.web.app',
   },
   {
     id: 'crunchy-kebab',
