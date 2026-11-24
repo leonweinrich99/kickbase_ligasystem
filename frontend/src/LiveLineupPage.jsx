@@ -5,7 +5,14 @@ import ManagerAvatar from './ui/ManagerAvatar';
 import PageHeader from './ui/PageHeader';
 import AnimatedPoints from './ui/AnimatedPoints';
 import LiveLineupPitch from './ui/LiveLineupGrid';
+import BundesligaMatchesSection, { SelectedTeamMatchBanner } from './ui/BundesligaMatchesSection';
 import { buildLineupWithDummies, buildTeamLogoMap } from './liveLineupUtils';
+import {
+  fetchBundesligaMatches,
+  fetchBundesligaLastChange,
+  findOpenLigaMatchForKickbaseTeam,
+  diffBundesligaMatches,
+} from './openLigaDb';
 import {
   diffAndSavePoints,
   buildLineupPointsMap,
@@ -187,6 +194,21 @@ const LiveLineupPage = () => {
   const [teamError, setTeamError] = useState(null);
   const teamReqRef = useRef(0);
 
+  // OpenLigaDB Bundesliga-Partien + Live-Ergebnisse/-Ereignisse im "Echte Teams"-Tab
+  const cachedBlMatches = useMemo(() => readCachedSnapshot('openliga:bl1:current'), []);
+  const [blMatchday, setBlMatchday] = useState(null);
+  const [blCurrentMatchday, setBlCurrentMatchday] = useState(cachedBlMatches?.currentMatchday ?? cachedBlMatches?.matchday ?? null);
+  const [blMatchesData, setBlMatchesData] = useState(null);
+  const [blMatchesLoading, setBlMatchesLoading] = useState(false);
+  const [blMatchesRefreshing, setBlMatchesRefreshing] = useState(false);
+  const [blMatchesError, setBlMatchesError] = useState(null);
+  const [blChangedMatchIds, setBlChangedMatchIds] = useState(() => new Set());
+  const [blNewEventIds, setBlNewEventIds] = useState(() => new Set());
+  const blMatchesReqRef = useRef(0);
+  const blMatchesDataRef = useRef(null);
+  const blLastChangeRef = useRef(cachedBlMatches?.lastChange ?? null);
+  const blHighlightTimerRef = useRef(null);
+
   // Lineup-Daten fuer EINEN Kickbase-Manager laden (Startelf + Live-Punkte pro Spieler).
   const loadLineup = useCallback(async (league, userId) => {
     const res = await fetch(`/api/live-lineup?userId=${userId}&leagueKey=${league}`);
@@ -342,17 +364,159 @@ const LiveLineupPage = () => {
     }
   }, [competitionId]);
 
+  const clearSelectedTeam = useCallback(() => {
+    teamReqRef.current += 1;
+    setSelectedTeamId(null);
+    setTeamData(null);
+    setTeamCached(null);
+    setTeamPrevPoints(null);
+    setTeamError(null);
+    setTeamLoading(false);
+    setTeamRefreshing(false);
+  }, []);
+
+  // Bundesliga-Partien + Live-Ergebnisse & -Ereignisse ueber OpenLigaDB laden.
+  const loadBundesligaMatches = useCallback(async (
+    targetMatchday = null,
+    { silent = false, nocache = false, checkLastChangeOnly = false } = {}
+  ) => {
+    const reqId = ++blMatchesReqRef.current;
+    const currentSnapshot = blMatchesDataRef.current;
+
+    if (
+      checkLastChangeOnly &&
+      currentSnapshot?.season &&
+      currentSnapshot?.matchday &&
+      blLastChangeRef.current
+    ) {
+      const remoteLastChange = await fetchBundesligaLastChange({
+        season: currentSnapshot.season,
+        matchday: targetMatchday ?? currentSnapshot.matchday,
+      });
+      if (blMatchesReqRef.current !== reqId) return;
+      const justKickedOff = (currentSnapshot.matches || []).some(
+        (m) => !m.isFinished && !m.isLive && m.kickoffUtc && Date.now() >= Date.parse(m.kickoffUtc)
+      );
+      if (remoteLastChange && remoteLastChange === blLastChangeRef.current && !currentSnapshot.hasLiveMatch && !justKickedOff) {
+        return;
+      }
+    }
+
+    const isDefaultDay = targetMatchday == null || (blCurrentMatchday != null && targetMatchday === blCurrentMatchday);
+    if (!silent) {
+      setBlMatchesLoading(!(isDefaultDay && cachedBlMatches?.matches?.length));
+    }
+    setBlMatchesRefreshing(true);
+    setBlMatchesError(null);
+
+    try {
+      const data = await fetchBundesligaMatches({
+        matchday: targetMatchday,
+        season: currentSnapshot?.season ?? cachedBlMatches?.season ?? null,
+        nocache,
+      });
+      if (blMatchesReqRef.current !== reqId) return;
+
+      const prevData = blMatchesDataRef.current;
+      if (prevData && prevData.matchday === data.matchday) {
+        const { changedMatchIds, newEventIds } = diffBundesligaMatches(prevData.matches, data.matches);
+        if (changedMatchIds.size > 0 || newEventIds.size > 0) {
+          setBlChangedMatchIds(changedMatchIds);
+          setBlNewEventIds(newEventIds);
+          if (blHighlightTimerRef.current) {
+            window.clearTimeout(blHighlightTimerRef.current);
+          }
+          blHighlightTimerRef.current = window.setTimeout(() => {
+            setBlChangedMatchIds(new Set());
+            setBlNewEventIds(new Set());
+            blHighlightTimerRef.current = null;
+          }, 15000);
+        }
+      }
+
+      blMatchesDataRef.current = data;
+      blLastChangeRef.current = data.lastChange ?? null;
+      setBlMatchesData(data);
+      if (data.currentMatchday != null) {
+        setBlCurrentMatchday(data.currentMatchday);
+      }
+      if (targetMatchday == null || data.matchday === data.currentMatchday) {
+        saveCachedSnapshot('openliga:bl1:current', data);
+      }
+    } catch (e) {
+      if (blMatchesReqRef.current !== reqId) return;
+      setBlMatchesError(e.message || 'Bundesliga-Partien konnten nicht geladen werden');
+    } finally {
+      if (blMatchesReqRef.current === reqId) {
+        setBlMatchesLoading(false);
+        setBlMatchesRefreshing(false);
+      }
+    }
+  }, [blCurrentMatchday, cachedBlMatches]);
+
+  // OpenLigaDB-Partien laden, sobald der "Echte Teams"-Modus auf Bundesliga steht
+  // oder der Spieltag gewechselt wird.
+  useEffect(() => {
+    if (mode !== 'teams' || competitionId !== '1') return;
+    loadBundesligaMatches(blMatchday, { silent: false, nocache: false });
+  }, [mode, competitionId, blMatchday, loadBundesligaMatches]);
+
+  // Automatisches Live-Polling (alle 30s) fuer OpenLigaDB-Ergebnisse & -Ereignisse,
+  // solange mindestens eine Bundesliga-Partie laeuft oder kurz vor Anpfiff steht.
+  const blAutoPollingActive = Boolean(
+    mode === 'teams' &&
+    competitionId === '1' &&
+    (blMatchesData?.hasLiveMatch || blMatchesData?.hasImminentMatch)
+  );
+
+  useEffect(() => {
+    if (!blAutoPollingActive) return undefined;
+
+    const pollIfVisible = () => {
+      if (document.visibilityState !== 'visible') return;
+      loadBundesligaMatches(blMatchday, {
+        silent: true,
+        nocache: true,
+        checkLastChangeOnly: true,
+      });
+    };
+
+    const intervalId = window.setInterval(pollIfVisible, 30000);
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadBundesligaMatches(blMatchday, { silent: true, nocache: true });
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    return () => {
+      window.clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, [blAutoPollingActive, blMatchday, loadBundesligaMatches]);
+
+  useEffect(() => () => {
+    if (blHighlightTimerRef.current) {
+      window.clearTimeout(blHighlightTimerRef.current);
+    }
+  }, []);
+
   // Aktualisiert je nach aktivem Tab die gerade sichtbaren Live-Daten im
   // Hintergrund (ohne das Spielfeld auszublenden), damit Punktaenderungen
   // sofort animiert werden.
   const handleRefresh = useCallback(async () => {
-    if (refreshing || ownLoading || managerRefreshing || teamRefreshing) return;
+    if (refreshing || ownLoading || managerRefreshing || teamRefreshing || blMatchesRefreshing) return;
     setRefreshing(true);
     try {
       if (mode === 'teams') {
-        if (selectedTeamId) {
-          await selectTeam(selectedTeamId, true);
+        const tasks = [];
+        if (competitionId === '1') {
+          tasks.push(loadBundesligaMatches(blMatchday, { silent: true, nocache: true }));
         }
+        if (selectedTeamId) {
+          tasks.push(selectTeam(selectedTeamId, true));
+        }
+        await Promise.all(tasks);
       } else if (mode === 'managers') {
         await loadAll(true);
         if (selectedManagerId) {
@@ -364,7 +528,7 @@ const LiveLineupPage = () => {
     } finally {
       setRefreshing(false);
     }
-  }, [refreshing, ownLoading, managerRefreshing, teamRefreshing, mode, selectedTeamId, selectedManagerId, selectTeam, selectManager, loadAll]);
+  }, [refreshing, ownLoading, managerRefreshing, teamRefreshing, blMatchesRefreshing, mode, competitionId, blMatchday, selectedTeamId, selectedManagerId, loadBundesligaMatches, selectTeam, selectManager, loadAll]);
 
   // Gemeinsame Anreicherung: live-lineup.js-Rohdaten -> Name/Position/Foto aus
   // all_players.json + Vereinswappen - identisch fuer "own" und "managers".
@@ -465,7 +629,18 @@ const LiveLineupPage = () => {
   const displayedTeamLineup = teamLineup || teamCached?.lineup || null;
   const displayedTeamTotalPoints = teamLineup ? teamTotalPoints : (teamCached?.totalPoints ?? null);
   const displayedTeamMeta = teamData || teamCached || null;
-  const isBusy = ownLoading || refreshing || managerRefreshing || teamRefreshing;
+  const displayedBlMatches = useMemo(() => {
+    if (blMatchesData) return blMatchesData;
+    if (blMatchday == null || blMatchday === cachedBlMatches?.matchday) {
+      return cachedBlMatches || null;
+    }
+    return null;
+  }, [blMatchesData, blMatchday, cachedBlMatches]);
+  const selectedTeamOpenLigaMatch = useMemo(() => {
+    if (competitionId !== '1' || !selectedTeam || !displayedBlMatches?.matches) return null;
+    return findOpenLigaMatchForKickbaseTeam(displayedBlMatches.matches, selectedTeam);
+  }, [competitionId, selectedTeam, displayedBlMatches]);
+  const isBusy = ownLoading || refreshing || managerRefreshing || teamRefreshing || blMatchesRefreshing;
   const leagueAccentColor = LEAGUE_COLORS[leagueKey] || '#4ba6ff';
 
   return (
@@ -603,7 +778,7 @@ const LiveLineupPage = () => {
                     <button
                       key={t.id}
                       type="button"
-                      onClick={() => selectTeam(t.id)}
+                      onClick={() => (isActive && competitionId === '1' ? clearSelectedTeam() : selectTeam(t.id))}
                       className={`w-[84px] shrink-0 flex flex-col items-center justify-center gap-1.5 px-2 py-2.5 rounded-2xl border transition-all active:scale-95 ${
                         isActive
                           ? 'bg-[#ff5c3e]/12 border-[#ff5c3e] shadow-md'
@@ -629,15 +804,26 @@ const LiveLineupPage = () => {
                   );
                 })}
               </div>
-            ) : (
+            ) : competitionId !== '1' ? (
               <div className="text-center text-[#8b92a5] text-sm py-6">Keine Teams gefunden.</div>
-            )}
+            ) : null}
 
             {teamError && (
               <div className="card-surface rounded-2xl p-5 text-center text-sm text-red-400 mb-4">{teamError}</div>
             )}
 
-            {selectedTeam && displayedTeamMeta?.score && (
+            {competitionId === '1' && selectedTeamId && selectedTeamOpenLigaMatch ? (
+              <SelectedTeamMatchBanner
+                key={`banner-${selectedTeamOpenLigaMatch.match.matchId}-${selectedTeamOpenLigaMatch.side}`}
+                match={selectedTeamOpenLigaMatch.match}
+                selectedSide={selectedTeamOpenLigaMatch.side}
+                teamsList={teamsList}
+                onSelectTeam={selectTeam}
+                onShowAllMatches={clearSelectedTeam}
+                isUpdated={blChangedMatchIds.has(selectedTeamOpenLigaMatch.match.matchId)}
+                newEventIds={blNewEventIds}
+              />
+            ) : selectedTeam && displayedTeamMeta?.score ? (
               <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-200">
                 <span>{selectedTeam.name}</span>
                 <span className="text-[#626978]">·</span>
@@ -646,19 +832,36 @@ const LiveLineupPage = () => {
                   <span className="text-xs font-semibold text-[#ef4444]">LIVE {displayedTeamMeta.minute}'</span>
                 )}
               </div>
-            )}
+            ) : null}
 
-            {displayedTeamLineup ? (
-              <LiveLineupPitch
-                key={`team-${competitionId}-${selectedTeamId}`}
-                lineup={displayedTeamLineup}
-                totalPoints={displayedTeamTotalPoints}
-                prevPointsMap={teamLineup ? teamPrevPoints : null}
-                animId={teamLineup ? teamAnimId : null}
+            {selectedTeamId ? (
+              displayedTeamLineup ? (
+                <LiveLineupPitch
+                  key={`team-${competitionId}-${selectedTeamId}`}
+                  lineup={displayedTeamLineup}
+                  totalPoints={displayedTeamTotalPoints}
+                  prevPointsMap={teamLineup ? teamPrevPoints : null}
+                  animId={teamLineup ? teamAnimId : null}
+                />
+              ) : teamLoading ? (
+                <div className="text-center text-[#8b92a5] text-sm py-10">Lade Live-Daten…</div>
+              ) : null
+            ) : competitionId === '1' ? (
+              <BundesligaMatchesSection
+                matchesData={displayedBlMatches}
+                loading={blMatchesLoading}
+                error={blMatchesError}
+                activeMatchday={blMatchday ?? displayedBlMatches?.matchday ?? null}
+                currentMatchday={blCurrentMatchday}
+                onChangeMatchday={setBlMatchday}
+                onRetry={() => loadBundesligaMatches(blMatchday, { silent: false, nocache: true })}
+                teamsList={teamsList}
+                onSelectKickbaseTeam={selectTeam}
+                changedMatchIds={blChangedMatchIds}
+                newEventIds={blNewEventIds}
+                autoPollingActive={blAutoPollingActive}
               />
-            ) : teamLoading ? (
-              <div className="text-center text-[#8b92a5] text-sm py-10">Lade Live-Daten…</div>
-            ) : !selectedTeamId && teamsList?.length > 0 ? (
+            ) : teamsList?.length > 0 ? (
               <div className="card-surface rounded-2xl p-6 text-center text-xs text-[#8b92a5]">
                 Tippe oben auf ein Vereinslogo, um die Live-Startelf des Teams zu sehen.
               </div>
