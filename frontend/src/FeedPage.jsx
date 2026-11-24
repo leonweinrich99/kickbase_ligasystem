@@ -85,9 +85,9 @@ const FeedPage = () => {
       {/* Ebene-1 Header */}
       <div className="flex items-end justify-between gap-3 mb-4">
         <PageHeader
-          eyebrow={isTradingView ? 'THE KICKBASE STREET JOURNAL' : 'REDAKTION & ANALYSEN'}
+          eyebrow={isTradingView ? 'MARKET DESK & ANALYSEN' : 'REDAKTION & ANALYSEN'}
           accentColor={isTradingView ? '#10b981' : activeCat === 'pokal' ? '#f59e0b' : '#ff5c3e'}
-          title={isTradingView ? 'TRADING NEWS' : activeCat === 'pokal' ? 'POKAL-CHRONIK' : activeCat === 'spieltag' ? 'SPIELTAGSBERICHTE' : 'NEWSFEED'}
+          title={isTradingView ? 'THE TRADING JOURNAL' : activeCat === 'pokal' ? 'POKAL-CHRONIK' : activeCat === 'spieltag' ? 'SPIELTAGSBERICHTE' : 'NEWSFEED'}
         />
         {feedData?.updatedAt && (
           <div className="text-right shrink-0 pb-0.5">
@@ -141,7 +141,7 @@ const FeedPage = () => {
                 FINANCE · TRANSFERMARKT · MAKRO-ANALYSE
               </div>
               <div className="font-serif text-lg sm:text-xl font-bold tracking-wide text-[#f3efe6]">
-                THE KICKBASE STREET JOURNAL
+                THE TRADING JOURNAL
               </div>
             </div>
           )}
@@ -208,7 +208,7 @@ const FeedPage = () => {
 
                   {isWsj && (
                     <div className="text-[10px] uppercase tracking-[0.22em] text-emerald-400/75 font-semibold mb-1.5">
-                      The Kickbase Street Journal · Titelstory
+                      The Trading Journal · Titelstory
                     </div>
                   )}
 

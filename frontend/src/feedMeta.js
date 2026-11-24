@@ -30,8 +30,8 @@ export const FEED_CATEGORIES = [
   },
   {
     id: 'trading',
-    label: 'Trading News',
-    shortLabel: 'Trading WSJ',
+    label: 'The Trading Journal',
+    shortLabel: 'Trading Journal',
     accent: '#10b981',
     badgeClass: 'bg-emerald-500/15 text-emerald-400 border-emerald-400/35',
     pillActiveClass: 'bg-emerald-500 text-black border-emerald-400',

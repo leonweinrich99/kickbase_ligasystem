@@ -118,7 +118,7 @@ const FeedArticlePage = () => {
         {isWsj && (
           <div className="mb-5 border-y border-emerald-500/25 py-2.5 text-center">
             <div className="font-serif text-sm sm:text-base font-bold tracking-[0.14em] text-[#f3efe6]">
-              THE KICKBASE STREET JOURNAL
+              THE TRADING JOURNAL
             </div>
             <div className="text-[10px] uppercase tracking-[0.22em] text-emerald-400/85 mt-0.5">
               {article.edition} · {formatArticleDate(article.date)}
