@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Newspaper, Trophy, TrendingUp, Flame, Clock, BarChart3 } from 'lucide-react';
+import { Newspaper, Trophy, TrendingUp, Flame, Clock, BarChart3, ChevronRight } from 'lucide-react';
 import PageHeader from './ui/PageHeader';
 import { FEED_CATEGORIES, getCategoryMeta, formatArticleDate } from './feedMeta';
 
@@ -43,6 +43,177 @@ const TickerTrackItems = ({ items, keyPrefix }) => (
     ))}
   </div>
 );
+
+// Owner-Wunsch 24.11.2026: "oben drei Hauptartikel zum Swipen, dann ein
+// extra Bereich fuer Spieltagsberichte/Pokal/Trading zum Durchscrollen -
+// wie bei anderen News-Anbietern". HeroCarousel ersetzt die bisherige
+// EINE Titelstory auf dem "Alle"-Tab durch einen horizontalen Scroll-Snap-
+// Swiper mit bis zu 3 Artikeln (die als "featured" markierten - je einer
+// pro Kategorie) + Punkte-Indikator darunter, wie man es aus Apple
+// News/App-Store-Karussells kennt.
+const HeroCarousel = ({ articles, activeCat }) => {
+  const scrollRef = useRef(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const handleScroll = () => {
+    const el = scrollRef.current;
+    if (!el || el.clientWidth === 0) return;
+    setActiveIndex(Math.round(el.scrollLeft / el.clientWidth));
+  };
+
+  const goTo = (i) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTo({ left: i * el.clientWidth, behavior: 'smooth' });
+  };
+
+  if (articles.length === 0) return null;
+
+  return (
+    <div className="mb-7">
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth gap-4"
+      >
+        {articles.map((article) => {
+          const meta = getCategoryMeta(article.category);
+          const isWsj = Boolean(meta.isWsj);
+          return (
+            <Link
+              key={article.slug}
+              to={`/feed/${article.slug}`}
+              state={{ fromCategory: activeCat }}
+              className="shrink-0 w-full snap-center block card-surface rounded-2xl overflow-hidden hover:border-white/20 transition-all active:scale-[0.99] group"
+            >
+              {article.image && (
+                <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#0e0e10]">
+                  <img
+                    src={article.image}
+                    alt={article.title}
+                    className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-transparent" />
+                  <span
+                    className={`absolute top-3 left-3 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border backdrop-blur-md bg-black/65 ${meta.badgeClass}`}
+                  >
+                    <CategoryIcon id={article.category} size={11} />
+                    {meta.shortLabel}
+                  </span>
+                  <h2
+                    className={`absolute inset-x-0 bottom-0 p-4 sm:p-5 text-lg sm:text-2xl font-bold leading-snug drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] group-hover:text-white transition-colors ${
+                      isWsj ? 'font-serif text-[#f5f1e8] tracking-normal' : 'text-white tracking-tight'
+                    }`}
+                  >
+                    {article.title}
+                  </h2>
+                </div>
+              )}
+
+              <div className="p-4 sm:p-5 pt-3">
+                <p className="text-sm text-gray-300/90 leading-relaxed line-clamp-3">
+                  {article.subtitle}
+                </p>
+
+                <div className="flex items-center gap-2 mt-3 text-[11px] text-[#8b92a5]">
+                  <span className="tabular-nums">{formatArticleDate(article.date)}</span>
+                  <span>·</span>
+                  <span className="inline-flex items-center gap-1 tabular-nums">
+                    <Clock size={11} />
+                    {article.readTimeMin} Min.
+                  </span>
+                </div>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+
+      {articles.length > 1 && (
+        <div className="flex items-center justify-center gap-1.5 mt-3">
+          {articles.map((a, i) => (
+            <button
+              key={a.slug}
+              type="button"
+              aria-label={`Zu Artikel ${i + 1}`}
+              onClick={() => goTo(i)}
+              className={`h-1.5 rounded-full transition-all ${i === activeIndex ? 'w-5 bg-white' : 'w-1.5 bg-white/25'}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Horizontal durchscrollbares "Regal" je Kategorie unterhalb des Karussells
+// (Spieltagsberichte / Pokal / The Trading Journal) - gleiches Prinzip wie
+// die Themen-Reihen bei Apple News oder die "Mehr aus"-Leisten anderer
+// News-Apps.
+const CategoryShelf = ({ title, categoryId, articles, activeCat, accentColor, onSeeAll }) => {
+  if (articles.length === 0) return null;
+  return (
+    <div className="mb-7">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-black uppercase tracking-wider text-white flex items-center gap-1.5">
+          <CategoryIcon id={categoryId} size={14} />
+          {title}
+        </h3>
+        <button
+          type="button"
+          onClick={onSeeAll}
+          className="flex items-center gap-0.5 text-xs font-bold shrink-0"
+          style={{ color: accentColor }}
+        >
+          Alle ansehen
+          <ChevronRight size={14} />
+        </button>
+      </div>
+
+      <div className="flex overflow-x-auto no-scrollbar gap-3 -mx-4 sm:-mx-6 px-4 sm:px-6">
+        {articles.map((article) => {
+          const meta = getCategoryMeta(article.category);
+          const isWsj = Boolean(meta.isWsj);
+          return (
+            <Link
+              key={article.slug}
+              to={`/feed/${article.slug}`}
+              state={{ fromCategory: activeCat }}
+              className="shrink-0 w-[200px] sm:w-[220px] flex flex-col card-surface rounded-2xl overflow-hidden hover:border-white/20 transition-all active:scale-[0.97] group"
+            >
+              {article.image && (
+                <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#0e0e10]">
+                  <img
+                    src={article.image}
+                    alt={article.title}
+                    loading="lazy"
+                    className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent" />
+                  <h4
+                    className={`absolute inset-x-0 bottom-0 p-3 text-sm font-bold leading-snug drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] ${
+                      isWsj ? 'font-serif text-[#f3efe6]' : 'text-gray-100'
+                    }`}
+                  >
+                    {article.title}
+                  </h4>
+                </div>
+              )}
+              <div className="px-3 py-2 flex items-center gap-1.5 text-[10px] text-[#8b92a5]">
+                <span className="tabular-nums">{formatArticleDate(article.date)}</span>
+                <span>·</span>
+                <span className="inline-flex items-center gap-1 tabular-nums">
+                  <Clock size={9} />
+                  {article.readTimeMin} Min.
+                </span>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
 
 const FeedPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -101,6 +272,27 @@ const FeedPage = () => {
     if (!leadArticle) return [];
     return filtered.filter((a) => a.slug !== leadArticle.slug);
   }, [filtered, leadArticle]);
+
+  // "Alle"-Tab: bis zu 3 "featured" Artikel (idealerweise einer je Kategorie)
+  // oben im Swipe-Karussell, darunter je Kategorie ein durchscrollbares
+  // Regal mit den uebrigen Artikeln dieser Kategorie.
+  const heroArticles = useMemo(() => {
+    const featured = articles.filter((a) => a.featured);
+    if (featured.length >= 3) return featured.slice(0, 3);
+    const rest = articles.filter((a) => !a.featured);
+    return [...featured, ...rest].slice(0, 3);
+  }, [articles]);
+
+  const heroSlugs = useMemo(() => new Set(heroArticles.map((a) => a.slug)), [heroArticles]);
+
+  const shelves = useMemo(() => {
+    const byCategory = (catId) => articles.filter((a) => a.category === catId && !heroSlugs.has(a.slug));
+    return [
+      { id: 'spieltag', title: 'Spieltagsberichte', articles: byCategory('spieltag'), accentColor: '#ff5c3e' },
+      { id: 'pokal', title: 'Pokal', articles: byCategory('pokal'), accentColor: '#f59e0b' },
+      { id: 'trading', title: 'The Trading Journal', articles: byCategory('trading'), accentColor: '#10b981' },
+    ];
+  }, [articles, heroSlugs]);
 
   const setCategory = (catId) => {
     if (catId === 'all') {
@@ -225,7 +417,24 @@ const FeedPage = () => {
         </div>
       )}
 
-      {!loading && !error && leadArticle && (
+      {!loading && !error && activeCat === 'all' && (
+        <div>
+          <HeroCarousel articles={heroArticles} activeCat={activeCat} />
+          {shelves.map((shelf) => (
+            <CategoryShelf
+              key={shelf.id}
+              title={shelf.title}
+              categoryId={shelf.id}
+              articles={shelf.articles}
+              activeCat={activeCat}
+              accentColor={shelf.accentColor}
+              onSeeAll={() => setCategory(shelf.id)}
+            />
+          ))}
+        </div>
+      )}
+
+      {!loading && !error && activeCat !== 'all' && leadArticle && (
         <div className="space-y-4">
           {/* Titelstory: Grosses Bild + klare Headline + kurzer Teaser (ohne Schnickschnack) */}
           {(() => {
