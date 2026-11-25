@@ -330,28 +330,56 @@ function evaluateHistoricalLineups(uid, startelfByDay, preKickoffByDay, playerMa
 
         const preSnap = preKickoffByDay.get(day) || null;
         const lineup = mgrEntry.lineup;
+        const actualPoints = typeof mgrEntry.pointsMatchday === 'number' ? mgrEntry.pointsMatchday : null;
+        const rawLineupSum = lineup.reduce((s, p) => s + (p.points || 0), 0);
+        const missingSlots = Math.max(0, 11 - lineup.length);
+
+        // Regel-Fall 1: Im-Minus-Spieltag (Kickbase vergibt 0 Punkte trotz 11er-u.lp,
+        // weil das Budget am Freitag 20:30 negativ war -> nicht punkteberechtigt -> 0 xP).
+        const isNegativeBudgetDay =
+            lineup.length > 0 &&
+            actualPoints === 0 &&
+            Math.abs(rawLineupSum - missingSlots * 100) >= 50;
+
+        // Regel-Fall 2: Echte leere Positionen (< 11 Spieler aufgestellt -> Kickbase
+        // zieht deterministisch -100 Pkt pro leerem Slot ab). Gegenpruefung gegen
+        // rawLineupSum verhindert Fehl-Abzuege, falls mal ein aus der Liga wechselnder
+        // Spieler im u.lp fehlte (wie bei Marci).
+        const confirmedEmptySlots =
+            !isNegativeBudgetDay &&
+            lineup.length > 0 &&
+            missingSlots > 0 &&
+            actualPoints != null &&
+            actualPoints <= rawLineupSum - missingSlots * 100 + 25
+                ? missingSlots
+                : 0;
+
         let expectedPts = 0;
         let jokerPts = 0;
         let startProbSum = 0;
         let likelyStarters = 0;
 
-        for (const p of lineup) {
-            const prof = estimatePreMatchdayPlayerXp(p.id, day, playerMap, preSnap);
-            expectedPts += prof.expectedPoints;
-            jokerPts += prof.expectedJokerPts;
-            startProbSum += prof.pStart;
-            if (prof.pStart >= 0.75) likelyStarters++;
+        if (!isNegativeBudgetDay) {
+            for (const p of lineup) {
+                const prof = estimatePreMatchdayPlayerXp(p.id, day, playerMap, preSnap);
+                expectedPts += prof.expectedPoints;
+                jokerPts += prof.expectedJokerPts;
+                startProbSum += prof.pStart;
+                if (prof.pStart >= 0.75) likelyStarters++;
+            }
+            if (confirmedEmptySlots > 0) {
+                expectedPts -= confirmedEmptySlots * 100;
+            }
         }
 
-        const missingSlots = Math.max(0, 11 - lineup.length);
-        // Durchschnitt ueber 11 Slots (fehlende Slots zaehlen als 0 Startelf-Chance & 0 xP)
-        const avgStartProb = startProbSum / 11;
-        const actualPoints = typeof mgrEntry.pointsMatchday === 'number' ? mgrEntry.pointsMatchday : null;
+        // Durchschnitt ueber 11 Slots (fehlende Slots / Im-Minus-Spieltage zaehlen als 0 Startelf-Chance)
+        const avgStartProb = isNegativeBudgetDay ? 0 : (startProbSum / 11);
 
         breakdown.push({
             day,
             lineupSize: lineup.length,
-            missingSlots,
+            missingSlots: confirmedEmptySlots,
+            isNegativeBudgetDay,
             expectedPoints: Math.round(expectedPts),
             jokerExpectedPoints: Math.round(jokerPts),
             avgStartProbability: avgStartProb,
@@ -371,6 +399,7 @@ function evaluateHistoricalLineups(uid, startelfByDay, preKickoffByDay, playerMa
     const actuals = breakdown.filter(b => b.actualPoints != null).map(b => b.actualPoints);
     const avgActualPoints = actuals.length > 0 ? actuals.reduce((a, b) => a + b, 0) / actuals.length : null;
     const totalMissingSlots = breakdown.reduce((s, b) => s + b.missingSlots, 0);
+    const negativeBudgetDays = breakdown.filter(b => b.isNegativeBudgetDay).length;
 
     return {
         matchdaysEvaluated: n,
@@ -380,6 +409,7 @@ function evaluateHistoricalLineups(uid, startelfByDay, preKickoffByDay, playerMa
         avgLikelyStarters: Math.round(avgLikelyStarters * 10) / 10,
         avgActualPoints: avgActualPoints != null ? Math.round(avgActualPoints) : null,
         totalMissingSlots,
+        negativeBudgetDays,
         strengthScore: avgExpectedPoints,
         breakdown,
     };
@@ -1264,6 +1294,7 @@ function run() {
                             avgLikelyStarters: squadEval ? squadEval.avgLikelyStarters : null,
                             avgActualPoints: squadEval ? squadEval.avgActualPoints : null,
                             totalMissingSlots: squadEval ? squadEval.totalMissingSlots : 0,
+                            negativeBudgetDays: squadEval ? squadEval.negativeBudgetDays : 0,
                             strengthScore: squadEval ? squadEval.strengthScore : null,
                             matchdayBreakdown: squadEval ? squadEval.breakdown : [],
                         },
