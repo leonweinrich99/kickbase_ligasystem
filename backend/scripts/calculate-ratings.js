@@ -141,19 +141,18 @@ function loadManagerSquadValues() {
     return map;
 }
 
-// --- Realistische Startelf-Wahrscheinlichkeit (statt reiner Kopfzahl) ---
-// computeSquadReadiness (squadRules.js) zaehlt jeden Spieler in der richtigen
-// Position einfach als "1" - ob der Spieler bei seinem echten Verein
-// UEBERHAUPT eine reelle Chance auf einen Startelf-Einsatz hat, blieb bisher
-// unberuecksichtigt. Kickbase liefert dafuer pro Spieler selbst eine
-// Wahrscheinlichkeits-Einstufung (Quelle: Ligainsider) - das Feld `prob`
-// (1 = sehr unwahrscheinlich bis 5 = sehr wahrscheinlich) in all_players.json
-// (siehe playerMap in run()). Das ersetzt hier die reine Kopfzahl je Position
-// durch die Summe der TATSAECHLICHEN Wahrscheinlichkeiten der jeweils besten
-// Spieler je Position - ein Kader voller Ersatzbank-Spieler sieht dadurch
-// nicht mehr wie ein "voll einsatzfaehiger" Kader aus.
-// Offizielle Kickbase-Startelf-Prognose (`prob`, 1..5):
-// 1 = Sicher, 2 = Erwartet, 3 = Unsicher, 4 = Unwahrscheinlich, 5 = Ausgeschlossen
+// --- Kaderstaerke (KAD): Beste gueltige 11er-Startelf nach erwarteten Punkten ---
+// Statt Kopfzahl oder Budget-Schaetzwerten bewerten wir die tatsaechliche
+// Spieltags-Qualitaet der besten gueltigen 11er-Aufstellung im Kader:
+//   E[Pkt] = p_start * Ø_Startelf_Pkt + (1 - p_start) * p_joker * Ø_Joker_Pkt
+// - p_start stammt aus Kickbases offizieller Startelf-Prognose (`prob` 1..5;
+//   verletzt/gesperrt `st !== 0` -> 0).
+// - Ø_Startelf_Pkt, p_joker (Einwechsel-Quote bei Nicht-Startelf-Spielen) und
+//   Ø_Joker_Pkt werden empirisch aus der Saison-Historie (`performance.it.ph`:
+//   `st === 5` Startelf, `st === 3` eingewechselt, `st === 4` Bank ohne Einsatz)
+//   in all_players.json berechnet.
+// - Kopfzahl ist egal (ob 11 oder 18 Spieler zaehlt nur die beste 11); nur im
+//   kritischen Bereich (< 11 gueltige Positionen) gibt es einen moderaten Abzug.
 const PROB_WEIGHT_BY_CODE = {
     1: 1.0, // Sicher
     2: 0.8, // Erwartet
@@ -161,7 +160,20 @@ const PROB_WEIGHT_BY_CODE = {
     4: 0.2, // Unwahrscheinlich
     5: 0.0, // Ausgeschlossen
 };
-const PROB_FALLBACK_WEIGHT = 0.5; // neutraler Mittelwert bei fehlenden prob-Daten
+const PROB_FALLBACK_WEIGHT = 0.5;
+const MISSING_SLOT_POINTS_PENALTY = 40; // moderater Abzug nur im kritischen Bereich
+
+// Alle regulaeren Kickbase-11er-Formationen (1 TW, 3-5 ABW, 2-5 MF, 1-3 ST)
+const VALID_FORMATIONS = [
+    { TW: 1, ABW: 3, MF: 4, ST: 3 },
+    { TW: 1, ABW: 3, MF: 5, ST: 2 },
+    { TW: 1, ABW: 4, MF: 3, ST: 3 },
+    { TW: 1, ABW: 4, MF: 4, ST: 2 },
+    { TW: 1, ABW: 4, MF: 5, ST: 1 },
+    { TW: 1, ABW: 5, MF: 2, ST: 3 },
+    { TW: 1, ABW: 5, MF: 3, ST: 2 },
+    { TW: 1, ABW: 5, MF: 4, ST: 1 },
+];
 
 function playerStartProbability(playerId, playerMap) {
     const player = playerMap.get(playerId) || playerMap.get(String(playerId));
@@ -174,63 +186,187 @@ function playerStartProbability(playerId, playerMap) {
     return PROB_FALLBACK_WEIGHT;
 }
 
-function computeRealisticSquadReadiness(squadPlayers, playerMap, totalCount) {
-    let required = 0;
-    let satisfied = 0;
-    const positionGroups = {};
-    (squadPlayers || []).forEach(sp => {
-        if (!sp.position) return;
-        const weight = playerStartProbability(sp.id, playerMap);
-        (positionGroups[sp.position] = positionGroups[sp.position] || []).push(weight);
-    });
+function estimatePlayerMatchdayProfile(playerId, playerMap) {
+    const player = playerMap.get(playerId) || playerMap.get(String(playerId));
+    const isInjured = Boolean(player && typeof player.st === 'number' && player.st !== 0);
+    const pStart = playerStartProbability(playerId, playerMap);
 
-    for (const [pos, need] of Object.entries(SQUAD_MIN_POSITIONS)) {
-        required += need;
-        // Nur die N wahrscheinlichsten Starter je Position zaehlen fuer die
-        // geforderte Anzahl - fehlende Slots zaehlen als 0.
-        const taken = (positionGroups[pos] || []).sort((a, b) => b - a).slice(0, need);
-        satisfied += taken.reduce((sum, weight) => sum + weight, 0);
+    if (isInjured) {
+        return { pStart: 0, pJoker: 0, expectedStartPts: 0, expectedJokerPts: 0, expectedPoints: 0 };
     }
 
-    const positionalReadiness = required > 0 ? satisfied / required : 1;
-    const totalReadiness = Math.min(1, totalCount / SQUAD_MIN_TOTAL);
-    return Math.min(positionalReadiness, totalReadiness);
+    const season = getCurrentSeasonPerformance(player);
+    const ph = Array.isArray(season?.ph) ? season.ph : [];
+
+    const startPts = [];
+    const subPts = [];
+    let unusedBenchCount = 0;
+
+    for (const entry of ph) {
+        if (entry.st === 5 && typeof entry.p === 'number') {
+            startPts.push(entry.p);
+        } else if (entry.st === 3 && typeof entry.p === 'number') {
+            subPts.push(entry.p);
+        } else if (entry.st === 4) {
+            unusedBenchCount++;
+        }
+    }
+
+    const avg = (arr) => (arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : null);
+    const fallbackAp = typeof player?.ap === 'number' && player.ap > 0 ? player.ap : 55;
+    const avgStartPts = avg(startPts) ?? fallbackAp;
+
+    // Empirische Joker-Quote aus Nicht-Startelf-Spielen (st=3 vs st=4)
+    const nonStartGames = subPts.length + unusedBenchCount;
+    const probCode = player && typeof player.prob === 'number' ? Math.round(player.prob) : null;
+    let pJoker;
+    if (nonStartGames >= 2) {
+        pJoker = subPts.length / nonStartGames;
+    } else if (subPts.length === 1) {
+        pJoker = 0.5;
+    } else if (probCode === 3) {
+        pJoker = 0.45;
+    } else if (probCode === 4) {
+        pJoker = 0.3;
+    } else if (probCode === 5) {
+        pJoker = 0.0;
+    } else {
+        pJoker = 0.15;
+    }
+
+    const rawAvgSubPts = avg(subPts);
+    const avgSubPts = rawAvgSubPts != null
+        ? Math.max(-10, Math.min(120, rawAvgSubPts))
+        : Math.max(15, Math.min(40, fallbackAp * 0.35));
+
+    const expectedStartPts = pStart * Math.max(0, avgStartPts);
+    const expectedJokerPts = (1 - pStart) * pJoker * avgSubPts;
+    const expectedPoints = Math.max(0, expectedStartPts + expectedJokerPts);
+
+    return { pStart, pJoker, expectedStartPts, expectedJokerPts, expectedPoints };
 }
 
-// --- Verkaufs-Timing: war der Verkauf im Nachhinein betrachtet klug? ---
-// Ein Verkauf sieht im Moment des Abschlusses vielleicht profitabel aus - die
-// eigentliche Frage ist aber, wie sich der Marktwert DANACH entwickelt hat. Fällt
-// der Wert nach dem Verkauf weiter, war der Ausstieg klug (Verlust vermieden).
-// Steigt er, wurde zu früh verkauft (Gewinn liegengelassen) - unabhängig davon, ob
-// der Verkauf selbst gegenüber dem damaligen Marktwert schon "im Plus" war.
+function evaluateBestStartingEleven(squadPlayers, playerMap) {
+    const byPos = { TW: [], ABW: [], MF: [], ST: [] };
+    (squadPlayers || []).forEach(sp => {
+        if (!sp.position || !byPos[sp.position]) return;
+        const profile = estimatePlayerMatchdayProfile(sp.id, playerMap);
+        byPos[sp.position].push({ id: sp.id, position: sp.position, ...profile });
+    });
+
+    Object.values(byPos).forEach(list => list.sort((a, b) => b.expectedPoints - a.expectedPoints));
+
+    let best = null;
+    for (const formation of VALID_FORMATIONS) {
+        const picked = [];
+        let missingSlots = 0;
+        for (const [pos, need] of Object.entries(formation)) {
+            const avail = byPos[pos] || [];
+            const take = avail.slice(0, need);
+            picked.push(...take);
+            if (take.length < need) missingSlots += (need - take.length);
+        }
+        const expectedLineupPoints = picked.reduce((s, p) => s + p.expectedPoints, 0);
+        const jokerExpectedPoints = picked.reduce((s, p) => s + p.expectedJokerPts, 0);
+        const strengthScore = expectedLineupPoints - missingSlots * MISSING_SLOT_POINTS_PENALTY;
+
+        if (!best || strengthScore > best.strengthScore) {
+            const avgStartProb = picked.length > 0
+                ? picked.reduce((s, p) => s + p.pStart, 0) / 11
+                : 0;
+            const likelyStarters = picked.filter(p => p.pStart >= 0.8).length;
+            best = {
+                formation: `${formation.ABW}-${formation.MF}-${formation.ST}`,
+                expectedLineupPoints: Math.round(expectedLineupPoints),
+                jokerExpectedPoints: Math.round(jokerExpectedPoints),
+                avgStartProbability: avgStartProb,
+                likelyStarters,
+                missingSlots,
+                strengthScore,
+            };
+        }
+    }
+    return best;
+}
+
+// --- Verkaufs-Timing (7-Tage-Perspektive vor & nach Verkauf) ---
+// Bewertet jeden freiwilligen Verkauf (ohne 250-Pkt-Zwangsverkaeufe):
+// - Fiel der Marktwert in den 7 Tagen NACH dem Verkauf? -> Rechtzeitig verkauft (+)
+// - Stieg der Marktwert in den 7 Tagen NACH dem Verkauf weiter? -> Zu frueh verkauft (-)
+// - War der Marktwert schon in den 7 Tagen VOR dem Verkauf stark gefallen (>=5%)
+//   und der Trade schloss im Minus ab? -> Zu spaet reagiert (leichter Malus)
 const SALE_TIMING_LOOKAHEAD_DAYS = 7;
 
-function saleTimingWisdom(mvHistory, playerId, saleDate) {
+function evaluateSaleTiming(mvHistory, playerId, saleDate, tradeProfit) {
     const entries = mvHistory.get(String(playerId));
     if (!entries || entries.length === 0) return null;
 
-    const saleDateStr = new Date(saleDate).toISOString().slice(0, 10);
+    const saleTime = new Date(saleDate).getTime();
+    if (!Number.isFinite(saleTime)) return null;
+
+    const saleDateStr = new Date(saleTime).toISOString().slice(0, 10);
     const valueAtSale = lookupValueOnOrBefore(entries, saleDateStr);
     if (valueAtSale == null || valueAtSale <= 0) return null;
 
-    const targetDateStr = new Date(new Date(saleDate).getTime() + SALE_TIMING_LOOKAHEAD_DAYS * 24 * 60 * 60 * 1000)
+    const targetAfterStr = new Date(saleTime + SALE_TIMING_LOOKAHEAD_DAYS * 24 * 60 * 60 * 1000)
+        .toISOString().slice(0, 10);
+    const targetBeforeStr = new Date(saleTime - SALE_TIMING_LOOKAHEAD_DAYS * 24 * 60 * 60 * 1000)
         .toISOString().slice(0, 10);
 
-    // Bevorzugt ein Wert nahe dem Ziel-Datum (Verkauf + Lookahead); ist seither
-    // weniger Zeit vergangen, nimm ersatzweise den neuesten verfügbaren Wert NACH
-    // dem Verkauf (kann auch nur 1 Tag Vorsprung sein - besser als gar kein Signal).
+    // Marktwert ~7 Tage NACH dem Verkauf (oder neuester verfuegbarer danach)
     let valueInWindow = null;
     let valueAfterSale = null;
     for (const [d, mv] of entries) {
         if (mv == null || d <= saleDateStr) continue;
         valueAfterSale = mv;
-        if (d <= targetDateStr) valueInWindow = mv;
+        if (d <= targetAfterStr) valueInWindow = mv;
     }
     const laterValue = valueInWindow != null ? valueInWindow : valueAfterSale;
-    if (laterValue == null) return null; // noch keine Daten nach dem Verkauf vorhanden
+    if (laterValue == null || laterValue <= 0) return null;
 
-    const postSaleDelta = laterValue - valueAtSale;
-    return -postSaleDelta; // positiv = Marktwert ist seither gefallen -> Verkauf war klug
+    // Marktwert ~7 Tage VOR dem Verkauf (fuer "zu spaet verkauft"-Erkennung)
+    const valueBefore = lookupValueOnOrBefore(entries, targetBeforeStr);
+    const preChangePct = (valueBefore != null && valueBefore > 0)
+        ? (valueAtSale - valueBefore) / valueBefore
+        : 0;
+
+    const postDeltaEur = laterValue - valueAtSale;
+    const postChangePct = postDeltaEur / valueAtSale;
+    const postWisdomEur = -postDeltaEur; // positiv = Wertverlust nach Verkauf vermieden
+    const clampedPostWisdomPct = Math.max(-0.35, Math.min(0.35, -postChangePct));
+
+    // Klassifizierung fuer transparente Aufschluesselung (7 Tage vor & nach Verkauf + Trade-Profit):
+    // - Zu spaet: Spieler war in den 7 Tagen VOR dem Verkauf bereits stark im Fall (>=5%)
+    //   und der Trade ging ins Minus -> spaeter Notverkauf darf nicht als "Peak-Exit" belohnt werden.
+    // - Zu frueh: Spieler stieg in den 7 Tagen NACH dem Verkauf weiter (>+1%).
+    // - Rechtzeitig: Spieler fiel in den 7 Tagen NACH dem Verkauf (<0%) ohne vorherigen Absturz-Verlust.
+    const isTooLate = preChangePct <= -0.05 && typeof tradeProfit === 'number' && tradeProfit < 0;
+    const isTooEarly = postChangePct > 0.01 && !isTooLate;
+    const isGoodExit = postChangePct < 0 && !isTooLate;
+
+    let timingScorePct;
+    if (isTooLate) {
+        // Absturz vor dem Verkauf wird als Malus gewertet (gedeckelt auf -25%)
+        timingScorePct = Math.max(-0.25, preChangePct);
+    } else if (isTooEarly) {
+        // Weiter gestiegen nach Verkauf -> negativ (Gewinn liegengelassen)
+        timingScorePct = clampedPostWisdomPct;
+    } else if (isGoodExit) {
+        // Rechtzeitig im Plus ausgestiegen zaehlt voll; frueher Stop-Loss im Minus zur Haelfte
+        timingScorePct = (typeof tradeProfit === 'number' && tradeProfit < 0)
+            ? clampedPostWisdomPct * 0.5
+            : clampedPostWisdomPct;
+    } else {
+        timingScorePct = 0;
+    }
+
+    return {
+        postWisdomEur,
+        postChangePct,
+        preChangePct,
+        timingScorePct,
+        category: isTooLate ? 'tooLate' : isTooEarly ? 'tooEarly' : isGoodExit ? 'goodExit' : 'neutral',
+    };
 }
 
 function getCurrentSeasonPerformance(player) {
@@ -420,20 +556,32 @@ function loadExcludedManagerNames() {
     return [];
 }
 
-// Der Trading Advisor (backend/advisor/run_advisor.py) speichert für jeden Marktspieler
-// bereits eine rollierende 60-Tage-Marktwert-Historie in advisor-data.json
-// (siehe build_history_by_player, HISTORY_DAYS). Diese echten historischen Werte sind
-// eine deutlich bessere Referenz für "Marktwert zum Kauf-/Verkaufszeitpunkt" als der
-// aktuelle Marktwert - wir nutzen sie hier wieder, statt Daten doppelt zu erheben.
-// Format je Spieler: [[ "YYYY-MM-DD", marktwert, punkte ], ...] aufsteigend sortiert.
+// Der Trading Advisor (backend/advisor/run_advisor.py) speichert die taegliche
+// 365-Tage-Marktwert-Historie aller Bundesliga-Spieler in
+// frontend/public/player-history.json (Format: { playerId: [[date, mv, pts], ...] }).
+// Frueher lag diese Historie direkt in advisor-data.json - wir laden primaer
+// player-history.json und nutzen advisor-data.json nur noch als Fallback.
 function loadMarketValueHistory() {
+    const historyPath = path.join(__dirname, '../../frontend/public/player-history.json');
     const advisorPath = path.join(__dirname, '../../frontend/public/advisor-data.json');
     const map = new Map();
+    try {
+        if (fs.existsSync(historyPath)) {
+            const ph = JSON.parse(fs.readFileSync(historyPath, 'utf8'));
+            Object.entries(ph || {}).forEach(([pid, entries]) => {
+                if (Array.isArray(entries) && entries.length > 0) {
+                    map.set(String(pid), entries);
+                }
+            });
+        }
+    } catch (e) {
+        console.warn('Konnte player-history.json nicht lesen (historische Marktwerte):', e.message);
+    }
     try {
         if (fs.existsSync(advisorPath)) {
             const advisorData = JSON.parse(fs.readFileSync(advisorPath, 'utf8'));
             (advisorData.players || []).forEach(p => {
-                if (p.playerId != null && Array.isArray(p.history)) {
+                if (p.playerId != null && Array.isArray(p.history) && p.history.length > 0 && !map.has(String(p.playerId))) {
                     map.set(String(p.playerId), p.history);
                 }
             });
@@ -441,6 +589,7 @@ function loadMarketValueHistory() {
     } catch (e) {
         console.warn('Konnte advisor-data.json nicht lesen (historische Marktwerte):', e.message);
     }
+    console.log(`Historische Marktwert-Kurven geladen: ${map.size} Spieler.`);
     return map;
 }
 
@@ -738,10 +887,25 @@ function run() {
                 let weightedProfitSum = 0;
                 let weightedTradeWeight = 0;
 
-                // Verkaufs-Timing: war es im Nachhinein klug, GENAU DANN zu verkaufen?
-                // (siehe saleTimingWisdom) - unabhängig von Kaufpreis/Referenzwert.
+                // Verkaufs-Timing (7-Tage-Perspektive vor & nach Verkauf, ohne Zwangsverkaeufe)
                 let saleTimingProfit = 0;
+                let saleTimingPctSum = 0;
                 let saleTimingSampleSize = 0;
+                let goodExits = 0;
+                let tooEarlyExits = 0;
+                let tooLateExits = 0;
+                let neutralExits = 0;
+
+                const recordTiming = (timing) => {
+                    if (!timing) return;
+                    saleTimingProfit += timing.postWisdomEur;
+                    saleTimingPctSum += timing.timingScorePct;
+                    saleTimingSampleSize++;
+                    if (timing.category === 'goodExit') goodExits++;
+                    else if (timing.category === 'tooEarly') tooEarlyExits++;
+                    else if (timing.category === 'tooLate') tooLateExits++;
+                    else neutralExits++;
+                };
 
                 // Für Top und Flop (über alle Kategorien hinweg, mit Kennzeichnung)
                 let bestTrade = { name: '-', profit: 0, type: null, forced: false };
@@ -766,7 +930,14 @@ function run() {
                     inventory[b.playerId].push(b);
                     totalSpent += b.price;
 
-                    const referenceValue = referenceMarketValue(b.playerId, b.date, b.marketValue);
+                    // Fuer Overpay NUR echte historische Referenz am Kauftag nutzen
+                    // (player-history.json oder gespeicherter Snapshot am Transfer) -
+                    // NIEMALS gegen den heutigen Marktwert vergleichen, da sonst Monate
+                    // alte Kaeufe massiv verzerrt werden.
+                    const historical = historicalMarketValue(mvHistory, b.playerId, b.date);
+                    const referenceValue = (historical != null && historical > 0)
+                        ? historical
+                        : (b.marketValue > 0 ? b.marketValue : 0);
                     if (referenceValue > 0) {
                         const overpay = b.price - referenceValue;
                         if (overpay > 0) totalOverpay += overpay;
@@ -795,21 +966,14 @@ function run() {
                         weightedProfitSum += profit * weight;
                         weightedTradeWeight += weight;
 
-                        // Verkaufs-Timing fliesst NICHT mehr in PRO ein (siehe unten) - das
-                        // Signal hat mit TIM bereits eine eigene Karte, eine Mischung in PRO
-                        // war eine Doppelzaehlung UND liess "Profit" etwas messen, was gar
-                        // kein Profit ist (Owner-Feedback: PRO soll wieder "nur Profit" sein).
-                        const wisdom = saleTimingWisdom(mvHistory, s.playerId, s.date);
-                        if (wisdom != null) {
-                            saleTimingProfit += wisdom;
-                            saleTimingSampleSize++;
+                        // Nur freiwillige Verkaeufe (keine 250-Pkt-Zwangsverkaeufe) ins Timing-Rating
+                        if (!forced) {
+                            recordTiming(evaluateSaleTiming(mvHistory, s.playerId, s.date, profit));
                         }
 
                         considerForTopFlop(name, profit, 'realized', forced);
                     } else {
                         // Kein bekannter Kauf -> Spieler kam vermutlich aus der Saison-Auslosung.
-                        // Referenz ist der ECHTE Marktwert am Verkaufstag aus der
-                        // Trading-Advisor-Historie (siehe referenceMarketValue).
                         const referenceValue = referenceMarketValue(s.playerId, s.date, s.marketValue);
                         const profit = referenceValue > 0 ? (s.price - referenceValue) : 0;
                         const forcedTrigger = findForcedSaleTrigger(playerMap.get(s.playerId), s.date);
@@ -822,10 +986,8 @@ function run() {
                         weightedProfitSum += profit * weight;
                         weightedTradeWeight += weight;
 
-                        const wisdom = saleTimingWisdom(mvHistory, s.playerId, s.date);
-                        if (wisdom != null) {
-                            saleTimingProfit += wisdom;
-                            saleTimingSampleSize++;
+                        if (!forced) {
+                            recordTiming(evaluateSaleTiming(mvHistory, s.playerId, s.date, profit));
                         }
 
                         considerForTopFlop(name, profit, 'orphan', forced);
@@ -901,19 +1063,16 @@ function run() {
                     }
                 }
 
-                // Kader-Vollständigkeit & Budget: unabhängig vom bisherigen Trading-Erfolg -
-                // ein Manager ohne startelf-fähigen Kader und/oder mit knappem/negativem
-                // Budget trägt ein echtes Risiko für die kommenden Spieltage.
+                // Kaderstaerke (KAD): Beste gueltige 11er-Startelf nach erwarteten
+                // Punkten (Kickbase Startelf-Prognose + Startelf- & Joker-Punkte aus
+                // den gesammelten Saison-Daten). Kopfzahl & Budget-Schaetzwerte
+                // fliessen NICHT mehr ein (nur im kritischen Fall fehlender Slots).
                 const budget = parseSignedMoney(u.estimatedBudget);
                 const squadInfo = managerSquads.get(String(uid)) || null;
-                // "Startelf-Fähigkeit" nutzt jetzt die REALISTISCHE Wahrscheinlichkeit
-                // (Kickbase/Ligainsider-Feld `prob` je Spieler) statt reiner Kopfzahl je
-                // Position - siehe computeRealisticSquadReadiness weiter oben. Die alte,
-                // rein kopfzahlbasierte Variante bleibt zusaetzlich erhalten (nur fuer die
-                // Berechnungs-Transparenz im Frontend), beeinflusst aber nicht mehr den Score.
                 const squadHeadcountReadiness = squadInfo ? computeSquadReadiness(squadInfo.positionCounts, squadInfo.total) : null;
-                const squadReadiness = squadInfo ? computeRealisticSquadReadiness(squadInfo.players, playerMap, squadInfo.total) : null;
-                const squadRiskPenalty = computeSquadRiskPenalty(squadReadiness, budget);
+                const squadEval = squadInfo ? evaluateBestStartingEleven(squadInfo.players, playerMap) : null;
+                const squadReadiness = squadEval ? squadEval.avgStartProbability : null;
+                const squadRiskPenalty = squadEval ? -(squadEval.missingSlots * 4) : 0;
 
                 // Performance / PPM - fliesst NICHT mehr in die Gesamtwertung ein, wird aber
                 // weiterhin fuer calculation.pkt.perfBonus (Anzeige) gebraucht.
@@ -999,14 +1158,24 @@ function run() {
                             score: computeKadScore(squadReadiness, squadRiskPenalty),
                             squadTotal: squadInfo ? squadInfo.total : null,
                             squadReadiness,
-                            squadHeadcountReadiness,
-                            squadRiskPenalty,
-                            budget,
+                            expectedLineupPoints: squadEval ? squadEval.expectedLineupPoints : null,
+                            jokerExpectedPoints: squadEval ? squadEval.jokerExpectedPoints : null,
+                            avgStartProbability: squadEval ? squadEval.avgStartProbability : null,
+                            likelyStarters: squadEval ? squadEval.likelyStarters : null,
+                            missingSlots: squadEval ? squadEval.missingSlots : null,
+                            formation: squadEval ? squadEval.formation : null,
+                            strengthScore: squadEval ? squadEval.strengthScore : null,
                         },
                         tim: {
                             score: computeTimScore(saleTimingProfit, saleTimingSampleSize),
                             sampleSize: saleTimingSampleSize,
                             averageTimingProfit: saleTimingSampleSize > 0 ? (saleTimingProfit / saleTimingSampleSize) : null,
+                            averageTimingPct: saleTimingSampleSize > 0 ? (saleTimingPctSum / saleTimingSampleSize) : null,
+                            goodExits,
+                            tooEarlyExits,
+                            tooLateExits,
+                            neutralExits,
+                            goodExitRate: saleTimingSampleSize > 0 ? (goodExits / saleTimingSampleSize) : null,
                         },
                     },
 
@@ -1168,27 +1337,25 @@ function run() {
                 ratings[uid].pro = score;
             });
 
-            // KAD (Kaderstaerke & Risiko): liga-relativ wie PKT/OVP/AKT (Owner-Vorgabe
-            // 29.08.2026). Z-Score des squadRiskPenalty (0 = top, negativ = schlechter)
-            // gegen Mittelwert/Streuung der Liga. Nur unter Managern mit echten
-            // Kaderdaten vergleichen (squadReadiness !== null); ohne Kaderdaten bleibt
-            // neutral (identisch zur bisherigen Gate-Logik).
-            const kadMembers = memberUids.filter(uid => ratings[uid].calculation.kad.squadReadiness !== null);
-            const kadValues = kadMembers.map(uid => ratings[uid].calculation.kad.squadRiskPenalty);
+            // KAD (Kaderstaerke): liga-relativ auf Basis der erwarteten Punkte
+            // der besten gueltigen 11er-Startelf (strengthScore = expectedLineupPoints
+            // minus moderatem Abzug nur bei fehlenden Slots im kritischen Bereich).
+            const kadMembers = memberUids.filter(uid => ratings[uid].calculation.kad.strengthScore != null);
+            const kadValues = kadMembers.map(uid => ratings[uid].calculation.kad.strengthScore);
             const kadMean = kadValues.length > 0 ? kadValues.reduce((a, b) => a + b, 0) / kadValues.length : 0;
             const kadStd = kadValues.length > 1
                 ? Math.sqrt(kadValues.reduce((s, v) => s + (v - kadMean) ** 2, 0) / (kadValues.length - 1))
                 : 0;
             const kadRanked = [...kadValues].sort((a, b) => b - a);
             memberUids.forEach(uid => {
-                if (ratings[uid].calculation.kad.squadReadiness === null) return; // bleibt neutral
-                const penalty = ratings[uid].calculation.kad.squadRiskPenalty;
-                const zScore = kadStd > 1e-9 ? (penalty - kadMean) / kadStd : 0;
-                const percentile = percentileRank(penalty, kadValues, true);
+                const strength = ratings[uid].calculation.kad.strengthScore;
+                if (strength == null) return; // bleibt neutral
+                const zScore = kadStd > 1e-9 ? (strength - kadMean) / kadStd : 0;
+                const percentile = percentileRank(strength, kadValues, true);
                 const score = computeLeagueRelativeScore(zScore);
                 Object.assign(ratings[uid].calculation.kad, {
                     leaguePercentile: percentile,
-                    leagueRank: kadRanked.indexOf(penalty) + 1,
+                    leagueRank: kadRanked.indexOf(strength) + 1,
                     leagueSize: kadValues.length,
                     leagueMean: kadMean,
                     leagueStd: kadStd,
@@ -1198,26 +1365,25 @@ function run() {
                 ratings[uid].kad = score;
             });
 
-            // TIM (Verkaufsgespuer): liga-relativ wie PKT/OVP/AKT (Owner-Vorgabe
-            // 29.08.2026). Z-Score des durchschnittlichen Verkaufs-Timing-Profits
-            // gegen Mittelwert/Streuung der Liga. Nur unter Managern mit echten
-            // Verkaufs-Stichproben vergleichen; ohne Verkaeufe bleibt neutral.
-            const timMembers = memberUids.filter(uid => ratings[uid].calculation.tim.averageTimingProfit != null);
-            const timValues = timMembers.map(uid => ratings[uid].calculation.tim.averageTimingProfit);
+            // TIM (Verkaufstiming, 7-Tage-Perspektive): liga-relativ auf Basis
+            // des durchschnittlichen prozentualen 7T-Timing-Effekts (averageTimingPct),
+            // damit teure Einzelspieler nicht viele normale Trades ueberlagern.
+            const timMembers = memberUids.filter(uid => ratings[uid].calculation.tim.averageTimingPct != null);
+            const timValues = timMembers.map(uid => ratings[uid].calculation.tim.averageTimingPct);
             const timMean = timValues.length > 0 ? timValues.reduce((a, b) => a + b, 0) / timValues.length : 0;
             const timStd = timValues.length > 1
                 ? Math.sqrt(timValues.reduce((s, v) => s + (v - timMean) ** 2, 0) / (timValues.length - 1))
                 : 0;
             const timRanked = [...timValues].sort((a, b) => b - a);
             memberUids.forEach(uid => {
-                const avgTiming = ratings[uid].calculation.tim.averageTimingProfit;
-                if (avgTiming == null) return; // bleibt neutral (Platzhalter aus erstem Durchlauf)
-                const zScore = timStd > 1e-9 ? (avgTiming - timMean) / timStd : 0;
-                const percentile = percentileRank(avgTiming, timValues, true);
+                const avgTimingPct = ratings[uid].calculation.tim.averageTimingPct;
+                if (avgTimingPct == null) return; // bleibt neutral
+                const zScore = timStd > 1e-9 ? (avgTimingPct - timMean) / timStd : 0;
+                const percentile = percentileRank(avgTimingPct, timValues, true);
                 const score = computeLeagueRelativeScore(zScore);
                 Object.assign(ratings[uid].calculation.tim, {
                     leaguePercentile: percentile,
-                    leagueRank: timRanked.indexOf(avgTiming) + 1,
+                    leagueRank: timRanked.indexOf(avgTimingPct) + 1,
                     leagueSize: timValues.length,
                     leagueMean: timMean,
                     leagueStd: timStd,

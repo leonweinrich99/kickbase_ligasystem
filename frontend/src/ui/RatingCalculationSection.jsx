@@ -20,7 +20,9 @@ import { TIER_ACCENT } from './FifaManagerCard';
 const fmtEUR = (val) => `${Math.round(val).toLocaleString('de-DE')} €`;
 const fmtSignedEUR = (val) => `${val > 0 ? '+' : ''}${fmtEUR(val)}`;
 const fmtPct = (val) => `${(val * 100).toFixed(1).replace('.', ',')} %`;
+const fmtSignedPct = (val) => `${val > 0 ? '+' : ''}${fmtPct(val)}`;
 const fmtNum1 = (val) => val.toFixed(1).replace('.', ',');
+const fmtPts = (val) => `${Math.round(val).toLocaleString('de-DE')} Pkt`;
 
 // Gleiche Bronze/Silber/Gold-Grenzen wie beim Gesamtrating (siehe
 // computeCardTier in calculate-ratings.js: <60 Bronze, 60-74 Silber, ab 75
@@ -133,7 +135,14 @@ function StatCalcCard({ label, title, score, isOpen, onToggle, factors, emptyNot
   );
 }
 
-export default function RatingCalculationSection({ calculation, ovpLeaguePeers, aktLeaguePeers, pktLeaguePeers }) {
+export default function RatingCalculationSection({
+  calculation,
+  ovpLeaguePeers,
+  aktLeaguePeers,
+  pktLeaguePeers,
+  kadLeaguePeers,
+  timLeaguePeers,
+}) {
   const [openKey, setOpenKey] = useState(null);
   if (!calculation) return null;
   const toggle = (key) => setOpenKey((cur) => (cur === key ? null : key));
@@ -162,9 +171,7 @@ export default function RatingCalculationSection({ calculation, ovpLeaguePeers, 
           ) : (
             <FactorGrid>
               <FactorChip value={fmtSignedEUR(pro.weightedTotalProfit)} label="Profit" highlight />
-              <FactorChip value={pro.completedTrades} label="Abgeschl. Trades" />
-              <FactorChip value={pro.openPositions} label="Offene Positionen" />
-              <FactorChip value={pro.orphanSales} label="Kaderverkäufe" />
+              <FactorChip value={pro.completedTrades} label="Trades" highlight />
               <LeagueCompareBar percentile={pro.leaguePercentile} rank={pro.leagueRank} total={pro.leagueSize} accent={proAccent} />
             </FactorGrid>
           )}
@@ -236,21 +243,38 @@ export default function RatingCalculationSection({ calculation, ovpLeaguePeers, 
 
         {/* KAD */}
         <StatCalcCard
-          label="KAD" title="Kaderstärke & Risiko" score={kad.score}
+          label="KAD" title="Kaderstärke" score={kad.score}
           isOpen={openKey === 'kad'} onToggle={() => toggle('kad')}
-          emptyNote={kad.squadReadiness == null ? 'Keine Kaderdaten' : undefined}
-          factors={kad.squadReadiness == null ? (
+          emptyNote={kad.expectedLineupPoints == null ? 'Keine Kaderdaten' : undefined}
+          factors={kad.expectedLineupPoints == null ? (
             <EmptyState>Keine Kaderdaten verfügbar – Wert bleibt neutral bei 50.</EmptyState>
           ) : (
             <FactorGrid>
-              <FactorChip value={`${Math.round(kad.squadReadiness * 100)} %`} label="Ø Startelf-Wahrscheinlichkeit" highlight />
-              <FactorChip value={kad.squadTotal} label="Spieler im Kader" />
-              {kad.squadHeadcountReadiness != null && (
-                <FactorChip value={`${Math.round(kad.squadHeadcountReadiness * 100)} %`} label="Nur nach Kopfzahl" />
+              <FactorChip
+                value={fmtPts(kad.expectedLineupPoints)}
+                label={`Erwartete Startelf-Punkte${kad.formation ? ` (${kad.formation})` : ''}`}
+                highlight
+              />
+              <FactorChip
+                value={`${Math.round((kad.avgStartProbability ?? kad.squadReadiness ?? 0) * 100)} %`}
+                label="Ø Startelf-Chance (Top 11)"
+              />
+              <FactorChip
+                value={kad.likelyStarters != null ? `${kad.likelyStarters} / 11` : '–'}
+                label="Sichere / erw. Starter"
+              />
+              <FactorChip
+                value={`+${Math.round(kad.jokerExpectedPoints || 0)} Pkt`}
+                label="Joker-Potenzial"
+              />
+              {kad.missingSlots > 0 && (
+                <FactorChip
+                  value={`${kad.missingSlots} offen`}
+                  label="Kritisch: fehlende Positionen"
+                />
               )}
-              <FactorChip value={fmtEUR(kad.budget)} label="Budget" />
-              <FactorChip value={`${fmtNum1(Math.abs(kad.squadRiskPenalty))} / 20`} label="Kader-Risiko" />
               <LeagueCompareBar percentile={kad.leaguePercentile} rank={kad.leagueRank} total={kad.leagueSize} accent={kadAccent} />
+              <LeaguePeerList peers={kadLeaguePeers} formatValue={fmtPts} />
             </FactorGrid>
           )}
         />
@@ -265,12 +289,25 @@ export default function RatingCalculationSection({ calculation, ovpLeaguePeers, 
           ) : (
             <FactorGrid>
               <FactorChip
-                value={fmtSignedEUR(tim.averageTimingProfit)}
-                label={tim.averageTimingProfit >= 0 ? 'Ø vermiedener Wertverlust' : 'Ø entgangener Gewinn'}
+                value={tim.averageTimingPct != null ? fmtSignedPct(tim.averageTimingPct) : fmtSignedEUR(tim.averageTimingProfit)}
+                label="Ø 7-Tage-Timing-Effekt"
                 highlight
               />
-              <FactorChip value={tim.sampleSize} label="Bewertete Verkäufe" />
+              <FactorChip
+                value={fmtSignedEUR(tim.averageTimingProfit || 0)}
+                label={(tim.averageTimingProfit || 0) >= 0 ? 'Ø vermiedener Verlust (7T)' : 'Ø entgangener Gewinn (7T)'}
+              />
+              <FactorChip
+                value={`${tim.goodExits ?? 0} / ${tim.sampleSize}${tim.goodExitRate != null ? ` (${Math.round(tim.goodExitRate * 100)} %)` : ''}`}
+                label="Rechtzeitig verkauft"
+              />
+              <FactorChip
+                value={`${tim.tooEarlyExits ?? 0} früh · ${tim.tooLateExits ?? 0} spät`}
+                label="Zu früh / zu spät (7T)"
+                highlight
+              />
               <LeagueCompareBar percentile={tim.leaguePercentile} rank={tim.leagueRank} total={tim.leagueSize} accent={timAccent} />
+              <LeaguePeerList peers={timLeaguePeers} formatValue={fmtSignedPct} />
             </FactorGrid>
           )}
         />

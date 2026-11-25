@@ -39,7 +39,7 @@ const ManagerRatingPage = () => {
   // muss VOR den frühen Returns stehen (Rules of Hooks), daher robust gegen
   // rating/allRatings === null.
   const leaguePeers = useMemo(() => {
-    if (!allRatings || !rating) return { ovp: [], akt: [], pkt: [] };
+    if (!allRatings || !rating) return { ovp: [], akt: [], pkt: [], kad: [], tim: [] };
     const peers = Object.entries(allRatings)
       .filter(([, r]) => r.league === rating.league)
       .map(([uid, r]) => ({ uid, name: r.name, r }));
@@ -58,7 +58,17 @@ const ManagerRatingPage = () => {
       .map(p => ({ name: p.name, value: p.r.calculation.pkt.ppm, isYou: p.uid === kickbaseId }))
       .sort((a, b) => b.value - a.value);
 
-    return { ovp, akt, pkt };
+    const kad = peers
+      .filter(p => p.r.calculation?.kad?.expectedLineupPoints != null)
+      .map(p => ({ name: p.name, value: p.r.calculation.kad.expectedLineupPoints, isYou: p.uid === kickbaseId }))
+      .sort((a, b) => b.value - a.value);
+
+    const tim = peers
+      .filter(p => p.r.calculation?.tim?.averageTimingPct != null)
+      .map(p => ({ name: p.name, value: p.r.calculation.tim.averageTimingPct, isYou: p.uid === kickbaseId }))
+      .sort((a, b) => b.value - a.value);
+
+    return { ovp, akt, pkt, kad, tim };
   }, [allRatings, rating, kickbaseId]);
 
   if (loading) {
@@ -103,6 +113,8 @@ const ManagerRatingPage = () => {
           ovpLeaguePeers={leaguePeers.ovp}
           aktLeaguePeers={leaguePeers.akt}
           pktLeaguePeers={leaguePeers.pkt}
+          kadLeaguePeers={leaguePeers.kad}
+          timLeaguePeers={leaguePeers.tim}
         />
       </div>
     </div>
