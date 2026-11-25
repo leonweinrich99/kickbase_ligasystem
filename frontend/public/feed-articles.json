@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-24T12:00:00.000Z",
+  "updatedAt": "2026-11-25T17:25:00.000Z",
   "ticker": [
     {
       "tag": "MAKRO",
@@ -231,6 +231,369 @@
     }
   ],
   "articles": [
+    {
+      "slug": "glueck-oder-koennen-xp-analyse",
+      "category": "spieltag",
+      "featured": true,
+      "edition": "Saison-Analyse · ST 1–10",
+      "date": "2026-11-25",
+      "readTimeMin": 7,
+      "author": "Ligasystem Datenredaktion",
+      "kicker": "DATENANALYSE · SONDERAUSGABE",
+      "title": "Glück oder Können?",
+      "subtitle": "260 offizielle Startelfs aus zehn Spieltagen auf dem Prüfstand: Warum ein einzelnes Wochenende zu rund 80 Prozent Lotterie ist, sich Qualität über eine Saison aber gnadenlos durchsetzt – inklusive aller drei xP-Tabellen, der größten Glückspilze und Pechvögel sowie dem Fazit, was einen wirklich starken Kickbase-Manager ausmacht.",
+      "image": "/feed-images/glueck-oder-koennen.svg",
+      "heroStats": [
+        {
+          "label": "1 Spieltag (Können)",
+          "value": "17 %"
+        },
+        {
+          "label": "10 Spieltage (Können)",
+          "value": "73 %"
+        },
+        {
+          "label": "xP-Kalibrierung",
+          "value": "854 vs. 855"
+        }
+      ],
+      "tags": [
+        "Datenanalyse",
+        "Expected Points",
+        "Glück vs. Können",
+        "Liga 1",
+        "Liga 2",
+        "Liga 3"
+      ],
+      "sections": [
+        {
+          "heading": "Ein Spieltag ist Lotterie – zehn Spieltage sind bereits Können",
+          "paragraphs": [
+            "Kaum eine Frage spaltet Kickbase-Ligen so zuverlässig wie die nach dem Verhältnis von Glück und Können. Wenn der Gegner am Sonntagabend durch einen späten Doppelpack noch vorbeizieht, wirkt das Spiel wie ein reines Würfelspiel. Um das Bauchgefühl durch harte Daten zu ersetzen, haben wir sämtliche 260 offiziellen Startelf-Aufstellungen unserer 26 Manager über die ersten zehn Spieltage rückwirkend mit historischen Pre-Matchday-Expected-Points (xP) bewertet – strikt ohne Wissen über das spätere Spieltagsergebnis, aber inklusive Im-Minus-Spieltagen (0 xP) und leerer Startelf-Slots (-100 Punkte).",
+            "Das Modell trifft die Realität im Gesamtschnitt punktgenau: Über alle 260 Aufstellungen stehen durchschnittlich 854 erwartete Punkte exakt 855 realen Punkten gegenüber. Betrachtet man jedoch einzelne Spieltage, dominiert der Zufall: Die Korrelation zwischen xP und tatsächlichen Punkten liegt an einem einzelnen Wochenende bei r = 0,411 (Erklärungskraft R² = 16,9 %; inklusive Im-Minus-Spieltagen 23,8 %). Während die Qualitätsstreuung zwischen den Managern im Schnitt rund ±130 Punkte pro Spieltag beträgt, liegt das zufällige Spieltagsrauschen bei ±262 Punkten – fast doppelt so hoch. An einem einzelnen Wochenende – und damit auch im K.-o.-Pokal – entscheidet also zu rund 80 Prozent das Glück.",
+            "Doch das Gesetz der großen Zahlen arbeitet erstaunlich schnell. Schon nach zehn Spieltagen schnellt die Korrelation zwischen Aufstellungsqualität (xP) und echten Punkten auf r = 0,854 hoch – stolze 73,0 Prozent der gesamten Tabellenunterschiede lassen sich allein durch die erwartete Qualität der aufgestellten Elf erklären. Hochgerechnet auf eine volle 34-Spieltage-Saison wächst der Können-Anteil auf rund 85 bis 90 Prozent. Kurzfristig gewinnt der Zufall, langfristig gewinnt der Prozess."
+          ],
+          "callout": {
+            "title": "Was wirklich mit Saisonpunkten korreliert (10 Spieltage, alle 26 Manager)",
+            "items": [
+              "Startelf-Qualität (KAD / xP): r = 0,854 → 73,0 % Erklärungskraft (stärkster Treiber überhaupt)",
+              "Trading-Profit (PRO): r = 0,816 → 66,7 % Erklärungskraft (Gewinne finanzieren bessere Stammspieler)",
+              "Marktaktivität (AKT): r = 0,687 → 47,2 % Erklärungskraft (wer aktiv handelt, baut bessere Kader)",
+              "Ø Kaderwert: r = 0,630 → 39,6 % Erklärungskraft (Kapital schlägt sich direkt in Punkten nieder)",
+              "7-Tage-Verkaufstiming (TIM): r = 0,262 → 6,9 % Erklärungskraft (hilfreich, aber sekundär)",
+              "Overpay-Disziplin (OVP): r = -0,105 → 1,1 % Erklärungskraft (Sparsamkeit allein gewinnt keine Liga)"
+            ]
+          }
+        },
+        {
+          "heading": "Was hinter „Glück“ wirklich steckt: Explosion, News-Timing oder Strategie?",
+          "paragraphs": [
+            "Schaut man auf die größten positiven Abweichungen zwischen echten Punkten und xP, zeigt sich ein differenziertes Bild: Nicht jede Überperformance ist blindes Glück – aber längst nicht jede ist reines Genie. Drei völlig unterschiedliche Mechanismen sorgen für große Plus-Deltas.",
+            "Der erste Mechanismus sind echte Einzelspieltags-Explosionen. Liga-1-Überraschungszweiter DeinHomieEnobi (+220 Punkte pro Spieltag über xP, Platz 2 statt xP-Platz 8) sammelte allein zwölf 200+-Ausbrüche, die zusammen +2.110 Punkte über Erwartung brachten – darunter Luis Díaz (525 vs. 151 xP), Maarten Vandevoordt (335), Anthony Caci (310), Phillip Tietz (321) und Alphonso Davies (320). Gleichzeitig wäre es unfair, Enobis Lauf nur als Zufall abzutun: Mit elf Überraschungs-Startern – allen voran Daniel Batz (Ø 188 Punkte bei 50 xP) – bewies er auch ein feines Gespür für kurzfristige Aufstellungsnews.",
+            "Der zweite Mechanismus ist mutiges Rückkehrer- und News-Timing. Esel (+115/ST, Platz 3 in Liga 1) profitierte ebenfalls von elf Überraschungs-Startern (+841 Punkte), etwa indem er Jamal Musiala (333 Punkte) und Nico Schlotterbeck (+375 Punkte über drei Spieltage) genau rechtzeitig zum Comeback aufstellte, ergänzt durch Antonio Nusa (+311) und Phillipp Mwene (302).",
+            "Der dritte Mechanismus ist am ehesten als strategisches Können einzustufen: bewusste Breakout- und High-Ceiling-Wetten. Liga-3-Spitzenreiter Geißbock (+144/ST) hielt alle zehn Spieltage unbeirrt an Niclas Füllkrug fest (Ø 157 vs. 104 xP → +522 Punkte) und setzte früh auf Durchstarter wie Jordy Makengo (+311), Igor Matanović (+243) und Antonio Nusa (+226). Ähnlich agierte Ansgar Trinkmann (+91/ST, Platz 4 statt xP-Platz 6 in Liga 2), der bewusst auf maximale Decke bei Bayern- und Leipzig-Stars setzte – belohnt durch Ausreißer von Harry Kane (345), Antonio Nusa (334), David Raum (331), Dayot Upamecano (272) und Ezechiel Banzuzi (275). Wer systematisch auf Spieler mit hoher Punktdecke setzt, lädt positive Ausreißer wahrscheinlicher ein."
+          ]
+        },
+        {
+          "heading": "Pech oder eigenes Versagen? Die Anatomie der Underperformer",
+          "paragraphs": [
+            "Auf der anderen Seite der Verteilung ist die Unterscheidung noch schärfer – denn hinter einem tiefroten Minus-Delta können völlig unterschiedliche Ursachen stecken: bitteres Spieltagspech trotz sauberer Arbeit oder hausgemachte Kaderfehler.",
+            "Der reinste Pechvogel des gesamten Ligasystems heißt JulianD47 (-127/ST, Platz 6 statt xP-Platz 5 in Liga 2). Kein einziger leerer Slot, kein einziger Im-Minus-Spieltag – und dennoch stürzten seine etablierten Stammspieler 26-mal tief unter ihren Schnitt ab. Dazu kamen brutale Einzel-Klatschen wie Felix Uduokhai (-60 an ST 7), Warmed Omari (-31), Tim Skarke (-23) und Diego Moreira (-20) sowie ungewöhnlich kalte Serien von Igor Matanović (Ø 85 bei 138 Saison-Ø) und Phillip Tietz (Ø 91). Ganz ähnlich erwischte es Mo6 in Liga 1 (-69/ST, 0 leere Slots): Füllkrug (-46 an ST 1), Stefan Posch (-34), Yuito Suzuki (-20 bei 122 Saison-Ø), Younes Ebnoutalib (-7 bei 137 Saison-Ø) und zwei überraschende 0-Punkte-Tage von Ridle Baku (158 Saison-Ø) kosteten ihn rund zwei Tabellenplätze.",
+            "Bei Curl3z (-168/ST, Liga 1) und KönigMichi (-100/ST, Liga 3) mischen sich Pech und Eigenanteil. Curl3z erwischte historisches Anti-Timing bei eigentlich starken Spielern (Adam Daghim Ø 67 bei 120 Saison-Ø, Caci Ø 41, Marius Wolf Ø 22 sowie sieben Überraschungs-DNPs), ließ aber zugleich vier Startelf-Slots leer (an ST 2 standen nur sieben Spieler auf dem Platz) und schleppte 14 vermeidbare DNPs mit. KönigMichi trafen sieben überraschende Ausfälle (-600 xP) sowie gebrauchte Einzeltage wie Suzuki (-20) und Jae-Sung Lee (-25), kombiniert mit mehreren aufgestellten 0-Punkte-Kandidaten.",
+            "Am anderen Ende des Spektrums steht fehlende Kaderpflege: Bei Flocke (-160/ST, Liga 3) gehen rund 85 Prozent des Rückstands auf eigene Versäumnisse zurück – zehn leere Slots (-1.000 Strafpunkte) und 17 vermeidbare DNPs, darunter Josip Juranović (6×), Albian Hajdari (5×) und Nicolai Remberg (4×). Ebenso vermeidbar waren die drei Im-Minus-Spieltage der Saison: Puliester (ST 8), casper (ST 5) und CarlCarlsenCarlsen (ST 6) verschenkten jeweils einen kompletten Spieltag durch negativen Kontostand – Fehler, die das xP-Modell als 0 erwartete Punkte gnadenlos einpreist."
+          ],
+          "quote": {
+            "text": "Derselbe Spieler, zwei völlig verschiedene Welten: Anthony Caci lieferte bei Enobi 310 Punkte in einem Spiel – bei Curl3z im Schnitt 41. Phillip Tietz explodierte für 321 Punkte – bei JulianD47 kam er in sechs Einsätzen auf Ø 91. Und Niclas Füllkrug bescherte Geißbock Ø 157 Punkte über zehn Spieltage – Mo6 erwischte ihn am 1. Spieltag bei -46.",
+            "attribution": "Der perfekte Beweis für Spieltags-Varianz innerhalb derselben Bundesliga-Saison"
+          }
+        },
+        {
+          "heading": "Expected-Points-Tabelle: Liga 1",
+          "paragraphs": [
+            "In Liga 1 bestätigt die xP-Tabelle zunächst den Primus: Justin führt sowohl nach erwarteten (998) als auch nach realen Punkten (1.032) völlig verdient. Dahinter wird es spannend: Blake (xP #2, exakt auf Erwartungsniveau mit +1 Delta) und Leon Weinrich (xP #3, -11 Delta) liefern im Prozess deutlich stabiler ab, als ihre echten Tabellenplätze (#4 und #6) vermuten lassen.",
+            "Die extremste Schere der gesamten Liga klafft bei DeinHomieEnobi (+220/ST, Platz 2 statt xP-Platz 8) und Esel (+115/ST, Platz 3 statt xP-Platz 4). Im Keller zeigt Mo6 (xP #6, real #8) klares Aufholpotenzial, während Curl3z in beiden Tabellen das Schlusslicht bildet."
+          ],
+          "table": {
+            "caption": "Liga 1 – Tabelle nach erwarteten Punkten (Ø xP pro Spieltag, ST 1–10)",
+            "columns": [
+              "xP-Rang",
+              "Manager",
+              "Ø xP",
+              "Ø Echt",
+              "Echt-Rang",
+              "Delta/ST"
+            ],
+            "rows": [
+              [
+                "1.",
+                "Justin",
+                "998",
+                "1.032",
+                "#1",
+                "+34"
+              ],
+              [
+                "2.",
+                "Blake",
+                "960",
+                "961",
+                "#4",
+                "+1"
+              ],
+              [
+                "3.",
+                "Leon Weinrich",
+                "910",
+                "899",
+                "#6",
+                "-11"
+              ],
+              [
+                "4.",
+                "Esel",
+                "896",
+                "1.011",
+                "#3",
+                "+115"
+              ],
+              [
+                "5.",
+                "Vinnie JR",
+                "894",
+                "950",
+                "#5",
+                "+56"
+              ],
+              [
+                "6.",
+                "Mo6",
+                "860",
+                "791",
+                "#8",
+                "-69"
+              ],
+              [
+                "7.",
+                "Wat Mamba",
+                "826",
+                "857",
+                "#7",
+                "+31"
+              ],
+              [
+                "8.",
+                "DeinHomieEnobi",
+                "811",
+                "1.031",
+                "#2",
+                "+220"
+              ],
+              [
+                "9.",
+                "Curl3z",
+                "739",
+                "571",
+                "#9",
+                "-168"
+              ]
+            ]
+          }
+        },
+        {
+          "heading": "Expected-Points-Tabelle: Liga 2",
+          "paragraphs": [
+            "Liga 2 präsentiert das derzeit verlässlichste Führungsduo des gesamten Ligasystems: Stomping Tantrum (1.068 xP, ligaübergreifender Bestwert!) und leongarcon (1.030 xP) liefern praktisch ohne Varianz-Verzerrung ab (-8 bzw. +9 Delta) und stehen folgerichtig auf den Rängen 1 und 2. Auch J0tt auf Rang 3 steht exakt dort, wo seine Aufstellungen hingehören.",
+            "Spannend ist das Verfolgerfeld: franzi__j (950 xP) und vor allem Pechvogel JulianD47 (946 xP, -127 Delta) stellen auf Top-4-Niveau auf, wurden aber von Ansgar Trinkmanns High-Ceiling-Ausbrüchen (+91/ST, Platz 4 statt xP-Platz 6) überholt. Bei CarlCarlsenCarlsen drückt zusätzlich der Im-Minus-Spieltag (ST 6) den xP-Schnitt."
+          ],
+          "table": {
+            "caption": "Liga 2 – Tabelle nach erwarteten Punkten (Ø xP pro Spieltag, ST 1–10)",
+            "columns": [
+              "xP-Rang",
+              "Manager",
+              "Ø xP",
+              "Ø Echt",
+              "Echt-Rang",
+              "Delta/ST"
+            ],
+            "rows": [
+              [
+                "1.",
+                "Stomping Tantrum",
+                "1.068",
+                "1.060",
+                "#1",
+                "-8"
+              ],
+              [
+                "2.",
+                "leongarcon",
+                "1.030",
+                "1.039",
+                "#2",
+                "+9"
+              ],
+              [
+                "3.",
+                "J0tt",
+                "956",
+                "940",
+                "#3",
+                "-16"
+              ],
+              [
+                "4.",
+                "franzi__j",
+                "950",
+                "909",
+                "#5",
+                "-41"
+              ],
+              [
+                "5.",
+                "JulianD47",
+                "946",
+                "819",
+                "#6",
+                "-127"
+              ],
+              [
+                "6.",
+                "Ansgar Trinkmann",
+                "824",
+                "915",
+                "#4",
+                "+91"
+              ],
+              [
+                "7.",
+                "AchtSieben",
+                "724",
+                "806",
+                "#7",
+                "+82"
+              ],
+              [
+                "8.",
+                "CarlCarlsenCarlsen",
+                "533",
+                "560",
+                "#8",
+                "+27"
+              ]
+            ]
+          }
+        },
+        {
+          "heading": "Expected-Points-Tabelle: Liga 3",
+          "paragraphs": [
+            "In Liga 3 liegen an der Spitze gleich drei Manager in der Prozessqualität praktisch gleichauf: Sebastian (943 xP), Geißbock (933 xP) und casper (923 xP – trotz eines Im-Minus-Spieltags an ST 5!). Den Unterschied in der echten Tabelle macht Geißbocks starkes +144-Delta, das ihn auf Platz 1 katapultiert, während Sebastian (-40) leicht unter Erwartung punktet.",
+            "Dahinter überzeugt Puliester (871 xP, -10 Delta) trotz seines teuren Im-Minus-Aussetzers an ST 8 mit sauberer Konstanz auf Rang 4. KönigMichi (xP #5, real #6, -100 Delta) hat strukturell mehr Potenzial als sein aktueller Tabellenplatz, während Flocke (10 leere Slots) im Tabellenkeller deutlich unter den eigenen Möglichkeiten bleibt."
+          ],
+          "table": {
+            "caption": "Liga 3 – Tabelle nach erwarteten Punkten (Ø xP pro Spieltag, ST 1–10)",
+            "columns": [
+              "xP-Rang",
+              "Manager",
+              "Ø xP",
+              "Ø Echt",
+              "Echt-Rang",
+              "Delta/ST"
+            ],
+            "rows": [
+              [
+                "1.",
+                "Sebastian",
+                "943",
+                "903",
+                "#3",
+                "-40"
+              ],
+              [
+                "2.",
+                "Geißbock",
+                "933",
+                "1.077",
+                "#1",
+                "+144"
+              ],
+              [
+                "3.",
+                "casper",
+                "923",
+                "981",
+                "#2",
+                "+58"
+              ],
+              [
+                "4.",
+                "Puliester",
+                "871",
+                "861",
+                "#4",
+                "-10"
+              ],
+              [
+                "5.",
+                "KönigMichi",
+                "835",
+                "735",
+                "#6",
+                "-100"
+              ],
+              [
+                "6.",
+                "kushler",
+                "822",
+                "794",
+                "#5",
+                "-28"
+              ],
+              [
+                "7.",
+                "Fynn",
+                "717",
+                "683",
+                "#7",
+                "-34"
+              ],
+              [
+                "8.",
+                "Flocke",
+                "645",
+                "485",
+                "#9",
+                "-160"
+              ],
+              [
+                "9.",
+                "Marci",
+                "582",
+                "550",
+                "#8",
+                "-32"
+              ]
+            ]
+          }
+        },
+        {
+          "heading": "Fazit: Was einen wirklich guten Kickbase-Manager ausmacht",
+          "paragraphs": [
+            "Die Daten liefern eine beruhigende wie unbequeme Antwort zugleich: Kickbase ist kein reines Glücksspiel – aber es tarnt Können an einzelnen Wochenenden perfekt als Zufall. Wer nach einem schwachen Sonntag sofort seinen kompletten Kader sprengt, verwechselt Rauschen mit Realität. Und wer nach drei glücklichen 200er-Wochenenden aufhört zu traden, wacht am 25. Spieltag oft unsanft auf.",
+            "Ein wirklich guter Kickbase-Manager versucht nicht, einzelne Sonntagsergebnisse vorherzusagen – er maximiert Woche für Woche seine Wahrscheinlichkeit. Das beginnt unter der Woche auf dem Transfermarkt (weil Trading-Profit mit r = 0,816 fast genauso stark auf die Punktzahl einzahlt wie die Aufstellung selbst), setzt sich über fehlerfreie Disziplin bis Freitagabend 20:30 Uhr fort und gipfelt im Mut, gezielt auf Spieler mit hoher Einsatzsicherheit und Punktdecke zu setzen – selbst wenn man dafür einmal spürbar über Marktwert gehen muss."
+          ],
+          "callout": {
+            "title": "Die 5 Gebote eines starken Kickbase-Managers",
+            "items": [
+              "1. Prozess vor Ergebnis: Messe dich an deiner wöchentlichen Startelf-xP – über eine Saison erklären sich 73–90 % der Tabelle allein darüber.",
+              "2. Aktiv und profitabel traden: Transfergewinne sind kein Selbstzweck, sondern der Treibstoff, der Top-Stammspieler bezahlbar macht (r = 0,816).",
+              "3. Null vermeidbare Basics-Fehler: Nie im Minus in den Spieltag gehen, keine leeren Slots zulassen und Dauer-Ausfälle konsequent ersetzen.",
+              "4. Mut zu Upside & News-Timing: Nicht am falschen Ende sparen (Overpay korreliert nicht mit Punkten!) – stattdessen gezielt auf High-Ceiling-Stars, Comebacks und frühe Breakouts setzen.",
+              "5. Nerven behalten gegen Varianz: ±262 Punkte Spieltagsrauschen sind normal. Wer trotz Pech-Phasen ruhig weiterarbeitet, holt sich die Punkte über 34 Spieltage fast immer zurück."
+            ]
+          }
+        }
+      ]
+    },
     {
       "slug": "wsj-der-100-millionen-club-casper-und-die-top-trader",
       "category": "trading",
@@ -921,7 +1284,7 @@
     {
       "slug": "spieltag-10-rekord-und-neun-punkte-krimi",
       "category": "spieltag",
-      "featured": true,
+      "featured": false,
       "edition": "Spieltag 10",
       "date": "2026-11-22",
       "readTimeMin": 4,
