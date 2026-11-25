@@ -13,6 +13,7 @@ import LiveLineupPage from './LiveLineupPage';
 import PlayerLiveDetailPage from './PlayerLiveDetailPage';
 import FeedPage from './FeedPage';
 import FeedArticlePage from './FeedArticlePage';
+import WeeklyArticlePage from './WeeklyArticlePage';
 import Reminders from './Reminders';
 import TabBar from './TabBar';
 import ScrollToTop from './ScrollToTop';
@@ -60,6 +61,7 @@ function App() {
                   <Route path="/live" element={<LiveLineupPage />} />
                   <Route path="/live-player" element={<PlayerLiveDetailPage />} />
                   <Route path="/feed" element={<FeedPage />} />
+                  <Route path="/feed/weekly/:slug" element={<WeeklyArticlePage />} />
                   <Route path="/feed/:slug" element={<FeedArticlePage />} />
                   <Route path="/account/reminders" element={<Reminders />} />
 

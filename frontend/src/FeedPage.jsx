@@ -7,7 +7,8 @@ import { useAuth } from './AuthContext';
 import newsLogo from './assets/news_logo.svg';
 import AdBanner from './ui/AdBanner';
 import HotShotsSection from './ui/HotShotsSection';
-import WeeklySummaryView, { WeeklyTeaserCard } from './ui/WeeklySummaryView';
+
+const getArticlePath = (article) => article?.href || `/feed/${article?.slug}`;
 
 const CategoryIcon = ({ id, size = 13 }) => {
   if (id === 'spieltag') return <Flame size={size} />;
@@ -183,7 +184,7 @@ const CategoryShelf = ({ title, categoryId, articles, activeCat, accentColor, on
           return (
             <Link
               key={article.slug}
-              to={`/feed/${article.slug}`}
+              to={getArticlePath(article)}
               state={{ fromCategory: activeCat }}
               className="shrink-0 w-[200px] sm:w-[220px] flex flex-col card-surface rounded-2xl overflow-hidden hover:border-white/20 transition-all active:scale-[0.97] group"
             >
@@ -233,6 +234,7 @@ const FeedPage = () => {
   );
 
   const [feedData, setFeedData] = useState(null);
+  const [weeklyEditions, setWeeklyEditions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -260,16 +262,51 @@ const FeedPage = () => {
     };
   }, []);
 
-  const articles = useMemo(() => sortArticlesByDateDesc(feedData?.articles || []), [feedData]);
+  useEffect(() => {
+    if (!isAdmin) return;
+    let cancelled = false;
+    fetch('/weekly-summary.json', { cache: 'no-cache' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (!cancelled && Array.isArray(json?.editions)) {
+          setWeeklyEditions(
+            json.editions.map((ed) => ({
+              slug: ed.slug,
+              href: `/feed/weekly/${ed.slug}`,
+              category: 'weekly',
+              date: ed.date,
+              title: ed.title,
+              subtitle: ed.subtitle,
+              readTimeMin: ed.readTimeMin || 2,
+              image: ed.image || '/feed-images/weekly-cover.svg',
+            })),
+          );
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [isAdmin]);
+
+  const baseArticles = useMemo(() => sortArticlesByDateDesc(feedData?.articles || []), [feedData]);
+  const weeklyArticles = useMemo(
+    () => (isAdmin ? sortArticlesByDateDesc(weeklyEditions) : []),
+    [isAdmin, weeklyEditions],
+  );
+  const articles = useMemo(
+    () => sortArticlesByDateDesc([...baseArticles, ...weeklyArticles]),
+    [baseArticles, weeklyArticles],
+  );
   const ticker = useMemo(() => feedData?.ticker || [], [feedData]);
 
   const counts = useMemo(() => {
-    const map = { all: articles.length, spieltag: 0, pokal: 0, trading: 0 };
-    articles.forEach((a) => {
+    const map = { all: baseArticles.length + weeklyArticles.length, spieltag: 0, pokal: 0, trading: 0, weekly: weeklyArticles.length };
+    baseArticles.forEach((a) => {
       if (map[a.category] != null) map[a.category] += 1;
     });
     return map;
-  }, [articles]);
+  }, [baseArticles, weeklyArticles]);
 
   const filtered = useMemo(() => {
     if (activeCat === 'all') return articles;
@@ -290,22 +327,26 @@ const FeedPage = () => {
   // oben im Swipe-Karussell, darunter je Kategorie ein durchscrollbares
   // Regal mit den uebrigen Artikeln dieser Kategorie.
   const heroArticles = useMemo(() => {
-    const featured = articles.filter((a) => a.featured);
+    const featured = baseArticles.filter((a) => a.featured);
     if (featured.length >= 3) return featured.slice(0, 3);
-    const rest = articles.filter((a) => !a.featured);
+    const rest = baseArticles.filter((a) => !a.featured);
     return [...featured, ...rest].slice(0, 3);
-  }, [articles]);
+  }, [baseArticles]);
 
   const heroSlugs = useMemo(() => new Set(heroArticles.map((a) => a.slug)), [heroArticles]);
 
   const shelves = useMemo(() => {
-    const byCategory = (catId) => articles.filter((a) => a.category === catId && !heroSlugs.has(a.slug));
-    return [
+    const byCategory = (catId) => baseArticles.filter((a) => a.category === catId && !heroSlugs.has(a.slug));
+    const list = [
       { id: 'spieltag', title: 'Spieltagsberichte', articles: byCategory('spieltag'), accentColor: '#ff5c3e' },
       { id: 'pokal', title: 'Pokal', articles: byCategory('pokal'), accentColor: '#f59e0b' },
       { id: 'trading', title: 'The Trading Journal', articles: byCategory('trading'), accentColor: '#10b981' },
     ];
-  }, [articles, heroSlugs]);
+    if (isAdmin && weeklyArticles.length > 0) {
+      list.push({ id: 'weekly', title: 'Weekly', articles: weeklyArticles, accentColor: '#a855f7' });
+    }
+    return list;
+  }, [baseArticles, heroSlugs, isAdmin, weeklyArticles]);
 
   const setCategory = (catId) => {
     if (catId === 'all') {
@@ -388,23 +429,13 @@ const FeedPage = () => {
             >
               <CategoryIcon id={cat.id} size={13} />
               <span>{cat.label}</span>
-              {cat.id === 'weekly' ? (
-                <span
-                  className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full leading-none ${
-                    isActive ? 'bg-black/25 text-white' : 'bg-purple-500/20 text-purple-300'
-                  }`}
-                >
-                  Admin
-                </span>
-              ) : (
-                <span
-                  className={`text-[10px] tabular-nums px-1.5 py-0.5 rounded-full leading-none ${
-                    isActive ? 'bg-black/20' : 'bg-white/10 text-[#8b92a5]'
-                  }`}
-                >
-                  {counts[cat.id] ?? 0}
-                </span>
-              )}
+              <span
+                className={`text-[10px] tabular-nums px-1.5 py-0.5 rounded-full leading-none ${
+                  isActive ? 'bg-black/20' : 'bg-white/10 text-[#8b92a5]'
+                }`}
+              >
+                {counts[cat.id] ?? 0}
+              </span>
             </button>
           );
         })}
@@ -449,9 +480,7 @@ const FeedPage = () => {
         </div>
       )}
 
-      {isWeeklyView && <WeeklySummaryView />}
-
-      {!isWeeklyView && loading && (
+      {loading && (
         <div className="space-y-4">
           <div className="h-72 rounded-2xl card-surface animate-pulse" />
           <div className="h-56 rounded-2xl card-surface animate-pulse" />
@@ -459,16 +488,14 @@ const FeedPage = () => {
         </div>
       )}
 
-      {!isWeeklyView && error && (
+      {error && (
         <div className="card-surface rounded-2xl p-5 text-sm text-red-400">
           {error}
         </div>
       )}
 
-      {!isWeeklyView && !loading && !error && activeCat === 'all' && (
+      {!loading && !error && activeCat === 'all' && (
         <div>
-          {isAdmin && <WeeklyTeaserCard onOpen={() => setCategory('weekly')} />}
-
           <HeroCarousel articles={heroArticles} activeCat={activeCat} />
 
           {/* Werbe-Easter-Egg als native "Anzeige" zwischen Karussell und
@@ -493,7 +520,7 @@ const FeedPage = () => {
         </div>
       )}
 
-      {!isWeeklyView && !loading && !error && activeCat !== 'all' && leadArticle && (
+      {!loading && !error && activeCat !== 'all' && leadArticle && (
         <div className="space-y-4">
           {/* Titelstory: Grosses Bild + klare Headline + kurzer Teaser (ohne Schnickschnack) */}
           {(() => {
@@ -501,7 +528,7 @@ const FeedPage = () => {
             const isWsj = Boolean(meta.isWsj);
             return (
               <Link
-                to={`/feed/${leadArticle.slug}`}
+                to={getArticlePath(leadArticle)}
                 state={{ fromCategory: activeCat }}
                 className="block card-surface rounded-2xl overflow-hidden hover:border-white/20 transition-all active:scale-[0.99] group"
               >
@@ -558,7 +585,7 @@ const FeedPage = () => {
                 return (
                   <Link
                     key={article.slug}
-                    to={`/feed/${article.slug}`}
+                    to={getArticlePath(article)}
                     state={{ fromCategory: activeCat }}
                     className="flex flex-col card-surface rounded-2xl overflow-hidden hover:border-white/20 transition-all active:scale-[0.99] group"
                   >

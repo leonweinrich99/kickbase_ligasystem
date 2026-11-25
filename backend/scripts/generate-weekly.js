@@ -2,27 +2,24 @@ const fs = require('fs');
 const path = require('path');
 
 /**
- * Generiert eine strukturierte Wochen-Zusammenfassung (Weekly Summary) fuer
- * alle 3 Ligen + personalisierte Manager-Insights in:
+ * Generiert die personalisierte Weekly-Summary-Ausgabe (Artikel-Format) und
+ * pflegt das Ausgaben-Archiv in:
  *   frontend/public/weekly-summary.json
  *
- * Datenquellen (alle lokal im Repo, automatisch aktualisiert durch
- * update-data.yml & advisor.yml):
- *   - frontend/public/data.json
- *   - frontend/public/history/spieltag-{N}.json & spieltag-{N-1}.json
- *   - frontend/public/history/startelf-md{N}.json
- *   - frontend/public/history/optimal-md-{N}-final.json
- *   - frontend/public/history/transfers.json
- *   - frontend/public/history/all_players.json
- *   - frontend/public/advisor-data.json
- *   - frontend/public/bundesliga-spielplan.json
- *   - frontend/public/pokal-data.json
+ * Datenquellen:
+ *   - Lokale Kickbase-/Advisor-Daten:
+ *       data.json, history/spieltag-{N}.json, history/startelf-md{N}.json,
+ *       history/transfers.json, history/all_players.json, advisor-data.json,
+ *       bundesliga-spielplan.json
+ *   - Live-Bundesliga-Tabelle & 5-Spiele-Form (OpenLigaDB):
+ *       https://api.openligadb.de/getbltable/bl1/{season}
+ *       https://api.openligadb.de/getmatchdata/bl1/{season}
  *
  * Optionaler KI-Feinschliff:
- *   Ist GEMINI_API_KEY in der Umgebung gesetzt (z.B. kostenloser Google AI
- *   Studio Key als GitHub Secret), erzeugt das Skript zusaetzlich
- *   journalistische Redaktionstexte auf Basis der berechneten Fakten. Ohne Key
- *   (oder bei API-Fehler) greift nahtlos der deterministische Text-Generator.
+ *   Ist GEMINI_API_KEY gesetzt, erzeugt ein einziger kompakter Gemini-Aufruf
+ *   personalisierte 1-2-Satz-Takes je Manager sowie eine kurze Form-Einordnung
+ *   strikt auf Basis der berechneten Fakten. Ohne Key oder bei API-Fehler
+ *   greift nahtlos der deterministische Text-Generator.
  */
 
 const PUBLIC_DIR = path.join(__dirname, '../../frontend/public');
@@ -32,6 +29,9 @@ const TECHNICAL_ACCOUNTS_PATH = path.join(__dirname, '../technical-accounts.json
 
 const TRANSFER_WINDOW_DAYS = 7;
 const LOOKAHEAD_MATCHDAYS = 3;
+const MAX_STORED_EDITIONS = 16;
+const OPENLIGA_BASE = 'https://api.openligadb.de';
+
 const POS_CODE_TO_LABEL = { 1: 'TW', 2: 'ABW', 3: 'MF', 4: 'ST' };
 const STATUS_LABELS = {
   0: 'Fit',
@@ -51,15 +51,54 @@ const SELL_REASON_LABELS = {
   benched_last_matchday: 'Zuletzt ohne Einsatz',
 };
 
-// Mapping von bundesliga-spielplan.json -> Kickbase/Advisor Teamnamen
-const PLAN_TO_KICKBASE_TEAM = {
-  'Bayern München': 'Bayern',
-  'VfB Stuttgart': 'Stuttgart',
-  'RB Leipzig': 'Leipzig',
-  Gladbach: "M'gladbach",
-  'Hamburger SV': 'Hamburg',
-  'Werder Bremen': 'Bremen',
-  'Schalke 04': 'Schalke',
+// Vereinheitlichung aller Teamnamen (Spielplan + OpenLigaDB -> Kickbase-Name)
+const TEAM_ALIAS_TO_KICKBASE = {
+  'bayern münchen': 'Bayern',
+  'fc bayern münchen': 'Bayern',
+  bayern: 'Bayern',
+  'borussia dortmund': 'Dortmund',
+  dortmund: 'Dortmund',
+  'bayer 04 leverkusen': 'Leverkusen',
+  'bayer leverkusen': 'Leverkusen',
+  leverkusen: 'Leverkusen',
+  'rb leipzig': 'Leipzig',
+  leipzig: 'Leipzig',
+  'vfb stuttgart': 'Stuttgart',
+  stuttgart: 'Stuttgart',
+  'eintracht frankfurt': 'Frankfurt',
+  frankfurt: 'Frankfurt',
+  'sc freiburg': 'Freiburg',
+  freiburg: 'Freiburg',
+  'sv werder bremen': 'Bremen',
+  'werder bremen': 'Bremen',
+  bremen: 'Bremen',
+  'tsg hoffenheim': 'Hoffenheim',
+  'tsg 1899 hoffenheim': 'Hoffenheim',
+  hoffenheim: 'Hoffenheim',
+  'fc augsburg': 'Augsburg',
+  augsburg: 'Augsburg',
+  '1. fsv mainz 05': 'Mainz',
+  'fsv mainz 05': 'Mainz',
+  mainz: 'Mainz',
+  '1. fc union berlin': 'Union Berlin',
+  'union berlin': 'Union Berlin',
+  'borussia mönchengladbach': "M'gladbach",
+  gladbach: "M'gladbach",
+  "m'gladbach": "M'gladbach",
+  '1. fc köln': 'Köln',
+  köln: 'Köln',
+  'hamburger sv': 'Hamburg',
+  hsv: 'Hamburg',
+  hamburg: 'Hamburg',
+  'fc schalke 04': 'Schalke',
+  'schalke 04': 'Schalke',
+  s04: 'Schalke',
+  schalke: 'Schalke',
+  'sc paderborn 07': 'Paderborn',
+  paderborn: 'Paderborn',
+  'sv 07 elversberg': 'Elversberg',
+  'sv elversberg': 'Elversberg',
+  elversberg: 'Elversberg',
 };
 
 const KICKBASE_TO_SHORT_TEAM = {
@@ -116,39 +155,20 @@ function leagueDisplayName(key) {
   return key;
 }
 
-function normalizePlanTeam(name) {
-  return PLAN_TO_KICKBASE_TEAM[name] || name;
+function normalizeTeamName(name) {
+  if (!name) return null;
+  const key = String(name).trim().toLowerCase();
+  return TEAM_ALIAS_TO_KICKBASE[key] || String(name).trim();
 }
 
-function formatEuroShort(val) {
+function formatEuroSigned(val) {
   if (val === null || val === undefined || !Number.isFinite(val)) return '–';
   const sign = val > 0 ? '+' : val < 0 ? '-' : '';
   const abs = Math.abs(val);
-  if (abs >= 1_000_000_000) {
-    return `${sign}${(abs / 1_000_000_000).toFixed(2).replace('.', ',')} Mrd €`;
-  }
-  if (abs >= 1_000_000) {
-    return `${sign}${(abs / 1_000_000).toFixed(2).replace('.', ',')} Mio €`;
-  }
-  if (abs >= 1_000) {
-    return `${sign}${Math.round(abs / 1_000)}k €`;
-  }
+  if (abs >= 1_000_000_000) return `${sign}${(abs / 1_000_000_000).toFixed(2).replace('.', ',')} Mrd €`;
+  if (abs >= 1_000_000) return `${sign}${(abs / 1_000_000).toFixed(2).replace('.', ',')} Mio €`;
+  if (abs >= 1_000) return `${sign}${Math.round(abs / 1_000)}k €`;
   return `${sign}${Math.round(abs)} €`;
-}
-
-function formatEuroUnsigned(val) {
-  if (val === null || val === undefined || !Number.isFinite(val)) return '–';
-  const abs = Math.abs(val);
-  if (abs >= 1_000_000_000) {
-    return `${(abs / 1_000_000_000).toFixed(2).replace('.', ',')} Mrd €`;
-  }
-  if (abs >= 1_000_000) {
-    return `${(abs / 1_000_000).toFixed(2).replace('.', ',')} Mio €`;
-  }
-  if (abs >= 1_000) {
-    return `${Math.round(abs / 1_000)}k €`;
-  }
-  return `${Math.round(abs)} €`;
 }
 
 function formatPoints(val) {
@@ -163,23 +183,24 @@ function getIsoWeekNumber(dateObj) {
   return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
 }
 
+function getBundesligaSeasonYear(spielplan, refDate) {
+  const m = String(spielplan?.season || '').match(/^(\d{4})/);
+  if (m) return Number(m[1]);
+  return refDate.getUTCMonth() >= 6 ? refDate.getUTCFullYear() : refDate.getUTCFullYear() - 1;
+}
+
 function loadTechnicalAccounts() {
   const raw = readJsonSafe(TECHNICAL_ACCOUNTS_PATH, null);
   const names = new Set();
-  const ids = new Set();
   if (Array.isArray(raw)) {
     raw.forEach((x) => {
       if (typeof x === 'string') names.add(x.toLowerCase());
-      else if (x && typeof x === 'object') {
-        if (x.name) names.add(String(x.name).toLowerCase());
-        if (x.id) ids.add(String(x.id));
-      }
+      else if (x?.name) names.add(String(x.name).toLowerCase());
     });
   } else if (raw && typeof raw === 'object') {
     (raw.names || raw.excludedNames || []).forEach((n) => names.add(String(n).toLowerCase()));
-    (raw.ids || raw.excludedIds || []).forEach((i) => ids.add(String(i)));
   }
-  return { names, ids };
+  return { names };
 }
 
 function buildCatalogMap(allPlayersRaw) {
@@ -202,21 +223,18 @@ function enrichPlayer(entry, catalogMap) {
   const prob = typeof raw?.prob === 'number' ? raw.prob : (entry.startElfProbability ?? entry.prob ?? null);
   const pos = entry.position || (raw?.pos ? POS_CODE_TO_LABEL[raw.pos] : null);
   const imagePath = entry.imagePath || raw?.pim || null;
+  const firstName = entry.firstName || raw?.fn || '';
+  const name = entry.name || raw?.ln || raw?.fn || `Spieler ${entry.playerId}`;
   return {
     playerId: String(entry.playerId),
-    firstName: entry.firstName || raw?.fn || '',
-    name: entry.name || raw?.ln || raw?.fn || `Spieler ${entry.playerId}`,
-    fullName: [entry.firstName || raw?.fn, entry.name || raw?.ln].filter(Boolean).join(' ').trim() || entry.name || `Spieler ${entry.playerId}`,
+    name,
+    fullName: [firstName, name].filter(Boolean).join(' ').trim() || name,
     position: pos,
-    team: entry.team || raw?.tn || null,
+    team: normalizeTeamName(entry.team || raw?.tn || null),
     marketValue: entry.marketValue > 0 ? Math.round(entry.marketValue) : Math.round(raw?.mv || 0),
     predictedChange: Math.round(entry.predictedChange || 0),
-    predictedChange3d: entry.predictedChange3d != null ? Math.round(entry.predictedChange3d) : null,
     predictedChange7d: entry.predictedChange7d != null ? Math.round(entry.predictedChange7d) : null,
-    trendLast7DaysPercent: entry.trendLast7DaysPercent != null ? Number(entry.trendLast7DaysPercent) : null,
     avgPoints: typeof entry.avgPoints === 'number' ? Math.round(entry.avgPoints * 10) / 10 : (typeof raw?.ap === 'number' ? raw.ap : null),
-    seasonPoints: typeof entry.seasonPoints === 'number' && entry.seasonPoints !== 0 ? entry.seasonPoints : (typeof raw?.tp === 'number' ? raw.tp : null),
-    lastPoints: typeof entry.lastPoints === 'number' ? Math.round(entry.lastPoints) : null,
     status,
     statusLabel: STATUS_LABELS[status] || (status ? `Status ${status}` : 'Fit'),
     startElfProbability: prob,
@@ -224,96 +242,133 @@ function enrichPlayer(entry, catalogMap) {
     playRecommended: Boolean(entry.playRecommended),
     tradeRecommended: Boolean(entry.tradeRecommended),
     sellRecommended: Boolean(entry.sellRecommended),
-    sellReasons: Array.isArray(entry.sellReasons) ? entry.sellReasons : [],
     sellReasonLabels: (entry.sellReasons || []).map((r) => SELL_REASON_LABELS[r] || r),
     imageUrl: entry.imageUrl || (imagePath ? `https://kickbase.b-cdn.net/${imagePath}` : null),
   };
 }
 
 /**
- * Berechnet Bundesliga-Teamstaerke rein aus lokalen Kickbase-Daten (Top-11
- * Saisonpunkte pro Team) und bewertet die naechsten 3 Spieltage jedes Teams.
+ * Holt die echte aktuelle Bundesliga-Tabelle und die Ergebnisse der letzten
+ * 5 Spiele je Team von OpenLigaDB. Bei Netzwerkfehler (z.B. Offline-Test)
+ * liefert die Funktion null und wir fallen defensiv auf den Spielplan zurueck.
  */
-function buildFixtureRadar(spielplan, allPlayersRaw, advisorPlayers, catalogMap, currentMatchday) {
-  if (!spielplan || !Array.isArray(spielplan.matchdays)) {
-    return { upcomingMatchdays: [], teamRatings: {}, greenSchedule: [], toughSchedule: [] };
-  }
+async function fetchOpenLigaFormAndTable(seasonYear) {
+  try {
+    const [tableRes, matchesRes] = await Promise.all([
+      fetch(`${OPENLIGA_BASE}/getbltable/bl1/${seasonYear}`),
+      fetch(`${OPENLIGA_BASE}/getmatchdata/bl1/${seasonYear}`),
+    ]);
+    if (!tableRes.ok || !matchesRes.ok) {
+      throw new Error(`HTTP ${tableRes.status}/${matchesRes.status}`);
+    }
+    const [tableRaw, matchesRaw] = await Promise.all([tableRes.json(), matchesRes.json()]);
+    if (!Array.isArray(tableRaw) || tableRaw.length === 0) {
+      throw new Error('Leere Bundesliga-Tabelle von OpenLigaDB');
+    }
 
-  const upcoming = spielplan.matchdays
+    // Letzte 5 beendete Spiele pro Team aus matchesRaw extrahieren
+    const finished = (Array.isArray(matchesRaw) ? matchesRaw : [])
+      .filter((m) => m?.matchIsFinished && Array.isArray(m.matchResults) && m.matchResults.length > 0)
+      .sort((a, b) => {
+        const gA = a?.group?.groupOrderID ?? 0;
+        const gB = b?.group?.groupOrderID ?? 0;
+        if (gA !== gB) return gA - gB;
+        return Date.parse(a.matchDateTimeUTC || 0) - Date.parse(b.matchDateTimeUTC || 0);
+      });
+
+    const teamMatchesMap = new Map();
+    for (const m of finished) {
+      const home = normalizeTeamName(m.team1?.teamName || m.team1?.shortName);
+      const away = normalizeTeamName(m.team2?.teamName || m.team2?.shortName);
+      const finalRes =
+        m.matchResults.find((r) => r.resultTypeID === 2) ||
+        [...m.matchResults].sort((a, b) => (b.resultOrderID ?? 0) - (a.resultOrderID ?? 0))[0];
+      if (!home || !away || !finalRes) continue;
+
+      const gH = Number(finalRes.pointsTeam1 ?? 0);
+      const gA = Number(finalRes.pointsTeam2 ?? 0);
+      if (!teamMatchesMap.has(home)) teamMatchesMap.set(home, []);
+      if (!teamMatchesMap.has(away)) teamMatchesMap.set(away, []);
+
+      teamMatchesMap.get(home).push({
+        res: gH > gA ? 'S' : gH === gA ? 'U' : 'N',
+        pts: gH > gA ? 3 : gH === gA ? 1 : 0,
+        gf: gH,
+        ga: gA,
+      });
+      teamMatchesMap.get(away).push({
+        res: gA > gH ? 'S' : gA === gH ? 'U' : 'N',
+        pts: gA > gH ? 3 : gA === gH ? 1 : 0,
+        gf: gA,
+        ga: gH,
+      });
+    }
+
+    const tableByTeam = {};
+    const tableList = tableRaw.map((row, idx) => {
+      const team = normalizeTeamName(row.teamName || row.shortName);
+      const recent5 = (teamMatchesMap.get(team) || []).slice(-5);
+      const form = recent5.map((x) => x.res);
+      const formPoints = recent5.reduce((s, x) => s + x.pts, 0);
+      const formWins = recent5.filter((x) => x.res === 'S').length;
+      const formLosses = recent5.filter((x) => x.res === 'N').length;
+      const formGf = recent5.reduce((s, x) => s + x.gf, 0);
+      const formGa = recent5.reduce((s, x) => s + x.ga, 0);
+
+      const entry = {
+        team,
+        short: KICKBASE_TO_SHORT_TEAM[team] || team.slice(0, 3).toUpperCase(),
+        rank: idx + 1,
+        points: Number(row.points ?? 0),
+        matches: Number(row.matches ?? 0),
+        won: Number(row.won ?? 0),
+        draw: Number(row.draw ?? 0),
+        lost: Number(row.lost ?? 0),
+        goalsFor: Number(row.goals ?? 0),
+        goalsAgainst: Number(row.opponentGoals ?? 0),
+        goalDiff: Number(row.goalDiff ?? (Number(row.goals ?? 0) - Number(row.opponentGoals ?? 0))),
+        form, // z.B. ['S','S','U','S','N'] (aeltestes -> neuestes)
+        formString: form.join('-'),
+        formPoints, // 0..15
+        formWins,
+        formLosses,
+        formGf,
+        formGa,
+      };
+      tableByTeam[team] = entry;
+      return entry;
+    });
+
+    console.log(`OpenLigaDB Bundesliga-Tabelle & 5-Spiele-Form geladen (${tableList.length} Teams, Saison ${seasonYear}).`);
+    return { source: 'openligadb', tableByTeam, tableList };
+  } catch (err) {
+    console.warn('OpenLigaDB nicht erreichbar, nutze Spielplan-Fallback:', err.message);
+    return null;
+  }
+}
+
+/**
+ * Bewertet die kommenden 3 Spieltage jedes Teams anhand echter Tabellensituation
+ * (Tabellenplatz, Punkte, Tordifferenz) UND 5-Spiele-Form (Punkte aus letzten 5).
+ */
+function buildFormAndScheduleRadar(spielplan, blData, advisorPlayers, catalogMap, currentMatchday) {
+  const upcoming = (spielplan?.matchdays || [])
     .filter((md) => md.number > currentMatchday)
     .slice(0, LOOKAHEAD_MATCHDAYS);
 
-  if (upcoming.length === 0) {
-    return { upcomingMatchdays: [], teamRatings: {}, greenSchedule: [], toughSchedule: [] };
-  }
+  const tableByTeam = blData?.tableByTeam || {};
+  const hasRealTable = Object.keys(tableByTeam).length >= 16;
 
-  // Teamstaerke aus kumulierten Saisonpunkten der Top-11 Spieler jedes Teams
-  const teamPlayerPts = new Map();
-  const sourcePlayers = Array.isArray(allPlayersRaw) && allPlayersRaw.length > 0 ? allPlayersRaw : [];
-  for (const p of sourcePlayers) {
-    if (!p?.tn) continue;
-    const tp = typeof p.tp === 'number' ? p.tp : 0;
-    if (!teamPlayerPts.has(p.tn)) teamPlayerPts.set(p.tn, []);
-    teamPlayerPts.get(p.tn).push(tp);
-  }
+  // Staerke-Score 0..100 pro Team aus echtem Tabellenplatz (55%) + 5-Spiele-Form (45%)
+  const teamStrengthScore = (team) => {
+    const t = tableByTeam[team];
+    if (!t) return 50;
+    const rankScore = ((19 - t.rank) / 18) * 100; // Platz 1 -> 100, Platz 18 -> 5.5
+    const formScore = (t.formPoints / 15) * 100;  // 15/15 -> 100, 0/15 -> 0
+    return Math.round(rankScore * 0.55 + formScore * 0.45);
+  };
 
-  const teamScores = [];
-  for (const [team, ptsList] of teamPlayerPts.entries()) {
-    const top11 = [...ptsList].sort((a, b) => b - a).slice(0, 11);
-    const totalTop11 = top11.reduce((s, v) => s + v, 0);
-    teamScores.push({ team, powerScore: totalTop11 });
-  }
-  teamScores.sort((a, b) => b.powerScore - a.powerScore);
-
-  const totalTeams = Math.max(teamScores.length, 18);
-  const strengthRankByTeam = new Map();
-  teamScores.forEach((t, idx) => {
-    strengthRankByTeam.set(t.team, idx + 1); // 1 = staerkstes Team, 18 = schwaechstes
-  });
-
-  // Alle Teams aus dem Spielplan einsammeln
-  const fixturesByTeam = new Map();
-  for (const md of upcoming) {
-    for (const m of md.matches || []) {
-      const home = normalizePlanTeam(m.home);
-      const away = normalizePlanTeam(m.away);
-      if (!fixturesByTeam.has(home)) fixturesByTeam.set(home, []);
-      if (!fixturesByTeam.has(away)) fixturesByTeam.set(away, []);
-
-      const awayRank = strengthRankByTeam.get(away) || Math.ceil(totalTeams / 2);
-      const homeRank = strengthRankByTeam.get(home) || Math.ceil(totalTeams / 2);
-
-      // Basis-Schwierigkeit 1 (leicht) .. 5 (sehr schwer) anhand Gegner-Rang
-      // Rang 1 -> 5.0, Rang 18 -> 1.0
-      const baseDiffVsAway = 5 - ((awayRank - 1) / Math.max(1, totalTeams - 1)) * 4;
-      const baseDiffVsHome = 5 - ((homeRank - 1) / Math.max(1, totalTeams - 1)) * 4;
-
-      const homeDiff = Math.max(1, Math.min(5, Math.round((baseDiffVsAway - 0.35) * 10) / 10));
-      const awayDiff = Math.max(1, Math.min(5, Math.round((baseDiffVsHome + 0.35) * 10) / 10));
-
-      fixturesByTeam.get(home).push({
-        matchday: md.number,
-        dateRange: md.dateRange,
-        opponent: away,
-        opponentShort: KICKBASE_TO_SHORT_TEAM[away] || away.slice(0, 3).toUpperCase(),
-        isHome: true,
-        opponentStrengthRank: awayRank,
-        difficulty: homeDiff,
-      });
-
-      fixturesByTeam.get(away).push({
-        matchday: md.number,
-        dateRange: md.dateRange,
-        opponent: home,
-        opponentShort: KICKBASE_TO_SHORT_TEAM[home] || home.slice(0, 3).toUpperCase(),
-        isHome: false,
-        opponentStrengthRank: homeRank,
-        difficulty: awayDiff,
-      });
-    }
-  }
-
-  // Enriched Advisor-Spieler pro Team fuer konkrete Spieler-Hinweise
+  // Enriched Spieler pro Team fuer konkrete Empfehlungen
   const playersByTeam = new Map();
   for (const rawEntry of advisorPlayers || []) {
     const p = enrichPlayer(rawEntry, catalogMap);
@@ -322,116 +377,192 @@ function buildFixtureRadar(spielplan, allPlayersRaw, advisorPlayers, catalogMap,
     playersByTeam.get(p.team).push(p);
   }
 
-  const teamRatings = {};
-  const ratingList = [];
+  const fixturesByTeam = new Map();
+  for (const md of upcoming) {
+    for (const m of md.matches || []) {
+      const home = normalizeTeamName(m.home);
+      const away = normalizeTeamName(m.away);
+      if (!fixturesByTeam.has(home)) fixturesByTeam.set(home, []);
+      if (!fixturesByTeam.has(away)) fixturesByTeam.set(away, []);
+
+      const buildFix = (opponent, isHome) => {
+        const oppTable = tableByTeam[opponent] || null;
+        const oppStrength = teamStrengthScore(opponent);
+        // Heimvorteil verschiebt empfundene Gegnerstaerke leicht nach unten
+        const effectiveOppStrength = Math.max(0, Math.min(100, oppStrength + (isHome ? -8 : 8)));
+        const tier =
+          effectiveOppStrength <= 38
+            ? 'easy'
+            : effectiveOppStrength >= 66
+              ? 'hard'
+              : 'medium';
+        return {
+          matchday: md.number,
+          dateRange: md.dateRange,
+          opponent,
+          opponentShort: KICKBASE_TO_SHORT_TEAM[opponent] || opponent.slice(0, 3).toUpperCase(),
+          isHome,
+          opponentRank: oppTable?.rank ?? null,
+          opponentPoints: oppTable?.points ?? null,
+          opponentForm: oppTable?.formString || null,
+          opponentFormPoints: oppTable?.formPoints ?? null,
+          effectiveOppStrength,
+          tier,
+        };
+      };
+
+      fixturesByTeam.get(home).push(buildFix(away, true));
+      fixturesByTeam.get(away).push(buildFix(home, false));
+    }
+  }
+
+  const byTeam = {};
+  const list = [];
 
   for (const [team, fixtures] of fixturesByTeam.entries()) {
-    const avgDifficulty =
+    const tInfo = tableByTeam[team] || null;
+    const ownStrength = teamStrengthScore(team);
+    const avgOppStrength =
       fixtures.length > 0
-        ? Math.round((fixtures.reduce((s, f) => s + f.difficulty, 0) / fixtures.length) * 100) / 100
-        : 3;
-    const homeGames = fixtures.filter((f) => f.isHome).length;
-    const strengthRank = strengthRankByTeam.get(team) || 9;
+        ? Math.round(fixtures.reduce((s, f) => s + f.effectiveOppStrength, 0) / fixtures.length)
+        : 50;
+    const avgOppRank =
+      fixtures.length > 0 && fixtures.every((f) => f.opponentRank != null)
+        ? Math.round((fixtures.reduce((s, f) => s + f.opponentRank, 0) / fixtures.length) * 10) / 10
+        : null;
 
-    const candidates = (playersByTeam.get(team) || [])
+    // Attraktivitaet fuer Kickbase: eigene Form/Tabellenstaerke MINUS Gegnerstaerke
+    const attractiveness = ownStrength - avgOppStrength;
+
+    // Klare, nachvollziehbare Begruendung auf Basis von Tabelle + 5-Spiele-Form
+    const easiestOpp = [...fixtures].sort((a, b) => a.effectiveOppStrength - b.effectiveOppStrength)[0] || null;
+    const hardestOpp = [...fixtures].sort((a, b) => b.effectiveOppStrength - a.effectiveOppStrength)[0] || null;
+
+    let reason = '';
+    if (tInfo) {
+      const formDesc = `${tInfo.formPoints}/15 Pkt aus den letzten 5 (${tInfo.formString})`;
+      if (easiestOpp && easiestOpp.opponentRank != null) {
+        reason = `Platz ${tInfo.rank} (${tInfo.points} Pkt, Form: ${formDesc}) – trifft u. a. auf ${easiestOpp.opponent} (Platz ${easiestOpp.opponentRank}, Form ${easiestOpp.opponentForm || '–'}).`;
+      } else {
+        reason = `Platz ${tInfo.rank} (${tInfo.points} Pkt, Form: ${formDesc}).`;
+      }
+    }
+
+    let toughReason = '';
+    if (tInfo && hardestOpp && hardestOpp.opponentRank != null) {
+      const hardOpps = fixtures.filter((f) => f.opponentRank != null && f.opponentRank <= 6);
+      const oppListText = (hardOpps.length > 0 ? hardOpps : [hardestOpp])
+        .map((f) => `${f.opponent} (#${f.opponentRank})`)
+        .join(' & ');
+      toughReason = `Platz ${tInfo.rank} (${tInfo.formPoints}/15 Pkt zuletzt) – mit ${oppListText} wartet ein anspruchsvolles Programm.`;
+    }
+
+    const keyPlayers = (playersByTeam.get(team) || [])
       .filter((p) => p.status === 0 && (p.startElfProbability == null || p.startElfProbability <= 2))
-      .sort((a, b) => {
-        const scoreA = (a.avgPoints || 0) * 1.4 + Math.max(0, (a.predictedChange7d || a.predictedChange || 0) / 25000);
-        const scoreB = (b.avgPoints || 0) * 1.4 + Math.max(0, (b.predictedChange7d || b.predictedChange || 0) / 25000);
-        return scoreB - scoreA;
-      })
+      .sort((a, b) => ((b.avgPoints || 0) * 1.3 + Math.max(0, (b.predictedChange7d || 0) / 30000)) - ((a.avgPoints || 0) * 1.3 + Math.max(0, (a.predictedChange7d || 0) / 30000)))
       .slice(0, 3)
       .map((p) => ({
         playerId: p.playerId,
-        fullName: p.fullName,
         name: p.name,
+        fullName: p.fullName,
         position: p.position,
-        marketValue: p.marketValue,
         avgPoints: p.avgPoints,
         predictedChange: p.predictedChange,
-        predictedChange7d: p.predictedChange7d,
-        startElfProbability: p.startElfProbability,
       }));
 
     const item = {
       team,
-      teamShort: KICKBASE_TO_SHORT_TEAM[team] || team.slice(0, 3).toUpperCase(),
-      strengthRank,
-      avgDifficulty,
-      homeGames,
-      label: avgDifficulty <= 2.45 ? 'Top-Spielplan' : avgDifficulty <= 3.2 ? 'Ausgewogen' : 'Knackig',
+      short: KICKBASE_TO_SHORT_TEAM[team] || team.slice(0, 3).toUpperCase(),
+      rank: tInfo?.rank ?? null,
+      points: tInfo?.points ?? null,
+      goalDiff: tInfo?.goalDiff ?? null,
+      form: tInfo?.form || [],
+      formString: tInfo?.formString || null,
+      formPoints: tInfo?.formPoints ?? null,
+      avgOppRank,
+      avgOppStrength,
+      attractiveness,
+      reason,
+      toughReason,
       fixtures,
-      keyPlayers: candidates,
+      keyPlayers,
     };
 
-    teamRatings[team] = item;
-    ratingList.push(item);
+    byTeam[team] = item;
+    list.push(item);
   }
 
-  // Fuer "Grüner Spielplan" bevorzugen wir leichtes Programm (niedrige avgDifficulty),
-  // bei Gleichstand staerkere Teams (bessere Kickbase-Punkteausbeute).
-  const greenSchedule = [...ratingList]
-    .sort((a, b) => (a.avgDifficulty + a.strengthRank * 0.04) - (b.avgDifficulty + b.strengthRank * 0.04))
-    .slice(0, 5);
+  // Top 3 Teams mit der besten Kombination aus eigener Form/Tabelle + schwaecheren Gegnern
+  const hotTeams = [...list]
+    .sort((a, b) => b.attractiveness - a.attractiveness)
+    .slice(0, 3);
 
-  const toughSchedule = [...ratingList]
-    .sort((a, b) => b.avgDifficulty - a.avgDifficulty)
-    .slice(0, 4);
+  // 2-3 Teams mit besonders unangenehmem Programm (starke Gegner + eigene Schwaeche)
+  const toughTeams = [...list]
+    .sort((a, b) => a.attractiveness - b.attractiveness)
+    .slice(0, 3);
 
   return {
+    hasRealTable,
     upcomingMatchdays: upcoming.map((m) => ({
       number: m.number,
       dateRange: m.dateRange,
-      startDate: m.startDate,
-      endDate: m.endDate,
-      matches: (m.matches || []).map((x) => ({
-        home: normalizePlanTeam(x.home),
-        away: normalizePlanTeam(x.away),
-      })),
     })),
-    teamRatings,
-    greenSchedule,
-    toughSchedule,
+    hotTeams,
+    toughTeams,
+    byTeam,
   };
 }
 
 /**
- * Wertet Spieltags-Daten aus (data.json / spieltag-{N}.json vs spieltag-{N-1}.json,
- * startelf-md{N}.json, optimal-md-{N}-final.json).
+ * Baut pro Manager strikt persoenliche Daten fuer Spieltag, Transfers (7T) und
+ * Ausblick/Empfehlungen.
  */
-function buildMatchdayRecap(dataJson, prevMatchdayJson, startelfJson, optimalJson) {
+function buildPersonalizedManagers(dataJson, startelfJson, transfersRaw, advisorData, catalogMap, formRadar, techAccounts, windowEndDate) {
   const matchday = dataJson.matchday || 0;
-  const prevRanksById = new Map();
-  const prevPointsById = new Map();
+  const windowEndMs = windowEndDate.getTime();
+  const windowStartMs = windowEndMs - TRANSFER_WINDOW_DAYS * 24 * 60 * 60 * 1000;
 
-  if (prevMatchdayJson && Array.isArray(prevMatchdayJson.leagues)) {
-    for (const lg of prevMatchdayJson.leagues) {
-      for (const u of lg.users || []) {
-        prevRanksById.set(String(u.id), u.rank);
-        prevPointsById.set(String(u.id), parseGermanInt(u.points));
-      }
-    }
-  }
-
-  const allManagers = [];
-  const leaguesSummary = [];
-  const managerMatchdayById = {};
+  // 1. Manager-Grundliste + Spieltags-Auswertung (nur aktueller Spieltag!)
+  const managersList = [];
+  const mdByManagerId = {};
 
   for (const lg of dataJson.leagues || []) {
     const leagueKey = normalizeLeagueKey(lg.name);
-    const users = (lg.users || []).map((u) => {
-      const id = String(u.id);
-      const pts = parseGermanInt(u.points);
-      const mdPts = parseGermanInt(u.pointsMatchday);
-      const prevRank = prevRanksById.get(id) ?? null;
-      const rankDelta = prevRank != null ? prevRank - u.rank : 0; // positiv = aufgestiegen
-      const startelfEntry = startelfJson?.managers?.[id] || null;
+    const users = (lg.users || []).map((u) => ({
+      id: String(u.id),
+      name: u.name,
+      leagueKey,
+      leagueName: leagueDisplayName(leagueKey),
+      leagueColor: lg.color,
+      seasonRank: u.rank,
+      matchdayPoints: parseGermanInt(u.pointsMatchday),
+    }));
+
+    const sortedByMd = [...users].sort((a, b) => b.matchdayPoints - a.matchdayPoints);
+    const leagueAvg = users.length > 0
+      ? Math.round(users.reduce((s, u) => s + u.matchdayPoints, 0) / users.length)
+      : 0;
+
+    for (const u of users) {
+      managersList.push({
+        id: u.id,
+        name: u.name,
+        leagueKey: u.leagueKey,
+        leagueName: u.leagueName,
+        leagueColor: u.leagueColor,
+        rank: u.seasonRank,
+      });
+
+      const mdRank = sortedByMd.findIndex((x) => x.id === u.id) + 1;
+      const startelfEntry = startelfJson?.managers?.[u.id] || null;
       const lineup = Array.isArray(startelfEntry?.lineup) ? startelfEntry.lineup : [];
       const sortedLineup = [...lineup].sort((a, b) => (b.points || 0) - (a.points || 0));
+
       const topPlayers = sortedLineup.slice(0, 3).map((p) => ({
         id: String(p.id),
         name: p.name || p.lastName,
-        team: p.teamName || null,
+        team: normalizeTeamName(p.teamName),
         points: p.points || 0,
       }));
       const flopPlayers = sortedLineup
@@ -441,153 +572,46 @@ function buildMatchdayRecap(dataJson, prevMatchdayJson, startelfJson, optimalJso
         .map((p) => ({
           id: String(p.id),
           name: p.name || p.lastName,
-          team: p.teamName || null,
+          team: normalizeTeamName(p.teamName),
           points: p.points || 0,
         }));
 
-      const obj = {
-        id,
-        name: u.name,
-        leagueKey,
-        leagueName: leagueDisplayName(leagueKey),
-        leagueColor: lg.color,
-        rank: u.rank,
-        prevRank,
-        rankDelta,
-        totalPoints: pts,
-        matchdayPoints: mdPts,
-        estimatedBudget: parseGermanInt(u.estimatedBudget),
+      const diffToAvg = u.matchdayPoints - leagueAvg;
+      const top1 = topPlayers[0];
+      const flop1 = flopPlayers[0];
+      let note = `Mit ${formatPoints(u.matchdayPoints)} Punkten landest du an Spieltag ${matchday} auf Platz ${mdRank} von ${users.length} in ${u.leagueName} (${diffToAvg >= 0 ? '+' : ''}${formatPoints(diffToAvg)} vs. Ligaschnitt).`;
+      if (top1) {
+        note += ` Bester Scorer deiner Elf war ${top1.name} (${top1.points} Pkt)`;
+        if (flop1 && flop1.points <= 0) {
+          note += `, während ${flop1.name} (${flop1.points} Pkt) Punkte liegen ließ.`;
+        } else {
+          note += '.';
+        }
+      }
+
+      mdByManagerId[u.id] = {
+        points: u.matchdayPoints,
+        leagueAvg,
+        diffToAvg,
+        matchdayRank: mdRank,
+        leagueSize: users.length,
         topPlayers,
         flopPlayers,
+        note,
       };
-      allManagers.push(obj);
-      return obj;
-    });
-
-    const sortedByMd = [...users].sort((a, b) => b.matchdayPoints - a.matchdayPoints);
-    const avgMd = users.length > 0 ? Math.round(users.reduce((s, u) => s + u.matchdayPoints, 0) / users.length) : 0;
-    const winner = sortedByMd[0] || null;
-    const loser = sortedByMd[sortedByMd.length - 1] || null;
-    const biggestClimber = [...users].sort((a, b) => b.rankDelta - a.rankDelta)[0] || null;
-    const biggestDropper = [...users].sort((a, b) => a.rankDelta - b.rankDelta)[0] || null;
-
-    const leader = users.find((u) => u.rank === 1) || users[0] || null;
-    const runnerUp = users.find((u) => u.rank === 2) || users[1] || null;
-    const leaderGap = leader && runnerUp ? leader.totalPoints - runnerUp.totalPoints : null;
-
-    // Pro Manager Abstaende zum Vordermann/Hintermann
-    users.forEach((u, idx) => {
-      const above = idx > 0 ? users[idx - 1] : null;
-      const below = idx < users.length - 1 ? users[idx + 1] : null;
-      const mdRankInLeague = sortedByMd.findIndex((x) => x.id === u.id) + 1;
-      managerMatchdayById[u.id] = {
-        ...u,
-        leagueAvg: avgMd,
-        diffToLeagueAvg: u.matchdayPoints - avgMd,
-        matchdayRankInLeague: mdRankInLeague,
-        leagueSize: users.length,
-        gapToAbove: above ? above.totalPoints - u.totalPoints : null,
-        aboveName: above ? above.name : null,
-        gapToBelow: below ? u.totalPoints - below.totalPoints : null,
-        belowName: below ? below.name : null,
-      };
-    });
-
-    leaguesSummary.push({
-      key: leagueKey,
-      name: leagueDisplayName(leagueKey),
-      color: lg.color,
-      avgPoints: avgMd,
-      winner: winner ? { id: winner.id, name: winner.name, points: winner.matchdayPoints, rank: winner.rank } : null,
-      loser: loser ? { id: loser.id, name: loser.name, points: loser.matchdayPoints, rank: loser.rank } : null,
-      leader: leader ? { id: leader.id, name: leader.name, totalPoints: leader.totalPoints, gapToSecond: leaderGap, runnerUpName: runnerUp?.name || null } : null,
-      biggestClimber: biggestClimber && biggestClimber.rankDelta > 0
-        ? { id: biggestClimber.id, name: biggestClimber.name, rank: biggestClimber.rank, delta: biggestClimber.rankDelta }
-        : null,
-      biggestDropper: biggestDropper && biggestDropper.rankDelta < 0
-        ? { id: biggestDropper.id, name: biggestDropper.name, rank: biggestDropper.rank, delta: biggestDropper.rankDelta }
-        : null,
-      top3Matchday: sortedByMd.slice(0, 3).map((u) => ({
-        id: u.id,
-        name: u.name,
-        points: u.matchdayPoints,
-        rank: u.rank,
-        rankDelta: u.rankDelta,
-      })),
-    });
-  }
-
-  const sortedOverall = [...allManagers].sort((a, b) => b.matchdayPoints - a.matchdayPoints);
-  const overallAvg = allManagers.length > 0
-    ? Math.round(allManagers.reduce((s, u) => s + u.matchdayPoints, 0) / allManagers.length)
-    : 0;
-
-  sortedOverall.forEach((u, idx) => {
-    if (managerMatchdayById[u.id]) {
-      managerMatchdayById[u.id].overallMatchdayRank = idx + 1;
-      managerMatchdayById[u.id].totalParticipants = sortedOverall.length;
     }
-  });
-
-  // Top-Spieler der Elf des Spieltags
-  const optimalLineup = Array.isArray(optimalJson?.lineup) ? optimalJson.lineup : [];
-  const mvpPlayer = [...optimalLineup].sort((a, b) => (b.points || 0) - (a.points || 0))[0] || null;
-
-  return {
-    matchday,
-    overallAvg,
-    overallWinner: sortedOverall[0]
-      ? {
-          id: sortedOverall[0].id,
-          name: sortedOverall[0].name,
-          leagueName: sortedOverall[0].leagueName,
-          points: sortedOverall[0].matchdayPoints,
-        }
-      : null,
-    overallTop3: sortedOverall.slice(0, 3).map((u) => ({
-      id: u.id,
-      name: u.name,
-      leagueName: u.leagueName,
-      points: u.matchdayPoints,
-    })),
-    mvpPlayer: mvpPlayer
-      ? {
-          id: String(mvpPlayer.id),
-          name: mvpPlayer.name || mvpPlayer.lastName,
-          team: mvpPlayer.teamName || null,
-          points: mvpPlayer.points || 0,
-          marketValue: mvpPlayer.marketValue || 0,
-        }
-      : null,
-    optimalTeamPoints: optimalJson?.totalPoints || null,
-    leagues: leaguesSummary,
-    byManagerId: managerMatchdayById,
-  };
-}
-
-/**
- * Analysiert Transfers im Wochenfenster (letzte 7 Tage ab windowEnd) inklusive
- * Ausgaben, Einnahmen, Netto-Bilanz, Overpay und realisiertem Trade-Gewinn.
- */
-function buildWeeklyTransfers(transfersRaw, managersList, techAccounts, windowEndDate) {
-  const windowEndMs = windowEndDate.getTime();
-  const windowStartMs = windowEndMs - TRANSFER_WINDOW_DAYS * 24 * 60 * 60 * 1000;
-
-  const managerByLowerName = new Map();
-  for (const m of managersList) {
-    managerByLowerName.set(String(m.name).toLowerCase(), m);
   }
 
-  // Chronologisch sortieren (aelteste zuerst), damit lastBuy-Tracking sauber laeuft
-  const sorted = [...(transfersRaw || [])]
-    .filter((t) => t && t.date)
+  // 2. Persoenliche Transfer-Bilanz (nur letzte 7 Tage, mit historischem Last-Buy fuer echte Flips)
+  const managerByLowerName = new Map(managersList.map((m) => [m.name.toLowerCase(), m]));
+  const sortedTransfers = [...(transfersRaw || [])]
+    .filter((t) => t?.date)
     .sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
 
-  // Letzter Kaufpreis je (leagueKey|managerLower|playerId)
   const lastBuyMap = new Map();
-  const weeklyEvents = [];
+  const eventsByManagerId = new Map(managersList.map((m) => [m.id, []]));
 
-  for (const t of sorted) {
+  for (const t of sortedTransfers) {
     const ts = Date.parse(t.date);
     if (!Number.isFinite(ts) || ts > windowEndMs) continue;
 
@@ -599,29 +623,24 @@ function buildWeeklyTransfers(transfersRaw, managersList, techAccounts, windowEn
     if (t.buyerName && !techAccounts.names.has(String(t.buyerName).toLowerCase())) {
       const buyerLower = String(t.buyerName).toLowerCase();
       const buyKey = `${leagueKey}|${buyerLower}|${t.playerId}`;
-      lastBuyMap.set(buyKey, { price, date: t.date, ts });
+      lastBuyMap.set(buyKey, { price, ts });
 
       if (inWindow) {
-        const overpay = mv > 0 ? price - mv : null;
-        const overpayPct = mv > 0 ? Math.round(((price - mv) / mv) * 1000) / 10 : null;
         const mgr = managerByLowerName.get(buyerLower);
-        weeklyEvents.push({
-          id: `${t.id}-buy`,
-          type: 'buy',
-          date: t.date,
-          leagueKey,
-          leagueName: leagueDisplayName(leagueKey),
-          managerId: mgr?.id || null,
-          managerName: mgr?.name || t.buyerName,
-          playerId: String(t.playerId),
-          playerName: t.playerName,
-          price,
-          marketValue: mv,
-          overpay,
-          overpayPct,
-          realizedProfit: null,
-          heldDays: null,
-        });
+        if (mgr) {
+          const overpayPct = mv > 0 ? Math.round(((price - mv) / mv) * 1000) / 10 : null;
+          eventsByManagerId.get(mgr.id).push({
+            id: `${t.id}-buy`,
+            type: 'buy',
+            date: t.date,
+            playerId: String(t.playerId),
+            playerName: t.playerName,
+            price,
+            overpayPct,
+            realizedProfit: null,
+            heldDays: null,
+          });
+        }
       }
     }
 
@@ -639,417 +658,224 @@ function buildWeeklyTransfers(transfersRaw, managersList, techAccounts, windowEn
 
       if (inWindow) {
         const mgr = managerByLowerName.get(sellerLower);
-        weeklyEvents.push({
-          id: `${t.id}-sell`,
-          type: 'sell',
-          date: t.date,
-          leagueKey,
-          leagueName: leagueDisplayName(leagueKey),
-          managerId: mgr?.id || null,
-          managerName: mgr?.name || t.sellerName,
-          playerId: String(t.playerId),
-          playerName: t.playerName,
-          price,
-          marketValue: mv,
-          overpay: null,
-          overpayPct: null,
-          realizedProfit,
-          heldDays,
-        });
+        if (mgr) {
+          eventsByManagerId.get(mgr.id).push({
+            id: `${t.id}-sell`,
+            type: 'sell',
+            date: t.date,
+            playerId: String(t.playerId),
+            playerName: t.playerName,
+            price,
+            overpayPct: null,
+            realizedProfit,
+            heldDays,
+          });
+        }
       }
     }
   }
 
-  // Neueste Events zuerst fuer Anzeige
-  weeklyEvents.sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
+  // 3. Persoenlicher Ausblick + Kader-Check + Budget-Markt-Picks (angereichert mit Tabelle & Form!)
+  const teamRadar = formRadar.byTeam || {};
+  const attachFormMatchup = (p) => {
+    const tr = p?.team ? teamRadar[p.team] : null;
+    const nextFix = tr?.fixtures?.[0] || null;
+    return {
+      ...p,
+      teamRank: tr?.rank ?? null,
+      teamForm: tr?.formString || null,
+      nextOpponent: nextFix
+        ? {
+            short: nextFix.opponentShort,
+            name: nextFix.opponent,
+            isHome: nextFix.isHome,
+            rank: nextFix.opponentRank,
+            form: nextFix.opponentForm,
+            tier: nextFix.tier,
+          }
+        : null,
+      upcomingFixtures: (tr?.fixtures || []).map((f) => ({
+        short: f.opponentShort,
+        isHome: f.isHome,
+        rank: f.opponentRank,
+        tier: f.tier,
+      })),
+    };
+  };
 
-  const summarizeEvents = (events) => {
+  const marketByLeague = {};
+  for (const key of ['LIGA1', 'LIGA2', 'LIGA3']) {
+    const lgData = advisorData?.leagues?.[key];
+    const market = (lgData?.marketRecommendations || [])
+      .map((p) => attachFormMatchup(enrichPlayer(p, catalogMap)))
+      .filter((p) => p.status === 0 && (p.buyRecommended || p.predictedChange >= 25_000))
+      .sort((a, b) => {
+        const trA = teamRadar[a.team]?.attractiveness ?? 0;
+        const trB = teamRadar[b.team]?.attractiveness ?? 0;
+        const sA = (a.playRecommended ? 35 : 0) + (a.tradeRecommended ? 20 : 0) + (a.predictedChange / 12_000) + ((a.avgPoints || 0) * 0.35) + trA * 0.25;
+        const sB = (b.playRecommended ? 35 : 0) + (b.tradeRecommended ? 20 : 0) + (b.predictedChange / 12_000) + ((b.avgPoints || 0) * 0.35) + trB * 0.25;
+        return sB - sA;
+      });
+    marketByLeague[key] = market;
+  }
+
+  const byManagerId = {};
+  for (const m of managersList) {
+    const events = (eventsByManagerId.get(m.id) || []).sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
     const buys = events.filter((e) => e.type === 'buy');
     const sells = events.filter((e) => e.type === 'sell');
     const spent = buys.reduce((s, e) => s + e.price, 0);
     const received = sells.reduce((s, e) => s + e.price, 0);
     const netBalance = received - spent;
-
-    const overpayPcts = buys.filter((e) => e.overpayPct != null && e.overpayPct >= -20 && e.overpayPct <= 300).map((e) => e.overpayPct);
-    const avgOverpayPct = overpayPcts.length > 0
-      ? Math.round((overpayPcts.reduce((s, v) => s + v, 0) / overpayPcts.length) * 10) / 10
+    const realized = sells.filter((e) => e.realizedProfit != null);
+    const realizedProfit = realized.reduce((s, e) => s + e.realizedProfit, 0);
+    const overpays = buys.filter((e) => e.overpayPct != null && e.overpayPct >= -20 && e.overpayPct <= 300).map((e) => e.overpayPct);
+    const avgOverpayPct = overpays.length > 0
+      ? Math.round((overpays.reduce((s, v) => s + v, 0) / overpays.length) * 10) / 10
       : null;
+    const bestFlip = [...realized].sort((a, b) => b.realizedProfit - a.realizedProfit)[0] || null;
 
-    const realizedEvents = sells.filter((e) => e.realizedProfit != null);
-    const realizedProfit = realizedEvents.reduce((s, e) => s + e.realizedProfit, 0);
+    const lgData = advisorData?.leagues?.[m.leagueKey] || {};
+    const squadRaw = lgData.managerSquads?.[m.id] || [];
+    const squad = squadRaw.map((p) => attachFormMatchup(enrichPlayer(p, catalogMap)));
+    const budgetInfo = lgData.managerBudgets?.[m.id] || null;
+    const availableBudget = budgetInfo?.availableBudget ?? budgetInfo?.budget ?? null;
 
-    const topBuy = [...buys].sort((a, b) => b.price - a.price)[0] || null;
-    const topSale = [...sells].sort((a, b) => b.price - a.price)[0] || null;
-    const topOverpay = [...buys]
-      .filter((e) => e.overpay != null && e.overpay > 0)
-      .sort((a, b) => b.overpay - a.overpay)[0] || null;
-    const bestFlip = [...realizedEvents].sort((a, b) => b.realizedProfit - a.realizedProfit)[0] || null;
-    const worstFlip = [...realizedEvents].sort((a, b) => a.realizedProfit - b.realizedProfit)[0] || null;
+    // Kader-Warnungen (kompakt: max 4)
+    const squadAlerts = squad
+      .filter((p) => p.sellRecommended || p.status !== 0)
+      .sort((a, b) => ((b.status !== 0 ? 100 : 0) + (b.sellRecommended ? 40 : 0)) - ((a.status !== 0 ? 100 : 0) + (a.sellRecommended ? 40 : 0)))
+      .slice(0, 4);
 
-    return {
-      totalCount: events.length,
-      buyCount: buys.length,
-      sellCount: sells.length,
-      spent,
-      received,
-      netBalance,
-      avgOverpayPct,
-      realizedProfit,
-      realizedCount: realizedEvents.length,
-      topBuy,
-      topSale,
-      topOverpay,
-      bestFlip: bestFlip && bestFlip.realizedProfit > 0 ? bestFlip : null,
-      worstFlip: worstFlip && worstFlip.realizedProfit < 0 ? worstFlip : null,
-    };
-  };
-
-  const overall = summarizeEvents(weeklyEvents);
-
-  // Pro Liga
-  const byLeague = {};
-  for (const key of ['LIGA1', 'LIGA2', 'LIGA3']) {
-    const lgEvents = weeklyEvents.filter((e) => e.leagueKey === key);
-    byLeague[key] = {
-      leagueKey: key,
-      leagueName: leagueDisplayName(key),
-      ...summarizeEvents(lgEvents),
-      highlights: lgEvents.slice(0, 12),
-    };
-  }
-
-  // Pro Manager
-  const byManagerId = {};
-  const managerBalances = [];
-  for (const m of managersList) {
-    const mgrEvents = weeklyEvents.filter((e) => e.managerId === m.id || e.managerName.toLowerCase() === m.name.toLowerCase());
-    const stats = summarizeEvents(mgrEvents);
-    const entry = {
-      managerId: m.id,
-      managerName: m.name,
-      leagueKey: m.leagueKey,
-      leagueName: m.leagueName,
-      ...stats,
-      events: mgrEvents.slice(0, 20),
-    };
-    byManagerId[m.id] = entry;
-    managerBalances.push({
-      managerId: m.id,
-      managerName: m.name,
-      leagueKey: m.leagueKey,
-      leagueName: m.leagueName,
-      buyCount: stats.buyCount,
-      sellCount: stats.sellCount,
-      spent: stats.spent,
-      received: stats.received,
-      netBalance: stats.netBalance,
-      realizedProfit: stats.realizedProfit,
-      realizedCount: stats.realizedCount,
-    });
-  }
-
-  // Aktivste Trader & Top-Gewinner der Woche
-  const mostActive = [...managerBalances]
-    .sort((a, b) => (b.buyCount + b.sellCount) - (a.buyCount + a.sellCount))
-    .slice(0, 5);
-  const topRealizedTraders = [...managerBalances]
-    .filter((m) => m.realizedCount > 0)
-    .sort((a, b) => b.realizedProfit - a.realizedProfit)
-    .slice(0, 5);
-
-  return {
-    windowStart: new Date(windowStartMs).toISOString(),
-    windowEnd: new Date(windowEndMs).toISOString(),
-    windowDays: TRANSFER_WINDOW_DAYS,
-    overall,
-    byLeague,
-    byManagerId,
-    managerBalances,
-    mostActive,
-    topRealizedTraders,
-    recentGlobal: weeklyEvents.slice(0, 25),
-  };
-}
-
-/**
- * Baut Empfehlungen fuer die kommende Woche:
- *  - Liga-Marktchancen (kombiniert mit Spielplan-Rating)
- *  - Liga-uebergreifende Watchlist (steigender MW + Startelf + guter Spielplan)
- *  - Personalisierte Kader-Warnungen & bezahlbare Markt-Picks pro Manager
- */
-function buildRecommendations(advisorData, catalogMap, fixtureRadar, managersList) {
-  const teamRatings = fixtureRadar?.teamRatings || {};
-  const attachSchedule = (p) => {
-    const tr = p?.team ? teamRatings[p.team] : null;
-    return {
-      ...p,
-      scheduleDifficulty: tr ? tr.avgDifficulty : null,
-      scheduleLabel: tr ? tr.label : null,
-      nextFixtures: tr ? tr.fixtures.map((f) => `${f.isHome ? 'H' : 'A'} ${f.opponentShort}`) : [],
-    };
-  };
-
-  // Watchlist: Bundesliga-Spieler mit Aufwaertstrend + Fit + hoher Startelf-Chance + gutem Spielplan
-  const allEnriched = (advisorData?.players || []).map((p) => attachSchedule(enrichPlayer(p, catalogMap)));
-
-  const watchlist = allEnriched
-    .filter((p) => {
-      if (p.status !== 0) return false;
-      if (p.startElfProbability != null && p.startElfProbability > 2) return false;
-      const rising = (p.predictedChange7d || p.predictedChange || 0) > 50_000;
-      const goodSchedule = p.scheduleDifficulty != null && p.scheduleDifficulty <= 2.9;
-      return rising && goodSchedule;
-    })
-    .sort((a, b) => {
-      const scoreA = ((a.predictedChange7d || a.predictedChange || 0) / 100_000) + ((a.avgPoints || 0) / 25) + (3.5 - (a.scheduleDifficulty || 3)) * 2;
-      const scoreB = ((b.predictedChange7d || b.predictedChange || 0) / 100_000) + ((b.avgPoints || 0) / 25) + (3.5 - (b.scheduleDifficulty || 3)) * 2;
-      return scoreB - scoreA;
-    })
-    .slice(0, 8);
-
-  const byLeague = {};
-  const byManagerId = {};
-
-  for (const key of ['LIGA1', 'LIGA2', 'LIGA3']) {
-    const lgData = advisorData?.leagues?.[key];
-    if (!lgData) continue;
-
-    const marketEnriched = (lgData.marketRecommendations || [])
-      .map((p) => attachSchedule(enrichPlayer(p, catalogMap)))
-      .filter((p) => p.status === 0);
-
-    const marketPicks = [...marketEnriched]
-      .filter((p) => p.buyRecommended || p.predictedChange >= 25_000)
+    // Eigene fitte Stammspieler mit interessantem Matchup am naechsten Spieltag (leichter Gegner / starke eigene Form)
+    const squadSpotlight = squad
+      .filter((p) => p.status === 0 && (p.startElfProbability == null || p.startElfProbability <= 2) && p.nextOpponent)
       .sort((a, b) => {
-        const sA = (a.playRecommended ? 40 : 0) + (a.tradeRecommended ? 25 : 0) + (a.predictedChange / 10_000) + ((a.avgPoints || 0) * 0.4) - ((a.scheduleDifficulty || 3) * 5);
-        const sB = (b.playRecommended ? 40 : 0) + (b.tradeRecommended ? 25 : 0) + (b.predictedChange / 10_000) + ((b.avgPoints || 0) * 0.4) - ((b.scheduleDifficulty || 3) * 5);
-        return sB - sA;
+        const scoreA = (a.nextOpponent?.tier === 'easy' ? 30 : a.nextOpponent?.tier === 'hard' ? -15 : 0) + (teamRadar[a.team]?.attractiveness ?? 0) * 0.4 + (a.avgPoints || 0) * 0.25;
+        const scoreB = (b.nextOpponent?.tier === 'easy' ? 30 : b.nextOpponent?.tier === 'hard' ? -15 : 0) + (teamRadar[b.team]?.attractiveness ?? 0) * 0.4 + (b.avgPoints || 0) * 0.25;
+        return scoreB - scoreA;
       })
-      .slice(0, 6);
+      .slice(0, 3);
 
-    byLeague[key] = {
-      leagueKey: key,
-      leagueName: leagueDisplayName(key),
-      marketCount: marketEnriched.length,
-      marketPicks,
-    };
+    // Bezahlbare Markt-Empfehlungen (kompakt: max 3)
+    const marketPicks = (marketByLeague[m.leagueKey] || [])
+      .filter((p) => availableBudget == null || p.marketValue <= availableBudget)
+      .slice(0, 3);
 
-    const managerSquads = lgData.managerSquads || {};
-    const managerBudgets = lgData.managerBudgets || {};
+    // Deterministischer persoenlicher Ausblick-Satz
+    const outlookParts = [];
+    const injuredCount = squad.filter((p) => p.status !== 0).length;
+    if (injuredCount > 0) {
+      const names = squad.filter((p) => p.status !== 0).slice(0, 2).map((p) => p.name).join(' & ');
+      outlookParts.push(`Handlungsbedarf im Kader: ${names} (${injuredCount} angeschlagen/gesperrt).`);
+    } else if (squadAlerts.length > 0) {
+      outlookParts.push(`${squadAlerts[0].name} zeigt ein Verkaufssignal (${squadAlerts[0].sellReasonLabels[0] || 'Marktwert'}).`);
+    } else {
+      outlookParts.push('Dein Kader wirkt fit und ohne akute Baustellen.');
+    }
+    if (squadSpotlight[0]?.nextOpponent?.rank != null) {
+      const sp = squadSpotlight[0];
+      outlookParts.push(
+        `Für Spieltag ${formRadar.upcomingMatchdays?.[0]?.number || matchday + 1} besonders spannend: ${sp.name} (${sp.team}, Platz ${sp.teamRank ?? '–'}) ${sp.nextOpponent.isHome ? 'zu Hause gegen' : 'bei'} ${sp.nextOpponent.name} (Platz ${sp.nextOpponent.rank}).`
+      );
+    }
 
-    for (const [managerId, squadRaw] of Object.entries(managerSquads)) {
-      const squad = (squadRaw || []).map((p) => attachSchedule(enrichPlayer(p, catalogMap)));
-      const budgetInfo = managerBudgets[managerId] || null;
-      const availableBudget = budgetInfo?.availableBudget ?? budgetInfo?.budget ?? null;
-
-      // Kader-Warnungen: verletzt/gesperrt, Verkaufsempfehlung, oder schwerer Spielplan + fallender MW
-      const alerts = squad
-        .filter((p) => p.sellRecommended || p.status !== 0)
-        .sort((a, b) => {
-          const prioA = (a.status !== 0 ? 100 : 0) + (a.sellRecommended ? 40 : 0) + Math.abs(Math.min(0, a.predictedChange)) / 10_000;
-          const prioB = (b.status !== 0 ? 100 : 0) + (b.sellRecommended ? 40 : 0) + Math.abs(Math.min(0, b.predictedChange)) / 10_000;
-          return prioB - prioA;
-        })
-        .slice(0, 5);
-
-      // Kader-Formstarke mit gruenem Spielplan ("Halten / Aufstellen")
-      const holdStars = squad
-        .filter((p) => p.status === 0 && (p.startElfProbability == null || p.startElfProbability <= 2))
-        .sort((a, b) => {
-          const sA = (a.avgPoints || 0) + (3.5 - (a.scheduleDifficulty || 3)) * 18 + Math.max(0, a.predictedChange / 15_000);
-          const sB = (b.avgPoints || 0) + (3.5 - (b.scheduleDifficulty || 3)) * 18 + Math.max(0, b.predictedChange / 15_000);
-          return sB - sA;
-        })
-        .slice(0, 3);
-
-      // Bezahlbare Markt-Picks aus der eigenen Liga
-      const affordablePicks = marketPicks
-        .filter((p) => availableBudget == null || p.marketValue <= availableBudget)
-        .slice(0, 4);
-
-      byManagerId[String(managerId)] = {
-        managerId: String(managerId),
-        leagueKey: key,
-        budget: budgetInfo?.budget ?? null,
+    byManagerId[m.id] = {
+      managerId: m.id,
+      managerName: m.name,
+      leagueKey: m.leagueKey,
+      leagueName: m.leagueName,
+      leagueColor: m.leagueColor,
+      matchday: mdByManagerId[m.id],
+      transfers: {
+        windowDays: TRANSFER_WINDOW_DAYS,
+        totalCount: events.length,
+        buyCount: buys.length,
+        sellCount: sells.length,
+        spent,
+        received,
+        netBalance,
+        realizedProfit,
+        realizedCount: realized.length,
+        avgOverpayPct,
+        bestFlip: bestFlip && bestFlip.realizedProfit > 0 ? {
+          playerName: bestFlip.playerName,
+          profit: bestFlip.realizedProfit,
+          heldDays: bestFlip.heldDays,
+        } : null,
+        events: events.slice(0, 20),
+      },
+      outlook: {
         availableBudget,
-        squadSize: squad.length,
-        injuredCount: squad.filter((p) => p.status !== 0).length,
-        sellAlertCount: squad.filter((p) => p.sellRecommended).length,
-        alerts,
-        holdStars,
-        affordablePicks,
-      };
-    }
-  }
-
-  // Sicherstellen, dass jeder bekannte Manager einen Eintrag hat
-  for (const m of managersList) {
-    if (!byManagerId[m.id]) {
-      byManagerId[m.id] = {
-        managerId: m.id,
-        leagueKey: m.leagueKey,
-        budget: null,
-        availableBudget: null,
-        squadSize: 0,
-        injuredCount: 0,
-        sellAlertCount: 0,
-        alerts: [],
-        holdStars: [],
-        affordablePicks: byLeague[m.leagueKey]?.marketPicks?.slice(0, 4) || [],
-      };
-    }
-  }
-
-  return {
-    advisorGeneratedAt: advisorData?.generatedAt || null,
-    watchlist,
-    byLeague,
-    byManagerId,
-  };
-}
-
-/**
- * Deterministischer Redaktionstext (funktioniert immer, 0 Kosten, faktentreu).
- */
-function buildDeterministicEditorial(recap, transfers, fixtureRadar) {
-  const md = recap.matchday;
-  const nextMd = fixtureRadar.upcomingMatchdays?.[0]?.number || md + 1;
-  const winner = recap.overallWinner;
-  const mvp = recap.mvpPlayer;
-
-  const headline = winner
-    ? `Spieltag ${md}: ${winner.name} setzt mit ${formatPoints(winner.points)} Punkten die Bestmarke`
-    : `Wochenrückblick Spieltag ${md} & Ausblick auf Spieltag ${nextMd}`;
-
-  const introParts = [];
-  if (winner) {
-    introParts.push(
-      `Am ${md}. Spieltag lag der Ligasystem-Schnitt bei ${formatPoints(recap.overallAvg)} Punkten – die Bestmarke sicherte sich ${winner.name} (${winner.leagueName}) mit starken ${formatPoints(winner.points)} Zählern.`
-    );
-  }
-  if (mvp) {
-    introParts.push(
-      `Überragender Bundesliga-Akteur war ${mvp.name} (${mvp.team}) mit ${formatPoints(mvp.points)} Kickbase-Punkten.`
-    );
-  }
-
-  const leagueTakes = recap.leagues.map((lg) => {
-    const parts = [];
-    if (lg.winner) {
-      parts.push(`${lg.winner.name} holt den Spieltagssieg (${formatPoints(lg.winner.points)} Pkt., Schnitt ${formatPoints(lg.avgPoints)}).`);
-    }
-    if (lg.leader) {
-      const gapText = lg.leader.gapToSecond != null && lg.leader.runnerUpName
-        ? ` mit ${formatPoints(lg.leader.gapToSecond)} Pkt. Vorsprung auf ${lg.leader.runnerUpName}`
-        : '';
-      parts.push(`Tabellenführer ist ${lg.leader.name}${gapText}.`);
-    }
-    if (lg.biggestClimber) {
-      parts.push(`Aufsteiger der Woche: ${lg.biggestClimber.name} (+${lg.biggestClimber.delta} auf Rang ${lg.biggestClimber.rank}).`);
-    }
-    return {
-      leagueKey: lg.key,
-      leagueName: lg.name,
-      text: parts.join(' '),
+        injuredCount,
+        squadAlerts,
+        squadSpotlight,
+        marketPicks,
+        note: outlookParts.join(' '),
+      },
     };
-  });
-
-  const ov = transfers.overall;
-  const transferParts = [
-    `In den letzten ${transfers.windowDays} Tagen wurden ligaübergreifend ${ov.totalCount} Transfers abgewickelt (${ov.buyCount} Käufe über ${formatEuroUnsigned(ov.spent)}, ${ov.sellCount} Verkäufe über ${formatEuroUnsigned(ov.received)}).`,
-  ];
-  if (ov.topBuy) {
-    transferParts.push(
-      `Der teuerste Deal der Woche war ${ov.topBuy.playerName} zu ${ov.topBuy.managerName} (${ov.topBuy.leagueName}) für ${formatEuroUnsigned(ov.topBuy.price)}.`
-    );
-  }
-  if (ov.bestFlip) {
-    transferParts.push(
-      `Den stärksten realisierten Wochen-Gewinn landete ${ov.bestFlip.managerName} mit ${ov.bestFlip.playerName} (${formatEuroShort(ov.bestFlip.realizedProfit)}).`
-    );
   }
 
-  const greenTeams = (fixtureRadar.greenSchedule || []).slice(0, 3).map((t) => t.team);
-  const toughTeams = (fixtureRadar.toughSchedule || []).slice(0, 2).map((t) => t.team);
-  const outlookParts = [];
-  if (greenTeams.length > 0) {
-    outlookParts.push(
-      `Für die kommenden ${fixtureRadar.upcomingMatchdays.length} Spieltage (ab ST ${nextMd}) haben besonders ${greenTeams.join(', ')} ein dankbares Programm – ideal, um rechtzeitig auf Stammspieler und steigende Marktwerte dieser Klubs zu setzen.`
-    );
-  }
-  if (toughTeams.length > 0) {
-    outlookParts.push(
-      `Deutlich anspruchsvoller wird es kurzfristig für ${toughTeams.join(' und ')} – hier lohnt sich ein Blick auf Alternativen, falls der Marktwert ohnehin nachgibt.`
-    );
-  }
-
-  return {
-    source: 'deterministic',
-    headline,
-    intro: introParts.join(' '),
-    leagueTakes,
-    transferTake: transferParts.join(' '),
-    outlookTake: outlookParts.join(' '),
-  };
+  return { managersList, byManagerId };
 }
 
 /**
- * Optionaler Gemini-API-Hook: Veredelt den Redaktionstext, wenn GEMINI_API_KEY
- * gesetzt ist. Alle Zahlen bleiben aus dem deterministischen Payload.
+ * Optionaler Gemini-API-Hook: Generiert in EINEM kompakten Batch-Call
+ * knackige, persoenliche 1-2-Satz-Takes je Manager (Spieltag + Ausblick) und
+ * eine kurze Form-Einordnung auf Basis der echten Bundesliga-Tabelle.
  */
-async function maybeEnhanceWithGemini(deterministicEditorial, recap, transfers, fixtureRadar) {
+async function maybeEnhanceWithGemini(byManagerId, formRadar, matchday) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey || process.argv.includes('--no-ai')) {
-    return deterministicEditorial;
+    return { hasAiCommentary: false, formSummary: buildDeterministicFormSummary(formRadar) };
   }
 
   const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+  const compactManagers = Object.values(byManagerId).map((m) => ({
+    id: m.managerId,
+    name: m.managerName,
+    league: m.leagueName,
+    mdPoints: m.matchday.points,
+    mdDiffAvg: m.matchday.diffToAvg,
+    mdRank: `${m.matchday.matchdayRank}/${m.matchday.leagueSize}`,
+    top: m.matchday.topPlayers.slice(0, 2).map((p) => `${p.name} (${p.points})`),
+    flop: m.matchday.flopPlayers.slice(0, 1).map((p) => `${p.name} (${p.points})`),
+    deals: `${m.transfers.buyCount}K/${m.transfers.sellCount}V`,
+    realized: m.transfers.realizedCount > 0 ? formatEuroSigned(m.transfers.realizedProfit) : null,
+    injured: m.outlook.injuredCount,
+    alerts: m.outlook.squadAlerts.slice(0, 2).map((a) => `${a.name} (${a.sellReasonLabels[0] || a.statusLabel})`),
+    topPick: m.outlook.marketPicks[0] ? `${m.outlook.marketPicks[0].name} (${m.outlook.marketPicks[0].team})` : null,
+  }));
+
   const facts = {
-    matchday: recap.matchday,
-    overallAvg: recap.overallAvg,
-    overallWinner: recap.overallWinner,
-    mvpPlayer: recap.mvpPlayer,
-    leagues: recap.leagues.map((l) => ({
-      name: l.name,
-      avgPoints: l.avgPoints,
-      winner: l.winner,
-      loser: l.loser,
-      leader: l.leader,
-      biggestClimber: l.biggestClimber,
-      biggestDropper: l.biggestDropper,
-    })),
-    transfers: {
-      windowDays: transfers.windowDays,
-      totalCount: transfers.overall.totalCount,
-      buyCount: transfers.overall.buyCount,
-      sellCount: transfers.overall.sellCount,
-      spent: transfers.overall.spent,
-      received: transfers.overall.received,
-      avgOverpayPct: transfers.overall.avgOverpayPct,
-      topBuy: transfers.overall.topBuy
-        ? { player: transfers.overall.topBuy.playerName, manager: transfers.overall.topBuy.managerName, league: transfers.overall.topBuy.leagueName, price: transfers.overall.topBuy.price }
-        : null,
-      bestFlip: transfers.overall.bestFlip
-        ? { player: transfers.overall.bestFlip.playerName, manager: transfers.overall.bestFlip.managerName, profit: transfers.overall.bestFlip.realizedProfit }
-        : null,
-    },
-    upcomingMatchdays: fixtureRadar.upcomingMatchdays.map((m) => m.number),
-    greenSchedule: fixtureRadar.greenSchedule.slice(0, 4).map((t) => ({
+    matchday,
+    upcomingMatchdays: formRadar.upcomingMatchdays.map((m) => m.number),
+    hotTeams: formRadar.hotTeams.map((t) => ({
       team: t.team,
-      fixtures: t.fixtures.map((f) => `${f.isHome ? 'H' : 'A'} ${f.opponent}`),
+      rank: t.rank,
+      points: t.points,
+      form: t.formString,
+      formPoints: t.formPoints,
+      fixtures: t.fixtures.map((f) => `${f.isHome ? 'H' : 'A'} ${f.opponent} (#${f.opponentRank})`),
     })),
-    toughSchedule: fixtureRadar.toughSchedule.slice(0, 3).map((t) => ({
+    toughTeams: formRadar.toughTeams.map((t) => ({
       team: t.team,
-      fixtures: t.fixtures.map((f) => `${f.isHome ? 'H' : 'A'} ${f.opponent}`),
+      rank: t.rank,
+      form: t.formString,
+      fixtures: t.fixtures.map((f) => `${f.isHome ? 'H' : 'A'} ${f.opponent} (#${f.opponentRank})`),
     })),
+    managers: compactManagers,
   };
 
   const prompt = [
-    'Du bist Redakteur für das interne Kickbase-Ligasystem (3 Ligen: Liga 1, Liga 2, Liga 3).',
-    'Schreibe auf Basis AUSSCHLIESSLICH der folgenden JSON-Fakten eine knackige, lebendige, aber seriöse deutsche Wochenzusammenfassung.',
-    'Erfinde KEINE Zahlen, Spieler oder Ergebnisse, die nicht in den Fakten stehen.',
-    'Antworte ausschließlich als valides JSON-Objekt mit genau diesem Schema:',
-    '{"headline":"...","intro":"2-3 Sätze","leagueTakes":[{"leagueKey":"LIGA1","leagueName":"Liga 1","text":"2 Sätze"},{"leagueKey":"LIGA2","leagueName":"Liga 2","text":"2 Sätze"},{"leagueKey":"LIGA3","leagueName":"Liga 3","text":"2 Sätze"}],"transferTake":"2-3 Sätze","outlookTake":"2-3 Sätze"}',
+    'Du schreibst sehr kompakte, persönliche deutsche Weekly-Notizen für Kickbase-Manager (Du-Anrede).',
+    'Erfinde KEINE Fakten oder Zahlen. Nutze ausschließlich die übergebenen Daten.',
+    'Für jeden Manager:',
+    '- matchdayNote: 1-2 knackige Sätze NUR zu seinem eigenen Spieltag (Punkte, Top-/Flop-Spieler). Kein allgemeiner Liga-Gesamtbericht!',
+    '- outlookNote: 1-2 konkrete Sätze zu seinen Kader-Baustellen / Markt-Chancen für die nächste Woche.',
+    'Außerdem formSummary: 2 kurze Sätze, warum die hotTeams anhand ihrer aktuellen Bundesliga-Tabellenposition und 5-Spiele-Form jetzt besonders spannend sind.',
+    'Antworte ausschließlich als valides JSON:',
+    '{"formSummary":"...","managers":{"<id>":{"matchdayNote":"...","outlookNote":"..."}}}',
     '',
     'FAKTEN:',
     JSON.stringify(facts),
@@ -1063,35 +889,54 @@ async function maybeEnhanceWithGemini(deterministicEditorial, recap, transfers, 
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
-          temperature: 0.5,
+          temperature: 0.45,
           responseMimeType: 'application/json',
         },
       }),
     });
 
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}`);
-    }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const payload = await res.json();
     const rawText = payload?.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!rawText) throw new Error('Leere Gemini-Antwort');
     const parsed = JSON.parse(rawText);
-    if (!parsed.headline || !parsed.intro || !Array.isArray(parsed.leagueTakes)) {
-      throw new Error('Unerwartetes JSON-Schema von Gemini');
+
+    if (parsed.managers && typeof parsed.managers === 'object') {
+      for (const [id, notes] of Object.entries(parsed.managers)) {
+        if (!byManagerId[id]) continue;
+        if (notes?.matchdayNote) byManagerId[id].matchday.note = String(notes.matchdayNote);
+        if (notes?.outlookNote) byManagerId[id].outlook.note = String(notes.outlookNote);
+      }
     }
-    console.log(`Gemini-Redaktionstext erfolgreich generiert (${model}).`);
+
+    console.log(`Personalisierte Gemini-Notizen erfolgreich generiert (${model}).`);
     return {
-      source: `gemini:${model}`,
-      headline: String(parsed.headline),
-      intro: String(parsed.intro),
-      leagueTakes: parsed.leagueTakes,
-      transferTake: String(parsed.transferTake || deterministicEditorial.transferTake),
-      outlookTake: String(parsed.outlookTake || deterministicEditorial.outlookTake),
+      hasAiCommentary: true,
+      formSummary: parsed.formSummary ? String(parsed.formSummary) : buildDeterministicFormSummary(formRadar),
     };
   } catch (err) {
     console.warn('Gemini-Aufruf fehlgeschlagen, nutze deterministischen Fallback:', err.message);
-    return deterministicEditorial;
+    return { hasAiCommentary: false, formSummary: buildDeterministicFormSummary(formRadar) };
   }
+}
+
+function buildDeterministicFormSummary(formRadar) {
+  const hot = formRadar.hotTeams || [];
+  if (hot.length === 0) return 'Aktuelle Form- und Spielplan-Auswertung für die kommenden Spieltage.';
+  const top = hot[0];
+  const second = hot[1];
+  const parts = [];
+  if (top.rank != null) {
+    parts.push(
+      `Auf Basis von Tabelle und 5-Spiele-Form sticht vor allem ${top.team} (Platz ${top.rank}, ${top.formPoints}/15 Pkt zuletzt) mit einem machbaren Programm heraus.`
+    );
+  }
+  if (second?.rank != null) {
+    parts.push(
+      `Auch ${second.team} (Platz ${second.rank}, Form ${second.formString}) bietet gute Chancen auf stabile Kickbase-Punkte.`
+    );
+  }
+  return parts.join(' ');
 }
 
 async function main() {
@@ -1102,9 +947,7 @@ async function main() {
   }
 
   const matchday = dataJson.matchday || 0;
-  const prevMatchdayJson = matchday > 1 ? readJsonSafe(path.join(HISTORY_DIR, `spieltag-${matchday - 1}.json`)) : null;
   const startelfJson = readJsonSafe(path.join(HISTORY_DIR, `startelf-md${matchday}.json`));
-  const optimalJson = readJsonSafe(path.join(HISTORY_DIR, `optimal-md-${matchday}-final.json`));
   const transfersRaw = readJsonSafe(path.join(HISTORY_DIR, 'transfers.json'), []);
   const allPlayersRaw = readJsonSafe(path.join(HISTORY_DIR, 'all_players.json'), []);
   const advisorData = readJsonSafe(path.join(PUBLIC_DIR, 'advisor-data.json'), {});
@@ -1113,70 +956,86 @@ async function main() {
 
   const { map: catalogMap, teamLogos } = buildCatalogMap(allPlayersRaw);
 
-  // Manager-Liste aus data.json
-  const managersList = [];
-  for (const lg of dataJson.leagues || []) {
-    const leagueKey = normalizeLeagueKey(lg.name);
-    for (const u of lg.users || []) {
-      managersList.push({
-        id: String(u.id),
-        name: u.name,
-        leagueKey,
-        leagueName: leagueDisplayName(leagueKey),
-        leagueColor: lg.color,
-        rank: u.rank,
-      });
-    }
-  }
-
-  // Zeitfenster-Ende: neuester Zeitstempel aus data.json oder transfers.json
   const dataTs = Date.parse(dataJson.timestamp || '') || Date.now();
   const latestTransferTs = (transfersRaw || []).reduce((max, t) => {
     const ts = Date.parse(t?.date || '');
     return Number.isFinite(ts) && ts > max ? ts : max;
   }, 0);
   const windowEndDate = new Date(Math.max(dataTs, latestTransferTs || dataTs));
+  const seasonYear = getBundesligaSeasonYear(spielplan, windowEndDate);
 
-  const recap = buildMatchdayRecap(dataJson, prevMatchdayJson, startelfJson, optimalJson);
-  const transfers = buildWeeklyTransfers(transfersRaw, managersList, techAccounts, windowEndDate);
-  const fixtureRadar = buildFixtureRadar(spielplan, allPlayersRaw, advisorData?.players || [], catalogMap, matchday);
-  const recommendations = buildRecommendations(advisorData, catalogMap, fixtureRadar, managersList);
+  const blData = await fetchOpenLigaFormAndTable(seasonYear);
+  const formRadar = buildFormAndScheduleRadar(spielplan, blData, advisorData?.players || [], catalogMap, matchday);
+  const { managersList, byManagerId } = buildPersonalizedManagers(
+    dataJson,
+    startelfJson,
+    transfersRaw,
+    advisorData,
+    catalogMap,
+    formRadar,
+    techAccounts,
+    windowEndDate,
+  );
 
-  const deterministicEditorial = buildDeterministicEditorial(recap, transfers, fixtureRadar);
-  const editorial = await maybeEnhanceWithGemini(deterministicEditorial, recap, transfers, fixtureRadar);
+  const { hasAiCommentary, formSummary } = await maybeEnhanceWithGemini(byManagerId, formRadar, matchday);
 
   const isoWeek = getIsoWeekNumber(windowEndDate);
-  const nextMdNumbers = fixtureRadar.upcomingMatchdays.map((m) => m.number);
-  const outlookRange = nextMdNumbers.length > 1
-    ? `ST ${nextMdNumbers[0]}–${nextMdNumbers[nextMdNumbers.length - 1]}`
-    : nextMdNumbers.length === 1
-      ? `ST ${nextMdNumbers[0]}`
-      : `ST ${matchday + 1}`;
+  const nextMds = formRadar.upcomingMatchdays.map((m) => m.number);
+  const nextRange = nextMds.length > 1 ? `ST ${nextMds[0]}–${nextMds[nextMds.length - 1]}` : `ST ${matchday + 1}`;
+  const slug = `weekly-st-${matchday}`;
+  const isoDate = windowEndDate.toISOString().slice(0, 10);
 
-  const output = {
-    version: 1,
-    generatedAt: new Date().toISOString(),
-    dataTimestamp: dataJson.timestamp || null,
+  const newEdition = {
+    slug,
+    category: 'weekly',
+    date: isoDate,
     matchday,
-    nextMatchday: nextMdNumbers[0] || matchday + 1,
+    nextMatchday: nextMds[0] || matchday + 1,
     isoWeek,
-    editionLabel: `KW ${isoWeek} · Rückblick ST ${matchday} & Ausblick ${outlookRange}`,
-    hasAiCommentary: editorial.source.startsWith('gemini:'),
-    editorial,
+    kicker: `DEIN WEEKLY · KW ${isoWeek}`,
+    title: `Dein Weekly zu Spieltag ${matchday}`,
+    subtitle: `Dein persönlicher Spieltags-Rückblick, 7-Tage-Transferbilanz & Form-Ausblick (${nextRange})`,
+    author: 'Ligasystem Weekly',
+    edition: `KW ${isoWeek} · ST ${matchday}`,
+    readTimeMin: 2,
+    image: '/feed-images/weekly-cover.svg',
+    generatedAt: new Date().toISOString(),
+    advisorGeneratedAt: advisorData?.generatedAt || null,
+    hasAiCommentary,
+    formSummary,
     teamLogos,
     managers: managersList,
-    recap,
-    transfers,
-    fixtureRadar,
-    recommendations,
+    formRadar: {
+      hasRealTable: formRadar.hasRealTable,
+      upcomingMatchdays: formRadar.upcomingMatchdays,
+      hotTeams: formRadar.hotTeams,
+      toughTeams: formRadar.toughTeams,
+    },
+    byManagerId,
+  };
+
+  // Bestehende aeltere Ausgaben im Archiv erhalten (gleichen Slug aktualisieren)
+  const existing = readJsonSafe(OUTPUT_PATH, null);
+  const prevEditions = Array.isArray(existing?.editions)
+    ? existing.editions.filter((e) => e && e.slug && e.slug !== slug)
+    : [];
+
+  const editions = [newEdition, ...prevEditions]
+    .sort((a, b) => (b.matchday || 0) - (a.matchday || 0))
+    .slice(0, MAX_STORED_EDITIONS);
+
+  const output = {
+    version: 2,
+    updatedAt: new Date().toISOString(),
+    editions,
   };
 
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(output), 'utf8');
-  console.log(`Weekly Summary gespeichert: ${OUTPUT_PATH}`);
-  console.log(`  Ausgabe: ${output.editionLabel}`);
-  console.log(`  Transfers (7T): ${transfers.overall.totalCount} (${transfers.overall.buyCount} Käufe / ${transfers.overall.sellCount} Verkäufe)`);
-  console.log(`  Grüner Spielplan: ${fixtureRadar.greenSchedule.map((t) => `${t.team} (${t.avgDifficulty})`).join(', ')}`);
-  console.log(`  Watchlist-Spieler: ${recommendations.watchlist.length}`);
+  console.log(`Weekly Summary (v2) gespeichert: ${OUTPUT_PATH}`);
+  console.log(`  Ausgabe: ${newEdition.title} (${newEdition.slug}), Ausgaben im Archiv: ${editions.length}`);
+  console.log(`  OpenLigaDB Tabelle & Form: ${formRadar.hasRealTable ? 'aktiv' : 'Fallback'}`);
+  console.log(`  Top Form+Spielplan: ${formRadar.hotTeams.map((t) => `${t.team} (#${t.rank}, ${t.formString})`).join(', ')}`);
+  console.log(`  Knackiges Programm: ${formRadar.toughTeams.map((t) => `${t.team} (#${t.rank}, ${t.formString})`).join(', ')}`);
 }
 
 main().catch((err) => {
