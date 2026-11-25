@@ -155,15 +155,19 @@ function loadManagerSquadValues() {
 // Was am Spieltag d dann tatsaechlich passierte (Rote Karte, Traumtor, Glueck/Pech),
 // fliesst mit 0 % in den Score ein!
 const PROB_WEIGHT_BY_CODE = {
-    1: 1.0, // Sicher
-    2: 0.8, // Erwartet
-    3: 0.5, // Unsicher
-    4: 0.2, // Unwahrscheinlich
-    5: 0.0, // Ausgeschlossen
+    1: 1.0,  // Sicher
+    2: 0.85, // Erwartet
+    3: 0.5,  // Unsicher
+    4: 0.15, // Unwahrscheinlich
+    5: 0.0,  // Ausgeschlossen
 };
 const PRIOR_START_PROB = 0.55;
 const PRIOR_START_PTS = 82;
 const PRIOR_JOKER_PTS = 26;
+
+function parsePlayedMinutes(mp) {
+    return parseInt(String(mp || '0'), 10) || 0;
+}
 
 function loadHistoricalStartelfs(historyDir) {
     const result = new Map();
@@ -212,24 +216,15 @@ function estimatePreMatchdayPlayerXp(playerId, day, playerMap, preKickoffMap) {
     const player = playerMap.get(pid) || playerMap.get(playerId);
     const preSnap = preKickoffMap ? preKickoffMap[pid] : null;
 
-    // 1. Historische Spiele VOR Spieltag `day` sammeln (aktuelle Saison day < d + Vorsaison als Prior)
+    // 1. Historische Spiele VOR Spieltag `day` sammeln (aktuelle Saison day < d +
+    //    unmittelbare Vorsaison als sanfter Prior fuer fruehe Spieltage).
+    //    Wichtig: In aelteren Kickbase-Saisons hatte st=3 teils mp="0'" (Bank ohne Einsatz),
+    //    deshalb zaehlen Einwechslungen nur bei echt gespielten Minuten (mp > 0).
     const seasons = Array.isArray(player?.performance?.it) ? player.performance.it : [];
     const curSeason = seasons.length > 0 ? seasons[seasons.length - 1] : null;
-    const prevSeasonEntries = [];
-    if (seasons.length >= 2) {
-        // Vorsaison-Eintraege sammeln (bevorzugt letzter Eintrag vor aktueller Saison mit den meisten Spielen)
-        const prevSeason = seasons
-            .slice(0, -1)
-            .filter(s => Array.isArray(s.ph) && s.ph.length > 0)
-            .sort((a, b) => b.ph.length - a.ph.length)[0];
-        if (prevSeason) {
-            prevSeason.ph.forEach(e => {
-                if (e.st === 5 || e.st === 3 || e.st === 4 || e.st === 1) {
-                    prevSeasonEntries.push(e);
-                }
-            });
-        }
-    }
+    const prevSeason = seasons.length >= 2 ? seasons[seasons.length - 2] : null;
+    const prevSeasonEntries = (Array.isArray(prevSeason?.ph) ? prevSeason.ph : [])
+        .filter(e => e.st === 5 || (e.st === 3 && parsePlayedMinutes(e.mp) > 0) || e.st === 4);
 
     const curBefore = (Array.isArray(curSeason?.ph) ? curSeason.ph : [])
         .filter(e => typeof e.day === 'number' && e.day < day && (e.st === 5 || e.st === 3 || e.st === 4 || e.st === 1))
@@ -237,8 +232,9 @@ function estimatePreMatchdayPlayerXp(playerId, day, playerMap, preKickoffMap) {
 
     // 2. Startelf-Wahrscheinlichkeit VOR Spieltag `day`:
     //    - Falls Pre-Kickoff-Snapshot vorhanden (ab ST 11): direkt offizielle Kickbase-Prognose!
-    //    - Sonst (rueckwirkend ST 1..10): aus Startelf-Quote vor Spieltag `day`
-    //      (letzte 5 Spiele vor `day` doppelt gewichtet, bei fruehen Spieltagen mit Vorsaison-Prior).
+    //    - Sonst (rueckwirkend ST 1..10): Fokus auf die AKTUELLE Rolle unmittelbar vor `day`
+    //      (letzte 2-3 Spiele), damit zurueckgekehrte Stammspieler (z.B. Zentner nach Verletzung)
+    //      sofort wieder realistische 95-100 % statt durch alte Ausfaelle verzerrte 40 % bekommen.
     let pStart;
     if (preSnap) {
         if (typeof preSnap.st === 'number' && preSnap.st !== 0) {
@@ -249,41 +245,47 @@ function estimatePreMatchdayPlayerXp(playerId, day, playerMap, preKickoffMap) {
             pStart = PRIOR_START_PROB;
         }
     } else {
-        // Kombiniere Vorsaison (leichtes Gewicht) + aktuelle Saison vor `day` (aktuellere Spiele staerker)
-        let weightedStarts = 1.5 * PRIOR_START_PROB;
-        let weightTotal = 1.5;
+        const last3 = curBefore.slice(-3);
+        const last2 = curBefore.slice(-2);
+        const last1 = curBefore.slice(-1)[0];
 
-        // Vorsaison mit moderatem Prior-Gewicht (hilft besonders an ST 1-3)
-        if (prevSeasonEntries.length > 0) {
-            const prevStarts = prevSeasonEntries.filter(e => e.st === 5).length;
-            const prevRate = prevStarts / prevSeasonEntries.length;
-            const prevWeight = Math.min(3, prevSeasonEntries.length * 0.2);
-            weightedStarts += prevWeight * prevRate;
-            weightTotal += prevWeight;
+        if (last3.length === 3 && last3.every(e => e.st === 5)) {
+            pStart = 1.0;
+        } else if (last2.length === 2 && last2.every(e => e.st === 5)) {
+            pStart = 0.95;
+        } else if (last1 && last1.st === 5) {
+            const recent5 = curBefore.slice(-5);
+            const fit5 = recent5.filter(e => e.st !== 1);
+            const rate = fit5.length > 0 ? fit5.filter(e => e.st === 5).length / fit5.length : 0.8;
+            pStart = Math.max(0.8, Math.min(0.95, 0.5 + 0.5 * rate));
+        } else if (curBefore.length > 0) {
+            const recent5 = curBefore.slice(-5);
+            let weightedStarts = 0;
+            let weightTotal = 0;
+            recent5.forEach((e, idx) => {
+                const w = idx >= recent5.length - 2 ? 1.6 : 1.0;
+                if (e.st === 5) weightedStarts += w;
+                weightTotal += w;
+            });
+            pStart = weightTotal > 0 ? Math.max(0, Math.min(1, weightedStarts / weightTotal)) : PRIOR_START_PROB;
+        } else if (prevSeasonEntries.length > 0) {
+            pStart = prevSeasonEntries.filter(e => e.st === 5).length / prevSeasonEntries.length;
+        } else {
+            pStart = PRIOR_START_PROB;
         }
-
-        // Aktuelle Saison strikt VOR `day` (letzte 5 Spiele hoeher gewichtet)
-        const nCur = curBefore.length;
-        curBefore.forEach((e, idx) => {
-            const isRecent = idx >= nCur - 5;
-            const w = isRecent ? 1.5 : 0.8;
-            if (e.st === 5) weightedStarts += w;
-            weightTotal += w;
-        });
-
-        pStart = Math.max(0, Math.min(1, weightedStarts / weightTotal));
     }
 
-    // 3. Erwartete Startelf-Punkte & Joker-Punkte strikt aus Spielen VOR `day`
+    // 3. Erwartete Startelf-Punkte (nur aus echten Startelf-Einsaetzen st=5 VOR `day`)
     const curStartPts = curBefore.filter(e => e.st === 5 && typeof e.p === 'number').map(e => e.p);
     const prevStartPts = prevSeasonEntries.filter(e => e.st === 5 && typeof e.p === 'number').map(e => e.p);
 
-    // Bayesianischer Mix: aktuelle Saison (volle Gewichtung) + Vorsaison (max 3 Spiele Gewicht) + Liga-Prior (1.5)
-    let startPtsSum = 1.5 * PRIOR_START_PTS;
-    let startPtsWeight = 1.5;
+    // Sanfter Prior, der bei >= 4 eigenen Startelf-Spielen stark zuruecktritt
+    const priorWeight = curStartPts.length >= 4 ? 0.4 : 1.0;
+    let startPtsSum = priorWeight * PRIOR_START_PTS;
+    let startPtsWeight = priorWeight;
     if (prevStartPts.length > 0) {
         const prevAvg = prevStartPts.reduce((a, b) => a + b, 0) / prevStartPts.length;
-        const wPrev = Math.min(3, prevStartPts.length * 0.25);
+        const wPrev = curStartPts.length >= 5 ? 0.5 : Math.min(2, prevStartPts.length * 0.2);
         startPtsSum += wPrev * prevAvg;
         startPtsWeight += wPrev;
     }
@@ -293,10 +295,10 @@ function estimatePreMatchdayPlayerXp(playerId, day, playerMap, preKickoffMap) {
     });
     const avgStartPts = Math.max(0, startPtsSum / startPtsWeight);
 
-    // Empirische Joker-Quote & Joker-Punkte aus Nicht-Startelf-Spielen VOR `day`
-    const allBefore = [...prevSeasonEntries.slice(-10), ...curBefore];
-    const subEntries = allBefore.filter(e => e.st === 3 && typeof e.p === 'number');
-    const unusedEntries = allBefore.filter(e => e.st === 4);
+    // 4. Empirische Joker-Quote & Joker-Punkte aus Nicht-Startelf-Spielen VOR `day`
+    const allBefore = [...prevSeasonEntries.slice(-8), ...curBefore];
+    const subEntries = allBefore.filter(e => e.st === 3 && parsePlayedMinutes(e.mp) > 0 && typeof e.p === 'number');
+    const unusedEntries = allBefore.filter(e => e.st === 4 || (e.st === 3 && parsePlayedMinutes(e.mp) === 0));
     const nonStartGames = subEntries.length + unusedEntries.length;
 
     const pJoker = nonStartGames >= 2
