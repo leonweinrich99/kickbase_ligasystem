@@ -33,9 +33,72 @@ function findSubset(players, target) {
     return best;
 }
 
-async function reconstructForMatchday(targetMatchdayStr) {
+async function loginAllLeagues() {
+    const accounts = getConfiguredKickbaseAccounts();
+    const leagueSessions = [];
+
+    for (const leagueDef of LEAGUE_DEFS) {
+        const leagueNameContains = leagueDef.name;
+        const needleTokens = leagueNameContains.toLowerCase().match(/[a-z0-9]+/g) || [];
+        let found = null;
+
+        for (const account of accounts) {
+            try {
+                const loginRes = await fetch('https://api.kickbase.com/v4/user/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ em: account.email, loy: false, pass: account.pass, rep: {} })
+                });
+                const loginData = await loginRes.json();
+                if (loginData.err || !loginData.tkn) continue;
+
+                const leaguesRes = await fetch('https://api.kickbase.com/v4/leagues', {
+                    headers: { Authorization: `Bearer ${loginData.tkn}` }
+                });
+                const leaguesData = await leaguesRes.json();
+                const leaguesList = leaguesData?.it || leaguesData?.lins || leaguesData?.leagues || (Array.isArray(leaguesData) ? leaguesData : []);
+
+                let foundId = null;
+                for (const l of leaguesList) {
+                    const lName = (l.n || l.name || '').toLowerCase();
+                    const leagueTokens = lName.match(/[a-z0-9]+/g) || [];
+                    const isMatch = needleTokens.length > 0 && needleTokens.every(t => leagueTokens.includes(t));
+                    if (isMatch || lName.includes(leagueNameContains.toLowerCase())) {
+                        foundId = l.i || l.id;
+                        break;
+                    }
+                }
+
+                if (foundId) {
+                    const rankingRes = await fetch(`https://api.kickbase.com/v4/leagues/${foundId}/ranking`, {
+                        headers: { Authorization: `Bearer ${loginData.tkn}` }
+                    });
+                    const rankingData = await rankingRes.json();
+                    if (rankingData.us && rankingData.us.length > 0) {
+                        found = {
+                            leagueName: leagueDef.name,
+                            leagueId: foundId,
+                            token: loginData.tkn,
+                            userId: rankingData.us[0].i || rankingData.us[0].id
+                        };
+                        break;
+                    }
+                }
+            } catch (e) {}
+        }
+
+        if (found) leagueSessions.push(found);
+        else console.warn(`[WARN] Konnte Liga '${leagueDef.name}' in keinem Account finden.`);
+    }
+
+    return leagueSessions;
+}
+
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+async function reconstructForMatchday(targetMatchdayStr, sharedSessions = null) {
     const targetMatchday = parseInt(targetMatchdayStr, 10);
-    console.log(`[LOG] Starting true Startelf reconstruction for Matchday ${targetMatchday}...`);
+    console.log(`[LOG] Starting official Startelf fetch/reconstruction for Matchday ${targetMatchday}...`);
     const outputPath = path.join(__dirname, `../frontend/public/history/startelf-md${targetMatchday}.json`);
 
     const dataJson = JSON.parse(fs.readFileSync(DATA_PATH, 'utf8'));
@@ -100,17 +163,12 @@ async function reconstructForMatchday(targetMatchdayStr) {
     }
 
     // 3. Wind back/forward transfers between baseTime and Kickoff
-    const sortedTransfers = transfers.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const sortedTransfers = [...transfers].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     for (const t of sortedTransfers) {
         const tTime = new Date(t.date).getTime();
-        
-        // If snapshot is older than kickoff, we might need to wind FORWARD
-        // But our snapshot logic always stops snapshotting AT kickoff.
-        // So the snapshot is either strictly <= minKo, or it's LIVE (Date.now()).
-        
+
         if (baseTime > minKo) {
-            // Winding BACK from a future time to kickoff
-            if (tTime <= minKo || tTime > baseTime) continue; 
+            if (tTime <= minKo || tTime > baseTime) continue;
             const pId = String(t.playerId);
             if (t.buyerName) {
                 const bId = nameToId.get(t.buyerName.toLowerCase());
@@ -121,75 +179,33 @@ async function reconstructForMatchday(targetMatchdayStr) {
                 if (sId && currentSquads.has(sId)) currentSquads.get(sId).add(pId);
             }
         } else {
-            // Snapshot was taken before kickoff, we need to wind FORWARD to kickoff
             if (tTime <= baseTime || tTime > minKo) continue;
             const pId = String(t.playerId);
             if (t.buyerName) {
                 const bId = nameToId.get(t.buyerName.toLowerCase());
                 if (bId) {
                     if (!currentSquads.has(bId)) currentSquads.set(bId, new Set());
-                    currentSquads.get(bId).add(pId); // Winding FORWARD: buyer gets the player
+                    currentSquads.get(bId).add(pId);
                 }
             }
             if (t.sellerName) {
                 const sId = nameToId.get(t.sellerName.toLowerCase());
-                if (sId && currentSquads.has(sId)) currentSquads.get(sId).delete(pId); // Winding FORWARD: seller loses the player
+                if (sId && currentSquads.has(sId)) currentSquads.get(sId).delete(pId);
             }
         }
     }
 
-    // 4. Fetch manager points from teamcenter using kickbase API
-    const accounts = getConfiguredKickbaseAccounts();
+    // 4. Fetch official lineups (u.lp) and matchday points from teamcenter
+    const leagueSessions = sharedSessions || await loginAllLeagues();
     const resultManagers = {};
     let passedCount = 0;
+    const sourceCounts = { official_lp: 0, subset_sum: 0, fallback_squad: 0, estimated: 0 };
 
-    for (const leagueDef of LEAGUE_DEFS) {
-        let loggedIn = false, token = null, userId = null, leagueId = null;
-        const leagueNameContains = leagueDef.name;
-        const needleTokens = leagueNameContains.toLowerCase().match(/[a-z0-9]+/g) || [];
+    // Gemeinsamer playercenter-Cache ueber alle 3 Ligen pro Spieltag (spart API-Calls)
+    const livePlayerPointsCache = new Map();
 
-        for (const account of accounts) {
-            try {
-                const loginRes = await fetch('https://api.kickbase.com/v4/user/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ em: account.email, loy: false, pass: account.pass, rep: {} })
-                });
-                const loginData = await loginRes.json();
-                if (loginData.err) continue;
-                
-                const leaguesRes = await fetch('https://api.kickbase.com/v4/leagues', {
-                    headers: { Authorization: `Bearer ${loginData.tkn}` }
-                });
-                const leaguesData = await leaguesRes.json();
-                const leaguesList = leaguesData?.it || leaguesData?.lins || leaguesData?.leagues || (Array.isArray(leaguesData) ? leaguesData : []);
-                
-                let foundId = null;
-                for (const l of leaguesList) {
-                    const lName = (l.n || l.name).toLowerCase();
-                    const leagueTokens = lName.match(/[a-z0-9]+/g) || [];
-                    const isMatch = needleTokens.length > 0 && needleTokens.every(t => leagueTokens.includes(t));
-                    if (isMatch || lName.includes(leagueNameContains.toLowerCase())) {
-                        foundId = l.i || l.id;
-                        break;
-                    }
-                }
-                
-                if (foundId) {
-                    leagueId = foundId;
-                    token = loginData.tkn;
-                    const rankingRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/ranking`, { headers: { Authorization: `Bearer ${token}` } });
-                    const rankingData = await rankingRes.json();
-                    if (rankingData.us && rankingData.us.length > 0) {
-                        userId = rankingData.us[0].i || rankingData.us[0].id;
-                        loggedIn = true;
-                        break;
-                    }
-                }
-            } catch (e) {}
-        }
-
-        if (!loggedIn) continue;
+    for (const session of leagueSessions) {
+        const { leagueName, leagueId, token, userId } = session;
 
         try {
             const tcRes = await fetch(`https://api.kickbase.com/v4/leagues/${leagueId}/users/${userId}/teamcenter?dayNumber=${targetMatchday}`, {
@@ -198,12 +214,10 @@ async function reconstructForMatchday(targetMatchdayStr) {
             const tcData = await tcRes.json();
             const users = tcData.us || [];
 
-            // Cache fuer playercenter-Punkte pro Spieler an diesem Spieltag, falls
-            // ein Startelf-Spieler noch nicht/nicht aktuell in all_players.json steht.
-            const livePlayerPointsCache = new Map();
             const fetchExactPlayerPoints = async (pId) => {
                 if (livePlayerPointsCache.has(pId)) return livePlayerPointsCache.get(pId);
                 try {
+                    await sleep(45);
                     const pcRes = await fetch(
                         `https://api.kickbase.com/v4/competitions/1/players/${pId}/playercenter?dayNumber=${targetMatchday}`,
                         { headers: { Authorization: `Bearer ${token}` } }
@@ -280,7 +294,10 @@ async function reconstructForMatchday(targetMatchdayStr) {
 
                 // 1. Primaer: offizielle Kickbase-Startelf (u.lp) direkt aus teamcenter
                 // -> enthaelt garantiert NUR aufgestellte Startelf-Spieler (keine Bank!).
-                const officialLp = Array.isArray(u.lp) ? u.lp.filter(Boolean).map(String) : [];
+                const hasOfficialLp = Array.isArray(u.lp);
+                const officialLp = hasOfficialLp
+                    ? u.lp.map(String).filter(id => id && id !== '0' && id !== 'null' && id !== 'undefined')
+                    : [];
                 let lineup = null;
                 let source = 'official_lp';
 
@@ -289,7 +306,6 @@ async function reconstructForMatchday(targetMatchdayStr) {
                     const initialSum = lineup.reduce((s, p) => s + (p.points || 0), 0);
                     const emptyPenalty = Math.max(0, 11 - lineup.length) * 100;
                     if (initialSum - emptyPenalty !== mPoints) {
-                        // Exakte Spieltagspunkte je Startelf-Spieler ueber playercenter nachladen
                         const exactEntries = [];
                         for (const pId of officialLp) {
                             const exactPts = await fetchExactPlayerPoints(pId);
@@ -297,8 +313,12 @@ async function reconstructForMatchday(targetMatchdayStr) {
                         }
                         lineup = exactEntries;
                     }
+                } else if (hasOfficialLp && mPoints === 0) {
+                    // Offiziell leere Aufstellung (z.B. im Minus zum Anstoss) -> keine Fake-Spieler erfinden
+                    lineup = [];
+                    source = 'official_lp';
                 } else {
-                    // 2. Fallback: Subset-Sum-Rekonstruktion fuer aeltere Spieltage ohne u.lp
+                    // 2. Fallback: Subset-Sum-Rekonstruktion falls Kickbase fuer sehr alte Spieltage kein u.lp liefert
                     source = 'subset_sum';
                     const squadIds = Array.from(currentSquads.get(mId) || []);
                     const squadWithPoints = squadIds
@@ -339,23 +359,38 @@ async function reconstructForMatchday(targetMatchdayStr) {
                 lineup.sort((a, b) => a.position - b.position);
 
                 resultManagers[mId] = { pointsMatchday: mPoints, source, lineup: lineup };
+                sourceCounts[source] = (sourceCounts[source] || 0) + 1;
                 passedCount++;
                 console.log(`[PASS:${source}] Manager: ${u.unm} (ID: ${mId}), Matchday points: ${mPoints} -> Lineup size: ${lineup.length}`);
             }
         } catch (e) {
-            console.error(`Error fetching teamcenter for league ${leagueDef.name}: ${e.message}`);
+            console.error(`Error fetching teamcenter for league ${leagueName}: ${e.message}`);
         }
     }
 
     fs.writeFileSync(outputPath, JSON.stringify({ matchday: targetMatchday, timestamp: new Date().toISOString(), managers: resultManagers }, null, 2));
-    console.log(`[SUCCESS] Data saved to ${outputPath} with ${passedCount} managers.`);
+    console.log(`[SUCCESS MD ${targetMatchday}] Saved ${passedCount} managers -> ${JSON.stringify(sourceCounts)}`);
 }
 
-const args = process.argv.slice(2);
-if (args.length === 0) {
+async function runCli() {
+    const args = process.argv.slice(2);
     const dataJson = JSON.parse(fs.readFileSync(DATA_PATH, 'utf8'));
-    if (dataJson.matchday) reconstructForMatchday(String(dataJson.matchday));
-    else console.error("No matchday found in data.json");
-} else {
-    reconstructForMatchday(args[0]);
+    const currentMatchday = dataJson.matchday || 1;
+    const arg = (args[0] || '').trim().toLowerCase();
+
+    if (arg === 'all') {
+        const sessions = await loginAllLeagues();
+        for (let d = 1; d <= currentMatchday; d++) {
+            await reconstructForMatchday(String(d), sessions);
+        }
+    } else if (arg && /^\d+$/.test(arg)) {
+        await reconstructForMatchday(arg);
+    } else {
+        await reconstructForMatchday(String(currentMatchday));
+    }
 }
+
+runCli().catch(err => {
+    console.error('Fehler bei Startelf-Ermittlung:', err);
+    process.exit(1);
+});

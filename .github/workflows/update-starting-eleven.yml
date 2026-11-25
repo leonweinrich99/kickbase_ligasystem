@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '0 21 * * 0,1,5,6'
   workflow_dispatch:
+    inputs:
+      matchday:
+        description: 'Spieltag-Nummer, "all" für ST 1 bis aktuell, oder leer für aktuellen Spieltag'
+        required: false
+        default: ''
 
 concurrency:
   group: update-starting-eleven
@@ -29,9 +34,11 @@ jobs:
         working-directory: ./backend
         run: npm install
 
-      - name: Reconstruct Starting Eleven
+      - name: Fetch Official Starting Eleven (teamcenter u.lp) & Recalculate Ratings
         working-directory: ./backend
-        run: node reconstructStartingEleven.js
+        run: |
+          node reconstructStartingEleven.js "${{ github.event.inputs.matchday }}"
+          node scripts/calculate-ratings.js
         env:
           KICKBASE_EMAIL: ${{ secrets.KICKBASE_EMAIL }}
           KICKBASE_PASS: ${{ secrets.KICKBASE_PASS }}
