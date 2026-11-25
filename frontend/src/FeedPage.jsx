@@ -1,16 +1,19 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Newspaper, Trophy, TrendingUp, Flame, Clock, BarChart3, ChevronRight } from 'lucide-react';
+import { Newspaper, Trophy, TrendingUp, Flame, Clock, BarChart3, ChevronRight, CalendarRange } from 'lucide-react';
 import PageHeader from './ui/PageHeader';
 import { FEED_CATEGORIES, getCategoryMeta, formatArticleDate, sortArticlesByDateDesc } from './feedMeta';
+import { useAuth } from './AuthContext';
 import newsLogo from './assets/news_logo.svg';
 import AdBanner from './ui/AdBanner';
 import HotShotsSection from './ui/HotShotsSection';
+import WeeklySummaryView, { WeeklyTeaserCard } from './ui/WeeklySummaryView';
 
 const CategoryIcon = ({ id, size = 13 }) => {
   if (id === 'spieltag') return <Flame size={size} />;
   if (id === 'pokal') return <Trophy size={size} />;
   if (id === 'trading') return <TrendingUp size={size} />;
+  if (id === 'weekly') return <CalendarRange size={size} />;
   return <Newspaper size={size} />;
 };
 
@@ -219,8 +222,15 @@ const CategoryShelf = ({ title, categoryId, articles, activeCat, accentColor, on
 };
 
 const FeedPage = () => {
+  const { isAdmin } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeCat = searchParams.get('cat') || 'all';
+  const rawCat = searchParams.get('cat') || 'all';
+  const activeCat = rawCat === 'weekly' && !isAdmin ? 'all' : rawCat;
+
+  const visibleCategories = useMemo(
+    () => FEED_CATEGORIES.filter((cat) => !cat.adminOnly || isAdmin),
+    [isAdmin],
+  );
 
   const [feedData, setFeedData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -306,6 +316,7 @@ const FeedPage = () => {
   };
 
   const isTradingView = activeCat === 'trading';
+  const isWeeklyView = activeCat === 'weekly' && isAdmin;
 
   return (
     <div className="min-h-screen bg-[#000000] text-white px-4 sm:px-6 pt-5 pb-12 max-w-3xl mx-auto">
@@ -317,16 +328,32 @@ const FeedPage = () => {
             <img src={newsLogo} alt="News Logo" className="w-full h-full object-contain" />
           </div>
           <PageHeader
-            eyebrow={isTradingView ? 'MARKET DESK & ANALYSEN' : 'REDAKTION & ANALYSEN'}
-            accentColor={isTradingView ? '#10b981' : activeCat === 'pokal' ? '#f59e0b' : '#ff5c3e'}
+            eyebrow={
+              isWeeklyView
+                ? 'ADMIN-VORSCHAU · WOCHENBERICHT'
+                : isTradingView
+                  ? 'MARKET DESK & ANALYSEN'
+                  : 'REDAKTION & ANALYSEN'
+            }
+            accentColor={
+              isWeeklyView
+                ? '#a855f7'
+                : isTradingView
+                  ? '#10b981'
+                  : activeCat === 'pokal'
+                    ? '#f59e0b'
+                    : '#ff5c3e'
+            }
             title={
-              isTradingView
-                ? 'THE TRADING JOURNAL'
-                : activeCat === 'pokal'
-                  ? 'POKAL-CHRONIK'
-                  : activeCat === 'spieltag'
-                    ? 'SPIELTAGSBERICHTE'
-                    : 'NEWSFEED'
+              isWeeklyView
+                ? 'WEEKLY SUMMARY'
+                : isTradingView
+                  ? 'THE TRADING JOURNAL'
+                  : activeCat === 'pokal'
+                    ? 'POKAL-CHRONIK'
+                    : activeCat === 'spieltag'
+                      ? 'SPIELTAGSBERICHTE'
+                      : 'NEWSFEED'
             }
           />
         </div>
@@ -342,7 +369,7 @@ const FeedPage = () => {
 
       {/* Kategorie-Filter-Leiste */}
       <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 mb-4">
-        {FEED_CATEGORIES.map((cat) => {
+        {visibleCategories.map((cat) => {
           const isActive = activeCat === cat.id;
           const activeClass =
             cat.id === 'all'
@@ -361,13 +388,23 @@ const FeedPage = () => {
             >
               <CategoryIcon id={cat.id} size={13} />
               <span>{cat.label}</span>
-              <span
-                className={`text-[10px] tabular-nums px-1.5 py-0.5 rounded-full leading-none ${
-                  isActive ? 'bg-black/20' : 'bg-white/10 text-[#8b92a5]'
-                }`}
-              >
-                {counts[cat.id] ?? 0}
-              </span>
+              {cat.id === 'weekly' ? (
+                <span
+                  className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full leading-none ${
+                    isActive ? 'bg-black/25 text-white' : 'bg-purple-500/20 text-purple-300'
+                  }`}
+                >
+                  Admin
+                </span>
+              ) : (
+                <span
+                  className={`text-[10px] tabular-nums px-1.5 py-0.5 rounded-full leading-none ${
+                    isActive ? 'bg-black/20' : 'bg-white/10 text-[#8b92a5]'
+                  }`}
+                >
+                  {counts[cat.id] ?? 0}
+                </span>
+              )}
             </button>
           );
         })}
@@ -412,7 +449,9 @@ const FeedPage = () => {
         </div>
       )}
 
-      {loading && (
+      {isWeeklyView && <WeeklySummaryView />}
+
+      {!isWeeklyView && loading && (
         <div className="space-y-4">
           <div className="h-72 rounded-2xl card-surface animate-pulse" />
           <div className="h-56 rounded-2xl card-surface animate-pulse" />
@@ -420,14 +459,16 @@ const FeedPage = () => {
         </div>
       )}
 
-      {error && (
+      {!isWeeklyView && error && (
         <div className="card-surface rounded-2xl p-5 text-sm text-red-400">
           {error}
         </div>
       )}
 
-      {!loading && !error && activeCat === 'all' && (
+      {!isWeeklyView && !loading && !error && activeCat === 'all' && (
         <div>
+          {isAdmin && <WeeklyTeaserCard onOpen={() => setCategory('weekly')} />}
+
           <HeroCarousel articles={heroArticles} activeCat={activeCat} />
 
           {/* Werbe-Easter-Egg als native "Anzeige" zwischen Karussell und
@@ -452,7 +493,7 @@ const FeedPage = () => {
         </div>
       )}
 
-      {!loading && !error && activeCat !== 'all' && leadArticle && (
+      {!isWeeklyView && !loading && !error && activeCat !== 'all' && leadArticle && (
         <div className="space-y-4">
           {/* Titelstory: Grosses Bild + klare Headline + kurzer Teaser (ohne Schnickschnack) */}
           {(() => {

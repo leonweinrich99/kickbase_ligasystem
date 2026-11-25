@@ -79,9 +79,9 @@ Bitte Haken setzen (`[x]`), sobald ein Punkt erledigt UND getestet ist.
       die eigenen, personalisierten Empfehlungen (per `kickbaseId`) an.
 - [x] Admin-Seite (`/admin/advisor`): Dropdown zum Durchschalten aller
       Manager-Kader zu Test-/Debug-Zwecken.
-- [ ] **Sobald bereit**: `LEAGUE_DEFS` in `run_advisor.py` von der
-      "test"-Liga auf die 3 echten Ligen (`LIGA1/2/3`) umstellen (Block ist
-      bereits vorbereitet, nur auskommentiert).
+- [x] **Sobald bereit**: `LEAGUE_DEFS` in `run_advisor.py` von der
+      "test"-Liga auf die 3 echten Ligen (`LIGA1/2/3`) umstellen (bereits
+      erledigt und aktiv).
 - [x] **Kader-Endpoint hat anderes Feldschema**: `/managers/{id}/squad`
       nennt die Spieler-ID `pi` statt `i` (`pn`, `tid`, `pos`, `p`, `mv`
       statt `i`, `n`, ...) - robuste Feld-Erkennung ergänzt, jetzt getestet.

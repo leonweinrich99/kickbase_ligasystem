@@ -39,6 +39,17 @@ export const FEED_CATEGORIES = [
     calloutClass: 'bg-emerald-500/10 border-emerald-400/30',
     isWsj: true,
   },
+  {
+    id: 'weekly',
+    label: 'Weekly',
+    shortLabel: 'Weekly',
+    accent: '#a855f7',
+    badgeClass: 'bg-purple-500/15 text-purple-300 border-purple-400/35',
+    pillActiveClass: 'bg-purple-500 text-white border-purple-400',
+    borderAccent: 'border-l-purple-400',
+    calloutClass: 'bg-purple-500/10 border-purple-400/30',
+    adminOnly: true,
+  },
 ];
 
 export const getCategoryMeta = (categoryId) =>
