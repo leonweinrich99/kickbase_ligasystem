@@ -61,12 +61,13 @@ jobs:
         working-directory: ./backend
         run: npm install
 
-      - name: Frische Spieltags- & Transferdaten für Weekly abrufen
+      - name: Frische Spieltags-, Startelf- & Transferdaten für Weekly abrufen
         if: steps.tz_check.outputs.should_run == 'true'
         working-directory: ./backend
         run: |
           node scripts/fetch-data.js || echo "Warning: fetch-data fehlgeschlagen, nutze bestehenden Stand"
           node scripts/fetch-transfers.js || echo "Warning: fetch-transfers fehlgeschlagen, nutze bestehenden Stand"
+          node reconstructStartingEleven.js || echo "Warning: reconstructStartingEleven fehlgeschlagen, nutze bestehenden Stand"
         env:
           KICKBASE_EMAIL: ${{ secrets.KICKBASE_EMAIL }}
           KICKBASE_PASS: ${{ secrets.KICKBASE_PASS }}
@@ -87,6 +88,17 @@ jobs:
         run: node scripts/generate-weekly.js
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          KICKBASE_EMAIL: ${{ secrets.KICKBASE_EMAIL }}
+          KICKBASE_PASS: ${{ secrets.KICKBASE_PASS }}
+          KICKBASE_EMAIL_2: ${{ secrets.KICKBASE_EMAIL_2 }}
+          KICKBASE_PASS_2: ${{ secrets.KICKBASE_PASS_2 }}
+          KICKBASE_EMAIL_3: ${{ secrets.KICKBASE_EMAIL_3 }}
+          KICKBASE_PASS_3: ${{ secrets.KICKBASE_PASS_3 }}
+          KICKBASE_EMAIL_4: ${{ secrets.KICKBASE_EMAIL_4 }}
+          KICKBASE_PASS_4: ${{ secrets.KICKBASE_PASS_4 }}
+          KICKBASE_LEAGUE_1_NAME: ${{ vars.KICKBASE_LEAGUE_1_NAME }}
+          KICKBASE_LEAGUE_2_NAME: ${{ vars.KICKBASE_LEAGUE_2_NAME }}
+          KICKBASE_LEAGUE_3_NAME: ${{ vars.KICKBASE_LEAGUE_3_NAME }}
 
       - name: Commit und Push Weekly Summary
         if: steps.tz_check.outputs.should_run == 'true'

@@ -376,7 +376,7 @@ const WeeklyArticlePage = () => {
 
             <div className="card-surface rounded-2xl px-3 py-3 text-center">
               <div className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider text-[#8b92a5] truncate">
-                Flips (7T)
+                Flips (Fr–Fr)
               </div>
               <div className={`text-base sm:text-xl font-bold tabular-nums mt-0.5 ${(tr?.realizedProfit || 0) >= 0 ? 'text-emerald-400' : 'text-[#ff5c3e]'}`}>
                 {tr?.realizedCount > 0 ? formatMoneySigned(tr.realizedProfit) : '0 €'}
@@ -424,7 +424,7 @@ const WeeklyArticlePage = () => {
                 <div className="card-surface rounded-2xl p-3.5 grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 mb-1.5">
-                      Top-Scorer deiner Elf
+                      Top-Scorer (Startelf)
                     </div>
                     <div className="space-y-1">
                       {md.topPlayers.map((p) => (
@@ -443,7 +443,7 @@ const WeeklyArticlePage = () => {
                   {md.flopPlayers?.length > 0 && (
                     <div className="sm:border-l sm:border-white/10 sm:pl-3">
                       <div className="text-[10px] font-bold uppercase tracking-wider text-[#ff5c3e] mb-1.5">
-                        Schwächste Starter
+                        Schwächste Startelf-Spieler
                       </div>
                       <div className="space-y-1">
                         {md.flopPlayers.map((p) => (
@@ -467,15 +467,16 @@ const WeeklyArticlePage = () => {
             {/* 2. DEINE TRANSFERS & BILANZ (7 TAGE, NUR DIESER MANAGER)      */}
             {/* ============================================================= */}
             <section className="space-y-3">
-              <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                <ArrowLeftRight size={16} className="text-emerald-400 shrink-0" />
-                <span>Deine Transfers (7 Tage)</span>
-                {tr?.avgOverpayPct != null && (
-                  <span className="text-[11px] font-semibold text-[#8b92a5] tabular-nums ml-auto">
-                    Ø Overpay +{tr.avgOverpayPct}%
-                  </span>
-                )}
-              </h2>
+              <div className="flex items-baseline justify-between gap-2 flex-wrap">
+                <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                  <ArrowLeftRight size={16} className="text-emerald-400 shrink-0" />
+                  <span>Deine Transfers</span>
+                </h2>
+                <span className="text-[11px] font-semibold text-[#8b92a5] tabular-nums">
+                  {tr?.windowLabel || edition.transferWindow?.label || 'Fr 20:30 – Fr 20:30'}
+                  {tr?.avgOverpayPct != null ? ` · Ø +${tr.avgOverpayPct}%` : ''}
+                </span>
+              </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <div className="card-surface rounded-xl px-3 py-2.5">
@@ -572,7 +573,7 @@ const WeeklyArticlePage = () => {
                 </div>
               ) : (
                 <div className="card-surface rounded-xl px-3.5 py-2.5 text-xs text-[#8b92a5]">
-                  Keine eigenen Transfers in den letzten 7 Tagen.
+                  Keine eigenen Transfers im Zeitraum {tr?.windowLabel || 'Fr 20:30 – Fr 20:30'}.
                 </div>
               )}
             </section>

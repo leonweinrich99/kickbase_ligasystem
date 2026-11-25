@@ -183,6 +183,122 @@ function getIsoWeekNumber(dateObj) {
   return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
 }
 
+/**
+ * Rechnet eine lokale deutsche Uhrzeit (Europe/Berlin, inkl. MESZ/MEZ)
+ * exakt in ein UTC-Date-Objekt um (ohne externe Pakete).
+ */
+function berlinWallTimeToUtcDate(year, month, day, hour, minute) {
+  const approxUtc = Date.UTC(year, month - 1, day, hour, minute, 0);
+  const fmt = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Europe/Berlin',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23',
+  });
+  const toBerlinAsUtcMs = (ms) => {
+    const parts = Object.fromEntries(fmt.formatToParts(new Date(ms)).map((p) => [p.type, p.value]));
+    return Date.UTC(+parts.year, +parts.month - 1, +parts.day, +parts.hour, +parts.minute, +parts.second);
+  };
+  let offsetMs = toBerlinAsUtcMs(approxUtc) - approxUtc;
+  let utcMs = approxUtc - offsetMs;
+  offsetMs = toBerlinAsUtcMs(utcMs) - utcMs;
+  utcMs = approxUtc - offsetMs;
+  return new Date(utcMs);
+}
+
+function getBerlinDateParts(dateObj) {
+  const fmt = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Europe/Berlin',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    weekday: 'short',
+  });
+  const parts = Object.fromEntries(fmt.formatToParts(dateObj).map((p) => [p.type, p.value]));
+  const dowMap = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+  return {
+    year: Number(parts.year),
+    month: Number(parts.month),
+    day: Number(parts.day),
+    dow: dowMap[parts.weekday] ?? 5,
+  };
+}
+
+/**
+ * Ermittelt das Transfer-Zeitfenster exakt von Freitag 20:30 bis Freitag 20:30
+ * (Europe/Berlin) bezogen auf den Anstoß des betrachteten Spieltags:
+ *   - windowEnd   = Spieltags-Freitag 20:30 Berlin (Deadline fuer den Spieltag)
+ *   - windowStart = Vorwochen-Freitag 20:30 Berlin (7 Tage davor)
+ */
+function resolveFridayTransferWindow(allPlayersRaw, spielplan, matchday, fallbackRefDate) {
+  // 1. Echten Anstoß des Spieltags aus all_players.json suchen (wie reconstructStartingEleven.js)
+  let minKoMs = Infinity;
+  for (const p of allPlayersRaw || []) {
+    const it = p?.performance?.it;
+    if (!Array.isArray(it) || it.length === 0) continue;
+    const ph = it[it.length - 1]?.ph;
+    if (!Array.isArray(ph)) continue;
+    const entry = ph.find((e) => e.day === matchday);
+    if (entry?.md) {
+      const ts = Date.parse(entry.md);
+      if (Number.isFinite(ts) && ts < minKoMs) minKoMs = ts;
+    }
+  }
+
+  let refDate = null;
+  if (minKoMs !== Infinity) {
+    refDate = new Date(minKoMs);
+  } else {
+    const mdPlan = (spielplan?.matchdays || []).find((m) => m.number === matchday);
+    if (mdPlan?.startDate) {
+      refDate = new Date(`${mdPlan.startDate}T12:00:00Z`);
+    } else {
+      refDate = fallbackRefDate;
+    }
+  }
+
+  const berlin = getBerlinDateParts(refDate);
+  // Tage zurueck bis zum Freitag dieses Spieltags-Wochenendes (Fr=0, Sa=1, So=2, Mo=3, ...)
+  const daysBackToFriday = (berlin.dow + 2) % 7;
+  const endFriUtcCal = new Date(Date.UTC(berlin.year, berlin.month - 1, berlin.day - daysBackToFriday));
+  const startFriUtcCal = new Date(Date.UTC(
+    endFriUtcCal.getUTCFullYear(),
+    endFriUtcCal.getUTCMonth(),
+    endFriUtcCal.getUTCDate() - TRANSFER_WINDOW_DAYS,
+  ));
+
+  const windowEnd = berlinWallTimeToUtcDate(
+    endFriUtcCal.getUTCFullYear(),
+    endFriUtcCal.getUTCMonth() + 1,
+    endFriUtcCal.getUTCDate(),
+    20,
+    30,
+  );
+  const windowStart = berlinWallTimeToUtcDate(
+    startFriUtcCal.getUTCFullYear(),
+    startFriUtcCal.getUTCMonth() + 1,
+    startFriUtcCal.getUTCDate(),
+    20,
+    30,
+  );
+
+  const fmtShort = (d) =>
+    `${String(d.getUTCDate()).padStart(2, '0')}.${String(d.getUTCMonth() + 1).padStart(2, '0')}.`;
+  const label = `Fr ${fmtShort(startFriUtcCal)} 20:30 – Fr ${fmtShort(endFriUtcCal)} 20:30`;
+
+  return {
+    start: windowStart,
+    end: windowEnd,
+    startIso: windowStart.toISOString(),
+    endIso: windowEnd.toISOString(),
+    label,
+  };
+}
+
 function getBundesligaSeasonYear(spielplan, refDate) {
   const m = String(spielplan?.season || '').match(/^(\d{4})/);
   if (m) return Number(m[1]);
@@ -515,15 +631,15 @@ function buildFormAndScheduleRadar(spielplan, blData, advisorPlayers, catalogMap
 }
 
 /**
- * Baut pro Manager strikt persoenliche Daten fuer Spieltag, Transfers (7T) und
- * Ausblick/Empfehlungen.
+ * Baut pro Manager strikt persoenliche Daten fuer Spieltag (nur Startelf!),
+ * Transfers (exakt Freitag 20:30 -> Freitag 20:30) und Ausblick/Empfehlungen.
  */
-function buildPersonalizedManagers(dataJson, startelfJson, transfersRaw, advisorData, catalogMap, formRadar, techAccounts, windowEndDate) {
+function buildPersonalizedManagers(dataJson, startelfJson, transfersRaw, advisorData, catalogMap, formRadar, techAccounts, transferWindow) {
   const matchday = dataJson.matchday || 0;
-  const windowEndMs = windowEndDate.getTime();
-  const windowStartMs = windowEndMs - TRANSFER_WINDOW_DAYS * 24 * 60 * 60 * 1000;
+  const windowStartMs = transferWindow.start.getTime();
+  const windowEndMs = transferWindow.end.getTime();
 
-  // 1. Manager-Grundliste + Spieltags-Auswertung (nur aktueller Spieltag!)
+  // 1. Manager-Grundliste + Spieltags-Auswertung (nur aktueller Spieltag, nur Startelf!)
   const managersList = [];
   const mdByManagerId = {};
 
@@ -556,7 +672,23 @@ function buildPersonalizedManagers(dataJson, startelfJson, transfersRaw, advisor
 
       const mdRank = sortedByMd.findIndex((x) => x.id === u.id) + 1;
       const startelfEntry = startelfJson?.managers?.[u.id] || null;
-      const lineup = Array.isArray(startelfEntry?.lineup) ? startelfEntry.lineup : [];
+      const rawLineup = Array.isArray(startelfEntry?.lineup) ? startelfEntry.lineup : [];
+
+      // Pruefen, ob es sich um eine echte, verifizierte Startelf handelt (u.lp oder exakte Punktsumme).
+      // Falls eine aeltere Datei noch ungepruefte Schaetzungen enthaelt, keine 0-Punkte-Bankspieler
+      // faelschlich als Startelf-Flops ausweisen.
+      const lineupSum = rawLineup.reduce((s, p) => s + (p.points || 0), 0);
+      const emptyPenalty = Math.max(0, 11 - rawLineup.length) * 100;
+      const lineupVerified =
+        startelfEntry?.source === 'official_lp' ||
+        startelfEntry?.source === 'subset_sum' ||
+        (rawLineup.length > 0 && (lineupSum === u.matchdayPoints || lineupSum - emptyPenalty === u.matchdayPoints));
+
+      // Bankspieler erhalten in Kickbase keine Punkte -> nur Startelf-Spieler betrachten
+      const lineup = lineupVerified
+        ? rawLineup
+        : rawLineup.filter((p) => (p.points || 0) !== 0);
+
       const sortedLineup = [...lineup].sort((a, b) => (b.points || 0) - (a.points || 0));
 
       const topPlayers = sortedLineup.slice(0, 3).map((p) => ({
@@ -566,7 +698,7 @@ function buildPersonalizedManagers(dataJson, startelfJson, transfersRaw, advisor
         points: p.points || 0,
       }));
       const flopPlayers = sortedLineup
-        .filter((p) => (p.points || 0) <= 10)
+        .filter((p) => (lineupVerified ? (p.points || 0) <= 10 : (p.points || 0) < 0))
         .slice(-2)
         .reverse()
         .map((p) => ({
@@ -581,7 +713,7 @@ function buildPersonalizedManagers(dataJson, startelfJson, transfersRaw, advisor
       const flop1 = flopPlayers[0];
       let note = `Mit ${formatPoints(u.matchdayPoints)} Punkten landest du an Spieltag ${matchday} auf Platz ${mdRank} von ${users.length} in ${u.leagueName} (${diffToAvg >= 0 ? '+' : ''}${formatPoints(diffToAvg)} vs. Ligaschnitt).`;
       if (top1) {
-        note += ` Bester Scorer deiner Elf war ${top1.name} (${top1.points} Pkt)`;
+        note += ` Bester Scorer deiner Startelf war ${top1.name} (${top1.points} Pkt)`;
         if (flop1 && flop1.points <= 0) {
           note += `, während ${flop1.name} (${flop1.points} Pkt) Punkte liegen ließ.`;
         } else {
@@ -595,6 +727,7 @@ function buildPersonalizedManagers(dataJson, startelfJson, transfersRaw, advisor
         diffToAvg,
         matchdayRank: mdRank,
         leagueSize: users.length,
+        lineupVerified,
         topPlayers,
         flopPlayers,
         note,
@@ -789,6 +922,9 @@ function buildPersonalizedManagers(dataJson, startelfJson, transfersRaw, advisor
       matchday: mdByManagerId[m.id],
       transfers: {
         windowDays: TRANSFER_WINDOW_DAYS,
+        windowStart: transferWindow.startIso,
+        windowEnd: transferWindow.endIso,
+        windowLabel: transferWindow.label,
         totalCount: events.length,
         buyCount: buys.length,
         sellCount: sells.length,
@@ -957,12 +1093,9 @@ async function main() {
   const { map: catalogMap, teamLogos } = buildCatalogMap(allPlayersRaw);
 
   const dataTs = Date.parse(dataJson.timestamp || '') || Date.now();
-  const latestTransferTs = (transfersRaw || []).reduce((max, t) => {
-    const ts = Date.parse(t?.date || '');
-    return Number.isFinite(ts) && ts > max ? ts : max;
-  }, 0);
-  const windowEndDate = new Date(Math.max(dataTs, latestTransferTs || dataTs));
-  const seasonYear = getBundesligaSeasonYear(spielplan, windowEndDate);
+  const fallbackRefDate = new Date(dataTs);
+  const transferWindow = resolveFridayTransferWindow(allPlayersRaw, spielplan, matchday, fallbackRefDate);
+  const seasonYear = getBundesligaSeasonYear(spielplan, transferWindow.end);
 
   const blData = await fetchOpenLigaFormAndTable(seasonYear);
   const formRadar = buildFormAndScheduleRadar(spielplan, blData, advisorData?.players || [], catalogMap, matchday);
@@ -974,16 +1107,16 @@ async function main() {
     catalogMap,
     formRadar,
     techAccounts,
-    windowEndDate,
+    transferWindow,
   );
 
   const { hasAiCommentary, formSummary } = await maybeEnhanceWithGemini(byManagerId, formRadar, matchday);
 
-  const isoWeek = getIsoWeekNumber(windowEndDate);
+  const isoWeek = getIsoWeekNumber(fallbackRefDate);
   const nextMds = formRadar.upcomingMatchdays.map((m) => m.number);
   const nextRange = nextMds.length > 1 ? `ST ${nextMds[0]}–${nextMds[nextMds.length - 1]}` : `ST ${matchday + 1}`;
   const slug = `weekly-st-${matchday}`;
-  const isoDate = windowEndDate.toISOString().slice(0, 10);
+  const isoDate = fallbackRefDate.toISOString().slice(0, 10);
 
   const newEdition = {
     slug,
@@ -994,13 +1127,18 @@ async function main() {
     isoWeek,
     kicker: `DEIN WEEKLY · KW ${isoWeek}`,
     title: `Dein Weekly zu Spieltag ${matchday}`,
-    subtitle: `Dein persönlicher Spieltags-Rückblick, 7-Tage-Transferbilanz & Form-Ausblick (${nextRange})`,
+    subtitle: `Dein Startelf-Rückblick, Transferbilanz (${transferWindow.label}) & Form-Ausblick (${nextRange})`,
     author: 'Ligasystem Weekly',
     edition: `KW ${isoWeek} · ST ${matchday}`,
     readTimeMin: 2,
     image: '/feed-images/weekly-cover.svg',
     generatedAt: new Date().toISOString(),
     advisorGeneratedAt: advisorData?.generatedAt || null,
+    transferWindow: {
+      start: transferWindow.startIso,
+      end: transferWindow.endIso,
+      label: transferWindow.label,
+    },
     hasAiCommentary,
     formSummary,
     teamLogos,
@@ -1033,6 +1171,7 @@ async function main() {
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(output), 'utf8');
   console.log(`Weekly Summary (v2) gespeichert: ${OUTPUT_PATH}`);
   console.log(`  Ausgabe: ${newEdition.title} (${newEdition.slug}), Ausgaben im Archiv: ${editions.length}`);
+  console.log(`  Transfer-Fenster: ${transferWindow.label} (${transferWindow.startIso} -> ${transferWindow.endIso})`);
   console.log(`  OpenLigaDB Tabelle & Form: ${formRadar.hasRealTable ? 'aktiv' : 'Fallback'}`);
   console.log(`  Top Form+Spielplan: ${formRadar.hotTeams.map((t) => `${t.team} (#${t.rank}, ${t.formString})`).join(', ')}`);
   console.log(`  Knackiges Programm: ${formRadar.toughTeams.map((t) => `${t.team} (#${t.rank}, ${t.formString})`).join(', ')}`);

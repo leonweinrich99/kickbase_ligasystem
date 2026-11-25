@@ -198,86 +198,149 @@ async function reconstructForMatchday(targetMatchdayStr) {
             const tcData = await tcRes.json();
             const users = tcData.us || [];
 
+            // Cache fuer playercenter-Punkte pro Spieler an diesem Spieltag, falls
+            // ein Startelf-Spieler noch nicht/nicht aktuell in all_players.json steht.
+            const livePlayerPointsCache = new Map();
+            const fetchExactPlayerPoints = async (pId) => {
+                if (livePlayerPointsCache.has(pId)) return livePlayerPointsCache.get(pId);
+                try {
+                    const pcRes = await fetch(
+                        `https://api.kickbase.com/v4/competitions/1/players/${pId}/playercenter?dayNumber=${targetMatchday}`,
+                        { headers: { Authorization: `Bearer ${token}` } }
+                    );
+                    if (pcRes.ok) {
+                        const pc = await pcRes.json();
+                        if (typeof pc?.p === 'number') {
+                            livePlayerPointsCache.set(pId, pc.p);
+                            return pc.p;
+                        }
+                    }
+                } catch (e) {}
+                const fallback = playerPoints.get(pId) || 0;
+                livePlayerPointsCache.set(pId, fallback);
+                return fallback;
+            };
+
+            const buildPlayerEntry = (pId, ptsOverride = null) => {
+                const playerFull = allPlayersMap.get(pId);
+                const transferFallback = !playerFull ? transfers.find(t => String(t.playerId) === pId) : null;
+                if (!playerFull && !transferFallback) {
+                    return {
+                        id: String(pId),
+                        teamId: "0",
+                        name: `Spieler ${pId}`,
+                        lastName: `Spieler ${pId}`,
+                        position: 0,
+                        marketValue: 0,
+                        points: ptsOverride !== null ? ptsOverride : (playerPoints.get(pId) || 0),
+                        imagePath: "",
+                        teamName: "Unknown"
+                    };
+                }
+
+                let pos = playerFull ? (playerFull.pos || playerFull.p || 0) : 0;
+                if (pos > 10) pos = (pos % 10) || 0;
+
+                let name = pId;
+                let lastName = pId;
+                let teamId = "0";
+                let marketValue = 0;
+                let imagePath = "";
+                let teamName = "Unknown";
+
+                if (playerFull) {
+                    name = `${playerFull.fn ? playerFull.fn + ' ' : ''}${playerFull.ln || playerFull.n || ''}`.trim();
+                    lastName = playerFull.ln || playerFull.n || name;
+                    teamId = playerFull.tid || playerFull.teamId;
+                    marketValue = playerFull.mv || playerFull.marketValue || 0;
+                    imagePath = playerFull.profileBig || playerFull.profile || playerFull.pim;
+                    teamName = playerFull.tn || playerFull.teamName || "Unknown";
+                } else if (transferFallback) {
+                    name = transferFallback.playerName;
+                    lastName = transferFallback.playerName;
+                    marketValue = transferFallback.marketValueAtTimeOfTransfer || transferFallback.price || 0;
+                }
+
+                return {
+                    id: String(pId),
+                    teamId: teamId,
+                    name: name,
+                    lastName: lastName,
+                    position: pos,
+                    marketValue: marketValue,
+                    points: ptsOverride !== null ? ptsOverride : (playerPoints.get(pId) || 0),
+                    imagePath: imagePath,
+                    teamName: teamName
+                };
+            };
+
             for (const u of users) {
                 const mId = String(u.i);
                 const mPoints = u.mdp || 0;
-                
-                const squadIds = Array.from(currentSquads.get(mId) || []);
-                const squadWithPoints = squadIds.map(pId => {
-                    const playerFull = allPlayersMap.get(pId);
-                    
-                    // Fallback to transfer history if player was removed from Kickbase database
-                    const transferFallback = !playerFull ? transfers.find(t => String(t.playerId) === pId) : null;
-                    if (!playerFull && !transferFallback) return null;
-                    
-                    let pos = playerFull ? (playerFull.pos || playerFull.p || 0) : 0;
-                    if (pos > 10) pos = (pos % 10) || 0;
-                    
-                    let name = pId;
-                    let lastName = pId;
-                    let teamId = "0";
-                    let marketValue = 0;
-                    let imagePath = "";
-                    let teamName = "Unknown";
-                    
-                    if (playerFull) {
-                        name = `${playerFull.fn ? playerFull.fn + ' ' : ''}${playerFull.ln || playerFull.n || ''}`.trim();
-                        lastName = playerFull.ln || playerFull.n || name;
-                        teamId = playerFull.tid || playerFull.teamId;
-                        marketValue = playerFull.mv || playerFull.marketValue || 0;
-                        imagePath = playerFull.profileBig || playerFull.profile || playerFull.pim;
-                        teamName = playerFull.tn || playerFull.teamName || "Unknown";
-                    } else if (transferFallback) {
-                        name = transferFallback.playerName;
-                        lastName = transferFallback.playerName;
-                        marketValue = transferFallback.marketValueAtTimeOfTransfer || transferFallback.price || 0;
-                    }
 
-                    return {
-                        id: String(pId),
-                        teamId: teamId,
-                        name: name,
-                        lastName: lastName,
-                        position: pos,
-                        marketValue: marketValue,
-                        points: playerPoints.get(pId) || 0,
-                        imagePath: imagePath,
-                        teamName: teamName
-                    };
-                }).filter(Boolean);
+                // 1. Primaer: offizielle Kickbase-Startelf (u.lp) direkt aus teamcenter
+                // -> enthaelt garantiert NUR aufgestellte Startelf-Spieler (keine Bank!).
+                const officialLp = Array.isArray(u.lp) ? u.lp.filter(Boolean).map(String) : [];
+                let lineup = null;
+                let source = 'official_lp';
 
-                // Sort by market value so subset sum prefers expensive players if tied
-                squadWithPoints.sort((a, b) => b.marketValue - a.marketValue);
-                
-                let lineup = findSubset(squadWithPoints, mPoints);
-                
-                if (!lineup && squadWithPoints.length <= 11) {
-                    // Fallback to all if somehow points dont perfectly match (e.g. offline transfer changes?)
-                    lineup = squadWithPoints;
-                } else if (!lineup) {
-                    // Try without empty spot penalty (in case league disabled it)
-                    function findSubsetNoPenalty(players, target) {
-                        let best = null;
-                        function backtrack(index, currentSum, currentSubset) {
-                            if (currentSubset.length > 11) return;
-                            if (currentSum === target && (!best || currentSubset.length > best.length)) best = [...currentSubset];
-                            if (index >= players.length) return;
-                            currentSubset.push(players[index]);
-                            backtrack(index + 1, currentSum + players[index].points, currentSubset);
-                            currentSubset.pop();
-                            backtrack(index + 1, currentSum, currentSubset);
+                if (officialLp.length > 0) {
+                    lineup = officialLp.map(pId => buildPlayerEntry(pId));
+                    const initialSum = lineup.reduce((s, p) => s + (p.points || 0), 0);
+                    const emptyPenalty = Math.max(0, 11 - lineup.length) * 100;
+                    if (initialSum - emptyPenalty !== mPoints) {
+                        // Exakte Spieltagspunkte je Startelf-Spieler ueber playercenter nachladen
+                        const exactEntries = [];
+                        for (const pId of officialLp) {
+                            const exactPts = await fetchExactPlayerPoints(pId);
+                            exactEntries.push(buildPlayerEntry(pId, exactPts));
                         }
-                        backtrack(0, 0, []);
-                        return best;
+                        lineup = exactEntries;
                     }
-                    lineup = findSubsetNoPenalty(squadWithPoints, mPoints) || squadWithPoints.slice(0, 11);
+                } else {
+                    // 2. Fallback: Subset-Sum-Rekonstruktion fuer aeltere Spieltage ohne u.lp
+                    source = 'subset_sum';
+                    const squadIds = Array.from(currentSquads.get(mId) || []);
+                    const squadWithPoints = squadIds
+                        .map(pId => (allPlayersMap.has(pId) || transfers.some(t => String(t.playerId) === pId)) ? buildPlayerEntry(pId) : null)
+                        .filter(Boolean);
+
+                    squadWithPoints.sort((a, b) => b.marketValue - a.marketValue);
+                    lineup = findSubset(squadWithPoints, mPoints);
+
+                    if (!lineup && squadWithPoints.length <= 11) {
+                        lineup = squadWithPoints;
+                        source = 'fallback_squad';
+                    } else if (!lineup) {
+                        function findSubsetNoPenalty(players, target) {
+                            let best = null;
+                            function backtrack(index, currentSum, currentSubset) {
+                                if (currentSubset.length > 11) return;
+                                if (currentSum === target && (!best || currentSubset.length > best.length)) best = [...currentSubset];
+                                if (index >= players.length) return;
+                                currentSubset.push(players[index]);
+                                backtrack(index + 1, currentSum + players[index].points, currentSubset);
+                                currentSubset.pop();
+                                backtrack(index + 1, currentSum, currentSubset);
+                            }
+                            backtrack(0, 0, []);
+                            return best;
+                        }
+                        const noPen = findSubsetNoPenalty(squadWithPoints, mPoints);
+                        if (noPen) {
+                            lineup = noPen;
+                        } else {
+                            lineup = squadWithPoints.slice(0, 11);
+                            source = 'estimated';
+                        }
+                    }
                 }
 
                 lineup.sort((a, b) => a.position - b.position);
 
-                resultManagers[mId] = { pointsMatchday: mPoints, lineup: lineup };
+                resultManagers[mId] = { pointsMatchday: mPoints, source, lineup: lineup };
                 passedCount++;
-                console.log(`[PASS] Manager: ${u.unm} (ID: ${mId}), Matchday points: ${mPoints} -> Reconstructed lineup size: ${lineup.length}`);
+                console.log(`[PASS:${source}] Manager: ${u.unm} (ID: ${mId}), Matchday points: ${mPoints} -> Lineup size: ${lineup.length}`);
             }
         } catch (e) {
             console.error(`Error fetching teamcenter for league ${leagueDef.name}: ${e.message}`);
