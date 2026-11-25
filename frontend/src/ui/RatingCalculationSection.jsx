@@ -137,6 +137,7 @@ function StatCalcCard({ label, title, score, isOpen, onToggle, factors, emptyNot
 
 export default function RatingCalculationSection({
   calculation,
+  proLeaguePeers,
   ovpLeaguePeers,
   aktLeaguePeers,
   pktLeaguePeers,
@@ -173,6 +174,7 @@ export default function RatingCalculationSection({
               <FactorChip value={fmtSignedEUR(pro.weightedTotalProfit)} label="Profit" highlight />
               <FactorChip value={pro.completedTrades} label="Trades" highlight />
               <LeagueCompareBar percentile={pro.leaguePercentile} rank={pro.leagueRank} total={pro.leagueSize} accent={proAccent} />
+              <LeaguePeerList peers={proLeaguePeers} formatValue={fmtSignedEUR} />
             </FactorGrid>
           )}
         />
@@ -245,32 +247,29 @@ export default function RatingCalculationSection({
         <StatCalcCard
           label="KAD" title="Kaderstärke" score={kad.score}
           isOpen={openKey === 'kad'} onToggle={() => toggle('kad')}
-          emptyNote={kad.expectedLineupPoints == null ? 'Keine Kaderdaten' : undefined}
+          emptyNote={kad.expectedLineupPoints == null ? 'Keine Startelf-Daten' : undefined}
           factors={kad.expectedLineupPoints == null ? (
-            <EmptyState>Keine Kaderdaten verfügbar – Wert bleibt neutral bei 50.</EmptyState>
+            <EmptyState>Noch keine historischen Startelf-Daten verfügbar – Wert bleibt neutral bei 50.</EmptyState>
           ) : (
             <FactorGrid>
               <FactorChip
                 value={fmtPts(kad.expectedLineupPoints)}
-                label={`Erwartete Startelf-Punkte${kad.formation ? ` (${kad.formation})` : ''}`}
+                label={`Ø Erwartungswert / ST (${kad.matchdaysEvaluated || 0} ST)`}
                 highlight
               />
               <FactorChip
                 value={`${Math.round((kad.avgStartProbability ?? kad.squadReadiness ?? 0) * 100)} %`}
-                label="Ø Startelf-Chance (Top 11)"
-              />
-              <FactorChip
-                value={kad.likelyStarters != null ? `${kad.likelyStarters} / 11` : '–'}
-                label="Sichere / erw. Starter"
+                label="Ø Startelf-Chance (11er)"
               />
               <FactorChip
                 value={`+${Math.round(kad.jokerExpectedPoints || 0)} Pkt`}
-                label="Joker-Potenzial"
+                label="Ø Joker-Potenzial / ST"
               />
-              {kad.missingSlots > 0 && (
+              {kad.avgActualPoints != null && (
                 <FactorChip
-                  value={`${kad.missingSlots} offen`}
-                  label="Kritisch: fehlende Positionen"
+                  value={fmtPts(kad.avgActualPoints)}
+                  label="Ø echte Punkte (nur Info)"
+                  highlight
                 />
               )}
               <LeagueCompareBar percentile={kad.leaguePercentile} rank={kad.leagueRank} total={kad.leagueSize} accent={kadAccent} />

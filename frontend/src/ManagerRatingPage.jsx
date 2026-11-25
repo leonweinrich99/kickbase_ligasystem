@@ -39,10 +39,15 @@ const ManagerRatingPage = () => {
   // muss VOR den frühen Returns stehen (Rules of Hooks), daher robust gegen
   // rating/allRatings === null.
   const leaguePeers = useMemo(() => {
-    if (!allRatings || !rating) return { ovp: [], akt: [], pkt: [], kad: [], tim: [] };
+    if (!allRatings || !rating) return { pro: [], ovp: [], akt: [], pkt: [], kad: [], tim: [] };
     const peers = Object.entries(allRatings)
       .filter(([, r]) => r.league === rating.league)
       .map(([uid, r]) => ({ uid, name: r.name, r }));
+
+    const pro = peers
+      .filter(p => p.r.calculation?.pro?.weightedTotalProfit != null)
+      .map(p => ({ name: p.name, value: p.r.calculation.pro.weightedTotalProfit, isYou: p.uid === kickbaseId }))
+      .sort((a, b) => b.value - a.value);
 
     const ovp = peers
       .filter(p => p.r.calculation?.ovp?.averageOverpayRatio != null)
@@ -68,7 +73,7 @@ const ManagerRatingPage = () => {
       .map(p => ({ name: p.name, value: p.r.calculation.tim.averageTimingPct, isYou: p.uid === kickbaseId }))
       .sort((a, b) => b.value - a.value);
 
-    return { ovp, akt, pkt, kad, tim };
+    return { pro, ovp, akt, pkt, kad, tim };
   }, [allRatings, rating, kickbaseId]);
 
   if (loading) {
@@ -110,6 +115,7 @@ const ManagerRatingPage = () => {
             die vom Backend mitgelieferten Rohdaten/Formeln 1:1. */}
         <RatingCalculationSection
           calculation={rating.calculation}
+          proLeaguePeers={leaguePeers.pro}
           ovpLeaguePeers={leaguePeers.ovp}
           aktLeaguePeers={leaguePeers.akt}
           pktLeaguePeers={leaguePeers.pkt}

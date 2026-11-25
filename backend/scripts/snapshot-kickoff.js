@@ -60,13 +60,28 @@ function run() {
         }
     }
 
+    // Offizielle Kickbase-Startelf-Prognose (`prob` 1..5), Status (`st`) und Schnittpunkte (`ap`)
+    // kurz vor Anstoss einfrieren, damit die historische KAD-Bewertung (Expected Points vor Spieltag)
+    // ab sofort die exakt vor Spielbeginn gueltige Startelf-Wahrscheinlichkeit kennt.
+    const playerPreKickoff = {};
+    for (const p of allPlayers) {
+        const pid = p.i != null ? String(p.i) : (p.id != null ? String(p.id) : null);
+        if (!pid) continue;
+        playerPreKickoff[pid] = {
+            prob: typeof p.prob === 'number' ? p.prob : null,
+            st: typeof p.st === 'number' ? p.st : 0,
+            ap: typeof p.ap === 'number' ? p.ap : null,
+        };
+    }
+
     const snapshotPath = path.join(snapshotDir, `md${currentMatchday}.json`);
     fs.writeFileSync(snapshotPath, JSON.stringify({
         matchday: currentMatchday,
         kickoff: kickoffDate.toISOString(),
         timestamp: new Date().toISOString(),
-        squads: currentSquads
+        squads: currentSquads,
+        playerPreKickoff
     }, null, 2));
-    console.log(`Successfully snapshotted pre-kickoff squads to ${snapshotPath}`);
+    console.log(`Successfully snapshotted pre-kickoff squads & player probs (${Object.keys(playerPreKickoff).length} players) to ${snapshotPath}`);
 }
 run();

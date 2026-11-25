@@ -141,18 +141,19 @@ function loadManagerSquadValues() {
     return map;
 }
 
-// --- Kaderstaerke (KAD): Beste gueltige 11er-Startelf nach erwarteten Punkten ---
-// Statt Kopfzahl oder Budget-Schaetzwerten bewerten wir die tatsaechliche
-// Spieltags-Qualitaet der besten gueltigen 11er-Aufstellung im Kader:
-//   E[Pkt] = p_start * Ø_Startelf_Pkt + (1 - p_start) * p_joker * Ø_Joker_Pkt
-// - p_start stammt aus Kickbases offizieller Startelf-Prognose (`prob` 1..5;
-//   verletzt/gesperrt `st !== 0` -> 0).
-// - Ø_Startelf_Pkt, p_joker (Einwechsel-Quote bei Nicht-Startelf-Spielen) und
-//   Ø_Joker_Pkt werden empirisch aus der Saison-Historie (`performance.it.ph`:
-//   `st === 5` Startelf, `st === 3` eingewechselt, `st === 4` Bank ohne Einsatz)
-//   in all_players.json berechnet.
-// - Kopfzahl ist egal (ob 11 oder 18 Spieler zaehlt nur die beste 11); nur im
-//   kritischen Bereich (< 11 gueltige Positionen) gibt es einen moderaten Abzug.
+// --- Kaderstaerke (KAD): Rein historischer Erwartungswert (xP) aller aufgestellten Startelfen ---
+// Statt einer unterwoechigen Momentaufnahme (die durch Trading-Umbauten / negatives
+// Zwischenbudget verzerrt waere) bewerten wir ausschliesslich die TATSAECHLICH an
+// jedem Spieltag aufgestellten Startelfen (`startelf-md1..N.json`). Da diese Teams
+// am Freitag 20:30 real aufgestellt wurden, ist Budget-Konformitaet garantiert.
+//
+// Streng OHNE Ergebnis-Glueck ("Point-in-Time"):
+// Fuer jeden Spieltag d zaehlen fuer jeden aufgestellten Spieler NUR Informationen
+// VOR Spieltag d (`day < d` + Vorsaison als Prior fuer fruehe Spieltage, sowie
+// ab ST 11 das vor Anstoss eingefrorene Kickbase-`prob` aus `kickoff-squads/md{d}.json`):
+//   E[Pkt | vor ST d] = p_start * Ø_Startelf_Pkt + (1 - p_start) * p_joker * Ø_Joker_Pkt
+// Was am Spieltag d dann tatsaechlich passierte (Rote Karte, Traumtor, Glueck/Pech),
+// fliesst mit 0 % in den Score ein!
 const PROB_WEIGHT_BY_CODE = {
     1: 1.0, // Sicher
     2: 0.8, // Erwartet
@@ -160,133 +161,226 @@ const PROB_WEIGHT_BY_CODE = {
     4: 0.2, // Unwahrscheinlich
     5: 0.0, // Ausgeschlossen
 };
-const PROB_FALLBACK_WEIGHT = 0.5;
-const MISSING_SLOT_POINTS_PENALTY = 40; // moderater Abzug nur im kritischen Bereich
+const PRIOR_START_PROB = 0.55;
+const PRIOR_START_PTS = 82;
+const PRIOR_JOKER_PTS = 26;
 
-// Alle regulaeren Kickbase-11er-Formationen (1 TW, 3-5 ABW, 2-5 MF, 1-3 ST)
-const VALID_FORMATIONS = [
-    { TW: 1, ABW: 3, MF: 4, ST: 3 },
-    { TW: 1, ABW: 3, MF: 5, ST: 2 },
-    { TW: 1, ABW: 4, MF: 3, ST: 3 },
-    { TW: 1, ABW: 4, MF: 4, ST: 2 },
-    { TW: 1, ABW: 4, MF: 5, ST: 1 },
-    { TW: 1, ABW: 5, MF: 2, ST: 3 },
-    { TW: 1, ABW: 5, MF: 3, ST: 2 },
-    { TW: 1, ABW: 5, MF: 4, ST: 1 },
-];
-
-function playerStartProbability(playerId, playerMap) {
-    const player = playerMap.get(playerId) || playerMap.get(String(playerId));
-    // Verletzt/angeschlagen/gesperrt (`st !== 0`) zaehlt nicht als einsatzbereit.
-    if (player && typeof player.st === 'number' && player.st !== 0) return 0;
-    const prob = player && typeof player.prob === 'number' ? Math.round(player.prob) : null;
-    if (prob != null && Object.prototype.hasOwnProperty.call(PROB_WEIGHT_BY_CODE, prob)) {
-        return PROB_WEIGHT_BY_CODE[prob];
+function loadHistoricalStartelfs(historyDir) {
+    const result = new Map();
+    let files = [];
+    try {
+        files = fs.readdirSync(historyDir).filter(f => /^startelf-md\d+\.json$/.test(f));
+    } catch (e) {
+        console.warn('Konnte history-Verzeichnis nicht lesen (Startelfen):', e.message);
+        return result;
     }
-    return PROB_FALLBACK_WEIGHT;
+    files.forEach(file => {
+        const day = parseInt(file.match(/^startelf-md(\d+)\.json$/)[1], 10);
+        try {
+            const data = JSON.parse(fs.readFileSync(path.join(historyDir, file), 'utf8'));
+            if (data && data.managers) result.set(day, data.managers);
+        } catch (e) {
+            console.warn(`Konnte ${file} nicht lesen:`, e.message);
+        }
+    });
+    return result;
 }
 
-function estimatePlayerMatchdayProfile(playerId, playerMap) {
-    const player = playerMap.get(playerId) || playerMap.get(String(playerId));
-    const isInjured = Boolean(player && typeof player.st === 'number' && player.st !== 0);
-    const pStart = playerStartProbability(playerId, playerMap);
-
-    if (isInjured) {
-        return { pStart: 0, pJoker: 0, expectedStartPts: 0, expectedJokerPts: 0, expectedPoints: 0 };
+function loadPreKickoffPlayerSnapshots(historyDir) {
+    const result = new Map();
+    const dir = path.join(historyDir, 'kickoff-squads');
+    if (!fs.existsSync(dir)) return result;
+    try {
+        const files = fs.readdirSync(dir).filter(f => /^md\d+\.json$/.test(f));
+        files.forEach(file => {
+            const day = parseInt(file.match(/^md(\d+)\.json$/)[1], 10);
+            const data = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'));
+            if (data && data.playerPreKickoff) {
+                result.set(day, data.playerPreKickoff);
+            }
+        });
+    } catch (e) {
+        console.warn('Konnte kickoff-squads nicht lesen:', e.message);
     }
+    return result;
+}
 
-    const season = getCurrentSeasonPerformance(player);
-    const ph = Array.isArray(season?.ph) ? season.ph : [];
+// Berechnet fuer einen Spieler den rein vor-spieltaglichen Erwartungswert (xP)
+// fuer Spieltag `day` - streng OHNE das Ergebnis von Spieltag `day` oder spaeter!
+function estimatePreMatchdayPlayerXp(playerId, day, playerMap, preKickoffMap) {
+    const pid = String(playerId);
+    const player = playerMap.get(pid) || playerMap.get(playerId);
+    const preSnap = preKickoffMap ? preKickoffMap[pid] : null;
 
-    const startPts = [];
-    const subPts = [];
-    let unusedBenchCount = 0;
-
-    for (const entry of ph) {
-        if (entry.st === 5 && typeof entry.p === 'number') {
-            startPts.push(entry.p);
-        } else if (entry.st === 3 && typeof entry.p === 'number') {
-            subPts.push(entry.p);
-        } else if (entry.st === 4) {
-            unusedBenchCount++;
+    // 1. Historische Spiele VOR Spieltag `day` sammeln (aktuelle Saison day < d + Vorsaison als Prior)
+    const seasons = Array.isArray(player?.performance?.it) ? player.performance.it : [];
+    const curSeason = seasons.length > 0 ? seasons[seasons.length - 1] : null;
+    const prevSeasonEntries = [];
+    if (seasons.length >= 2) {
+        // Vorsaison-Eintraege sammeln (bevorzugt letzter Eintrag vor aktueller Saison mit den meisten Spielen)
+        const prevSeason = seasons
+            .slice(0, -1)
+            .filter(s => Array.isArray(s.ph) && s.ph.length > 0)
+            .sort((a, b) => b.ph.length - a.ph.length)[0];
+        if (prevSeason) {
+            prevSeason.ph.forEach(e => {
+                if (e.st === 5 || e.st === 3 || e.st === 4 || e.st === 1) {
+                    prevSeasonEntries.push(e);
+                }
+            });
         }
     }
 
-    const avg = (arr) => (arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : null);
-    const fallbackAp = typeof player?.ap === 'number' && player.ap > 0 ? player.ap : 55;
-    const avgStartPts = avg(startPts) ?? fallbackAp;
+    const curBefore = (Array.isArray(curSeason?.ph) ? curSeason.ph : [])
+        .filter(e => typeof e.day === 'number' && e.day < day && (e.st === 5 || e.st === 3 || e.st === 4 || e.st === 1))
+        .sort((a, b) => a.day - b.day);
 
-    // Empirische Joker-Quote aus Nicht-Startelf-Spielen (st=3 vs st=4)
-    const nonStartGames = subPts.length + unusedBenchCount;
-    const probCode = player && typeof player.prob === 'number' ? Math.round(player.prob) : null;
-    let pJoker;
-    if (nonStartGames >= 2) {
-        pJoker = subPts.length / nonStartGames;
-    } else if (subPts.length === 1) {
-        pJoker = 0.5;
-    } else if (probCode === 3) {
-        pJoker = 0.45;
-    } else if (probCode === 4) {
-        pJoker = 0.3;
-    } else if (probCode === 5) {
-        pJoker = 0.0;
+    // 2. Startelf-Wahrscheinlichkeit VOR Spieltag `day`:
+    //    - Falls Pre-Kickoff-Snapshot vorhanden (ab ST 11): direkt offizielle Kickbase-Prognose!
+    //    - Sonst (rueckwirkend ST 1..10): aus Startelf-Quote vor Spieltag `day`
+    //      (letzte 5 Spiele vor `day` doppelt gewichtet, bei fruehen Spieltagen mit Vorsaison-Prior).
+    let pStart;
+    if (preSnap) {
+        if (typeof preSnap.st === 'number' && preSnap.st !== 0) {
+            pStart = 0;
+        } else if (preSnap.prob != null && Object.prototype.hasOwnProperty.call(PROB_WEIGHT_BY_CODE, Math.round(preSnap.prob))) {
+            pStart = PROB_WEIGHT_BY_CODE[Math.round(preSnap.prob)];
+        } else {
+            pStart = PRIOR_START_PROB;
+        }
     } else {
-        pJoker = 0.15;
+        // Kombiniere Vorsaison (leichtes Gewicht) + aktuelle Saison vor `day` (aktuellere Spiele staerker)
+        let weightedStarts = 1.5 * PRIOR_START_PROB;
+        let weightTotal = 1.5;
+
+        // Vorsaison mit moderatem Prior-Gewicht (hilft besonders an ST 1-3)
+        if (prevSeasonEntries.length > 0) {
+            const prevStarts = prevSeasonEntries.filter(e => e.st === 5).length;
+            const prevRate = prevStarts / prevSeasonEntries.length;
+            const prevWeight = Math.min(3, prevSeasonEntries.length * 0.2);
+            weightedStarts += prevWeight * prevRate;
+            weightTotal += prevWeight;
+        }
+
+        // Aktuelle Saison strikt VOR `day` (letzte 5 Spiele hoeher gewichtet)
+        const nCur = curBefore.length;
+        curBefore.forEach((e, idx) => {
+            const isRecent = idx >= nCur - 5;
+            const w = isRecent ? 1.5 : 0.8;
+            if (e.st === 5) weightedStarts += w;
+            weightTotal += w;
+        });
+
+        pStart = Math.max(0, Math.min(1, weightedStarts / weightTotal));
     }
 
-    const rawAvgSubPts = avg(subPts);
-    const avgSubPts = rawAvgSubPts != null
-        ? Math.max(-10, Math.min(120, rawAvgSubPts))
-        : Math.max(15, Math.min(40, fallbackAp * 0.35));
+    // 3. Erwartete Startelf-Punkte & Joker-Punkte strikt aus Spielen VOR `day`
+    const curStartPts = curBefore.filter(e => e.st === 5 && typeof e.p === 'number').map(e => e.p);
+    const prevStartPts = prevSeasonEntries.filter(e => e.st === 5 && typeof e.p === 'number').map(e => e.p);
 
-    const expectedStartPts = pStart * Math.max(0, avgStartPts);
+    // Bayesianischer Mix: aktuelle Saison (volle Gewichtung) + Vorsaison (max 3 Spiele Gewicht) + Liga-Prior (1.5)
+    let startPtsSum = 1.5 * PRIOR_START_PTS;
+    let startPtsWeight = 1.5;
+    if (prevStartPts.length > 0) {
+        const prevAvg = prevStartPts.reduce((a, b) => a + b, 0) / prevStartPts.length;
+        const wPrev = Math.min(3, prevStartPts.length * 0.25);
+        startPtsSum += wPrev * prevAvg;
+        startPtsWeight += wPrev;
+    }
+    curStartPts.forEach(p => {
+        startPtsSum += p;
+        startPtsWeight += 1;
+    });
+    const avgStartPts = Math.max(0, startPtsSum / startPtsWeight);
+
+    // Empirische Joker-Quote & Joker-Punkte aus Nicht-Startelf-Spielen VOR `day`
+    const allBefore = [...prevSeasonEntries.slice(-10), ...curBefore];
+    const subEntries = allBefore.filter(e => e.st === 3 && typeof e.p === 'number');
+    const unusedEntries = allBefore.filter(e => e.st === 4);
+    const nonStartGames = subEntries.length + unusedEntries.length;
+
+    const pJoker = nonStartGames >= 2
+        ? (subEntries.length + 0.5) / (nonStartGames + 1.5)
+        : 0.3;
+
+    let jokerPtsSum = 1.0 * PRIOR_JOKER_PTS;
+    let jokerPtsWeight = 1.0;
+    subEntries.forEach(e => {
+        jokerPtsSum += Math.max(-10, Math.min(120, e.p));
+        jokerPtsWeight += 1;
+    });
+    const avgSubPts = Math.max(0, jokerPtsSum / jokerPtsWeight);
+
+    const expectedStartPts = pStart * avgStartPts;
     const expectedJokerPts = (1 - pStart) * pJoker * avgSubPts;
     const expectedPoints = Math.max(0, expectedStartPts + expectedJokerPts);
 
-    return { pStart, pJoker, expectedStartPts, expectedJokerPts, expectedPoints };
+    return { pStart, expectedStartPts, expectedJokerPts, expectedPoints };
 }
 
-function evaluateBestStartingEleven(squadPlayers, playerMap) {
-    const byPos = { TW: [], ABW: [], MF: [], ST: [] };
-    (squadPlayers || []).forEach(sp => {
-        if (!sp.position || !byPos[sp.position]) return;
-        const profile = estimatePlayerMatchdayProfile(sp.id, playerMap);
-        byPos[sp.position].push({ id: sp.id, position: sp.position, ...profile });
-    });
+function evaluateHistoricalLineups(uid, startelfByDay, preKickoffByDay, playerMap) {
+    const days = [...startelfByDay.keys()].sort((a, b) => a - b);
+    const breakdown = [];
 
-    Object.values(byPos).forEach(list => list.sort((a, b) => b.expectedPoints - a.expectedPoints));
+    for (const day of days) {
+        const mgrEntry = startelfByDay.get(day)?.[String(uid)];
+        if (!mgrEntry || !Array.isArray(mgrEntry.lineup)) continue;
 
-    let best = null;
-    for (const formation of VALID_FORMATIONS) {
-        const picked = [];
-        let missingSlots = 0;
-        for (const [pos, need] of Object.entries(formation)) {
-            const avail = byPos[pos] || [];
-            const take = avail.slice(0, need);
-            picked.push(...take);
-            if (take.length < need) missingSlots += (need - take.length);
+        const preSnap = preKickoffByDay.get(day) || null;
+        const lineup = mgrEntry.lineup;
+        let expectedPts = 0;
+        let jokerPts = 0;
+        let startProbSum = 0;
+        let likelyStarters = 0;
+
+        for (const p of lineup) {
+            const prof = estimatePreMatchdayPlayerXp(p.id, day, playerMap, preSnap);
+            expectedPts += prof.expectedPoints;
+            jokerPts += prof.expectedJokerPts;
+            startProbSum += prof.pStart;
+            if (prof.pStart >= 0.75) likelyStarters++;
         }
-        const expectedLineupPoints = picked.reduce((s, p) => s + p.expectedPoints, 0);
-        const jokerExpectedPoints = picked.reduce((s, p) => s + p.expectedJokerPts, 0);
-        const strengthScore = expectedLineupPoints - missingSlots * MISSING_SLOT_POINTS_PENALTY;
 
-        if (!best || strengthScore > best.strengthScore) {
-            const avgStartProb = picked.length > 0
-                ? picked.reduce((s, p) => s + p.pStart, 0) / 11
-                : 0;
-            const likelyStarters = picked.filter(p => p.pStart >= 0.8).length;
-            best = {
-                formation: `${formation.ABW}-${formation.MF}-${formation.ST}`,
-                expectedLineupPoints: Math.round(expectedLineupPoints),
-                jokerExpectedPoints: Math.round(jokerExpectedPoints),
-                avgStartProbability: avgStartProb,
-                likelyStarters,
-                missingSlots,
-                strengthScore,
-            };
-        }
+        const missingSlots = Math.max(0, 11 - lineup.length);
+        // Durchschnitt ueber 11 Slots (fehlende Slots zaehlen als 0 Startelf-Chance & 0 xP)
+        const avgStartProb = startProbSum / 11;
+        const actualPoints = typeof mgrEntry.pointsMatchday === 'number' ? mgrEntry.pointsMatchday : null;
+
+        breakdown.push({
+            day,
+            lineupSize: lineup.length,
+            missingSlots,
+            expectedPoints: Math.round(expectedPts),
+            jokerExpectedPoints: Math.round(jokerPts),
+            avgStartProbability: avgStartProb,
+            likelyStarters,
+            usedOfficialPreProb: Boolean(preSnap),
+            actualPoints,
+        });
     }
-    return best;
+
+    if (breakdown.length === 0) return null;
+
+    const n = breakdown.length;
+    const avgExpectedPoints = breakdown.reduce((s, b) => s + b.expectedPoints, 0) / n;
+    const avgJokerPoints = breakdown.reduce((s, b) => s + b.jokerExpectedPoints, 0) / n;
+    const avgStartProbability = breakdown.reduce((s, b) => s + b.avgStartProbability, 0) / n;
+    const avgLikelyStarters = breakdown.reduce((s, b) => s + b.likelyStarters, 0) / n;
+    const actuals = breakdown.filter(b => b.actualPoints != null).map(b => b.actualPoints);
+    const avgActualPoints = actuals.length > 0 ? actuals.reduce((a, b) => a + b, 0) / actuals.length : null;
+    const totalMissingSlots = breakdown.reduce((s, b) => s + b.missingSlots, 0);
+
+    return {
+        matchdaysEvaluated: n,
+        expectedLineupPoints: Math.round(avgExpectedPoints),
+        jokerExpectedPoints: Math.round(avgJokerPoints),
+        avgStartProbability,
+        avgLikelyStarters: Math.round(avgLikelyStarters * 10) / 10,
+        avgActualPoints: avgActualPoints != null ? Math.round(avgActualPoints) : null,
+        totalMissingSlots,
+        strengthScore: avgExpectedPoints,
+        breakdown,
+    };
 }
 
 // --- Verkaufs-Timing (7-Tage-Perspektive vor & nach Verkauf) ---
@@ -786,6 +880,9 @@ function run() {
     const mvHistory = loadMarketValueHistory();
     const managerSquads = loadManagerSquads();
     const managerSquadValues = loadManagerSquadValues();
+    const startelfByDay = loadHistoricalStartelfs(historyDir);
+    const preKickoffByDay = loadPreKickoffPlayerSnapshots(historyDir);
+    console.log(`Historische Startelfen geladen: ${startelfByDay.size} Spieltage (Pre-Kickoff-Prognosen: ${preKickoffByDay.size}).`);
 
     // Referenzwert für "Marktwert zum Zeitpunkt X": bevorzugt die ECHTE Historie aus dem
     // Trading Advisor, danach ein evtl. gespeicherter Snapshot am Transfer selbst,
@@ -1063,16 +1160,15 @@ function run() {
                     }
                 }
 
-                // Kaderstaerke (KAD): Beste gueltige 11er-Startelf nach erwarteten
-                // Punkten (Kickbase Startelf-Prognose + Startelf- & Joker-Punkte aus
-                // den gesammelten Saison-Daten). Kopfzahl & Budget-Schaetzwerte
-                // fliessen NICHT mehr ein (nur im kritischen Fall fehlender Slots).
+                // Kaderstaerke (KAD): Rein historischer Erwartungswert (xP) ueber alle
+                // bisher aufgestellten Startelfen (streng aus Daten VOR dem jeweiligen
+                // Spieltag, 0 % Ergebnis-Glueck, 0 % Zwischenwochen-Budget-Verzerrung).
                 const budget = parseSignedMoney(u.estimatedBudget);
                 const squadInfo = managerSquads.get(String(uid)) || null;
                 const squadHeadcountReadiness = squadInfo ? computeSquadReadiness(squadInfo.positionCounts, squadInfo.total) : null;
-                const squadEval = squadInfo ? evaluateBestStartingEleven(squadInfo.players, playerMap) : null;
+                const squadEval = evaluateHistoricalLineups(uid, startelfByDay, preKickoffByDay, playerMap);
                 const squadReadiness = squadEval ? squadEval.avgStartProbability : null;
-                const squadRiskPenalty = squadEval ? -(squadEval.missingSlots * 4) : 0;
+                const squadRiskPenalty = 0;
 
                 // Performance / PPM - fliesst NICHT mehr in die Gesamtwertung ein, wird aber
                 // weiterhin fuer calculation.pkt.perfBonus (Anzeige) gebraucht.
@@ -1156,15 +1252,18 @@ function run() {
                         },
                         kad: {
                             score: computeKadScore(squadReadiness, squadRiskPenalty),
+                            basis: 'historicalLineupsXp',
+                            matchdaysEvaluated: squadEval ? squadEval.matchdaysEvaluated : 0,
                             squadTotal: squadInfo ? squadInfo.total : null,
                             squadReadiness,
                             expectedLineupPoints: squadEval ? squadEval.expectedLineupPoints : null,
                             jokerExpectedPoints: squadEval ? squadEval.jokerExpectedPoints : null,
                             avgStartProbability: squadEval ? squadEval.avgStartProbability : null,
-                            likelyStarters: squadEval ? squadEval.likelyStarters : null,
-                            missingSlots: squadEval ? squadEval.missingSlots : null,
-                            formation: squadEval ? squadEval.formation : null,
+                            avgLikelyStarters: squadEval ? squadEval.avgLikelyStarters : null,
+                            avgActualPoints: squadEval ? squadEval.avgActualPoints : null,
+                            totalMissingSlots: squadEval ? squadEval.totalMissingSlots : 0,
                             strengthScore: squadEval ? squadEval.strengthScore : null,
+                            matchdayBreakdown: squadEval ? squadEval.breakdown : [],
                         },
                         tim: {
                             score: computeTimScore(saleTimingProfit, saleTimingSampleSize),
