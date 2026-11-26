@@ -27,6 +27,7 @@ import {
   readCachedSnapshot,
   saveCachedSnapshot,
 } from './livePointsStore';
+import { isMatchdayWindowBerlin } from './matchdaySchedule';
 
 // Live-Tab Struktur (Owner-Wunsch 24.11.2026):
 // - "own" ("Mein Kader"): aktueller Kader mit Startelf auf dem Fussballfeld
@@ -195,7 +196,10 @@ const LiveLineupPage = () => {
   const { profile } = useAuth();
   const kickbaseId = profile?.kickbaseId;
 
-  const [mode, setMode] = useState('own');
+  // Zeitgesteuerter Standard-Tab (Europe/Berlin):
+  // - Dienstag 00:00 bis Freitag 17:59 -> "Mein Kader" ('own')
+  // - Freitag 18:00 bis Montag 23:59   -> "Live" ('live')
+  const [mode, setMode] = useState(() => (isMatchdayWindowBerlin() ? 'live' : 'own'));
   const [liveSubView, setLiveSubView] = useState('own'); // 'own' (Spieltagself) | 'ranking' (Liga-Ranking)
 
   const [leagueKey, setLeagueKey] = useState(null);

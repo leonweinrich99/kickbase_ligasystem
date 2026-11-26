@@ -7,6 +7,7 @@ import LoadingScreen from './LoadingScreen';
 import useMinimumDelay from './useMinimumDelay';
 import { shouldShowSplash, markSplashShown } from './appLoadState';
 import ManagerAvatar from './ui/ManagerAvatar';
+import { isMatchdayWindowBerlin } from './matchdaySchedule';
 
 // "Sieger SF13" & Co. sind Platzhalter für noch nicht ausgespielte Partien,
 // "Freilos" für einen direkten Aufstieg ohne Gegner - beides ist (noch) kein
@@ -127,11 +128,14 @@ const MobileRoundView = ({ matches, isFirstRound, isFinal, leagueColors, nameToI
 };
 
 
-const RoundColumn = ({ matches, title, schedule, markFirst = false, leagueColors, nameToId, onOpenCompare, pokalMembers }) => {
+const RoundColumn = ({ matches, title, schedule, isCurrent = false, markFirst = false, leagueColors, nameToId, onOpenCompare, pokalMembers }) => {
   return (
-    <div className="flex flex-col justify-around gap-2 sm:gap-4 flex-1">
-      <div className="text-[10px] sm:text-xs font-black uppercase text-center text-[#8b92a5] tracking-widest mb-2 opacity-70">
-        {title}
+    <div className={`flex flex-col justify-around gap-2 sm:gap-4 flex-1 ${isCurrent ? 'rounded-2xl bg-[#8b5cf6]/[0.05] ring-1 ring-[#8b5cf6]/35 px-2.5 py-3 -my-3' : ''}`}>
+      <div className={`text-[10px] sm:text-xs font-black uppercase text-center tracking-widest mb-2 ${isCurrent ? 'text-white opacity-100' : 'text-[#8b92a5] opacity-70'}`}>
+        <div className="flex items-center justify-center gap-1.5">
+          {isCurrent && <span className="w-1.5 h-1.5 rounded-full bg-[#8b5cf6] shadow-[0_0_8px_#8b5cf6]" />}
+          <span>{title}</span>
+        </div>
         {schedule && <div className="normal-case tracking-normal text-[9px] text-[#8b5cf6] mt-1 opacity-100">BL-Spieltag {schedule.matchday} · {schedule.date}</div>}
       </div>
       <div className="flex flex-col justify-around flex-1 gap-2 sm:gap-4">
@@ -153,22 +157,61 @@ const ROUND_MATCHES_KEYS = {
   Finale: ['final'],
 };
 
-// Owner-Wunsch 24.11.2026: "im Pokaltab immer in der aktuellen Runde
-// angezeigt, nicht am Anfang" - eine Runde gilt als "gestartet", sobald
-// mindestens eine Partie ein echtes Ergebnis hat (Sieger steht fest oder
-// Punkte > 0 - provisorisch waehrend eines laufenden Spieltags zaehlt
-// ebenfalls). Die zuletzt gestartete Runde wird beim Laden automatisch
-// ausgewaehlt, ohne Treffer bleibt es beim Sechzehntelfinale.
+const getRoundMatches = (data, roundName) =>
+  (ROUND_MATCHES_KEYS[roundName] || []).flatMap((k) => data?.[k] || []);
+
 const isRoundStarted = (matches) =>
   (matches || []).some((m) => m.provisional || m.winner != null || m.score1 || m.score2);
 
-const getCurrentRound = (data) => {
+const isRoundCompleted = (matches) =>
+  (matches || []).length > 0 && (matches || []).every((m) => m.winner != null && !m.provisional);
+
+const hasRealPairings = (matches) =>
+  (matches || []).some((m) => !isPlaceholderName(m.p1) || !isPlaceholderName(m.p2));
+
+// Bestimmt automatisch die aktuell relevante Pokalrunde:
+// 1. Laeuft eine Runde (provisional) oder ist sie gestartet, aber noch nicht komplett
+//    final entschieden -> diese Runde anzeigen.
+// 2. Ist die zuletzt gespielte Runde komplett final (nach Montag 18:00), schieben wir
+//    automatisch auf die naechste Runde weiter (z.B. Viertelfinale -> Halbfinale),
+//    sobald deren Paarungen feststehen - ausser wir sind noch am laufenden Spieltags-
+//    Wochenende exakt dieser Runde.
+const getCurrentRound = (data, currentMatchday = null) => {
+  if (!data) return rounds[0];
+  const schedule = data?.meta?.roundSchedule || {};
+
+  // 1. Laufende/provisorische Runde hat immer Vorrang
   for (let i = rounds.length - 1; i >= 0; i--) {
-    const keys = ROUND_MATCHES_KEYS[rounds[i]];
-    const matches = keys.flatMap((k) => data?.[k] || []);
-    if (isRoundStarted(matches)) return rounds[i];
+    const matches = getRoundMatches(data, rounds[i]);
+    if (matches.some((m) => m.provisional)) return rounds[i];
   }
-  return rounds[0];
+
+  // 2. Zuletzt gestartete Runde suchen
+  let lastStartedIdx = -1;
+  for (let i = rounds.length - 1; i >= 0; i--) {
+    const matches = getRoundMatches(data, rounds[i]);
+    if (isRoundStarted(matches)) {
+      lastStartedIdx = i;
+      break;
+    }
+  }
+
+  if (lastStartedIdx === -1) return rounds[0];
+
+  const lastRoundName = rounds[lastStartedIdx];
+  const lastMatches = getRoundMatches(data, lastRoundName);
+  const lastDone = isRoundCompleted(lastMatches);
+  const lastMd = schedule[lastRoundName]?.matchday ?? null;
+  const stillOnSameWeekend = currentMatchday != null && lastMd === currentMatchday && isMatchdayWindowBerlin();
+
+  if (lastDone && !stillOnSameWeekend && lastStartedIdx < rounds.length - 1) {
+    const nextRoundName = rounds[lastStartedIdx + 1];
+    if (hasRealPairings(getRoundMatches(data, nextRoundName))) {
+      return nextRoundName;
+    }
+  }
+
+  return lastRoundName;
 };
 
 const variants = {
@@ -190,6 +233,7 @@ const variants = {
 
 const Pokal = () => {
   const [data, setData] = useState(null);
+  const [currentMatchday, setCurrentMatchday] = useState(null);
   const [leagueColors, setLeagueColors] = useState({});
   const [nameToId, setNameToId] = useState({});
   const [pokalMembers, setPokalMembers] = useState(null);
@@ -209,6 +253,7 @@ const Pokal = () => {
   const [zoomLevel, setZoomLevel] = useState(1);
   const tabsRef = useRef(null);
   const desktopScrollRef = useRef(null);
+  const initialRoundScrolledRef = useRef(false);
 
   // Touch Swipe Handlers
   const [touchStart, setTouchStart] = useState(null);
@@ -240,20 +285,18 @@ const Pokal = () => {
   };
 
   const roundSchedule = data?.meta?.roundSchedule || {};
+  const currentRound = getCurrentRound(data, currentMatchday);
 
-  // Owner-Feedback 24.11.2026: "beim Pokal muss dann auch oben dahin
-  // gescrollt sein, damit es richtig aussieht" - der Umschalter muss nicht
-  // nur beim manuellen Wechsel (handleRoundChange), sondern auch beim
-  // automatischen Default auf die aktuelle Runde (siehe getCurrentRound
-  // unten) zur ausgewaehlten Runde scrollen, sonst steht man z.B. beim
-  // Viertelfinale, sieht aber noch den auf das Sechzehntelfinale
-  // gescrollten Umschalter.
+  // Schiebt den horizontalen Runden-Umschalter oben zuverlässig auf die aktive
+  // Runde (exaktes scrollTo statt scrollIntoView, damit auch nach dem Splash-Screen
+  // und ohne Seiten-Scroll sauber mittig zentriert wird).
   const scrollRoundIntoView = (round, behavior = 'smooth') => {
-    if (!tabsRef.current) return;
-    const button = tabsRef.current.querySelector(`[data-round="${round}"]`);
-    if (button) {
-      button.scrollIntoView({ behavior, inline: 'center', block: 'nearest' });
-    }
+    const container = tabsRef.current;
+    if (!container) return;
+    const button = container.querySelector(`[data-round="${round}"]`);
+    if (!button) return;
+    const targetLeft = Math.max(0, button.offsetLeft - (container.clientWidth - button.clientWidth) / 2);
+    container.scrollTo({ left: targetLeft, behavior });
   };
 
   const handleRoundChange = (round) => {
@@ -262,19 +305,39 @@ const Pokal = () => {
     const newIndex = rounds.indexOf(round);
     setDirection(newIndex > currentIndex ? 1 : -1);
     setActiveRound(round);
-    scrollRoundIntoView(round);
   };
 
+  // Nach dem Mounten (sobald data geladen & Splash vorbei) und bei jedem
+  // Rundenwechsel die Auswahlleiste oben automatisch auf activeRound durchschieben.
   useEffect(() => {
-    fetch('/pokal-data.json')
-      .then((res) => res.json())
-      .then((json) => {
-        setData(json);
-        const current = getCurrentRound(json);
-        setActiveRound(current);
-        // "auto" statt "smooth": beim Laden soll der Umschalter direkt an
-        // der richtigen Stelle stehen, kein sichtbares Hin-Scrollen.
-        scrollRoundIntoView(current, 'auto');
+    if (!data || (showSplash && !minDelayElapsed)) return;
+    const behavior = initialRoundScrolledRef.current ? 'smooth' : 'auto';
+    const raf = requestAnimationFrame(() => {
+      scrollRoundIntoView(activeRound, behavior);
+      initialRoundScrolledRef.current = true;
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [activeRound, data, showSplash, minDelayElapsed]);
+
+  useEffect(() => {
+    Promise.all([
+      fetch(`/pokal-data.json?t=${Date.now()}`).then((res) => res.json()),
+      fetch(`/data.json?t=${Date.now()}`).then((res) => res.json()).catch(() => null),
+    ])
+      .then(([pokalJson, liveJson]) => {
+        const mDay = liveJson?.matchday ? Number(liveJson.matchday) : null;
+        if (mDay) setCurrentMatchday(mDay);
+        if (liveJson?.leagues) {
+          const idMap = {};
+          liveJson.leagues.forEach((l) => {
+            l.users.forEach((u) => {
+              idMap[u.name] = u.id;
+            });
+          });
+          setNameToId(idMap);
+        }
+        setData(pokalJson);
+        setActiveRound(getCurrentRound(pokalJson, mDay));
       })
       .catch((err) => console.error("Error loading pokal data:", err));
 
@@ -292,22 +355,6 @@ const Pokal = () => {
         setLeagueColors(map);
       })
       .catch((err) => console.error("Error loading league color map:", err));
-
-    // Für den Klick auf eine Partie (Head-to-Head-Vergleich): Zuordnung
-    // Name -> aktuelle Kickbase-ID aus dem LIVE-Ligasystem (CompareView
-    // erwartet genau diese IDs, siehe App.jsx-Route "/*" -> dataBase="").
-    fetch('/data.json')
-      .then((res) => res.json())
-      .then((json) => {
-        const map = {};
-        (json.leagues || []).forEach((l) => {
-          l.users.forEach((u) => {
-            map[u.name] = u.id;
-          });
-        });
-        setNameToId(map);
-      })
-      .catch((err) => console.error("Error loading manager id map:", err));
 
     // Für den grünen Haken: wer ist schon TATSÄCHLICH Mitglied der echten
     // Kickbase-Pokal-Liga? (siehe backend/scripts/fetch-pokal-arena.js)
@@ -353,7 +400,20 @@ const Pokal = () => {
               <img src={logo} alt="Kickbase Liga Logo" className="w-full h-full object-contain" />
             </div>
             <div className="min-w-0 pr-1">
-              <div className="text-[9px] sm:text-[11px] font-semibold tracking-wider text-[#8b5cf6] mb-0.5">SAISON 26/27</div>
+              <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                <div className="text-[9px] sm:text-[11px] font-semibold tracking-wider text-[#8b5cf6]">SAISON 26/27</div>
+                {currentMatchday != null && (
+                  <span className="inline-flex items-center gap-1.5 text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#8b5cf6]/15 border border-[#8b5cf6]/40 text-purple-200 whitespace-nowrap">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#8b5cf6]" />
+                    BL-Spieltag {currentMatchday}
+                    {roundSchedule[currentRound]?.matchday === currentMatchday
+                      ? ` · ${currentRound}`
+                      : roundSchedule[currentRound]
+                        ? ` · Nächste Runde: ${currentRound} (ST ${roundSchedule[currentRound].matchday})`
+                        : ''}
+                  </span>
+                )}
+              </div>
               <h1 className="text-[19px] sm:text-3xl font-bold tracking-tight uppercase leading-[1.1] break-words">Pokal</h1>
             </div>
           </div>
@@ -367,21 +427,39 @@ const Pokal = () => {
           </Link>
         </div>
 
-        {/* Zweite Zeile: Runden-Umschalter (mobil), auf gleicher Höhe wie der Spieltag-Wechsler in der Liga */}
-        {/* Zweite Zeile: Runden-Umschalter (mobil), auf gleicher Höhe wie der Spieltag-Wechsler in der Liga */}
+        {/* Zweite Zeile: Runden-Umschalter (mobil), automatisch auf aktuelle Runde durchgeschoben */}
         <div className="flex xl:hidden w-full items-center gap-2 sm:gap-4">
-          <div ref={tabsRef} className="flex overflow-x-auto gap-2 no-scrollbar scroll-smooth h-12 items-center flex-1 bg-[#171717] border border-[#2e2e2e] rounded-xl px-2 shadow-lg">
-            {rounds.map(round => (
-              <button
-                key={round}
-                data-round={round}
-                onClick={() => handleRoundChange(round)}
-                className={`px-4 py-2 rounded-lg whitespace-nowrap text-xs transition-all flex-shrink-0 ${activeRound === round ? 'bg-white text-black font-semibold' : 'text-[#8b92a5] font-medium hover:text-white'}`}
-              >
-                <span>{round}</span>
-                {roundSchedule[round] && <span className="block text-[9px] font-normal text-[#8b5cf6] mt-0.5">BL-Spieltag {roundSchedule[round].matchday} · {roundSchedule[round].date}</span>}
-              </button>
-            ))}
+          <div ref={tabsRef} className="flex overflow-x-auto gap-2 no-scrollbar h-12 items-center flex-1 bg-[#171717] border border-[#2e2e2e] rounded-xl px-2 shadow-lg">
+            {rounds.map(round => {
+              const isCurrent = round === currentRound;
+              const isActive = activeRound === round;
+              return (
+                <button
+                  key={round}
+                  data-round={round}
+                  onClick={() => handleRoundChange(round)}
+                  className={`px-4 py-1.5 rounded-lg whitespace-nowrap text-xs transition-all flex-shrink-0 ${
+                    isActive
+                      ? 'bg-white text-black font-semibold'
+                      : isCurrent
+                        ? 'text-white font-semibold bg-[#8b5cf6]/15 border border-[#8b5cf6]/40'
+                        : 'text-[#8b92a5] font-medium hover:text-white'
+                  }`}
+                >
+                  <span className="inline-flex items-center gap-1.5">
+                    {isCurrent && (
+                      <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-[#8b5cf6]' : 'bg-purple-400'}`} />
+                    )}
+                    <span>{round}</span>
+                  </span>
+                  {roundSchedule[round] && (
+                    <span className={`block text-[9px] font-normal mt-0.5 ${isActive ? 'text-[#6d28d9]' : 'text-[#8b5cf6]'}`}>
+                      BL-Spieltag {roundSchedule[round].matchday} · {roundSchedule[round].date}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -444,10 +522,10 @@ const Pokal = () => {
           
           {/* Left Bracket */}
           <div className="flex gap-4 sm:gap-8 flex-1">
-            <RoundColumn matches={data.roundOf32Left} title="Sechzehntelfinale" schedule={roundSchedule.Sechzehntelfinale} markFirst leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />
-            <RoundColumn matches={data.roundOf16Left} title="Achtelfinale" schedule={roundSchedule.Achtelfinale} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />
-            <RoundColumn matches={data.quarterFinalsLeft} title="Viertelfinale" schedule={roundSchedule.Viertelfinale} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />
-            <RoundColumn matches={data.semiFinalsLeft} title="Halbfinale" schedule={roundSchedule.Halbfinale} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />
+            <RoundColumn matches={data.roundOf32Left} title="Sechzehntelfinale" schedule={roundSchedule.Sechzehntelfinale} isCurrent={currentRound === 'Sechzehntelfinale'} markFirst leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />
+            <RoundColumn matches={data.roundOf16Left} title="Achtelfinale" schedule={roundSchedule.Achtelfinale} isCurrent={currentRound === 'Achtelfinale'} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />
+            <RoundColumn matches={data.quarterFinalsLeft} title="Viertelfinale" schedule={roundSchedule.Viertelfinale} isCurrent={currentRound === 'Viertelfinale'} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />
+            <RoundColumn matches={data.semiFinalsLeft} title="Halbfinale" schedule={roundSchedule.Halbfinale} isCurrent={currentRound === 'Halbfinale'} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />
           </div>
 
           {/* Center (Final) */}
@@ -466,10 +544,10 @@ const Pokal = () => {
 
           {/* Right Bracket */}
           <div className="flex gap-4 sm:gap-8 flex-1 flex-row-reverse">
-            <RoundColumn matches={data.roundOf32Right} title="Sechzehntelfinale" schedule={roundSchedule.Sechzehntelfinale} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />
-            <RoundColumn matches={data.roundOf16Right} title="Achtelfinale" schedule={roundSchedule.Achtelfinale} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />
-            <RoundColumn matches={data.quarterFinalsRight} title="Viertelfinale" schedule={roundSchedule.Viertelfinale} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />
-            <RoundColumn matches={data.semiFinalsRight} title="Halbfinale" schedule={roundSchedule.Halbfinale} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />
+            <RoundColumn matches={data.roundOf32Right} title="Sechzehntelfinale" schedule={roundSchedule.Sechzehntelfinale} isCurrent={currentRound === 'Sechzehntelfinale'} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />
+            <RoundColumn matches={data.roundOf16Right} title="Achtelfinale" schedule={roundSchedule.Achtelfinale} isCurrent={currentRound === 'Achtelfinale'} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />
+            <RoundColumn matches={data.quarterFinalsRight} title="Viertelfinale" schedule={roundSchedule.Viertelfinale} isCurrent={currentRound === 'Viertelfinale'} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />
+            <RoundColumn matches={data.semiFinalsRight} title="Halbfinale" schedule={roundSchedule.Halbfinale} isCurrent={currentRound === 'Halbfinale'} leagueColors={leagueColors} nameToId={nameToId} onOpenCompare={handleOpenCompare} pokalMembers={pokalMembers} />
           </div>
 
         </div>

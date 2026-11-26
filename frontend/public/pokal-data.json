@@ -215,8 +215,7 @@
       "p2": "DeinHomieEnobi",
       "score1": 1796,
       "score2": 1310,
-      "winner": null,
-      "provisional": true
+      "winner": 1
     },
     {
       "id": "m26",
@@ -224,8 +223,7 @@
       "p2": "Blake",
       "score1": 1570,
       "score2": 1458,
-      "winner": null,
-      "provisional": true
+      "winner": 1
     }
   ],
   "quarterFinalsRight": [
@@ -235,8 +233,7 @@
       "p2": "Ansgar Trinkmann",
       "score1": 1410,
       "score2": 1666,
-      "winner": null,
-      "provisional": true
+      "winner": 2
     },
     {
       "id": "m28",
@@ -244,15 +241,14 @@
       "p2": "AchtSieben",
       "score1": 1451,
       "score2": 0,
-      "winner": null,
-      "provisional": true
+      "winner": 1
     }
   ],
   "semiFinalsLeft": [
     {
       "id": "m29",
-      "p1": "Sieger VF1",
-      "p2": "Sieger VF2",
+      "p1": "Justin",
+      "p2": "casper",
       "score1": 0,
       "score2": 0,
       "winner": null
@@ -261,8 +257,8 @@
   "semiFinalsRight": [
     {
       "id": "m30",
-      "p1": "Sieger VF3",
-      "p2": "Sieger VF4",
+      "p1": "Ansgar Trinkmann",
+      "p2": "Puliester",
       "score1": 0,
       "score2": 0,
       "winner": null

@@ -7,6 +7,7 @@ import OptimalTeam from './OptimalTeam';
 import LoadingScreen from './LoadingScreen';
 import useMinimumDelay from './useMinimumDelay';
 import { shouldShowSplash, markSplashShown } from './appLoadState';
+import { isMatchdayWindowBerlin } from './matchdaySchedule';
 
 // SeasonView kapselt eine komplette "Saison-Ansicht" (Dashboard + User-Detail + Vergleich)
 // und kann sowohl auf die LIVE-Daten (dataBase="") als auch auf ARCHIVIERTE Daten
@@ -51,11 +52,16 @@ const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
         ];
         const uniqueViews = [...new Set(views)];
         setAvailableViews(uniqueViews);
-        // Owner-Wunsch 23.11.2026: beim Oeffnen der App soll der Liga-Tab
-        // immer den aktuellen/laufenden Spieltag zeigen, nicht "Gesamt" -
-        // mDay liegt im views-Array immer direkt VOR 'saison' (siehe oben),
-        // also das vorletzte Element statt des letzten.
-        setCurrentViewIndex(Math.max(0, uniqueViews.length - 2));
+        // Zeitgesteuerte Default-Ansicht im Liga-Tab (Europe/Berlin):
+        // - Dienstag 00:00 bis Freitag 17:59 -> Gesamtpunkte ('saison')
+        // - Freitag 18:00 bis Montag 23:59   -> aktueller Spieltag (mDay)
+        const saisonIdx = uniqueViews.indexOf('saison');
+        const matchdayIdx = uniqueViews.indexOf(mDay);
+        const showMatchdayDefault = mode === 'live' && isMatchdayWindowBerlin();
+        const initialIdx = showMatchdayDefault
+          ? (matchdayIdx >= 0 ? matchdayIdx : Math.max(0, uniqueViews.length - 2))
+          : (saisonIdx >= 0 ? saisonIdx : uniqueViews.length - 1);
+        setCurrentViewIndex(initialIdx);
 
         const mDays = [...uniqueViews.filter(v => typeof v === 'number')].sort((a, b) => b - a);
         const prevMDay = mDays.length > 1 ? mDays[1] : (mDays.length === 1 && mDays[0] !== mDay ? mDays[0] : null);
@@ -76,7 +82,7 @@ const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
         }
       })
       .catch(err => console.error("Initial load error:", err));
-  }, [dataBase]);
+  }, [dataBase, mode]);
 
   useEffect(() => {
     if (availableViews.length === 0) return;

@@ -8,7 +8,9 @@ name: Update Pokal-Ergebnisse
 # Details (Spielmodus gpm=4, Punkte pro Manager) siehe Kommentar in backend/scripts/fetch-pokal-arena.js.
 on:
   schedule:
-    - cron: '0 6 * * *' # täglich 06:00 UTC
+    - cron: '0 6 * * *'     # täglich 07:00/08:00 Berlin (Live-Updates & Sicherheitsnetz)
+    - cron: '15 16 * * 1'   # Montags 18:15 MESZ (Sommerzeit) -> sofortige Finalisierung
+    - cron: '15 17 * * 1'   # Montags 18:15 MEZ (Winterzeit)  -> sofortige Finalisierung
   workflow_dispatch:
 
 jobs:

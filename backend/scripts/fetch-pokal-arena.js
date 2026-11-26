@@ -29,7 +29,7 @@ const POKAL_LEAGUE_NAME = process.env.KICKBASE_LEAGUE_POKAL_NAME || 'Pokal';
 const POKAL_DATA_PATH = path.join(__dirname, '../../frontend/public/pokal-data.json');
 const MEMBERS_PATH = path.join(__dirname, '../../frontend/public/history/pokal-league-members.json');
 const API_BASE = 'https://api.kickbase.com/v4';
-const EVALUATION_BUFFER_DAYS = 3; // Bundesliga-Spieltage laufen Fr-Mo, daher 3 Tage Puffer ab dem Rundendatum
+const FINALIZATION_HOUR_BERLIN = 18; // Montag 18:00 Uhr Berliner Zeit stehen finale Kickbase-Daten fest
 
 // Jeder Rundenblock: seine beiden Bracket-Hälften, der Schlüssel in
 // meta.roundSchedule, und der Platzhalter-Präfix, den die JEWEILS NÄCHSTE Runde
@@ -45,10 +45,46 @@ const ROUND_SEQUENCE = [
 
 const isPlaceholderName = (name) => !name || name.startsWith('Sieger') || name === 'Freilos';
 
-function parseGermanDate(str) {
-    // "10.10.2026" -> Date (lokale Mitternacht)
+function parseGermanDateParts(str) {
     const [day, month, year] = str.split('.').map(Number);
-    return new Date(year, month - 1, day);
+    return { year, month, day };
+}
+
+// Liefert ein UTC-Date fuer das angegebene lokale Datum/Uhrzeit in Europe/Berlin
+// (beruecksichtigt automatisch MEZ/MESZ ohne externe Timezone-Bibliothek).
+function berlinLocalToUtcDate(year, month, day, hour, minute = 0) {
+    const approxUtc = new Date(Date.UTC(year, month - 1, day, hour, minute, 0));
+    const parts = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Europe/Berlin',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+    }).formatToParts(approxUtc);
+    const get = (t) => Number(parts.find(p => p.type === t)?.value ?? 0);
+    const renderedAsUtc = Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'), 0);
+    const offsetMs = renderedAsUtc - approxUtc.getTime();
+    return new Date(approxUtc.getTime() - offsetMs);
+}
+
+// Berechnet den exakten Finalisierungs-Zeitpunkt einer Pokalrunde:
+// Der Montag NACH dem Runden-Datum (Samstag + 2 Tage, bei anderem Wochentag
+// der naechste Montag danach) um 18:00 Uhr Europe/Berlin.
+function getRoundFinalizationUtc(germanDateStr) {
+    const { year, month, day } = parseGermanDateParts(germanDateStr);
+    const baseUtc = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+    const dow = baseUtc.getUTCDay(); // 0=So, 1=Mo, ..., 6=Sa
+    const daysUntilMonday = dow === 1 ? 0 : ((8 - dow) % 7);
+    const mondayUtc = new Date(Date.UTC(year, month - 1, day + daysUntilMonday, 12, 0, 0));
+    return berlinLocalToUtcDate(
+        mondayUtc.getUTCFullYear(),
+        mondayUtc.getUTCMonth() + 1,
+        mondayUtc.getUTCDate(),
+        FINALIZATION_HOUR_BERLIN,
+        0
+    );
 }
 
 async function kickbaseGet(url, token) {
@@ -166,19 +202,20 @@ async function run() {
         members: Object.keys(pointsByName).sort()
     }, null, 2));
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const now = new Date();
 
     const winnerPlaceholders = buildWinnerPlaceholders(pokalData);
     let resolvedCount = 0;
     let tieCount = 0;
     let missingDataCount = 0;
 
-    // Spieltagspunkte eines Managers. Spieltag vorbei, aber kein mdp -> keine
-    // Aufstellung/0 Punkte. null = (noch) keine verwertbaren Daten.
+    // Spieltagspunkte eines Managers nach Finalisierung (Montag 18:00 Berlin).
+    // Wichtig: Kickbase laesst `cur: true` oft bis zum Anpfiff des NAECHSTEN
+    // Spieltags stehen! Sobald Montag 18:00 Uhr ueberschritten ist, gelten die
+    // gelieferten Punkte deshalb als final, auch wenn `entry.cur` noch true ist.
     const matchdayPoints = (name, day) => {
         const entry = pointsByName[name]?.[day];
-        if (!entry || entry.cur) return null;
+        if (!entry) return null;
         return entry.mdp ?? 0;
     };
 
@@ -189,12 +226,11 @@ async function run() {
             return;
         }
         const day = schedule.matchday;
-        const evaluationDate = parseGermanDate(schedule.date);
-        evaluationDate.setDate(evaluationDate.getDate() + EVALUATION_BUFFER_DAYS);
+        const finalizationTime = getRoundFinalizationUtc(schedule.date);
 
-        if (today < evaluationDate) {
-            // Spieltag läuft (oder hat noch nicht begonnen): vorläufige Punkte
-            // eintragen, sobald Kickbase welche liefert - ohne Sieger.
+        if (now < finalizationTime) {
+            // Spieltag läuft (oder hat noch nicht begonnen / vor Montag 18:00 Berlin):
+            // vorläufige Punkte eintragen, sobald Kickbase welche liefert - ohne Sieger.
             let liveCount = 0;
             round.keys.forEach(key => {
                 (pokalData[key] || []).forEach(match => {
@@ -208,7 +244,8 @@ async function run() {
                     liveCount++;
                 });
             });
-            console.log(`${round.scheduleName} (BL-Spieltag ${day}) noch nicht beendet - ${liveCount} Duelle mit vorläufigen Punkten, finale Auswertung ab ${evaluationDate.toLocaleDateString('de-DE')}.`);
+            const finLabel = finalizationTime.toLocaleString('de-DE', { timeZone: 'Europe/Berlin', dateStyle: 'short', timeStyle: 'short' });
+            console.log(`${round.scheduleName} (BL-Spieltag ${day}) noch nicht final - ${liveCount} Duelle mit vorläufigen Punkten, finale Auswertung ab ${finLabel} Uhr.`);
             return;
         }
 
