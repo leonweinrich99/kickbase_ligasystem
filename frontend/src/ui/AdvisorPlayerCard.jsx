@@ -67,7 +67,8 @@ const AdvisorPlayerCard = ({
         {teamLogo && (
           <img
             src={teamLogo}
-            alt={entry.team}
+            alt=""
+            onError={(e) => { e.currentTarget.style.display = 'none'; }}
             className="absolute top-1/2 -translate-y-1/2 left-4 w-16 h-16 sm:w-20 sm:h-20 object-contain opacity-[0.12] mix-blend-screen"
           />
         )}
@@ -75,6 +76,7 @@ const AdvisorPlayerCard = ({
           <img
             src={resolvedImageUrl}
             alt=""
+            onError={(e) => { e.currentTarget.style.display = 'none'; }}
             className="h-[150%] w-auto object-cover object-top pointer-events-none"
             style={{
               transform: 'translateY(-10%) translateX(-5%)',
@@ -86,21 +88,32 @@ const AdvisorPlayerCard = ({
         )}
       </div>
 
+      {/* Startelf-Wahrscheinlichkeit als kompakter Kreis direkt auf dem Spielerbild */}
+      {(entry.startElfProbability ?? entry.prob) != null && (
+        <div
+          className={`absolute bottom-1.5 z-10 rounded-full bg-black/85 p-[1.5px] shadow-md pointer-events-none ${
+            onToggleFavorite ? 'left-[54px] sm:left-[62px]' : 'left-[52px] sm:left-[60px]'
+          }`}
+        >
+          <StartProbBadge prob={entry.startElfProbability ?? entry.prob} variant="icon" size={15} />
+        </div>
+      )}
+
       {onToggleFavorite && (
         <button
           onClick={(e) => { e.stopPropagation(); onToggleFavorite(entry.playerId); }}
           aria-label={isFavorite ? 'Favorit entfernen' : 'Als Favorit speichern'}
-          className="absolute left-3 top-1/2 -translate-y-1/2 p-1 z-10 opacity-70 hover:opacity-100 transition-opacity"
+          className="absolute left-2.5 top-1/2 -translate-y-1/2 p-1 z-10 opacity-75 hover:opacity-100 transition-opacity"
         >
           <StarIcon filled={isFavorite} />
         </button>
       )}
 
-      {/* Left Text Content - margin keeps it clear from the face and the star */}
-      <div className="flex-1 min-w-0 relative z-10 drop-shadow-md ml-[84px] sm:ml-[100px]">
-        <div className="flex items-center gap-1.5 flex-wrap">
+      {/* Left Text Content - margin keeps it clear from the face and startelf circle */}
+      <div className="flex-1 min-w-0 relative z-10 drop-shadow-md ml-[76px] sm:ml-[92px]">
+        <div className="flex items-center gap-1.5 flex-nowrap min-w-0">
           {entry.position && (
-            <span className="text-[9px] font-black" style={{ color: POSITION_COLORS[entry.position] || '#8b92a5' }}>
+            <span className="text-[9px] font-black shrink-0" style={{ color: POSITION_COLORS[entry.position] || '#8b92a5' }}>
               {entry.position}
             </span>
           )}
@@ -109,39 +122,41 @@ const AdvisorPlayerCard = ({
           </div>
         </div>
 
-        {/* Empfehlungs-Label + xP + 5-stufige Kickbase Startelf-Prognose */}
-        <div className="text-[9px] text-[#8b92a5] mt-1 flex items-center gap-1.5 flex-nowrap overflow-hidden min-h-[16px]">
+        {/* Kompakte, pillenfreie Meta-Zeile: Empfehlung/Status + xP */}
+        <div className="text-[10px] sm:text-[11px] text-[#8b92a5] mt-0.5 flex items-center gap-1.5 flex-nowrap min-w-0 overflow-hidden leading-tight">
           {(() => {
+            let statusNode = null;
             if (showSellBadge) {
-              return <span className="text-[8px] font-bold uppercase tracking-wider bg-red-500/15 text-red-400 border border-red-500/40 rounded px-1.5 py-0.5 shrink-0">⚠ Verkaufen</span>;
-            }
-            if (isSellContext && entry.inBestEleven) {
-              return <span className="text-[8px] font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/35 rounded px-1.5 py-0.5 shrink-0">★ Startelf</span>;
-            }
-            if (showStartelfBadge) {
-              return (
-                <span className="text-[8px] font-bold uppercase tracking-wider bg-green-500/15 text-green-400 border border-green-500/45 rounded px-1.5 py-0.5 shrink-0">
-                  ★ Startelf{squadEval?.xpDelta > 0 ? ` +${squadEval.xpDelta} xP` : '-Upgrade'}
+              statusNode = <span className="font-bold text-red-400 truncate">Verkaufen</span>;
+            } else if (isSellContext && entry.inBestEleven) {
+              statusNode = <span className="font-bold text-emerald-400 truncate">Startelf</span>;
+            } else if (showStartelfBadge) {
+              statusNode = (
+                <span className="font-bold text-green-400 truncate">
+                  Startelf{squadEval?.xpDelta > 0 ? ` +${squadEval.xpDelta}` : ''}
                 </span>
               );
+            } else if (showKaderBadge) {
+              statusNode = <span className="font-bold text-emerald-400 truncate">{squadEval?.badgeLabel ? squadEval.badgeLabel.replace(/^✓\s*/, '') : 'Kader'}</span>;
+            } else if (showTradeBadge) {
+              statusNode = <span className="font-bold text-cyan-400 truncate">Trading</span>;
+            } else if (entry.statusLabel && !isFit) {
+              statusNode = <span className="font-bold text-orange-400 truncate">{entry.statusLabel}</span>;
             }
-            if (showKaderBadge) {
-              return <span className="text-[8px] font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/40 rounded px-1.5 py-0.5 shrink-0">{squadEval?.badgeLabel || '✓ Kader-Ergänzung'}</span>;
-            }
-            if (showTradeBadge) {
-              return <span className="text-[8px] font-bold uppercase tracking-wider bg-cyan-500/15 text-cyan-400 border border-cyan-500/40 rounded px-1.5 py-0.5 shrink-0">📈 Nur Trading</span>;
-            }
-            if (entry.statusLabel && !isFit) {
-              return <span className="text-[8px] font-bold uppercase tracking-wider bg-orange-500/10 text-orange-400 border border-orange-500/30 rounded px-1.5 py-0.5 shrink-0">{entry.statusLabel}</span>;
-            }
-            return null;
+
+            const hasXp = typeof entry.xpSeason === 'number';
+            return (
+              <>
+                {statusNode}
+                {statusNode && hasXp && <span className="text-[#4b5563] shrink-0">·</span>}
+                {hasXp && (
+                  <span className="font-semibold text-gray-300 tabular-nums shrink-0">
+                    {entry.xpSeason} xP
+                  </span>
+                )}
+              </>
+            );
           })()}
-          {typeof entry.xpSeason === 'number' && (
-            <span className="text-[8px] font-bold tabular-nums bg-white/[0.06] text-gray-200 border border-white/10 rounded px-1.5 py-0.5 shrink-0">
-              {entry.xpSeason} xP
-            </span>
-          )}
-          <StartProbBadge prob={entry.startElfProbability ?? entry.prob} variant="compact" />
         </div>
       </div>
 

@@ -52,6 +52,148 @@ const TickerTrackItems = ({ items, keyPrefix }) => (
   </div>
 );
 
+// Auto-scrollender UND nativ per Touch/Maus swipebarer Markt-Ticker:
+// laeuft ruhig wie ein TV-Börsenticker durch, pausiert sofort beim Swipen/
+// Ziehen/Scrollen und setzt nach kurzer Ruhephase exakt an der neuen Position
+// nahtlos fort.
+const SwipeableMarketTicker = ({ items }) => {
+  const scrollerRef = useRef(null);
+  const pausedRef = useRef(false);
+  const resumeTimerRef = useRef(null);
+  const dragRef = useRef({ active: false, startX: 0, startScrollLeft: 0 });
+  const subPixelCarryRef = useRef(0);
+
+  const pauseNow = () => {
+    pausedRef.current = true;
+    if (resumeTimerRef.current) {
+      clearTimeout(resumeTimerRef.current);
+      resumeTimerRef.current = null;
+    }
+  };
+
+  const scheduleResume = (delayMs = 2200) => {
+    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+    resumeTimerRef.current = setTimeout(() => {
+      subPixelCarryRef.current = 0;
+      pausedRef.current = false;
+    }, delayMs);
+  };
+
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el || !items || items.length === 0) return undefined;
+
+    let rafId = 0;
+    let lastTs = performance.now();
+    const SPEED_PX_PER_SEC = 28;
+
+    const tick = (now) => {
+      const dt = Math.min(0.1, (now - lastTs) / 1000);
+      lastTs = now;
+
+      const halfWidth = el.scrollWidth / 2;
+      if (halfWidth > 0) {
+        if (!pausedRef.current) {
+          subPixelCarryRef.current += SPEED_PX_PER_SEC * dt;
+          const wholePx = Math.floor(subPixelCarryRef.current);
+          if (wholePx >= 1) {
+            el.scrollLeft += wholePx;
+            subPixelCarryRef.current -= wholePx;
+          }
+        }
+        // Nahtlose Endlosschleife in beide Richtungen
+        if (el.scrollLeft >= halfWidth) {
+          el.scrollLeft -= halfWidth;
+        }
+      }
+      rafId = requestAnimationFrame(tick);
+    };
+
+    rafId = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(rafId);
+      if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+    };
+  }, [items]);
+
+  const handleScroll = () => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const halfWidth = el.scrollWidth / 2;
+    if (halfWidth > 0 && el.scrollLeft >= halfWidth) {
+      el.scrollLeft -= halfWidth;
+    }
+  };
+
+  const handlePointerDown = (e) => {
+    if (e.pointerType !== 'mouse') return;
+    const el = scrollerRef.current;
+    if (!el) return;
+    pauseNow();
+    dragRef.current = {
+      active: true,
+      startX: e.clientX,
+      startScrollLeft: el.scrollLeft,
+    };
+    el.setPointerCapture?.(e.pointerId);
+  };
+
+  const handlePointerMove = (e) => {
+    if (!dragRef.current.active) return;
+    const el = scrollerRef.current;
+    if (!el) return;
+    const dx = e.clientX - dragRef.current.startX;
+    let next = dragRef.current.startScrollLeft - dx;
+    const halfWidth = el.scrollWidth / 2;
+    if (halfWidth > 0) {
+      if (next < 0) {
+        next += halfWidth;
+        dragRef.current.startScrollLeft += halfWidth;
+      } else if (next >= halfWidth) {
+        next -= halfWidth;
+        dragRef.current.startScrollLeft -= halfWidth;
+      }
+    }
+    el.scrollLeft = next;
+  };
+
+  const endMouseDrag = () => {
+    if (!dragRef.current.active) return;
+    dragRef.current.active = false;
+    scheduleResume(2000);
+  };
+
+  return (
+    <div
+      ref={scrollerRef}
+      onScroll={handleScroll}
+      onTouchStart={pauseNow}
+      onTouchEnd={() => scheduleResume(2400)}
+      onTouchCancel={() => scheduleResume(2400)}
+      onMouseEnter={pauseNow}
+      onMouseLeave={() => {
+        dragRef.current.active = false;
+        scheduleResume(1000);
+      }}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={endMouseDrag}
+      onPointerCancel={endMouseDrag}
+      onWheel={() => {
+        pauseNow();
+        scheduleResume(2200);
+      }}
+      className="flex-1 overflow-x-auto no-scrollbar select-none cursor-grab active:cursor-grabbing touch-pan-x"
+      aria-label="Markt-Ticker (wischbar)"
+    >
+      <div className="flex w-max py-2 pl-4">
+        <TickerTrackItems items={items} keyPrefix="a" />
+        <TickerTrackItems items={items} keyPrefix="b" />
+      </div>
+    </div>
+  );
+};
+
 // Owner-Wunsch 24.11.2026: "oben drei Hauptartikel zum Swipen, dann ein
 // extra Bereich fuer Spieltagsberichte/Pokal/Trading zum Durchscrollen -
 // wie bei anderen News-Anbietern". HeroCarousel ersetzt die bisherige
@@ -480,13 +622,8 @@ const FeedPage = () => {
             <div className="pointer-events-none absolute inset-y-0 left-[46px] sm:left-[126px] w-6 bg-gradient-to-r from-[#07110d] to-transparent z-10" />
             <div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-[#07110d] to-transparent z-10" />
 
-            {/* Nahtlos endlos durchlaufende Ticker-Spur (2x dupliziert) */}
-            <div className="flex-1 overflow-hidden">
-              <div className="feed-marquee-track py-2 pl-4">
-                <TickerTrackItems items={ticker} keyPrefix="a" />
-                <TickerTrackItems items={ticker} keyPrefix="b" />
-              </div>
-            </div>
+            {/* Nahtlos endlos durchlaufende UND per Touch/Maus wischbare Ticker-Spur */}
+            <SwipeableMarketTicker items={ticker} />
           </div>
         </div>
       )}

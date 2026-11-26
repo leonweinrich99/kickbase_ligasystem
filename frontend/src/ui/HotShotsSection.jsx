@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Flame, Sparkles, ChevronRight, Info } from 'lucide-react';
+import { Flame, Sparkles, ChevronRight } from 'lucide-react';
 import { useAuth } from '../AuthContext';
 import { enrichPlayerWithCatalog } from '../advisorSquadEval';
+import { buildPlayerXpMap } from '../playerXpModel';
 import { formatArticleDate } from '../feedMeta';
 import AdvisorPlayerCard from './AdvisorPlayerCard';
-import { StartProbLegend } from './StartProbBadge';
 
 const HOT_SHOTS_LIMIT = 10;
 
@@ -39,7 +39,6 @@ const HotShotsSection = () => {
   const navigate = useNavigate();
   const [bundle, setBundle] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showLegend, setShowLegend] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -79,8 +78,10 @@ const HotShotsSection = () => {
       }
     });
 
+    const xpMap = Array.isArray(allPlayersRaw) ? buildPlayerXpMap(allPlayersRaw).byId : new Map();
+
     const players = (advisorData?.players || [])
-      .map((p) => enrichPlayerWithCatalog(p, catalogMap))
+      .map((p) => enrichPlayerWithCatalog(p, catalogMap, xpMap))
       .filter((p) => (p.predictedChange || 0) > 0)
       .sort((a, b) => (b.predictedChange || 0) - (a.predictedChange || 0))
       .slice(0, HOT_SHOTS_LIMIT);
@@ -100,56 +101,40 @@ const HotShotsSection = () => {
 
   return (
     <section className="mt-8 pt-6 border-t border-white/10">
-      <div className="flex items-end justify-between gap-3 mb-3.5">
-        <div className="min-w-0">
-          <div className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-cyan-400 mb-1">
-            <Sparkles size={11} />
-            <span>Trading Advisor · Sneak Peek</span>
+      <div className="mb-3.5">
+        <div className="flex items-center justify-between gap-2 mb-1">
+          <div className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-cyan-400 min-w-0 truncate">
+            <Sparkles size={11} className="shrink-0" />
+            <span className="truncate">Trading Advisor · Sneak Peek</span>
           </div>
-          <h3 className="text-base sm:text-lg font-black uppercase tracking-wider text-white flex items-center gap-1.5">
-            <Flame size={16} className="text-[#ff5c3e] shrink-0" />
-            <span>Aktuelle Hot Shots</span>
-          </h3>
-          <p className="text-[11px] text-[#8b92a5] mt-0.5">
-            Top 10 der am stärksten steigenden Spieler laut Marktwert-Prognose.
-          </p>
-        </div>
 
-        <div className="text-right shrink-0">
-          <div className="flex items-center justify-end gap-1.5">
-            <button
-              type="button"
-              onClick={() => setShowLegend((v) => !v)}
-              aria-label="Legende Startelf-Prognose anzeigen"
-              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer ${
-                showLegend
-                  ? 'bg-cyan-500/20 border-cyan-400/50 text-cyan-300'
-                  : 'bg-white/[0.04] border-white/15 text-[#8b92a5] hover:text-white'
-              }`}
-            >
-              <Info size={10} />
-              <span>Legende</span>
-            </button>
+          <div className="flex items-center gap-2 shrink-0">
+            {generatedDate && (
+              <span className="text-[10px] text-[#626978] tabular-nums whitespace-nowrap">
+                Stand {formatArticleDate(generatedDate)}
+              </span>
+            )}
             {isAdmin && (
               <button
                 type="button"
                 onClick={() => navigate('/admin/advisor')}
-                className="inline-flex items-center gap-0.5 text-xs font-bold text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-0.5 text-xs font-bold text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer whitespace-nowrap"
               >
                 <span>Advisor</span>
                 <ChevronRight size={14} />
               </button>
             )}
           </div>
-          {generatedDate && (
-            <div className="text-[10px] text-[#626978] tabular-nums mt-1">
-              Stand {formatArticleDate(generatedDate)}
-            </div>
-          )}
         </div>
-      </div>
 
-      {showLegend && <StartProbLegend className="mb-3.5" />}
+        <h3 className="text-base sm:text-lg font-black uppercase tracking-wider text-white flex items-center gap-1.5">
+          <Flame size={16} className="text-[#ff5c3e] shrink-0" />
+          <span>Aktuelle Hot Shots</span>
+        </h3>
+        <p className="text-[11px] text-[#8b92a5] mt-0.5">
+          Top 10 der am stärksten steigenden Spieler laut Marktwert-Prognose.
+        </p>
+      </div>
 
       {loading ? (
         <div className="space-y-2">
