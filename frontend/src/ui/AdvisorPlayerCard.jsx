@@ -109,14 +109,21 @@ const AdvisorPlayerCard = ({
           </div>
         </div>
 
-        {/* Empfehlungs-Label + 5-stufige Kickbase Startelf-Prognose */}
+        {/* Empfehlungs-Label + xP + 5-stufige Kickbase Startelf-Prognose */}
         <div className="text-[9px] text-[#8b92a5] mt-1 flex items-center gap-1.5 flex-nowrap overflow-hidden min-h-[16px]">
           {(() => {
             if (showSellBadge) {
               return <span className="text-[8px] font-bold uppercase tracking-wider bg-red-500/15 text-red-400 border border-red-500/40 rounded px-1.5 py-0.5 shrink-0">⚠ Verkaufen</span>;
             }
+            if (isSellContext && entry.inBestEleven) {
+              return <span className="text-[8px] font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/35 rounded px-1.5 py-0.5 shrink-0">★ Startelf</span>;
+            }
             if (showStartelfBadge) {
-              return <span className="text-[8px] font-bold uppercase tracking-wider bg-green-500/15 text-green-400 border border-green-500/45 rounded px-1.5 py-0.5 shrink-0">★ Startelf-Upgrade</span>;
+              return (
+                <span className="text-[8px] font-bold uppercase tracking-wider bg-green-500/15 text-green-400 border border-green-500/45 rounded px-1.5 py-0.5 shrink-0">
+                  ★ Startelf{squadEval?.xpDelta > 0 ? ` +${squadEval.xpDelta} xP` : '-Upgrade'}
+                </span>
+              );
             }
             if (showKaderBadge) {
               return <span className="text-[8px] font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/40 rounded px-1.5 py-0.5 shrink-0">{squadEval?.badgeLabel || '✓ Kader-Ergänzung'}</span>;
@@ -129,6 +136,11 @@ const AdvisorPlayerCard = ({
             }
             return null;
           })()}
+          {typeof entry.xpSeason === 'number' && (
+            <span className="text-[8px] font-bold tabular-nums bg-white/[0.06] text-gray-200 border border-white/10 rounded px-1.5 py-0.5 shrink-0">
+              {entry.xpSeason} xP
+            </span>
+          )}
           <StartProbBadge prob={entry.startElfProbability ?? entry.prob} variant="compact" />
         </div>
       </div>

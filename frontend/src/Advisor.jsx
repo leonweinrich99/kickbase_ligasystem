@@ -17,7 +17,12 @@ import {
   buildCompletePlayerCatalog,
   analyzeOwnSquad,
   evaluatePlayerForSquad,
+  evaluateOwnSquadMember,
+  computeCleanLeagueBudgets,
+  suggestSalesToClearDeficit,
+  getEffectiveXp,
 } from './advisorSquadEval';
+import { buildPlayerXpMap } from './playerXpModel';
 
 // Zeigt die Auswertungen des "Kickbase Trading Advisor" an (siehe
 // backend/advisor/, generiert per GitHub Action aus
@@ -171,6 +176,7 @@ function applyFilters(list, filters, recommendationMode) {
     },
     predictedDesc: (a, b) => (b.predictedChange || 0) - (a.predictedChange || 0),
     predictedAsc: (a, b) => (a.predictedChange || 0) - (b.predictedChange || 0),
+    xpDesc: (a, b) => getEffectiveXp(b) - getEffectiveXp(a),
     marketValueDesc: (a, b) => (b.marketValue || 0) - (a.marketValue || 0),
     marketValueAsc: (a, b) => (a.marketValue || 0) - (b.marketValue || 0),
     nameAsc: (a, b) => (a.name || '').localeCompare(b.name || ''),
@@ -278,6 +284,7 @@ const FilterBar = ({ filters, onChange, teams, showTeamFilter = false, showAvail
                 className="w-full bg-[#000] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-cyan-500"
               >
                 {showExpirySort && <option value="expiryAsc">Ablaufzeit: nächste zuerst</option>}
+                <option value="xpDesc">Erwartete Punkte (xP): höchste zuerst</option>
                 <option value="predictedDesc">Prognose: höchste zuerst</option>
                 <option value="predictedAsc">Prognose: niedrigste zuerst</option>
                 <option value="marketValueDesc">Marktwert: höchster zuerst</option>
@@ -325,22 +332,39 @@ const FilterBar = ({ filters, onChange, teams, showTeamFilter = false, showAvail
   );
 };
 
-const BudgetRow = ({ entry, rank, color }) => (
-  <div className="flex items-center p-3 mb-2.5 card-surface rounded-[14px] shadow-sm">
-    <div className="w-8 flex justify-center items-center text-xs font-bold text-[#8b92a5] shrink-0">{rank}</div>
-    <div className="ml-2 flex-1 min-w-0">
-      <div className="text-[15px] font-bold text-gray-100 truncate">{entry.manager}</div>
-      <div className="text-[10px] text-[#8b92a5] mt-0.5">Teamwert: {formatMoney(entry.teamValue)}</div>
+const BudgetRow = ({ entry, rank, color }) => {
+  const isNegative = (entry.budget ?? 0) < 0;
+  return (
+    <div className="flex items-center p-3 mb-2.5 card-surface rounded-[14px] shadow-sm">
+      <div className="w-8 flex justify-center items-center text-xs font-bold text-[#8b92a5] shrink-0">{rank}</div>
+      <div className="ml-2 flex-1 min-w-0">
+        <div className="text-[15px] font-bold text-gray-100 truncate">{entry.manager}</div>
+        <div className="text-[10px] text-[#8b92a5] mt-0.5 flex flex-wrap gap-x-2">
+          <span>Kader: {formatCompactMoney(entry.teamValue)}</span>
+          {typeof entry.wealth === 'number' && <span>· Finanzkraft: {formatCompactMoney(entry.wealth)}</span>}
+          {typeof entry.totalProfit === 'number' && (
+            <span className={entry.totalProfit >= 0 ? 'text-emerald-400/90' : 'text-red-400/90'}>
+              · Gewinn: {formatSignedCompactMoney(entry.totalProfit)}
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="text-right ml-2 shrink-0">
+        <div className="text-[15px] font-bold tabular-nums" style={{ color: isNegative ? '#ef4444' : color }}>
+          {formatMoney(entry.budget)}
+        </div>
+        <div className="text-[9px] font-bold text-[#626978] tracking-widest mt-0.5 uppercase">
+          {isNegative ? 'Bis Spieltag auszugleichen' : 'Konto (Spieltags-Ziel ≥ 0)'}
+        </div>
+        {typeof entry.midweekBuyingPower === 'number' && (
+          <div className="text-[10px] text-[#8b92a5] mt-1 tabular-nums">
+            Mit 33%-Dispo (unter der Woche): <span className="text-gray-200 font-semibold">{formatCompactMoney(Math.max(0, entry.midweekBuyingPower))}</span>
+          </div>
+        )}
+      </div>
     </div>
-    <div className="text-right ml-2 shrink-0">
-      <div className="text-[15px] font-bold" style={{ color }}>{formatMoney(entry.budget)}</div>
-      <div className="text-[9px] font-bold text-[#626978] tracking-widest mt-0.5 uppercase">Verfügbares Budget</div>
-      {typeof entry.dispoBuffer === 'number' && entry.dispoBuffer > 0 && (
-        <div className="text-[10px] text-[#8b92a5] mt-1">Zulässiger Puffer bis Spieltag: {formatMoney(entry.dispoBuffer)}</div>
-      )}
-    </div>
-  </div>
-);
+  );
+};
 
 const StarIcon = ({ filled }) => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill={filled ? '#eab308' : 'none'} stroke={filled ? '#eab308' : '#626978'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -820,11 +844,34 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, 
             <h3 className="text-lg font-semibold text-white mb-4">Kennzahlen</h3>
             <div className="grid grid-cols-2 gap-y-6 gap-x-4">
               <div className="flex flex-col">
+                <span className="text-[#8b92a5] text-xs font-medium mb-1">Erwartete Punkte (xP)</span>
+                <span className="text-cyan-400 font-bold">
+                  {typeof player.xpSeason === 'number' ? `${player.xpSeason} xP` : '–'}
+                </span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[#8b92a5] text-xs font-medium mb-1">
+                  {player.nextOpponent ? `Nächster ST (${player.isHome ? 'vs.' : '@'} ${player.nextOpponent})` : 'Nächster Spieltag (xP)'}
+                </span>
+                <span className="text-white font-semibold">
+                  {typeof player.xpNext === 'number' ? (
+                    <>
+                      {player.xpNext} xP
+                      {typeof player.xpMatchupFactor === 'number' && Math.abs(player.xpMatchupFactor - 1) >= 0.02 && (
+                        <span className={`ml-1.5 text-xs ${player.xpMatchupFactor > 1 ? 'text-emerald-400' : 'text-red-400'}`}>
+                          ({player.xpMatchupFactor > 1 ? '+' : ''}{Math.round((player.xpMatchupFactor - 1) * 100)}%)
+                        </span>
+                      )}
+                    </>
+                  ) : '–'}
+                </span>
+              </div>
+              <div className="flex flex-col">
                 <span className="text-[#8b92a5] text-xs font-medium mb-1">Max-Gebot</span>
                 <span className="text-white font-semibold">{player.maxBid > 0 && player.onMarket ? formatMoney(player.maxBid) : '–'}</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-[#8b92a5] text-xs font-medium mb-1">Ø Punkte</span>
+                <span className="text-[#8b92a5] text-xs font-medium mb-1">Ø Punkte (bisher)</span>
                 <span className="text-white font-semibold">{player.avgPoints ?? '–'}</span>
               </div>
               <div className="flex flex-col">
@@ -861,14 +908,15 @@ const Advisor = () => {
   const { isFavorite, toggleFavorite, favoritePlayers } = useFavorites();
   const [data, setData] = useState(null);
   const [allPlayersRaw, setAllPlayersRaw] = useState(null);
+  const [ratingsMap, setRatingsMap] = useState(null);
   const [error, setError] = useState(false);
   const [activeLeague, setActiveLeague] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const autoOpenedPlayerRef = useRef(null);
   const [marketFilters, setMarketFilters] = useState(DEFAULT_MARKET_FILTERS);
-  const [dbFilters, setDbFilters] = useState(DEFAULT_FILTERS);
-  const [squadFilters, setSquadFilters] = useState(DEFAULT_FILTERS);
-  const [favoritesFilters, setFavoritesFilters] = useState(DEFAULT_FILTERS);
+  const [dbFilters, setDbFilters] = useState({ ...DEFAULT_FILTERS, sort: 'xpDesc' });
+  const [squadFilters, setSquadFilters] = useState({ ...DEFAULT_FILTERS, sort: 'xpDesc' });
+  const [favoritesFilters, setFavoritesFilters] = useState({ ...DEFAULT_FILTERS, sort: 'xpDesc' });
   const [selectedManagerId, setSelectedManagerId] = useState('');
   // Kader-Tab zeigt standardmaessig IMMER den eigenen Account (siehe
   // profile.kickbaseId unten) - der Manager-Wechsler ist nur noch eine
@@ -915,10 +963,18 @@ const Advisor = () => {
   }, [data, allPlayersRaw]);
 
 
+  const xpModel = useMemo(() => buildPlayerXpMap(allPlayersRaw), [allPlayersRaw]);
+  const xpMap = xpModel.byId;
+
   const loadData = () => {
     fetch('/history/all_players.json')
       .then((res) => (res.ok ? res.json() : null))
       .then((list) => { if (Array.isArray(list)) setAllPlayersRaw(list); })
+      .catch(() => {});
+
+    fetch('/history/manager-ratings.json')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => { if (json && typeof json === 'object') setRatingsMap(json); })
       .catch(() => {});
 
     fetch(`/advisor-data.json?t=${Date.now()}`)
@@ -978,20 +1034,18 @@ const Advisor = () => {
   const league = data?.leagues?.[activeLeague];
   const generatedAt = data?.generatedAt ? new Date(data.generatedAt) : null;
 
-  // Vollstaendige Spieler-Datenbank: Advisor-Spieler + fehlende Bundesliga-
-  // Spieler aus all_players.json (damit z.B. Regeer oder Spieler ganzer Teams
-  // auch sofort korrekt angezeigt und gefunden werden).
+  // Vollstaendige Spieler-Datenbank inkl. neuem Spieler-xP (xpSeason & xpNext)
   const completePlayers = useMemo(
-    () => buildCompletePlayerCatalog(data?.players || [], allPlayersRaw, catalogMap),
-    [data, allPlayersRaw, catalogMap]
+    () => buildCompletePlayerCatalog(data?.players || [], allPlayersRaw, catalogMap, xpMap),
+    [data, allPlayersRaw, catalogMap, xpMap]
   );
 
-  // Robust gegen aeltere/unvollstaendige Advisor-Daten (z.B. von einem Lauf
-  // vor diesem Feature): Falls "managers" fehlt, aber "managerSquads"
-  // trotzdem Daten hat, die Manager-Liste direkt daraus ableiten - damit die
-  // Sektion IMMER sichtbar ist, sobald irgendwelche Kader-Daten bekannt sind.
-  // Jeder Kader-Spieler wird zusaetzlich gegen all_players.json angereichert,
-  // damit kein Spieler mehr mit name=null / marketValue=0 erscheint.
+  // Saubere Bilanz-Budgets (Startkapital + Gesamtgewinn + Punktepraemien - Teamwert)
+  const cleanBudgets = useMemo(
+    () => computeCleanLeagueBudgets(league, ratingsMap),
+    [league, ratingsMap]
+  );
+
   const effectiveManagerSquads = useMemo(() => {
     let rawSquads = {};
     if (league?.managerSquads && Object.keys(league.managerSquads).length) {
@@ -1001,10 +1055,10 @@ const Advisor = () => {
     }
     const enriched = {};
     for (const [mid, squad] of Object.entries(rawSquads)) {
-      enriched[mid] = (squad || []).map((p) => enrichPlayerWithCatalog(p, catalogMap));
+      enriched[mid] = (squad || []).map((p) => enrichPlayerWithCatalog(p, catalogMap, xpMap));
     }
     return enriched;
-  }, [league, catalogMap]);
+  }, [league, catalogMap, xpMap]);
 
   const resolvedManagers = useMemo(() => {
     if (league?.managers?.length) return league.managers;
@@ -1029,17 +1083,20 @@ const Advisor = () => {
     return map;
   }, [effectiveManagerSquads, resolvedManagers]);
 
-  // Eigener Kader (standardmaessig per profile.kickbaseId gewaehlt) als Basis
-  // fuer die personalisierte Startelf-/Kader- vs. Nur-Trading-Bewertung.
-  const currentSquad = useMemo(
+  // Eigener Kader + xP-basierte Startelf-Rekonstruktion + smarte Kader-Bewertung
+  const currentSquadRaw = useMemo(
     () => effectiveManagerSquads[selectedManagerId] || [],
     [effectiveManagerSquads, selectedManagerId]
   );
-  const ownSquadAnalysis = useMemo(() => analyzeOwnSquad(currentSquad), [currentSquad]);
+  const ownSquadAnalysis = useMemo(() => analyzeOwnSquad(currentSquadRaw), [currentSquadRaw]);
+  const currentSquad = useMemo(
+    () => currentSquadRaw.map((p) => evaluateOwnSquadMember(p, ownSquadAnalysis)),
+    [currentSquadRaw, ownSquadAnalysis]
+  );
 
   const marketPlayersAnnotated = useMemo(
     () => (league?.marketRecommendations || []).map((raw) => {
-      const enriched = enrichPlayerWithCatalog(raw, catalogMap);
+      const enriched = enrichPlayerWithCatalog(raw, catalogMap, xpMap);
       const squadEval = evaluatePlayerForSquad(enriched, ownSquadAnalysis);
       return {
         ...enriched,
@@ -1050,7 +1107,7 @@ const Advisor = () => {
         tradeRecommended: squadEval.isTradeOnly,
       };
     }),
-    [league, catalogMap, playerManagerMap, ownSquadAnalysis]
+    [league, catalogMap, xpMap, playerManagerMap, ownSquadAnalysis]
   );
   const marketTeams = useMemo(
     () => [...new Set(marketPlayersAnnotated.map((p) => p.team).filter(Boolean))].sort(),
@@ -1105,18 +1162,14 @@ const Advisor = () => {
     [currentSquad, squadFilters]
   );
 
-  // Budget des ausgewaehlten Managers + welche Kaufempfehlungen er sich damit
-  // tatsaechlich leisten koennte - beantwortet direkt "was kann ich mit
-  // meinem Geld anfangen?", ohne Markt- und Budget-Tab manuell abgleichen
-  // zu muessen. Bewusst NUR das reine Budget (kein Dispo-Zuschlag mehr, siehe
-  // backend/advisor/budgets.py) - der Dispo-Puffer muss bis zum naechsten
-  // Spieltag wieder ausgeglichen sein, ist also kein sicher ausgebbares Geld.
-  const selectedManagerBudget = league?.managerBudgets?.[selectedManagerId] || null;
+  // Saubere Bilanz-Budget-Schaetzung fuer den ausgewaehlten Manager:
+  // - rawBudget: Konto-Prognose zum Spieltag (Ziel >= 0 EUR bis Spieltagsanfang!)
+  // - midweekBuyingPower: max. Gebotsspielraum unter der Woche inkl. 33%-Dispo
+  const selectedManagerBudget = cleanBudgets.budgetsById[selectedManagerId] || league?.managerBudgets?.[selectedManagerId] || null;
   const rawBudget = selectedManagerBudget?.budget ?? 0;
+  const midweekBuyingPower = selectedManagerBudget?.midweekBuyingPower ?? rawBudget;
 
-  // Kader-Vollstaendigkeit: reicht das Budget noch fuer eine volle Elf, oder
-  // muessten fehlende Pflichtpositionen (siehe squadRules.js) zuerst
-  // nachbesetzt werden, bevor man "frei" Geld ausgeben kann?
+  // Kader-Vollstaendigkeit: reicht das Budget noch fuer eine volle Elf?
   const squadPositionCounts = useMemo(() => countPositions(currentSquad), [currentSquad]);
   const squadMissing = useMemo(() => missingPositions(squadPositionCounts), [squadPositionCounts]);
   const squadReserveInfo = useMemo(
@@ -1125,17 +1178,50 @@ const Advisor = () => {
   );
   const netBudgetAfterReserve = rawBudget - squadReserveInfo.reserve;
 
+  // Bei negativem Spieltags-Budget: schmerzaermste Verkaeufe bis >= 0 EUR vorschlagen
+  const deficitClearSales = useMemo(
+    () => (rawBudget < 0 ? suggestSalesToClearDeficit(currentSquad, Math.abs(rawBudget), ownSquadAnalysis) : []),
+    [currentSquad, rawBudget, ownSquadAnalysis]
+  );
+
+  // Priorisiert echte Startelf-Upgrades nach +xP-Gewinn, dann Kader-Ergaenzungen, dann Trading
+  const rankBuyCandidates = (list) => {
+    const tierScore = (p) => (p.squadEval?.tier === 'startelf' ? 3 : p.squadEval?.tier === 'kader' ? 2 : 1);
+    return [...list].sort((a, b) => {
+      const td = tierScore(b) - tierScore(a);
+      if (td !== 0) return td;
+      const xd = (b.squadEval?.xpDelta || 0) - (a.squadEval?.xpDelta || 0);
+      if (xd !== 0) return xd;
+      return getEffectiveXp(b) - getEffectiveXp(a) || (b.predictedChange || 0) - (a.predictedChange || 0);
+    });
+  };
+
   const affordableBuyRecommendations = useMemo(() => {
-    if (!selectedManagerBudget || !marketPlayersAnnotated.length) return [];
-    return marketPlayersAnnotated
-      .filter((p) => p.buyRecommended && !p.ownedByAccount && (p.marketValue || 0) <= netBudgetAfterReserve)
-      .slice(0, 5);
+    if (!selectedManagerBudget || !marketPlayersAnnotated.length || netBudgetAfterReserve <= 0) return [];
+    const eligible = marketPlayersAnnotated.filter(
+      (p) => p.buyRecommended && !p.ownedByAccount && (p.marketValue || 0) <= netBudgetAfterReserve
+    );
+    return rankBuyCandidates(eligible).slice(0, 5);
   }, [selectedManagerBudget, marketPlayersAnnotated, netBudgetAfterReserve]);
 
-  // "Verkaufe X, dann kannst du dir auch noch Y leisten": pro Verkaufs-
-  // empfehlung im eigenen Kader wird geprueft, welches zusaetzliche Budget
-  // dieser eine Verkauf freigeben wuerde und welche (bisher nicht leistbaren)
-  // Kaufempfehlungen dadurch neu in Reichweite kommen.
+  // Zusaetzliche Top-Upgrades, die unter der Woche per 33%-Dispo erreichbar waeren
+  // (erfordern vor Spieltagsanfang einen entsprechenden Verkauf zum Ausgleich).
+  const dispoUpgradeRecommendations = useMemo(() => {
+    if (!selectedManagerBudget || !marketPlayersAnnotated.length) return [];
+    const safeIds = new Set(affordableBuyRecommendations.map((p) => p.playerId));
+    const maxMidweek = Math.max(0, midweekBuyingPower - squadReserveInfo.reserve);
+    const eligible = marketPlayersAnnotated.filter(
+      (p) =>
+        p.squadEval?.tier === 'startelf' &&
+        !p.ownedByAccount &&
+        !safeIds.has(p.playerId) &&
+        (p.marketValue || 0) > Math.max(0, netBudgetAfterReserve) &&
+        (p.marketValue || 0) <= maxMidweek
+    );
+    return rankBuyCandidates(eligible).slice(0, 3);
+  }, [selectedManagerBudget, marketPlayersAnnotated, affordableBuyRecommendations, midweekBuyingPower, netBudgetAfterReserve, squadReserveInfo.reserve]);
+
+  // "Verkaufe X, dann kannst du dir auch noch Y leisten"
   const sellUnlockOpportunities = useMemo(() => {
     if (!marketPlayersAnnotated.length) return [];
     const alreadyAffordableIds = new Set(affordableBuyRecommendations.map((p) => p.playerId));
@@ -1144,9 +1230,15 @@ const Advisor = () => {
     return sellCandidates
       .map((sellPlayer) => {
         const budgetAfterSale = netBudgetAfterReserve + (sellPlayer.marketValue || 0);
-        const unlocked = marketPlayersAnnotated
-          .filter((p) => p.buyRecommended && !p.ownedByAccount && !alreadyAffordableIds.has(p.playerId) && (p.marketValue || 0) <= budgetAfterSale)
-          .slice(0, 3);
+        const unlocked = rankBuyCandidates(
+          marketPlayersAnnotated.filter(
+            (p) =>
+              p.buyRecommended &&
+              !p.ownedByAccount &&
+              !alreadyAffordableIds.has(p.playerId) &&
+              (p.marketValue || 0) <= budgetAfterSale
+          )
+        ).slice(0, 3);
         return { sellPlayer, budgetAfterSale, unlocked };
       })
       .filter((entry) => entry.unlocked.length > 0);
@@ -1334,10 +1426,15 @@ const Advisor = () => {
 
             {league && sectionTab === 'budgets' && (
               <>
-                <h2 className="text-lg font-semibold text-white mb-4">Manager-Budgets (geschätzt)</h2>
-                {league.budgets?.length ? (
+                <div className="mb-4">
+                  <h2 className="text-lg font-semibold text-white">Manager-Budgets (Bilanz-Schätzung)</h2>
+                  <p className="text-[11px] text-[#8b92a5] mt-1">
+                    Finanzkraft aus 150 Mio. € Startbudget + Gesamtgewinn + Punkteprämien &amp; Boni; davon abgezogen der aktuelle Kaderwert. Unter der Woche ist ein Minus bis ~33 % erlaubt, vor Spieltagsanfang muss das Konto ≥ 0 € sein.
+                  </p>
+                </div>
+                {cleanBudgets.budgetsList.length ? (
                   <div className="mb-10">
-                    {league.budgets.map((entry, index) => (
+                    {cleanBudgets.budgetsList.map((entry, index) => (
                       <BudgetRow key={entry.manager} entry={entry} rank={index + 1} color={LEAGUE_COLORS[activeLeague] || DEFAULT_LEAGUE_COLOR} />
                     ))}
                   </div>
@@ -1419,8 +1516,67 @@ const Advisor = () => {
 
                     {selectedManagerBudget && (
                       <div className="bg-[#000] border border-[#2e2e2e] rounded-xl p-4 mb-4">
-                        <div className="text-[9px] font-black uppercase tracking-widest text-[#8b92a5] mb-2">Verfügbares Budget</div>
-                        <div className="text-lg font-black text-white">{formatMoney(rawBudget)}</div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <div className="text-[9px] font-black uppercase tracking-widest text-[#8b92a5] mb-1">
+                              {rawBudget < 0 ? 'Konto (Bis Spieltag auszugleichen)' : 'Konto-Prognose (Spieltags-Ziel ≥ 0 €)'}
+                            </div>
+                            <div className={`text-lg font-black tabular-nums ${rawBudget < 0 ? 'text-red-400' : 'text-white'}`}>
+                              {formatMoney(rawBudget)}
+                            </div>
+                            <div className="text-[10px] text-[#8b92a5] mt-1">
+                              Gebots-Spielraum unter der Woche (33%-Dispo):{' '}
+                              <span className="text-gray-200 font-semibold">{formatCompactMoney(Math.max(0, midweekBuyingPower))}</span>
+                            </div>
+                          </div>
+
+                          {ownSquadAnalysis && (
+                            <div className="sm:border-l sm:border-[#2e2e2e] sm:pl-4">
+                              <div className="text-[9px] font-black uppercase tracking-widest text-[#8b92a5] mb-1">
+                                Beste Startelf ({ownSquadAnalysis.starterCount}/11 · xP)
+                              </div>
+                              <div className="text-lg font-black text-cyan-400 tabular-nums">
+                                {ownSquadAnalysis.bestLineupXp.toLocaleString('de-DE')} xP
+                              </div>
+                              <div className="text-[10px] text-[#8b92a5] mt-1">
+                                Nächster ST (Matchups):{' '}
+                                <span className="text-gray-200 font-semibold">{ownSquadAnalysis.bestLineupNextXp.toLocaleString('de-DE')} xP</span>
+                                {ownSquadAnalysis.weakestPos && (
+                                  <span> · Fokus: <span className="text-amber-400 font-semibold">{POSITION_LABELS[ownSquadAnalysis.weakestPos] || ownSquadAnalysis.weakestPos}</span></span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {rawBudget < 0 && (
+                          <div className="mt-3 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2.5">
+                            <div className="flex items-start gap-2">
+                              <AlertTriangle size={14} className="text-red-400 shrink-0 mt-0.5" />
+                              <div className="text-[10px] text-red-200 leading-relaxed">
+                                Geschätzt <span className="font-bold text-white">{formatMoney(Math.abs(rawBudget))}</span> im Minus – muss bis Spieltagsanfang ausgeglichen sein, um Punkte zu erhalten.
+                              </div>
+                            </div>
+                            {deficitClearSales.length > 0 && (
+                              <div className="mt-2 pt-2 border-t border-red-500/20">
+                                <div className="text-[9px] font-black uppercase tracking-widest text-red-300 mb-1.5">
+                                  xP-schonendste Ausgleichs-Verkäufe
+                                </div>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {deficitClearSales.map((p) => (
+                                    <button
+                                      key={p.playerId}
+                                      onClick={() => setSelectedPlayer(p)}
+                                      className="text-[10px] font-semibold bg-black/40 hover:bg-black/70 text-gray-100 border border-red-500/30 rounded px-2 py-1 transition-colors"
+                                    >
+                                      {p.name} ({formatCompactMoney(p.marketValue)} · {getEffectiveXp(p)} xP)
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
 
                         {Object.keys(squadMissing).length > 0 && (
                           <div className="flex items-start gap-2 mt-3 bg-orange-500/10 border border-orange-500/30 rounded-lg px-3 py-2">
@@ -1435,20 +1591,57 @@ const Advisor = () => {
                         <div className="mt-3">
                           {affordableBuyRecommendations.length > 0 ? (
                             <>
-                              <div className="text-[9px] font-black uppercase tracking-widest text-green-400 mb-2">Damit leistbare Kaufempfehlungen</div>
+                              <div className="text-[9px] font-black uppercase tracking-widest text-green-400 mb-2">Direkt leistbare Top-Empfehlungen (ohne Minus)</div>
                               <div className="space-y-1.5">
                                 {affordableBuyRecommendations.map((p, i) => (
-                                  <div key={`${p.playerId}-${i}`} className="flex items-center justify-between text-xs bg-[#171717] border border-[#2e2e2e] rounded-lg px-3 py-2">
-                                    <span className="text-gray-200 font-bold truncate">{p.firstName ? `${p.firstName} ${p.name}` : p.name}</span>
-                                    <span className="text-[#8b92a5] shrink-0 ml-2">{formatMoney(p.marketValue)}</span>
-                                  </div>
+                                  <button
+                                    key={`${p.playerId}-${i}`}
+                                    onClick={() => setSelectedPlayer(p)}
+                                    className="w-full flex items-center justify-between text-xs bg-[#171717] hover:bg-[#1f1f1f] border border-[#2e2e2e] rounded-lg px-3 py-2 text-left transition-colors"
+                                  >
+                                    <div className="flex items-center gap-2 min-w-0">
+                                      <span className="text-[9px] font-black shrink-0" style={{ color: POSITION_COLORS[p.position] || '#8b92a5' }}>{p.position}</span>
+                                      <span className="text-gray-200 font-bold truncate">{p.firstName ? `${p.firstName} ${p.name}` : p.name}</span>
+                                      {p.squadEval?.tier === 'startelf' && (
+                                        <span className="text-[9px] font-bold bg-green-500/15 text-green-400 border border-green-500/35 rounded px-1.5 py-0.5 shrink-0">
+                                          +{p.squadEval.xpDelta} xP
+                                        </span>
+                                      )}
+                                    </div>
+                                    <span className="text-[#8b92a5] shrink-0 ml-2 tabular-nums">
+                                      {getEffectiveXp(p)} xP · {formatCompactMoney(p.marketValue)}
+                                    </span>
+                                  </button>
                                 ))}
                               </div>
                             </>
                           ) : (
-                            <div className="text-[10px] text-[#8b92a5]">Aktuell keine passende, leistbare Kaufempfehlung auf dem Markt.</div>
+                            <div className="text-[10px] text-[#8b92a5]">
+                              {rawBudget < 0
+                                ? 'Ohne vorherigen Verkauf aktuell kein freies Spieltags-Budget.'
+                                : 'Aktuell keine passende, direkt leistbare Kaufempfehlung auf dem Markt.'}
+                            </div>
                           )}
                         </div>
+
+                        {dispoUpgradeRecommendations.length > 0 && (
+                          <div className="mt-3 pt-3 border-t border-[#2e2e2e]">
+                            <div className="text-[9px] font-black uppercase tracking-widest text-amber-400 mb-1.5">
+                              Per Dispo unter der Woche erreichbare Startelf-Upgrades (Verkauf vor Spieltag nötig)
+                            </div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {dispoUpgradeRecommendations.map((p) => (
+                                <button
+                                  key={p.playerId}
+                                  onClick={() => setSelectedPlayer(p)}
+                                  className="text-[10px] font-semibold bg-amber-500/10 hover:bg-amber-500/20 text-amber-200 border border-amber-500/30 rounded px-2 py-1 transition-colors"
+                                >
+                                  {p.position} {p.name} (+{p.squadEval?.xpDelta} xP · {formatCompactMoney(p.marketValue)})
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
 
                         {sellUnlockOpportunities.length > 0 && (
                           <div className="mt-4 pt-3 border-t border-[#2e2e2e]">
@@ -1457,13 +1650,17 @@ const Advisor = () => {
                               {sellUnlockOpportunities.map(({ sellPlayer, budgetAfterSale, unlocked }, i) => (
                                 <div key={`${sellPlayer.playerId}-${i}`} className="bg-[#171717] border border-[#2e2e2e] rounded-lg px-3 py-2">
                                   <div className="text-[10px] text-gray-300">
-                                    Verkaufe <span className="font-bold text-white">{sellPlayer.firstName ? `${sellPlayer.firstName} ${sellPlayer.name}` : sellPlayer.name}</span> ({formatMoney(sellPlayer.marketValue)}) → {formatMoney(budgetAfterSale)} verfügbar
+                                    Verkaufe <span className="font-bold text-white">{sellPlayer.firstName ? `${sellPlayer.firstName} ${sellPlayer.name}` : sellPlayer.name}</span> ({formatCompactMoney(sellPlayer.marketValue)} · {getEffectiveXp(sellPlayer)} xP) → {formatMoney(budgetAfterSale)} verfügbar
                                   </div>
                                   <div className="flex flex-wrap gap-1.5 mt-1.5">
                                     {unlocked.map((p, j) => (
-                                      <span key={`${p.playerId}-${j}`} className="text-[9px] font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 rounded px-1.5 py-0.5">
-                                        {p.firstName ? `${p.firstName} ${p.name}` : p.name}
-                                      </span>
+                                      <button
+                                        key={`${p.playerId}-${j}`}
+                                        onClick={() => setSelectedPlayer(p)}
+                                        className="text-[9px] font-bold bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded px-1.5 py-0.5 transition-colors"
+                                      >
+                                        {p.firstName ? `${p.firstName} ${p.name}` : p.name}{p.squadEval?.xpDelta > 0 ? ` (+${p.squadEval.xpDelta} xP)` : ''}
+                                      </button>
                                     ))}
                                   </div>
                                 </div>
