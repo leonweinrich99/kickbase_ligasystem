@@ -524,7 +524,6 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, 
 
   const [remoteHistory, setRemoteHistory] = useState(null);
   const [matchdaySeasons, setMatchdaySeasons] = useState([]);
-  const [selectedSeasonIdx, setSelectedSeasonIdx] = useState(0);
   const [fallbackXp, setFallbackXp] = useState(null);
   const [playerTransfers, setPlayerTransfers] = useState([]);
   const [userLeague, setUserLeague] = useState(null);
@@ -552,7 +551,6 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, 
       if (cancelled || !bundle) return;
       const seasons = unpackPlayerMatchdaySeasons(bundle, pid);
       setMatchdaySeasons(seasons);
-      setSelectedSeasonIdx(0);
     });
     loadTransfersByPlayerId().then((map) => {
       if (cancelled || !map) return;
@@ -581,7 +579,7 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, 
       el.scrollLeft = Math.max(0, el.scrollWidth - el.clientWidth);
     });
     return () => cancelAnimationFrame(raf);
-  }, [matchdaySeasons, selectedSeasonIdx, showNextXp]);
+  }, [matchdaySeasons, showNextXp]);
 
   const fullBaseHistory = useMemo(() => {
     const raw = (remoteHistory && remoteHistory.length >= (player.history?.length || 0))
@@ -849,10 +847,12 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, 
             </div>
           )}
 
-          {/* Spieltags-Punkte (alle Saisons) + Gegner-Logos + xP-Vorschau */}
+          {/* Spieltags-Punkte (durchgehend ueber alle Saisons scrollbar, borderless wie der Marktwert-Graph) */}
           {(() => {
-            const activeSeason = matchdaySeasons[selectedSeasonIdx] || matchdaySeasons[0] || null;
-            if (!activeSeason) return null;
+            if (matchdaySeasons.length === 0) return null;
+
+            const currentSeason = matchdaySeasons[0];
+            const chronologicalSeasons = [...matchdaySeasons].reverse();
 
             const effectiveXpSeason = typeof player.xpSeason === 'number' ? player.xpSeason : fallbackXp?.xpSeason;
             const effectiveXpNext = typeof player.xpNext === 'number' ? player.xpNext : fallbackXp?.xpNext;
@@ -861,37 +861,69 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, 
             const effectiveIsHome = player.isHome ?? fallbackXp?.isHome ?? null;
             const effectiveMatchup = player.xpMatchupFactor ?? fallbackXp?.matchupFactor ?? null;
 
-            const playedEntries = activeSeason.entries.filter((e) => !e.isUpcoming);
-            const upcomingEntry = activeSeason.entries.find((e) => e.isUpcoming) || null;
-            const chartPoints = [...playedEntries];
+            const currentPlayedEntries = currentSeason.entries.filter((e) => !e.isUpcoming);
+            const upcomingEntry = currentSeason.entries.find((e) => e.isUpcoming) || null;
 
-            if (activeSeason.isCurrentSeason && showNextXp && typeof effectiveXpNext === 'number') {
-              const nextDay = upcomingEntry?.day ?? effectiveNextMd ?? (playedEntries.length > 0 ? playedEntries[playedEntries.length - 1].day + 1 : null);
-              if (nextDay != null) {
-                const oppName = upcomingEntry?.opponent || effectiveNextOpp;
-                const oppLogo = upcomingEntry?.oppLogo || (oppName ? teamLogos[oppName] : null) || null;
-                chartPoints.push({
-                  day: nextDay,
-                  label: `ST ${nextDay}`,
-                  points: effectiveXpNext,
-                  played: true,
-                  opponent: oppName,
-                  oppLogo,
-                  isHome: upcomingEntry?.isHome ?? effectiveIsHome,
-                  isXp: true,
+            const timelineItems = [];
+            const allPointsForScale = [];
+
+            chronologicalSeasons.forEach((season, sIdx) => {
+              const seasonPlayed = season.entries.filter((e) => !e.isUpcoming);
+              const isCur = season.isCurrentSeason;
+              const willAppendXp = isCur && showNextXp && typeof effectiveXpNext === 'number';
+              if (seasonPlayed.length === 0 && !willAppendXp) return;
+
+              timelineItems.push({
+                type: 'season',
+                key: `season-${season.title}`,
+                label: season.shortLabel,
+                isCurrent: isCur,
+                isFirst: sIdx === 0,
+              });
+
+              seasonPlayed.forEach((pt) => {
+                timelineItems.push({
+                  type: 'matchday',
+                  key: `${season.title}-${pt.day}`,
+                  pt,
                 });
+                allPointsForScale.push(pt);
+              });
+
+              if (willAppendXp) {
+                const nextDay = upcomingEntry?.day ?? effectiveNextMd ?? (seasonPlayed.length > 0 ? seasonPlayed[seasonPlayed.length - 1].day + 1 : null);
+                if (nextDay != null) {
+                  const oppName = upcomingEntry?.opponent || effectiveNextOpp;
+                  const oppLogo = upcomingEntry?.oppLogo || (oppName ? teamLogos[oppName] : null) || null;
+                  const xpPt = {
+                    day: nextDay,
+                    label: `ST ${nextDay}`,
+                    points: effectiveXpNext,
+                    played: true,
+                    opponent: oppName,
+                    oppLogo,
+                    isHome: upcomingEntry?.isHome ?? effectiveIsHome,
+                    isXp: true,
+                  };
+                  timelineItems.push({
+                    type: 'matchday',
+                    key: `${season.title}-${nextDay}-xp`,
+                    pt: xpPt,
+                  });
+                  allPointsForScale.push(xpPt);
+                }
               }
-            }
+            });
 
-            if (chartPoints.length === 0) return null;
+            if (allPointsForScale.length === 0) return null;
 
-            const playedOnly = playedEntries.filter((m) => m.played);
-            const avgPlayed = playedOnly.length > 0
-              ? Math.round(playedOnly.reduce((s, m) => s + m.points, 0) / playedOnly.length)
+            const playedCurrentOnly = currentPlayedEntries.filter((m) => m.played);
+            const avgPlayed = playedCurrentOnly.length > 0
+              ? Math.round(playedCurrentOnly.reduce((s, m) => s + m.points, 0) / playedCurrentOnly.length)
               : null;
 
-            const maxPos = Math.max(120, ...chartPoints.map((pt) => (pt.played || pt.isXp ? Math.max(0, pt.points || 0) : 0)));
-            const minNeg = Math.min(0, ...chartPoints.map((pt) => (pt.played ? Math.min(0, pt.points || 0) : 0)));
+            const maxPos = Math.max(120, ...allPointsForScale.map((pt) => (pt.played || pt.isXp ? Math.max(0, pt.points || 0) : 0)));
+            const minNeg = Math.min(0, ...allPointsForScale.map((pt) => (pt.played ? Math.min(0, pt.points || 0) : 0)));
             const totalBarZonePx = 108;
             const negZonePx = minNeg < 0
               ? Math.max(16, Math.min(30, Math.round((Math.abs(minNeg) / (maxPos + Math.abs(minNeg))) * totalBarZonePx)))
@@ -899,18 +931,18 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, 
             const posZonePx = totalBarZonePx - negZonePx;
 
             return (
-              <div className="px-4 sm:px-6 mb-8">
-                <div className="flex items-center justify-between gap-2 mb-2.5">
+              <div className="mb-8">
+                <div className="px-4 sm:px-6 flex items-center justify-between gap-2 mb-3">
                   <div className="min-w-0">
                     <h3 className="text-lg font-semibold text-white leading-tight">Spieltags-Punkte</h3>
                     {avgPlayed != null && (
                       <div className="text-[11px] text-[#8b92a5] tabular-nums mt-0.5">
-                        Ø <span className={`font-semibold ${pointColor(avgPlayed)}`}>{avgPlayed}</span> Pkt ({playedOnly.length} Einsätze)
-                        {activeSeason.isCurrentSeason && typeof effectiveXpSeason === 'number' ? ` · ${effectiveXpSeason} xP` : ''}
+                        Ø <span className={`font-semibold ${pointColor(avgPlayed)}`}>{avgPlayed}</span> Pkt ({playedCurrentOnly.length} Einsätze {currentSeason.shortLabel})
+                        {typeof effectiveXpSeason === 'number' ? ` · ${effectiveXpSeason} xP` : ''}
                       </div>
                     )}
                   </div>
-                  {activeSeason.isCurrentSeason && typeof effectiveXpNext === 'number' && (effectiveNextMd != null || upcomingEntry?.day != null) && (
+                  {typeof effectiveXpNext === 'number' && (effectiveNextMd != null || upcomingEntry?.day != null) && (
                     <button
                       type="button"
                       onClick={() => setShowNextXp((v) => !v)}
@@ -926,171 +958,169 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, 
                   )}
                 </div>
 
-                {/* Saison-Umschalter (aktuell + vorherige Saisons) */}
-                {matchdaySeasons.length > 1 && (
-                  <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 mb-2.5">
-                    {matchdaySeasons.map((season, idx) => (
-                      <button
-                        key={season.title}
-                        type="button"
-                        onClick={() => setSelectedSeasonIdx(idx)}
-                        className={`shrink-0 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-colors cursor-pointer tabular-nums ${
-                          selectedSeasonIdx === idx
-                            ? 'bg-white text-black border-white'
-                            : 'bg-white/[0.04] text-[#8b92a5] border-white/10 hover:text-white'
-                        }`}
-                      >
-                        {season.shortLabel}
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {/* Kompakte, horizontal wischbare Spalten-Grafik:
-                    Spieltag -> Gegner-Logo -> Ergebnis -> Balken -> Punkte (Zahl) -> Minuten */}
-                <div className="card-surface rounded-2xl py-3 px-2 overflow-hidden">
-                  <div ref={pointsScrollRef} className="overflow-x-auto no-scrollbar">
-                    <div className="flex items-stretch gap-1 min-w-max px-1">
-                      {chartPoints.map((pt) => {
-                        const fill = getMatchdayBarFill(pt);
-                        const is200Plus = !pt.isXp && pt.played && pt.points >= 200;
-                        const isPositive = (pt.played || pt.isXp) && pt.points > 0;
-                        const isNegative = pt.played && !pt.isXp && pt.points < 0;
-                        const posH = isPositive
-                          ? Math.max(5, Math.round((pt.points / maxPos) * (posZonePx - 6)))
-                          : 0;
-                        const negH = isNegative && minNeg < 0
-                          ? Math.max(5, Math.round((Math.abs(pt.points) / Math.abs(minNeg)) * (negZonePx - 4)))
-                          : 0;
-
-                        const ptsText = pt.isXp
-                          ? `${pt.points}`
-                          : pt.played
-                            ? `${pt.points}`
-                            : '–';
-                        const ptsColorClass = pt.isXp
-                          ? 'text-cyan-400'
-                          : pt.played
-                            ? pointColor(pt.points)
-                            : 'text-[#525866]';
-                        const minutesText = pt.isXp
-                          ? 'xP'
-                          : pt.played
-                            ? `${pt.minutes}'`
-                            : "0'";
-                        const resultText = pt.isXp
-                          ? (pt.isHome === true ? 'Heim' : pt.isHome === false ? 'Ausw.' : 'Progn.')
-                          : (pt.score || '–');
-
+                {/* Borderless, durchgehend wischbare Saison-Timeline:
+                    Saison-Trenner + Spieltag -> Gegner-Logo -> Ergebnis -> Balken -> Punkte -> Minuten */}
+                <div ref={pointsScrollRef} className="overflow-x-auto no-scrollbar w-full">
+                  <div className="flex items-stretch gap-1 min-w-max px-4 sm:px-6 py-1">
+                    {timelineItems.map((item) => {
+                      if (item.type === 'season') {
                         return (
                           <div
-                            key={`${pt.day}-${pt.isXp ? 'xp' : 'pt'}`}
-                            title={`${pt.label}${pt.opponent ? ` (${pt.isHome === true ? 'vs.' : pt.isHome === false ? '@' : ''} ${pt.opponent})` : ''}${pt.score ? ` ${pt.score}` : ''} · ${pt.isXp ? `${pt.points} xP` : pt.played ? `${pt.points} Pkt (${pt.minutes}')` : 'nicht eingesetzt'}`}
-                            className={`w-[46px] shrink-0 flex flex-col items-center rounded-xl py-1.5 transition-colors ${
-                              pt.isXp ? 'bg-cyan-500/[0.07]' : 'hover:bg-white/[0.03]'
+                            key={item.key}
+                            className={`shrink-0 flex flex-col items-center justify-between py-1.5 ${
+                              item.isFirst ? 'pr-2' : 'px-2.5'
                             }`}
                           >
-                            {/* 1. Spieltag */}
-                            <div className={`text-[10px] font-bold tabular-nums leading-none ${pt.isXp ? 'text-cyan-400' : 'text-[#8b92a5]'}`}>
-                              ST {pt.day}
-                            </div>
-
-                            {/* 2. Gegner-Logo */}
-                            <div className="w-5 h-5 mt-1.5 flex items-center justify-center shrink-0">
-                              {pt.oppLogo ? (
-                                <img
-                                  src={pt.oppLogo}
-                                  alt={pt.opponent || ''}
-                                  loading="lazy"
-                                  decoding="async"
-                                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                  className="w-5 h-5 object-contain"
-                                />
-                              ) : pt.opponent ? (
-                                <span className="text-[8px] font-black text-[#626978] uppercase">
-                                  {pt.opponent.slice(0, 3)}
-                                </span>
-                              ) : (
-                                <span className="text-[9px] text-[#4b5563]">–</span>
-                              )}
-                            </div>
-
-                            {/* 3. Ergebnis */}
-                            <div className={`text-[9px] font-semibold tabular-nums leading-none mt-1 ${pt.isXp ? 'text-cyan-300/80' : 'text-[#626978]'}`}>
-                              {resultText}
-                            </div>
-
-                            {/* 4. Balken (positiv ueber 0-Linie, negativ darunter) */}
-                            <div
-                              className="w-full flex flex-col items-center mt-2 relative"
-                              style={{ height: `${totalBarZonePx}px` }}
+                            <span
+                              className={`text-[9px] font-black tracking-wider uppercase px-1.5 py-0.5 rounded-md tabular-nums ${
+                                item.isCurrent
+                                  ? 'bg-white/12 text-white'
+                                  : 'bg-white/[0.05] text-[#8b92a5]'
+                              }`}
                             >
-                              {/* Positiv-Bereich */}
-                              <div
-                                className="w-full flex items-end justify-center relative"
-                                style={{ height: `${posZonePx}px` }}
-                              >
-                                {isPositive ? (
-                                  <div
-                                    className="w-[20px] rounded-t-[5px] rounded-b-[2px] transition-all"
-                                    style={{
-                                      height: `${posH}px`,
-                                      backgroundColor: pt.isXp ? 'rgba(34, 211, 238, 0.28)' : fill,
-                                      border: pt.isXp
-                                        ? '1.5px dashed #22d3ee'
-                                        : is200Plus
-                                          ? '1px solid #22c55e'
-                                          : 'none',
-                                    }}
-                                  />
-                                ) : !isNegative ? (
-                                  <div
-                                    className="w-[14px] h-[3px] rounded-full mb-[1px]"
-                                    style={{ backgroundColor: fill }}
-                                  />
-                                ) : null}
-                              </div>
-
-                              {/* 0-Linie */}
-                              <div className="w-full h-[1px] bg-white/10 shrink-0" />
-
-                              {/* Negativ-Bereich (falls Minuspunkte in dieser Saison vorkommen) */}
-                              {negZonePx > 0 && (
-                                <div
-                                  className="w-full flex items-start justify-center"
-                                  style={{ height: `${negZonePx}px` }}
-                                >
-                                  {isNegative && (
-                                    <div
-                                      className="w-[20px] rounded-b-[5px] rounded-t-[2px]"
-                                      style={{
-                                        height: `${negH}px`,
-                                        backgroundColor: fill,
-                                      }}
-                                    />
-                                  )}
-                                </div>
-                              )}
-                            </div>
-
-                            {/* 5. Punkte als Zahl */}
-                            <div className={`text-[12px] font-extrabold tabular-nums leading-none mt-2 ${ptsColorClass}`}>
-                              {ptsText}
-                            </div>
-
-                            {/* 6. Minuten gespielt */}
-                            <div className={`text-[9px] font-semibold tabular-nums leading-none mt-1 ${pt.isXp ? 'text-cyan-400/80 uppercase' : 'text-[#626978]'}`}>
-                              {minutesText}
-                            </div>
+                              {item.label}
+                            </span>
+                            <div className="w-[1px] flex-1 my-1.5 bg-gradient-to-b from-white/25 via-white/10 to-transparent" />
                           </div>
                         );
-                      })}
-                    </div>
+                      }
+
+                      const pt = item.pt;
+                      const fill = getMatchdayBarFill(pt);
+                      const is200Plus = !pt.isXp && pt.played && pt.points >= 200;
+                      const isPositive = (pt.played || pt.isXp) && pt.points > 0;
+                      const isNegative = pt.played && !pt.isXp && pt.points < 0;
+                      const posH = isPositive
+                        ? Math.max(5, Math.round((pt.points / maxPos) * (posZonePx - 6)))
+                        : 0;
+                      const negH = isNegative && minNeg < 0
+                        ? Math.max(5, Math.round((Math.abs(pt.points) / Math.abs(minNeg)) * (negZonePx - 4)))
+                        : 0;
+
+                      const ptsText = pt.isXp
+                        ? `${pt.points}`
+                        : pt.played
+                          ? `${pt.points}`
+                          : '–';
+                      const ptsColorClass = pt.isXp
+                        ? 'text-cyan-400'
+                        : pt.played
+                          ? pointColor(pt.points)
+                          : 'text-[#525866]';
+                      const minutesText = pt.isXp
+                        ? 'xP'
+                        : pt.played
+                          ? `${pt.minutes}'`
+                          : "0'";
+                      const resultText = pt.isXp
+                        ? (pt.isHome === true ? 'Heim' : pt.isHome === false ? 'Ausw.' : 'Progn.')
+                        : (pt.score || '–');
+
+                      return (
+                        <div
+                          key={item.key}
+                          title={`${pt.label}${pt.opponent ? ` (${pt.isHome === true ? 'vs.' : pt.isHome === false ? '@' : ''} ${pt.opponent})` : ''}${pt.score ? ` ${pt.score}` : ''} · ${pt.isXp ? `${pt.points} xP` : pt.played ? `${pt.points} Pkt (${pt.minutes}')` : 'nicht eingesetzt'}`}
+                          className={`w-[46px] shrink-0 flex flex-col items-center rounded-xl py-1.5 transition-colors ${
+                            pt.isXp ? 'bg-cyan-500/[0.07]' : 'hover:bg-white/[0.03]'
+                          }`}
+                        >
+                          {/* 1. Spieltag */}
+                          <div className={`text-[10px] font-bold tabular-nums leading-none ${pt.isXp ? 'text-cyan-400' : 'text-[#8b92a5]'}`}>
+                            ST {pt.day}
+                          </div>
+
+                          {/* 2. Gegner-Logo */}
+                          <div className="w-5 h-5 mt-1.5 flex items-center justify-center shrink-0">
+                            {pt.oppLogo ? (
+                              <img
+                                src={pt.oppLogo}
+                                alt={pt.opponent || ''}
+                                loading="lazy"
+                                decoding="async"
+                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                className="w-5 h-5 object-contain"
+                              />
+                            ) : pt.opponent ? (
+                              <span className="text-[8px] font-black text-[#626978] uppercase">
+                                {pt.opponent.slice(0, 3)}
+                              </span>
+                            ) : (
+                              <span className="text-[9px] text-[#4b5563]">–</span>
+                            )}
+                          </div>
+
+                          {/* 3. Ergebnis */}
+                          <div className={`text-[9px] font-semibold tabular-nums leading-none mt-1 ${pt.isXp ? 'text-cyan-300/80' : 'text-[#626978]'}`}>
+                            {resultText}
+                          </div>
+
+                          {/* 4. Balken (positiv ueber 0-Linie, negativ darunter) */}
+                          <div
+                            className="w-full flex flex-col items-center mt-2 relative"
+                            style={{ height: `${totalBarZonePx}px` }}
+                          >
+                            <div
+                              className="w-full flex items-end justify-center relative"
+                              style={{ height: `${posZonePx}px` }}
+                            >
+                              {isPositive ? (
+                                <div
+                                  className="w-[20px] rounded-t-[5px] rounded-b-[2px] transition-all"
+                                  style={{
+                                    height: `${posH}px`,
+                                    backgroundColor: pt.isXp ? 'rgba(34, 211, 238, 0.28)' : fill,
+                                    border: pt.isXp
+                                      ? '1.5px dashed #22d3ee'
+                                      : is200Plus
+                                        ? '1px solid #22c55e'
+                                        : 'none',
+                                  }}
+                                />
+                              ) : !isNegative ? (
+                                <div
+                                  className="w-[14px] h-[3px] rounded-full mb-[1px]"
+                                  style={{ backgroundColor: fill }}
+                                />
+                              ) : null}
+                            </div>
+
+                            <div className="w-full h-[1px] bg-white/10 shrink-0" />
+
+                            {negZonePx > 0 && (
+                              <div
+                                className="w-full flex items-start justify-center"
+                                style={{ height: `${negZonePx}px` }}
+                              >
+                                {isNegative && (
+                                  <div
+                                    className="w-[20px] rounded-b-[5px] rounded-t-[2px]"
+                                    style={{
+                                      height: `${negH}px`,
+                                      backgroundColor: fill,
+                                    }}
+                                  />
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* 5. Punkte als Zahl */}
+                          <div className={`text-[12px] font-extrabold tabular-nums leading-none mt-2 ${ptsColorClass}`}>
+                            {ptsText}
+                          </div>
+
+                          {/* 6. Minuten gespielt */}
+                          <div className={`text-[9px] font-semibold tabular-nums leading-none mt-1 ${pt.isXp ? 'text-cyan-400/80 uppercase' : 'text-[#626978]'}`}>
+                            {minutesText}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
-                {activeSeason.isCurrentSeason && showNextXp && typeof effectiveXpNext === 'number' && (effectiveNextMd != null || upcomingEntry?.day != null) && (
-                  <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[11px] px-1">
+                {showNextXp && typeof effectiveXpNext === 'number' && (effectiveNextMd != null || upcomingEntry?.day != null) && (
+                  <div className="px-4 sm:px-6 mt-2 flex flex-wrap items-center justify-between gap-2 text-[11px]">
                     <span className="text-[#8b92a5]">
                       Prognose ST {upcomingEntry?.day ?? effectiveNextMd}
                       {(upcomingEntry?.opponent || effectiveNextOpp)
