@@ -7,22 +7,14 @@ const formatCompactMoney = (val) => {
   return `${Math.round(val / 1000)}k €`;
 };
 
-const StarIcon = ({ filled }) => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill={filled ? '#eab308' : 'none'} stroke={filled ? '#eab308' : '#626978'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-  </svg>
-);
-
 // Trading-Advisor-Adapter auf Basis der einheitlichen PlayerRowCard:
-// genutzt in Advisor.jsx (Markt, Kader, Datenbank, Favoriten) sowie im
+// genutzt in Advisor.jsx (Markt, Kader, Datenbank) sowie im
 // Newsfeed fuer den "Hot Shots"-Sneak-Peek (HotShotsSection.jsx).
 const AdvisorPlayerCard = ({
   entry,
   teamLogo,
   ownerName,
   onClick,
-  isFavorite,
-  onToggleFavorite,
   showGenericBadges = false,
 }) => {
   const rising = (entry.predictedChange || 0) >= 0;
@@ -87,17 +79,6 @@ const AdvisorPlayerCard = ({
     );
   }
 
-  const leadingAction = onToggleFavorite ? (
-    <button
-      type="button"
-      onClick={(e) => { e.stopPropagation(); onToggleFavorite(entry.playerId); }}
-      aria-label={isFavorite ? 'Favorit entfernen' : 'Als Favorit speichern'}
-      className="p-1 rounded-full bg-black/60 opacity-85 hover:opacity-100 transition-opacity cursor-pointer"
-    >
-      <StarIcon filled={isFavorite} />
-    </button>
-  ) : null;
-
   return (
     <PlayerRowCard
       className="mb-2"
@@ -111,7 +92,6 @@ const AdvisorPlayerCard = ({
         startProb: entry.startElfProbability ?? entry.prob,
       }}
       accentBorder={accentBorder}
-      leadingAction={leadingAction}
       metaStatus={metaStatus}
       metaSecondary={metaSecondary}
       primaryMetric={formatCompactMoney(entry.marketValue)}

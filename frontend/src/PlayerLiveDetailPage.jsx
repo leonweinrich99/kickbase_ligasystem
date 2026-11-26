@@ -1,9 +1,8 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
-import { useAuth } from './AuthContext';
 import { useBackNavigation } from './useBackNavigation';
-import { BackButton } from './ui/CloseButton';
+import { IconBackButton } from './ui/CloseButton';
 import AnimatedPoints from './ui/AnimatedPoints';
 
 // Eigene Seite statt Overlay/Modal fuer die Live-Punkte-Event-Liste eines
@@ -76,16 +75,13 @@ const buildTimeline = (events, matchStatus, matchMinute) => {
 const PlayerLiveDetailPage = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
-  const { isAdmin } = useAuth();
   const player = state?.player;
   const goBack = useBackNavigation('/live');
 
-  const canOpenTrading = Boolean(isAdmin && player?.id);
+  const canOpenTrading = Boolean(player?.id);
   const openInTrading = () => {
     if (!canOpenTrading) return;
-    navigate(`/admin/advisor?playerId=${encodeURIComponent(String(player.id))}`, {
-      state: { openPlayerId: String(player.id), returnOnClose: true },
-    });
+    navigate(`/player/${encodeURIComponent(String(player.id))}`);
   };
 
   const timeline = player ? buildTimeline(player.events || [], player.matchStatus, player.matchMinute) : [];
@@ -99,8 +95,8 @@ const PlayerLiveDetailPage = () => {
 
   return (
     <div className="w-full bg-[#000000] min-h-screen relative flex flex-col pb-10">
-      <div className="sticky sticky-safe-top z-50 bg-[#000000]/90 backdrop-blur-md px-4 sm:px-6 py-4 flex items-center border-b border-[#2e2e2e]/50">
-        <BackButton onClick={goBack} />
+      <div className="sticky sticky-safe-top z-50 px-4 sm:px-6 pt-3 pb-2 pointer-events-none">
+        <IconBackButton onClick={goBack} className="pointer-events-auto" />
       </div>
 
       {!player ? (

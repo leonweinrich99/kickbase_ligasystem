@@ -1,12 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { Info, RefreshCw, CheckCircle2, XCircle, Star, SlidersHorizontal, X, ChevronDown, AlertTriangle, ArrowRight } from 'lucide-react';
+import { Info, RefreshCw, CheckCircle2, XCircle, SlidersHorizontal, X, ChevronDown, AlertTriangle, ArrowRight } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import { useBackNavigation } from './useBackNavigation';
-import { useFavorites } from './useFavorites';
 import PageHeader from './ui/PageHeader';
-import CloseButton, { BackButton } from './ui/CloseButton';
+import CloseButton, { IconBackButton } from './ui/CloseButton';
 import StatTile from './ui/StatTile';
 import PlayerCard from './ui/AdvisorPlayerCard';
 import StartProbBadge, { StartProbLegend } from './ui/StartProbBadge';
@@ -67,7 +66,6 @@ const SECTION_TABS = [
   { key: 'squad', label: 'Kader' },
   { key: 'database', label: 'Datenbank' },
   { key: 'budgets', label: 'Budgets' },
-  { key: 'favorites', label: 'Favoriten' },
 ];
 
 const formatMoney = (val) => {
@@ -366,12 +364,6 @@ const BudgetRow = ({ entry, rank, color }) => {
   );
 };
 
-const StarIcon = ({ filled }) => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill={filled ? '#eab308' : 'none'} stroke={filled ? '#eab308' : '#626978'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-  </svg>
-);
-
 const ChartTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   const point = payload[0].payload;
@@ -510,7 +502,7 @@ const normalizeLeagueLabel = (raw) => {
   return String(raw).toUpperCase().trim();
 };
 
-export const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, onToggleFavorite, leagueKey = null }) => {
+export const PlayerDetailView = ({ player, teamLogos = {}, onClose, leagueKey = null }) => {
   const { profile } = useAuth();
   const pointsScrollRef = useRef(null);
 
@@ -658,21 +650,12 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, 
 
   return (
     <div className="w-full bg-[#000000] min-h-screen relative flex flex-col pb-10">
-      {/* Header mit Zurueck-Button (Page-Look) */}
-      <div className="sticky sticky-safe-top z-50 bg-[#000000]/90 backdrop-blur-md px-4 sm:px-6 py-4 flex items-center justify-between border-b border-[#2e2e2e]/50">
-        <BackButton onClick={onClose} />
-        {onToggleFavorite && (
-          <button
-            onClick={() => onToggleFavorite(player.playerId)}
-            aria-label={isFavorite ? 'Favorit entfernen' : 'Als Favorit speichern'}
-            className="p-1"
-          >
-            <StarIcon filled={isFavorite} />
-          </button>
-        )}
+      {/* Moderner, rahmenloser Detail-Header im Trading-Advisor-Button-Stil */}
+      <div className="sticky sticky-safe-top z-50 px-4 sm:px-6 pt-3 pb-2 flex items-center justify-between pointer-events-none">
+        <IconBackButton onClick={onClose} className="pointer-events-auto" />
       </div>
 
-        <div className="overflow-y-auto min-h-0 pt-6 pb-8 relative">
+        <div className="overflow-y-auto min-h-0 pt-2 pb-8 relative">
           
           {/* Hero background image with dynamic masking */}
           <div className="absolute top-0 right-0 z-0 pointer-events-none overflow-hidden" style={{ width: '100%', height: '240px', display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-start' }}>
@@ -1351,7 +1334,6 @@ const Advisor = () => {
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const goBack = useBackNavigation('/account');
-  const { isFavorite, toggleFavorite, favoritePlayers } = useFavorites();
   const [data, setData] = useState(null);
   const [ratingsMap, setRatingsMap] = useState(null);
   const [error, setError] = useState(false);
@@ -1361,7 +1343,6 @@ const Advisor = () => {
   const [marketFilters, setMarketFilters] = useState(DEFAULT_MARKET_FILTERS);
   const [dbFilters, setDbFilters] = useState({ ...DEFAULT_FILTERS, sort: 'xpDesc' });
   const [squadFilters, setSquadFilters] = useState({ ...DEFAULT_FILTERS, sort: 'xpDesc' });
-  const [favoritesFilters, setFavoritesFilters] = useState({ ...DEFAULT_FILTERS, sort: 'xpDesc' });
   const [selectedManagerId, setSelectedManagerId] = useState('');
   // Kader-Tab zeigt standardmaessig IMMER den eigenen Account (siehe
   // profile.kickbaseId unten) - der Manager-Wechsler ist nur noch eine
@@ -1574,16 +1555,6 @@ const Advisor = () => {
   );
   const filteredDb = useMemo(() => applyFilters(dbPlayersAnnotated, dbFilters, 'buy'), [dbPlayersAnnotated, dbFilters]);
 
-  // Favoriten: aus der vollstaendig angereicherten Spieler-Datenbank gefiltert.
-  const favoritePlayersList = useMemo(
-    () => dbPlayersAnnotated.filter((p) => favoritePlayers.includes(String(p.playerId))),
-    [dbPlayersAnnotated, favoritePlayers]
-  );
-  const filteredFavorites = useMemo(
-    () => applyFilters(favoritePlayersList, favoritesFilters, 'buy'),
-    [favoritePlayersList, favoritesFilters]
-  );
-
   const filteredSquad = useMemo(
     () => applyFilters(currentSquad, squadFilters, 'sell'),
     [currentSquad, squadFilters]
@@ -1747,8 +1718,6 @@ const Advisor = () => {
           player={selectedPlayer}
           teamLogos={teamLogos}
           onClose={handleClosePlayerDetail}
-          isFavorite={isFavorite(selectedPlayer.playerId)}
-          onToggleFavorite={toggleFavorite}
           leagueKey={activeLeague}
         />
       </div>
@@ -1846,7 +1815,6 @@ const Advisor = () => {
                   onClick={() => setSectionTab(t.key)}
                   className={`px-4 py-3 text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-colors border-b-2 flex items-center gap-1.5 ${sectionTab === t.key ? 'text-white border-cyan-400' : 'text-[#8b92a5] border-transparent hover:text-gray-300'}`}
                 >
-                  {t.key === 'favorites' && <Star size={12} fill={sectionTab === t.key ? 'currentColor' : 'none'} />}
                   {t.label}
                 </button>
               ))}
@@ -1884,7 +1852,7 @@ const Advisor = () => {
                     {filteredMarket.length ? (
                       <div className="mb-10">
                         {filteredMarket.map((entry, index) => (
-                          <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} ownerName={playerManagerMap[entry.playerId]} teamLogo={teamLogos[entry.team]} onClick={() => setSelectedPlayer(entry)} isFavorite={isFavorite(entry.playerId)} onToggleFavorite={toggleFavorite} />
+                          <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} ownerName={playerManagerMap[entry.playerId]} teamLogo={teamLogos[entry.team]} onClick={() => setSelectedPlayer(entry)} />
                         ))}
                       </div>
                     ) : (
@@ -2104,7 +2072,7 @@ const Advisor = () => {
                         {filteredSquad.length ? (
                           <div className="mb-10">
                             {filteredSquad.map((entry, index) => (
-                              <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} ownerName={playerManagerMap[entry.playerId]} teamLogo={teamLogos[entry.team]} onClick={() => setSelectedPlayer(entry)} isFavorite={isFavorite(entry.playerId)} onToggleFavorite={toggleFavorite} />
+                              <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} ownerName={playerManagerMap[entry.playerId]} teamLogo={teamLogos[entry.team]} onClick={() => setSelectedPlayer(entry)} />
                             ))}
                           </div>
                         ) : (
@@ -2137,7 +2105,7 @@ const Advisor = () => {
                       <>
                         <div>
                           {filteredDb.slice(0, dbVisibleCount).map((entry, index) => (
-                            <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} ownerName={playerManagerMap[entry.playerId]} teamLogo={teamLogos[entry.team]} onClick={() => setSelectedPlayer(entry)} isFavorite={isFavorite(entry.playerId)} onToggleFavorite={toggleFavorite} />
+                            <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} ownerName={playerManagerMap[entry.playerId]} teamLogo={teamLogos[entry.team]} onClick={() => setSelectedPlayer(entry)} />
                           ))}
                         </div>
                         {dbVisibleCount < filteredDb.length && (
@@ -2155,39 +2123,6 @@ const Advisor = () => {
                   </>
                 ) : (
                   <div className="text-center text-[#8b92a5] text-sm py-6">Die Spieler-Datenbank ist noch nicht verfügbar (erst ab dem nächsten Advisor-Lauf).</div>
-                )}
-              </>
-            )}
-
-            {sectionTab === 'favorites' && (
-              <>
-                <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-                  <div>
-                    <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                      <Star size={16} className="text-yellow-500" fill="currentColor" />
-                      Favoriten
-                    </h2>
-                    <p className="text-[10px] text-[#8b92a5] mt-1">Deine gemerkten Spieler, geräteübergreifend gespeichert.</p>
-                  </div>
-                  <span className="text-[10px] text-[#8b92a5]">{filteredFavorites.length} von {favoritePlayersList.length} Spielern</span>
-                </div>
-                {favoritePlayersList.length ? (
-                  <>
-                    <FilterBar filters={favoritesFilters} onChange={setFavoritesFilters} teams={dbTeams} showTeamFilter recommendationMode="buy" />
-                    {filteredFavorites.length ? (
-                      <div className="mb-10">
-                        {filteredFavorites.map((entry, index) => (
-                          <PlayerCard key={`${entry.playerId ?? entry.name}-${index}`} entry={entry} ownerName={playerManagerMap[entry.playerId]} teamLogo={teamLogos[entry.team]} onClick={() => setSelectedPlayer(entry)} isFavorite={isFavorite(entry.playerId)} onToggleFavorite={toggleFavorite} />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center text-[#8b92a5] text-sm py-6 mb-10">Kein Favorit passt zu den aktuellen Filtern.</div>
-                    )}
-                  </>
-                ) : (
-                  <div className="text-center text-[#8b92a5] text-sm py-10">
-                    Noch keine Favoriten gespeichert. Klicke auf den ★-Stern bei einer Spielerkarte, um sie hier zu sammeln.
-                  </div>
                 )}
               </>
             )}

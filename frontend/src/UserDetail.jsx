@@ -9,7 +9,7 @@ import {
   Users, Search, X, Zap
 } from 'lucide-react';
 import { useBackNavigation } from './useBackNavigation';
-import { BackButton } from './ui/CloseButton';
+import { IconBackButton, SubpageActionButton } from './ui/CloseButton';
 import ManagerAvatar from './ui/ManagerAvatar';
 import PlayerPhotoCard from './ui/PlayerPhotoCard';
 import PositionRow from './ui/PositionRow';
@@ -492,8 +492,6 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
       <PlayerDetailView
         player={selectedPlayer}
         onClose={() => setSelectedPlayer(null)}
-        isFavorite={false}
-        onToggleFavorite={() => {}}
       />
     );
   }
@@ -551,19 +549,21 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
         </div>
       )}
 
-      {/* Header mit Zurueck-Button (Page-Look, wie Advisor::PlayerDetailView) */}
-      <div className="sticky sticky-safe-top z-50 bg-[#000000]/90 backdrop-blur-md px-4 sm:px-6 py-4 flex items-center justify-between border-b border-[#2e2e2e]/50">
-        <BackButton onClick={goBack} />
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="group flex items-center gap-2 text-[#8b92a5] hover:text-white transition-colors"
-        >
-          <Users size={16} className="group-hover:text-[#ff5c3e] transition-colors" />
-          <span className="text-xs font-bold uppercase tracking-wider">Vergleichen</span>
-        </button>
+      {/* Moderner, rahmenloser Detail-Header im Trading-Advisor-Button-Stil */}
+      <div className="sticky sticky-safe-top z-50 px-4 sm:px-6 pt-3 pb-2 pointer-events-none">
+        <div className="max-w-[1400px] mx-auto flex items-center justify-between gap-2">
+          <IconBackButton onClick={goBack} className="pointer-events-auto" />
+          <SubpageActionButton
+            onClick={() => setIsModalOpen(true)}
+            icon={Users}
+            iconClassName="text-[#ff5c3e]"
+            label="Vergleichen"
+            className="pointer-events-auto"
+          />
+        </div>
       </div>
 
-      <div className="max-w-[1400px] w-full mx-auto pt-6 sm:pt-8 pb-8 px-4 sm:px-6">
+      <div className="max-w-[1400px] w-full mx-auto pt-3 sm:pt-5 pb-8 px-4 sm:px-6">
 
         {/* Name, Platz & grosses rundes Foto-Medaillon rechts (wie im
             Trading Advisor) - extra Abstand nach oben (pt-6/pt-8), damit das

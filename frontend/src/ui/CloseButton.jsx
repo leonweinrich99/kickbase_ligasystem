@@ -9,12 +9,48 @@ export default function CloseButton({ onClick, className = '', size = 'default',
 
   return (
     <button
+      type="button"
       onClick={onClick}
       aria-label="Schließen"
-      className={`shrink-0 flex items-center justify-center bg-[#171717] border border-[#2e2e2e] rounded-xl text-[#8b92a5] hover:text-white hover:border-[#404040] transition-all ${sizeClasses} ${className}`}
+      className={`shrink-0 flex items-center justify-center bg-[#171717]/90 backdrop-blur-md border border-[#2e2e2e] rounded-xl text-[#8b92a5] hover:text-white hover:border-[#404040] active:scale-95 transition-all cursor-pointer ${sizeClasses} ${className}`}
       {...props}
     >
       <X size={iconSize} strokeWidth={2.5} />
+    </button>
+  );
+}
+
+// Einheitlicher, moderner Zurueck-Icon-Button im selben rounded-xl-Stil wie
+// CloseButton / Trading-Advisor-Buttons (fuer Manager- & Spieler-Detailseiten).
+export function IconBackButton({ onClick, className = '', size = 'default', ...props }) {
+  const sizeClasses = size === 'compact' ? 'w-8 h-8' : 'w-10 h-10';
+  const iconSize = size === 'compact' ? 15 : 18;
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label="Zurück"
+      className={`shrink-0 flex items-center justify-center bg-[#171717]/90 backdrop-blur-md border border-[#2e2e2e] rounded-xl text-gray-200 hover:text-white hover:border-[#404040] active:scale-95 transition-all cursor-pointer shadow-lg ${sizeClasses} ${className}`}
+      {...props}
+    >
+      <ArrowLeft size={iconSize} strokeWidth={2.4} />
+    </button>
+  );
+}
+
+// Einheitlicher Aktions-Button fuer Detail-Header (z.B. "Vergleichen" im
+// Manager-Profil) im selben rounded-xl-Design wie IconBackButton / CloseButton.
+export function SubpageActionButton({ onClick, icon: Icon, label, iconClassName = '', className = '', ...props }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`shrink-0 h-10 px-3.5 inline-flex items-center gap-2 bg-[#171717]/90 backdrop-blur-md border border-[#2e2e2e] rounded-xl text-xs font-bold text-gray-200 hover:text-white hover:border-[#404040] active:scale-95 transition-all cursor-pointer shadow-lg ${className}`}
+      {...props}
+    >
+      {Icon && <Icon size={15} strokeWidth={2.3} className={`shrink-0 ${iconClassName}`} />}
+      {label && <span className="whitespace-nowrap">{label}</span>}
     </button>
   );
 }
