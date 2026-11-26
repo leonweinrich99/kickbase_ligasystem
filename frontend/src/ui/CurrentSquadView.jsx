@@ -1212,7 +1212,7 @@ const CurrentSquadView = ({ players, liveStartingIds, loading }) => {
                       key={player.id}
                       player={player}
                       isBench={!starterIds.has(String(player.id))}
-                      xpSeason={xpInfo?.xpSeason}
+                      xpSeason={xpInfo?.xpNext ?? xpInfo?.xpSeason}
                       onPlayerClick={openPlayerDetail}
                     />
                   );

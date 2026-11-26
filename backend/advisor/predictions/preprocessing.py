@@ -61,7 +61,12 @@ def preprocess_player_data(df):
     df["mv_trend_7d"] = df.groupby("player_id")["mv"].pct_change(periods=7, fill_method=None)
     df["mv_trend_7d"] = df["mv_trend_7d"].replace([np.inf, -np.inf], 0).fillna(0)
 
-    df["market_divergence"] = (df["mv"] / df.groupby("md")["mv"].transform("mean")).rolling(3).mean()
+    df["_mv_ratio"] = df["mv"] / df.groupby("md")["mv"].transform("mean")
+    df["market_divergence"] = (
+        df.groupby("player_id")["_mv_ratio"]
+        .transform(lambda s: s.rolling(3, min_periods=1).mean())
+    )
+    df = df.drop(columns=["_mv_ratio"])
 
     # Kalender-Features (Prototyp)
     df["month"] = df["date"].dt.month

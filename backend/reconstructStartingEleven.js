@@ -3,7 +3,6 @@ const fs = require('fs');
 const path = require('path');
 const { getConfiguredKickbaseAccounts, LEAGUE_DEFS } = require('./kickbase');
 
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 const DATA_PATH = path.join(__dirname, '../frontend/public/data.json');
 const ALL_PLAYERS_PATH = path.join(__dirname, '../frontend/public/history/all_players.json');

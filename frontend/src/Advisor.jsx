@@ -522,12 +522,9 @@ const PlayerImageDetail = ({ url, name, position, teamLogo }) => {
 };
 
 const TrendArrow = ({ code }) => {
-  // "mvt" (Marktwert-Trendrichtung) ist ein Kickbase-interner Code - anhand
-  // von Beobachtungen: 1 = fallend, 2 = steigend. Defensiv nur als kleiner
-  // Zusatzhinweis genutzt (nicht die Hauptquelle für Auf/Ab, das übernehmen
-  // weiterhin unsere eigenen 1/3/7-Tage-Berechnungen).
-  if (code === 2) return <span className="text-green-400">▲</span>;
-  if (code === 1) return <span className="text-red-400">▼</span>;
+  // "mvt" (Marktwert-Trendrichtung) in Kickbase v4: 1 = steigend, 2 = fallend, 0 = stabil.
+  if (code === 1) return <span className="text-green-400">▲</span>;
+  if (code === 2) return <span className="text-red-400">▼</span>;
   return null;
 };
 

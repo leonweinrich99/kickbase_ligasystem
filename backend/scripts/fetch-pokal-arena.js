@@ -183,7 +183,6 @@ function propagateWinner(pokalData, placeholder, winnerName) {
 }
 
 async function run() {
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
     if (!fs.existsSync(POKAL_DATA_PATH)) {
         throw new Error(`pokal-data.json nicht gefunden unter ${POKAL_DATA_PATH}`);

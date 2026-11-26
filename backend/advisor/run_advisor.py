@@ -236,7 +236,7 @@ def compute_recommendations(entry):
     # Berechnung fuer "was man ausgeben sollte, um Gewinn zu machen"
     # z.B. aktueller Marktwert + 70% der erwarteten Wertsteigerung (30% Gewinnmarge)
     # Nur sinnvoll bei steigenden Werten.
-    mv = entry.get("mv") or 0
+    mv = entry.get("marketValue") or entry.get("mv") or 0
     if predicted > 0:
         entry["maxBid"] = mv + int(predicted * 0.7)
     else:
@@ -1001,6 +1001,13 @@ def main():
             print(f"Warning: Team-Logos fuer {key} fehlgeschlagen: {e}")
 
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
+
+    # Schutz gegen Datenverlust: Wenn die Vorhersage-Pipeline fehlgeschlagen ist
+    # und wir 0 Spieler erzeugt haben, darf eine bestehende advisor-data.json
+    # NICHT mit leeren Listen ueberschrieben werden.
+    if not result.get("players"):
+        print("FEHLER: Keine Spieler-Vorhersagen erzeugt - breche ab, um bestehende advisor-data.json nicht zu ueberschreiben.")
+        sys.exit(1)
 
     with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
         json.dump(result, f, ensure_ascii=False, indent=2)

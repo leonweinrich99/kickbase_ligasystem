@@ -11,14 +11,22 @@ import {
   EXCLUDED_MANAGER_NAMES,
   setLiveCacheHeaders,
   sendRateLimitIfActive,
+  isNumericId,
+  isValidLeagueKey,
 } from './_kickbaseClient.js';
 
 export default async function handler(req, res) {
   if (sendRateLimitIfActive(res)) return;
 
   const { userId, leagueKey, dayNumber } = req.query;
-  if (!leagueKey) {
-    return res.status(400).json({ error: 'leagueKey ist erforderlich' });
+  if (!isValidLeagueKey(leagueKey)) {
+    return res.status(400).json({ error: 'Gueltiger leagueKey (L1/L2/L3) ist erforderlich' });
+  }
+  if (userId != null && userId !== '' && !isNumericId(String(userId))) {
+    return res.status(400).json({ error: 'Ungueltige userId' });
+  }
+  if (dayNumber != null && dayNumber !== '' && !isNumericId(String(dayNumber))) {
+    return res.status(400).json({ error: 'Ungueltige dayNumber' });
   }
 
   const auth = await loginAndFindLeague(leagueKey);

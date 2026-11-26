@@ -7,6 +7,8 @@ import {
   getJson,
   setLiveCacheHeaders,
   sendRateLimitIfActive,
+  isNumericId,
+  isValidLeagueKey,
 } from './_kickbaseClient.js';
 
 function extractSquadArray(raw) {
@@ -23,8 +25,8 @@ export default async function handler(req, res) {
   if (sendRateLimitIfActive(res)) return;
 
   const { userId, leagueKey } = req.query;
-  if (!userId || !leagueKey) {
-    return res.status(400).json({ error: 'userId und leagueKey sind erforderlich' });
+  if (!isNumericId(userId) || !isValidLeagueKey(leagueKey)) {
+    return res.status(400).json({ error: 'Gueltige userId und leagueKey (L1/L2/L3) sind erforderlich' });
   }
 
   const auth = await loginAndFindLeague(leagueKey);

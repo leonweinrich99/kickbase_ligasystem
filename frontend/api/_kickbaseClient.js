@@ -91,17 +91,35 @@ function getConfiguredAccounts() {
   return accounts;
 }
 
+export const isNumericId = (val) => typeof val === 'string' && /^\d{1,12}$/.test(val.trim());
+
+export const isValidLeagueKey = (val) => val === 'L1' || val === 'L2' || val === 'L3';
+
+const FETCH_TIMEOUT_MS = 8000;
+
+function fetchWithTimeout(url, options = {}) {
+  return fetch(url, {
+    ...options,
+    signal: options.signal || AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  });
+}
+
 async function login(email, pass) {
   if (isRateLimited()) return null;
   const cached = tokenCache.get(email);
   if (cached && cached.expiresAt > Date.now()) {
     return cached.token;
   }
-  const res = await fetch(`${API_BASE}/user/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ em: email, loy: false, pass, rep: {} }),
-  });
+  let res;
+  try {
+    res = await fetchWithTimeout(`${API_BASE}/user/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ em: email, loy: false, pass, rep: {} }),
+    });
+  } catch {
+    return null;
+  }
   if (res.status === 429) {
     markRateLimited(res);
     return null;
@@ -114,7 +132,12 @@ async function login(email, pass) {
 
 async function findLeagueId(token, leagueNameContains) {
   if (isRateLimited()) return null;
-  const res = await fetch(`${API_BASE}/leagues`, { headers: { Authorization: `Bearer ${token}` } });
+  let res;
+  try {
+    res = await fetchWithTimeout(`${API_BASE}/leagues`, { headers: { Authorization: `Bearer ${token}` } });
+  } catch {
+    return null;
+  }
   if (res.status === 429) {
     markRateLimited(res);
     return null;
@@ -181,7 +204,12 @@ export async function loginAny() {
 
 export async function getJson(url, token) {
   if (isRateLimited()) return null;
-  const res = await fetch(url, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } });
+  let res;
+  try {
+    res = await fetchWithTimeout(url, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } });
+  } catch {
+    return null;
+  }
   if (res.status === 429) {
     markRateLimited(res);
     return null;
@@ -333,9 +361,14 @@ let eventTypeMapCache = null;
 export async function getEventTypeMap(token) {
   if (eventTypeMapCache) return eventTypeMapCache;
   if (isRateLimited()) return new Map();
-  const res = await fetch(`${API_BASE}/live/eventtypes`, {
-    headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', 'Accept-Language': 'de' },
-  });
+  let res;
+  try {
+    res = await fetchWithTimeout(`${API_BASE}/live/eventtypes`, {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', 'Accept-Language': 'de' },
+    });
+  } catch {
+    return new Map();
+  }
   if (res.status === 429) {
     markRateLimited(res);
     return new Map();
@@ -345,6 +378,11 @@ export async function getEventTypeMap(token) {
     return new Map();
   }
   const data = res.ok ? await res.json().catch(() => null) : null;
-  eventTypeMapCache = new Map((data?.it || []).map((x) => [x.i, x.ti]));
+  const items = Array.isArray(data?.it) ? data.it : [];
+  if (items.length === 0) {
+    // Leere/fehlerhafte Antwort NICHT dauerhaft cachen, damit der naechste Request es erneut versucht.
+    return new Map();
+  }
+  eventTypeMapCache = new Map(items.map((x) => [x.i, x.ti]));
   return eventTypeMapCache;
 }

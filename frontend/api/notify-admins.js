@@ -1,3 +1,4 @@
+/* global process */
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getMessaging } from 'firebase-admin/messaging';
@@ -17,9 +18,19 @@ function getAdminApp() {
   return initializeApp({ credential: cert(serviceAccount) });
 }
 
+const PERMANENT_INVALID_TOKEN_CODES = new Set([
+  'messaging/registration-token-not-registered',
+  'messaging/invalid-registration-token',
+]);
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized: Firebase token required' });
   }
 
   const app = getAdminApp();
@@ -30,9 +41,21 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { name, email } = req.body || {};
+    const idToken = authHeader.slice('Bearer '.length).trim();
+    const { getAuth } = await import('firebase-admin/auth');
+    const decodedToken = await getAuth(app).verifyIdToken(idToken);
 
     const db = getFirestore(app);
+    const userDoc = await db.collection('users').doc(decodedToken.uid).get();
+    // Nur ausstehende (neu registrierte) Accounts duerfen Admin-Signup-Pushs ausloesen.
+    if (userDoc.exists && userDoc.data()?.status === 'approved') {
+      return res.status(200).json({ skipped: true, reason: 'Account ist bereits freigeschaltet' });
+    }
+
+    const { name } = req.body || {};
+    const safeName = String(name || decodedToken.name || decodedToken.email || 'Jemand').slice(0, 80);
+    const safeEmail = String(decodedToken.email || 'unbekannt').slice(0, 120);
+
     const adminsSnap = await db.collection('users').where('role', '==', 'admin').get();
 
     const tokens = [];
@@ -55,15 +78,17 @@ export default async function handler(req, res) {
       // Mit reinem "data"-Payload haben wir die volle (und einzige) Kontrolle.
       data: {
         title: 'Neue Registrierung',
-        body: `${name || 'Jemand'} (${email || 'unbekannt'}) wartet auf Freischaltung.`,
+        body: `${safeName} (${safeEmail}) wartet auf Freischaltung.`,
         link: 'https://www.developtimize.de/admin'
       }
     });
 
-    // Ungueltige/abgelaufene Tokens aus den Nutzerprofilen entfernen.
+    // Nur dauerhaft ungueltige/abgelaufene Tokens entfernen (nie bei temporaerem FCM-500).
     const invalidTokens = [];
     result.responses.forEach((r, i) => {
-      if (!r.success) invalidTokens.push(tokens[i]);
+      if (!r.success && PERMANENT_INVALID_TOKEN_CODES.has(r.error?.code)) {
+        invalidTokens.push(tokens[i]);
+      }
     });
     if (invalidTokens.length > 0) {
       const { FieldValue } = await import('firebase-admin/firestore');

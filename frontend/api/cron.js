@@ -1,3 +1,4 @@
+/* global process */
 export default async function handler(req, res) {
   // Sicherheitscheck: NUR per Authorization-Header (so wie Vercel Cron ihn
   // automatisch mitschickt, und wie der manuelle Update-Button im Admin-Panel
@@ -5,7 +6,7 @@ export default async function handler(req, res) {
   // im Klartext in Vercels HTTP-Zugriffslogs und im Browser-Netzwerk-Tab sichtbar.
   const authHeader = req.headers['authorization'];
 
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   //comment

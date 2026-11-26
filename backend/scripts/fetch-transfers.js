@@ -166,7 +166,6 @@ async function fetchFeedForLeague(email, password, leagueNameContains) {
 }
 
 async function run() {
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
     console.log("Fetching transfer feeds...");
     const accounts = getConfiguredKickbaseAccounts();
     if (accounts.length === 0) {

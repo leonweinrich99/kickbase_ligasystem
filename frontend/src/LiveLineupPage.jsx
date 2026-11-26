@@ -7,7 +7,8 @@ import AnimatedPoints from './ui/AnimatedPoints';
 import LiveLineupPitch from './ui/LiveLineupGrid';
 import CurrentSquadView from './ui/CurrentSquadView';
 import BundesligaMatchesSection, { SelectedTeamMatchBanner } from './ui/BundesligaMatchesSection';
-import { buildLineupWithDummies, buildTeamLogoMap } from './liveLineupUtils';
+import { buildLineupWithDummies } from './liveLineupUtils';
+import { loadPlayerCatalogBundle } from './playerDetailData';
 import {
   fetchBundesligaMatches,
   fetchBundesligaLastChange,
@@ -492,15 +493,14 @@ const LiveLineupPage = () => {
     setOwnLoading(true);
     setSetupError(null);
     try {
-      const [ratingsRes, playersRes] = await Promise.all([
+      const [ratingsRes, catalogBundle] = await Promise.all([
         fetch('/history/manager-ratings.json'),
-        fetch('/history/all_players.json'),
+        loadPlayerCatalogBundle(),
       ]);
       const ratings = await ratingsRes.json();
-      const allPlayers = await playersRes.json();
-      setPlayerMap(new Map(allPlayers.map((p) => [String(p.i), p])));
-      setTeamLogoMap(buildTeamLogoMap(allPlayers));
-      setBlKickbaseTeams(buildKickbaseTeamsFromPlayers(allPlayers));
+      setPlayerMap(catalogBundle.catalogMap);
+      setTeamLogoMap(catalogBundle.teamLogosById);
+      setBlKickbaseTeams(buildKickbaseTeamsFromPlayers(catalogBundle.allPlayersRaw));
 
       const resolvedLeague = ratings[kickbaseId]?.league;
       if (!resolvedLeague) throw new Error('Liga konnte nicht ermittelt werden');

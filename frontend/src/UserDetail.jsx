@@ -21,7 +21,8 @@ import {
   readCachedSnapshot,
   saveCachedSnapshot,
 } from './livePointsStore';
-import { buildLineupWithDummies, buildTeamLogoMap } from './liveLineupUtils';
+import { buildLineupWithDummies } from './liveLineupUtils';
+import { loadPlayerCatalogBundle } from './playerDetailData';
 import { isLikelyStarterProb } from './startProbMeta';
 import { PlayerDetailView } from './Advisor';
 
@@ -113,7 +114,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
         const indexData = await indexRes.json();
         setCurrentMatchday(latestData.matchday);
 
-        const allUsersFlat = latestData.leagues.flatMap(l => l.users.map(u => ({...u, leagueColor: l.color, leagueName: l.name}))).sort((a,b) => a.rank - b.rank);
+        const allUsersFlat = latestData.leagues.flatMap(l => l.users.map(u => ({...u, leagueColor: l.color, leagueName: l.name, leagueSize: l.users.length}))).sort((a,b) => a.rank - b.rank);
         setAllUsers(allUsersFlat);
 
         const foundUser = allUsersFlat.find(user => user.id === id);
@@ -279,13 +280,20 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
   const [teamLogoMap, setTeamLogoMap] = useState(null);
   useEffect(() => {
     if (mode === 'archive') return;
-    fetch('/history/all_players.json')
-      .then((res) => res.json())
-      .then((list) => {
-        setAllPlayersMap(new Map(list.map((p) => [String(p.i), p])));
-        setTeamLogoMap(buildTeamLogoMap(list));
+    let cancelled = false;
+    loadPlayerCatalogBundle()
+      .then((bundle) => {
+        if (cancelled) return;
+        setAllPlayersMap(bundle.catalogMap);
+        setTeamLogoMap(bundle.teamLogosById);
       })
-      .catch(() => { setAllPlayersMap(null); setTeamLogoMap(null); });
+      .catch(() => {
+        if (!cancelled) {
+          setAllPlayersMap(null);
+          setTeamLogoMap(null);
+        }
+      });
+    return () => { cancelled = true; };
   }, [mode]);
 
   // liveLineupLoading ist WICHTIG fuer die Anzeige unten: ohne diesen Status
@@ -784,12 +792,25 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
           <div>
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-sm font-semibold text-white">Platzierungsverlauf</h3>
-              <span className="text-[9px] sm:text-[10px] text-[#6b7280] font-bold uppercase tracking-widest">Liga-Zonen</span>
+              <span className="text-[9px] sm:text-[10px] text-[#6b7280] font-bold uppercase tracking-widest">
+                {mode === 'archive' ? 'Liga-Zonen' : (userData.leagueName || 'Liga-Verlauf')}
+              </span>
             </div>
             <div className="h-[200px] sm:h-[220px] w-full">
               {historyLoading ? (
                 <div className="w-full h-full rounded-xl bg-[#0a0a0a] animate-pulse"></div>
-              ) : (
+              ) : (() => {
+                const isArchive = mode === 'archive';
+                const maxRank = isArchive
+                  ? 30
+                  : Math.max(
+                      userData.leagueSize || 9,
+                      ...historyWithScores.map((h) => h.rank || 1),
+                    );
+                const yTicks = isArchive
+                  ? [1, 5, 10, 15, 20, 25, 30]
+                  : Array.from({ length: maxRank }, (_, i) => i + 1);
+                return (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={historyWithScores} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
                   <XAxis
@@ -806,14 +827,25 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                     fontSize={10}
                     tickLine={false}
                     axisLine={false}
-                    domain={[1, 30]}
-                    ticks={[1, 5, 10, 15, 20, 25, 30]}
+                    domain={[1, maxRank]}
+                    ticks={yTicks}
                   />
 
                   {/* League Background Zones */}
-                  <ReferenceArea y1={1} y2={9} fill="#4ba6ff" fillOpacity={0.1} stroke="none" />
-                  <ReferenceArea y1={9} y2={18} fill="#ff5c3e" fillOpacity={0.1} stroke="none" />
-                  <ReferenceArea y1={18} y2={30} fill="#22c55e" fillOpacity={0.1} stroke="none" />
+                  {isArchive ? (
+                    <>
+                      <ReferenceArea y1={1} y2={9} fill="#4ba6ff" fillOpacity={0.1} stroke="none" />
+                      <ReferenceArea y1={9} y2={18} fill="#ff5c3e" fillOpacity={0.1} stroke="none" />
+                      <ReferenceArea y1={18} y2={30} fill="#22c55e" fillOpacity={0.1} stroke="none" />
+                    </>
+                  ) : (
+                    <>
+                      <ReferenceArea y1={1} y2={2} fill="#22c55e" fillOpacity={0.1} stroke="none" />
+                      {maxRank >= 5 && (
+                        <ReferenceArea y1={maxRank - 1} y2={maxRank} fill="#ef4444" fillOpacity={0.1} stroke="none" />
+                      )}
+                    </>
+                  )}
 
                   <Line
                     type="monotone"
@@ -827,7 +859,8 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                   />
                 </LineChart>
               </ResponsiveContainer>
-              )}
+                );
+              })()}
             </div>
           </div>
 

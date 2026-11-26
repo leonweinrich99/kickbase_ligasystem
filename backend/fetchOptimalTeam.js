@@ -3,7 +3,6 @@ const fs = require('fs');
 const path = require('path');
 const solver = require('javascript-lp-solver');
 
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
 

@@ -1,3 +1,4 @@
+/* global process */
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getMessaging } from 'firebase-admin/messaging';
@@ -38,7 +39,7 @@ export default async function handler(req, res) {
       return res.status(403).json({ error: 'Forbidden: Admins only' });
     }
 
-    const { title, body, link } = req.body;
+    const { title, body, link } = req.body || {};
     if (!title || !body) {
       return res.status(400).json({ error: 'Title and body are required' });
     }
@@ -77,7 +78,13 @@ export default async function handler(req, res) {
       sent += result.successCount;
       failed += result.failureCount;
       result.responses.forEach((response, index) => {
-        if (!response.success) invalidTokens.push(chunk[index]);
+        const code = response.error?.code;
+        if (
+          !response.success &&
+          (code === 'messaging/registration-token-not-registered' || code === 'messaging/invalid-registration-token')
+        ) {
+          invalidTokens.push(chunk[index]);
+        }
       });
     }
 

@@ -12,14 +12,19 @@ import {
   mapInBatches,
   setLiveCacheHeaders,
   sendRateLimitIfActive,
+  isNumericId,
+  isValidLeagueKey,
 } from './_kickbaseClient.js';
 
 export default async function handler(req, res) {
   if (sendRateLimitIfActive(res)) return;
 
   const { userId, leagueKey, dayNumber, onlyPlayerIds } = req.query;
-  if (!userId || !leagueKey) {
-    return res.status(400).json({ error: 'userId und leagueKey sind erforderlich' });
+  if (!isNumericId(userId) || !isValidLeagueKey(leagueKey)) {
+    return res.status(400).json({ error: 'Gueltige userId und leagueKey (L1/L2/L3) sind erforderlich' });
+  }
+  if (dayNumber != null && dayNumber !== '' && !isNumericId(String(dayNumber))) {
+    return res.status(400).json({ error: 'Ungueltige dayNumber' });
   }
 
   const auth = await loginAndFindLeague(leagueKey);
@@ -54,7 +59,7 @@ export default async function handler(req, res) {
     // Startelf-Spieler-IDs des angefragten Managers fuer diesen Spieltag (25s gecacht pro Liga).
     const teamcenter = await getTeamCenterCached(leagueId, userId, day, token);
     if (sendRateLimitIfActive(res)) return;
-    const myEntry = (teamcenter?.us || []).find((u) => String(u.i) === String(userId)) || teamcenter?.us?.[0];
+    const myEntry = (teamcenter?.us || []).find((u) => String(u.i) === String(userId));
     playerIds = (myEntry?.lp || []).filter(Boolean);
   }
 

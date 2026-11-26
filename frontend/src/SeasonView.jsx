@@ -88,9 +88,11 @@ const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
     if (availableViews.length === 0) return;
 
     const view = availableViews[currentViewIndex];
-    if (view === undefined) return; // "Die wahre Tabelle" liegt außerhalb von availableViews - kein eigener Fetch nötig
 
-    if (view === 'saison') {
+    // Sowohl "Gesamt" ('saison') als auch "Die wahre Tabelle" (view === undefined,
+    // liegt am Ende von extendedViews) benoetigen immer die aktuellen Gesamtdaten
+    // aus data.json - auch wenn man rueckwaerts von Spieltag 1 auf die Wahre Tabelle springt.
+    if (view === 'saison' || view === undefined) {
       fetch(`${dataBase}/data.json?t=${Date.now()}`)
         .then(res => res.json())
         .then(d => setData(d));

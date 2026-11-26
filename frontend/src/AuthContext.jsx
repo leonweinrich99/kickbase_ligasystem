@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   onAuthStateChanged,
   signInWithPopup,
@@ -23,18 +23,26 @@ const INITIAL_ADMIN_EMAIL = (import.meta.env.VITE_INITIAL_ADMIN_EMAIL || '').toL
 // Browser öffnen und dieses Topic abonnieren, siehe SETUP-NEUE-SAISON.md.
 const NTFY_TOPIC = import.meta.env.VITE_NTFY_TOPIC || '';
 
-const notifyNewSignup = (firebaseUser) => {
-  const name = firebaseUser.displayName || firebaseUser.email || 'Unbekannt';
+const notifyNewSignup = async (firebaseUser, resolvedDisplayName) => {
+  const name = resolvedDisplayName || firebaseUser.displayName || firebaseUser.email || 'Unbekannt';
 
   // Weg 1: Native Push-Benachrichtigung direkt auf dem Gerät der Admins (iPhone-PWA
   // etc.) über die eigene Vercel-Serverless-Funktion + Firebase Cloud Messaging.
-  fetch('/api/notify-admins', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, email: firebaseUser.email })
-  }).catch(() => {
+  // Firebase ID-Token mitschicken, damit /api/notify-admins echte Neuregistrierungen
+  // verifizieren kann und nicht anonym gespammt werden kann.
+  try {
+    const idToken = await firebaseUser.getIdToken();
+    fetch('/api/notify-admins', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({ name, email: firebaseUser.email }),
+    }).catch(() => {});
+  } catch {
     // Nice-to-have, darf den Login-Flow nicht stören.
-  });
+  }
 
   // Weg 2: Zusätzlich über ntfy.sh, falls konfiguriert - funktioniert auch ohne
   // dass ein Admin die Push-Benachrichtigungen im Admin Panel aktiviert hat.
@@ -57,6 +65,7 @@ export const AuthProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(isFirebaseConfigured);
   const [authError, setAuthError] = useState(null);
+  const pendingDisplayNameRef = useRef(null);
 
   useEffect(() => {
     if (!isFirebaseConfigured) {
@@ -68,10 +77,20 @@ export const AuthProvider = ({ children }) => {
     // wenn die App beim Zustellzeitpunkt gerade sichtbar/im Vordergrund war.
     initForegroundPushListener();
 
+    let unsubscribeProfile = null;
+    let activeRunId = 0;
+
     const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
+      const runId = ++activeRunId;
+      if (unsubscribeProfile) {
+        unsubscribeProfile();
+        unsubscribeProfile = null;
+      }
+
       setUser(firebaseUser);
 
       if (!firebaseUser) {
+        pendingDisplayNameRef.current = null;
         setProfile(null);
         setLoading(false);
         return;
@@ -79,17 +98,21 @@ export const AuthProvider = ({ children }) => {
 
       const userRef = doc(db, 'users', firebaseUser.uid);
       const snap = await getDoc(userRef);
+      if (runId !== activeRunId) return;
 
       if (!snap.exists()) {
         const isInitialAdmin = INITIAL_ADMIN_EMAIL &&
           firebaseUser.email?.toLowerCase() === INITIAL_ADMIN_EMAIL &&
           firebaseUser.emailVerified;
+        const resolvedName =
+          firebaseUser.displayName || pendingDisplayNameRef.current || firebaseUser.email;
+        pendingDisplayNameRef.current = null;
 
         try {
           await setDoc(userRef, {
             uid: firebaseUser.uid,
             email: firebaseUser.email,
-            displayName: firebaseUser.displayName || firebaseUser.email,
+            displayName: resolvedName,
             photoURL: firebaseUser.photoURL || null,
             status: isInitialAdmin ? 'approved' : 'pending',
             role: isInitialAdmin ? 'admin' : 'user',
@@ -97,7 +120,7 @@ export const AuthProvider = ({ children }) => {
           });
 
           if (!isInitialAdmin) {
-            notifyNewSignup(firebaseUser);
+            notifyNewSignup(firebaseUser, resolvedName);
           }
         } catch (e) {
           // Wird z.B. von firestore.rules abgelehnt, falls VITE_INITIAL_ADMIN_EMAIL
@@ -106,19 +129,26 @@ export const AuthProvider = ({ children }) => {
         }
       }
 
+      if (runId !== activeRunId) return;
+
       // Live-Updates auf das eigene Profil (z.B. wenn Admin gerade freischaltet)
-      const unsubscribeProfile = onSnapshot(userRef, (docSnap) => {
+      unsubscribeProfile = onSnapshot(userRef, (docSnap) => {
         setProfile(docSnap.exists() ? docSnap.data() : null);
         setLoading(false);
       });
-
-      return () => unsubscribeProfile();
     });
 
-    return () => unsubscribeAuth();
+    return () => {
+      activeRunId += 1;
+      if (unsubscribeProfile) {
+        unsubscribeProfile();
+        unsubscribeProfile = null;
+      }
+      unsubscribeAuth();
+    };
   }, []);
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = useCallback(async () => {
     setAuthError(null);
     try {
       await signInWithPopup(auth, googleProvider);
@@ -126,9 +156,9 @@ export const AuthProvider = ({ children }) => {
       setAuthError(mapAuthError(e));
       throw e;
     }
-  };
+  }, []);
 
-  const signInWithEmail = async (email, password) => {
+  const signInWithEmail = useCallback(async (email, password) => {
     setAuthError(null);
     try {
       await signInWithEmailAndPassword(auth, email, password);
@@ -136,22 +166,24 @@ export const AuthProvider = ({ children }) => {
       setAuthError(mapAuthError(e));
       throw e;
     }
-  };
+  }, []);
 
-  const signUpWithEmail = async (email, password, displayName) => {
+  const signUpWithEmail = useCallback(async (email, password, displayName) => {
     setAuthError(null);
+    pendingDisplayNameRef.current = displayName ? displayName.trim() : null;
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       if (displayName) {
-        await updateProfile(cred.user, { displayName });
+        await updateProfile(cred.user, { displayName: displayName.trim() });
       }
     } catch (e) {
+      pendingDisplayNameRef.current = null;
       setAuthError(mapAuthError(e));
       throw e;
     }
-  };
+  }, []);
 
-  const resetPassword = async (email) => {
+  const resetPassword = useCallback(async (email) => {
     setAuthError(null);
     try {
       await sendPasswordResetEmail(auth, email);
@@ -159,11 +191,11 @@ export const AuthProvider = ({ children }) => {
       setAuthError(mapAuthError(e));
       throw e;
     }
-  };
+  }, []);
 
-  const signOut = () => firebaseSignOut(auth);
+  const signOut = useCallback(() => firebaseSignOut(auth), []);
 
-  const value = {
+  const value = useMemo(() => ({
     user,
     profile,
     loading,
@@ -176,7 +208,7 @@ export const AuthProvider = ({ children }) => {
     signUpWithEmail,
     resetPassword,
     signOut
-  };
+  }), [user, profile, loading, authError, signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword, signOut]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

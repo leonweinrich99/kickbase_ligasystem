@@ -23,7 +23,7 @@ const calculatePerformanceScore = (points, avg, opt, max) => {
 const parsePoints = (val) => {
     if (typeof val === 'number') return val;
     if (!val) return 0;
-    return parseInt(val.toString().replace(/\./g, '').replace(/[^0-9]/g, '')) || 0;
+    return parseInt(val.toString().replace(/\./g, '').replace(/[^0-9-]/g, ''), 10) || 0;
 };
 
 const CompareView = ({ dataBase = '', routeBase = '' }) => {
@@ -114,7 +114,7 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
               maxPoints,
               optimalPoints
             };
-          } catch (e) {
+          } catch {
             return null;
           }
         });
@@ -159,7 +159,7 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
     };
 
     fetchData();
-  }, [id1, id2]);
+  }, [id1, id2, dataBase]);
 
   const historyWithScores = useMemo(() => {
     return history.map(h => ({
@@ -291,21 +291,42 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
           <div className="h-[200px] sm:h-[220px] w-full">
             {historyLoading ? (
               <div className="w-full h-full rounded-xl bg-[#0a0a0a] animate-pulse"></div>
-            ) : (
+            ) : (() => {
+              const isArchive = Boolean(dataBase);
+              const maxRank = isArchive
+                ? 30
+                : Math.max(
+                    9,
+                    ...historyWithScores.flatMap((h) => [h.p1Rank || 1, h.p2Rank || 1]),
+                  );
+              const yTicks = isArchive
+                ? [1, 5, 10, 15, 20, 25, 30]
+                : Array.from({ length: maxRank }, (_, i) => i + 1);
+              return (
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={historyWithScores} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
                 <XAxis dataKey="matchday" stroke="#4b5563" fontSize={10} tickLine={false} axisLine={false} tickFormatter={val => `ST ${val}`} />
-                <YAxis reversed stroke="#4b5563" fontSize={10} tickLine={false} axisLine={false} domain={[1, 30]} ticks={[1, 5, 10, 15, 20, 25, 30]} />
-                <ReferenceArea y1={1} y2={9} fill="#4ba6ff" fillOpacity={0.1} stroke="none" />
-                <ReferenceArea y1={9} y2={18} fill="#ff5c3e" fillOpacity={0.1} stroke="none" />
-                <ReferenceArea y1={18} y2={30} fill="#22c55e" fillOpacity={0.1} stroke="none" />
+                <YAxis reversed stroke="#4b5563" fontSize={10} tickLine={false} axisLine={false} domain={[1, maxRank]} ticks={yTicks} />
+                {isArchive ? (
+                  <>
+                    <ReferenceArea y1={1} y2={9} fill="#4ba6ff" fillOpacity={0.1} stroke="none" />
+                    <ReferenceArea y1={9} y2={18} fill="#ff5c3e" fillOpacity={0.1} stroke="none" />
+                    <ReferenceArea y1={18} y2={30} fill="#22c55e" fillOpacity={0.1} stroke="none" />
+                  </>
+                ) : (
+                  <>
+                    <ReferenceArea y1={1} y2={2} fill="#22c55e" fillOpacity={0.1} stroke="none" />
+                    <ReferenceArea y1={maxRank - 1} y2={maxRank} fill="#ef4444" fillOpacity={0.1} stroke="none" />
+                  </>
+                )}
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
                 
                 <Line type="monotone" dataKey="p1Rank" name={user1.name} stroke="#ff5c3e" strokeWidth={2.5} dot={<CustomizedDot />} activeDot={{ r: 8, strokeWidth: 0 }} animationDuration={1500} />
                 <Line type="monotone" dataKey="p2Rank" name={user2.name} stroke="#3b82f6" strokeWidth={2.5} dot={<CustomizedDot />} activeDot={{ r: 8, strokeWidth: 0 }} animationDuration={1500} />
               </LineChart>
             </ResponsiveContainer>
-            )}
+              );
+            })()}
           </div>
         </div>
 

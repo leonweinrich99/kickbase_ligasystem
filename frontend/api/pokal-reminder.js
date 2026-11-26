@@ -40,8 +40,7 @@ function daysBetween(first, second) {
 
 export default async function handler(req, res) {
   const authHeader = req.headers.authorization;
-  const querySecret = req.query.secret;
-  if (!process.env.CRON_SECRET || (authHeader !== `Bearer ${process.env.CRON_SECRET}` && querySecret !== process.env.CRON_SECRET)) {
+  if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -94,7 +93,13 @@ export default async function handler(req, res) {
       sent += result.successCount;
       failed += result.failureCount;
       result.responses.forEach((response, index) => {
-        if (!response.success) invalidTokens.push(chunk[index]);
+        const code = response.error?.code;
+        if (
+          !response.success &&
+          (code === 'messaging/registration-token-not-registered' || code === 'messaging/invalid-registration-token')
+        ) {
+          invalidTokens.push(chunk[index]);
+        }
       });
     }
 

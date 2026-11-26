@@ -10,12 +10,25 @@ import {
   mapInBatches,
   setLiveCacheHeaders,
   sendRateLimitIfActive,
+  isNumericId,
 } from './_kickbaseClient.js';
 
 export default async function handler(req, res) {
   if (sendRateLimitIfActive(res)) return;
 
   const { competitionId = '1', matchId: requestedMatchId, teamId, team: teamSideParam } = req.query;
+  if (!isNumericId(String(competitionId))) {
+    return res.status(400).json({ error: 'Ungueltige competitionId' });
+  }
+  if (requestedMatchId != null && requestedMatchId !== '' && !isNumericId(String(requestedMatchId))) {
+    return res.status(400).json({ error: 'Ungueltige matchId' });
+  }
+  if (teamId != null && teamId !== '' && !isNumericId(String(teamId))) {
+    return res.status(400).json({ error: 'Ungueltige teamId' });
+  }
+  if (teamSideParam != null && teamSideParam !== '' && teamSideParam !== 't1' && teamSideParam !== 't2') {
+    return res.status(400).json({ error: 'Ungueltiger team-Parameter' });
+  }
 
   const token = await loginAny();
   if (sendRateLimitIfActive(res)) return;

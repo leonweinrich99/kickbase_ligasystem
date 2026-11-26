@@ -71,12 +71,12 @@ def _extract_squad_list(squad_players, debug_label=""):
 # siehe kickbase_api/league.py). Diese Zusatzfelder werden - wo vorhanden -
 # immer mitgenommen:
 #   st    = Spielerstatus (0 = fit, siehe STATUS_LABELS in run_advisor.py)
-#   ap    = Saison-Einsaetze laut Kickbase selbst
+#   ap    = Durchschnittspunkte pro Spiel (NICHT Saison-Einsaetze!)
 #   mvgl  = Gesamt-Marktwertveraenderung (seit Kauf/Saisonbeginn)
-#   mvt   = Marktwert-Trendrichtung (Kickbase-interner Code)
+#   mvt   = Marktwert-Trendrichtung (Kickbase v4: 1 = steigend, 2 = fallend)
 #   iotm  = "In team of the matchday" - Team-der-Woche-Ehrung (bool)
 #   pim   = Pfad zum Spielerbild (relativ, Basis-URL im Frontend ergaenzt)
-CONTEXT_EXTRA_FIELDS = ["st", "ap", "mvgl", "mvt", "iotm", "pim"]
+CONTEXT_EXTRA_FIELDS = ["st", "mvgl", "mvt", "iotm", "pim"]
 
 
 def _prepare_context_df(raw_list, debug_label=""):
@@ -172,7 +172,6 @@ _CONTEXT_RENAME_MAP = {
     "mv_change_1d": "mv_change_yesterday",
     "prob": "s_11_prob",
     "st": "status",
-    "ap": "season_appearances",
     "mvgl": "total_value_change",
     "mvt": "trend_direction",
     "iotm": "team_of_the_week",
@@ -205,6 +204,7 @@ def join_current_squad(token, league_id, today_df_results, manager_id=None):
     # Pipeline als Zahl vorliegen kann. pd.merge() matcht dann STILLSCHWEIGEND
     # NICHTS (0 Zeilen, kein Fehler) - deshalb beide Seiten explizit auf
     # denselben String-Typ bringen, bevor gemerged wird.
+    squad_df["i"] = squad_df["i"].astype(str)
     today_df_results = today_df_results.copy()
     today_df_results["player_id"] = today_df_results["player_id"].astype(str)
 

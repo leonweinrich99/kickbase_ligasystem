@@ -1,12 +1,15 @@
 // Teamliste je Wettbewerb fuer den "Echte Teams"-Umschalter auf der
 // Live-Seite (Owner-Wunsch 24.11.2026) - /v4/base/predictions/teams/{id}
 // liefert Name + Wappen (SVG) OHNE Liga-Kontext. 1h auf Vercel Edge gecacht.
-import { API_BASE, getJson, loginAny, setLiveCacheHeaders, sendRateLimitIfActive } from './_kickbaseClient.js';
+import { API_BASE, getJson, loginAny, setLiveCacheHeaders, sendRateLimitIfActive, isNumericId } from './_kickbaseClient.js';
 
 export default async function handler(req, res) {
   if (sendRateLimitIfActive(res)) return;
 
   const { competitionId = '1' } = req.query;
+  if (!isNumericId(String(competitionId))) {
+    return res.status(400).json({ error: 'Ungueltige competitionId' });
+  }
 
   const token = await loginAny();
   if (sendRateLimitIfActive(res)) return;
