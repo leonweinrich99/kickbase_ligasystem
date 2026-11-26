@@ -218,6 +218,48 @@ const FeedArticlePage = () => {
                 </p>
               ))}
 
+              {/* Visuelle Karten-Galerie / Manager-Vergleich */}
+              {sec.gallery && Array.isArray(sec.gallery.items) && sec.gallery.items.length > 0 && (
+                <div className="card-surface rounded-2xl p-4 sm:p-5 my-4">
+                  {sec.gallery.caption && (
+                    <div className="text-[11px] font-bold uppercase tracking-wider text-gray-200 mb-3">
+                      {sec.gallery.caption}
+                    </div>
+                  )}
+                  <div
+                    className={`grid gap-3 sm:gap-4 ${
+                      sec.gallery.items.length === 2
+                        ? 'grid-cols-2'
+                        : sec.gallery.items.length === 3
+                          ? 'grid-cols-2 sm:grid-cols-3'
+                          : 'grid-cols-2 sm:grid-cols-4'
+                    }`}
+                  >
+                    {sec.gallery.items.map((item, gIdx) => (
+                      <figure
+                        key={gIdx}
+                        className="flex flex-col items-center text-center bg-black/30 border border-white/[0.06] rounded-xl p-2.5 sm:p-3"
+                      >
+                        <img
+                          src={item.src}
+                          alt={item.alt || item.label || ''}
+                          loading="lazy"
+                          className="w-full max-w-[190px] h-auto object-contain select-none"
+                        />
+                        {item.label && (
+                          <figcaption className="mt-2">
+                            <div className="text-xs font-bold text-white leading-tight">{item.label}</div>
+                            {item.sublabel && (
+                              <div className="text-[11px] text-[#8b92a5] leading-snug mt-0.5">{item.sublabel}</div>
+                            )}
+                          </figcaption>
+                        )}
+                      </figure>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Zitat / Pull-Quote */}
               {sec.quote && (
                 <blockquote

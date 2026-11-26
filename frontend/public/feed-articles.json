@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-25T18:10:00.000Z",
+  "updatedAt": "2026-11-26T08:35:00.000Z",
   "ticker": [
     {
       "tag": "MAKRO",
@@ -232,9 +232,244 @@
   ],
   "articles": [
     {
-      "slug": "glueck-oder-koennen-xp-analyse",
+      "slug": "neues-manager-rating-sechs-werte-die-zaehlen",
       "category": "spieltag",
       "featured": true,
+      "edition": "Feature-Update · Rating 2.0",
+      "date": "2026-11-26",
+      "readTimeMin": 6,
+      "author": "Ligasystem Redaktion",
+      "kicker": "MANAGER-RATING 2.0 · ERKLÄRT",
+      "title": "Das neue Manager-Rating",
+      "subtitle": "Warum wir Overpay und Verkaufstiming von der Karte gestrichen haben, weshalb Justin und leongarcon endlich Elite-Status tragen – und wie die sechs neuen, gewichteten Werte jede Manager-Geschichte auf einen Blick erzählen.",
+      "image": "/feed-images/neues-manager-rating.png",
+      "heroStats": [
+        {
+          "label": "Top-Rating",
+          "value": "94 · Geißbock"
+        },
+        {
+          "label": "Elite-Karten",
+          "value": "4 von 26"
+        },
+        {
+          "label": "3 Säulen",
+          "value": "45 / 30 / 25 %"
+        }
+      ],
+      "tags": [
+        "Manager Rating",
+        "FIFA-Karten",
+        "KAD & xP",
+        "Liga 1",
+        "Liga 2",
+        "Liga 3"
+      ],
+      "sections": [
+        {
+          "heading": "Warum die alte Karte dringend ein Update brauchte",
+          "paragraphs": [
+            "Unsere Manager-Karten sollen auf einen Blick zeigen, wer in seiner Liga wirklich stark arbeitet. Doch der große Daten-Check nach zehn Spieltagen hat vier klare Schwächen der alten Bewertung offengelegt – und manche Ergebnisse wirkten schlicht ungerecht.",
+            "Am deutlichsten war das beim alten Overpay-Wert (Aufpreis über Marktwert): Wer mutig auf Top-Stars bot, wurde abgestraft – wer gar nicht erst mitbot, bekam Bestnoten. So standen Tabellenführer Justin (Platz 1 in Liga 1) nur bei einem Gesamtscore von 78 und leongarcon (zweitstärkster Kader aller drei Ligen!) bei 79, während Teams aus dem Tabellenkeller Noten über 85 fürs Sparen bekamen. Gleichzeitig produzierte das alte Verkaufstiming absurde Ausreißer (Schlusslicht Flocke hatte mit 98 den besten Timing-Wert im gesamten Ligasystem!), Aktivität und Profit zählten praktisch doppelt – und der alte Punkte-Wert (Punkte pro Million) bestrafte ausgerechnet Manager, die sich durch gutes Trading einen teuren Kader erarbeitet hatten."
+          ]
+        },
+        {
+          "heading": "Die sechs neuen Werte – und warum sie gewichtet sind",
+          "paragraphs": [
+            "Deshalb haben wir die Manager-Karte komplett neu gedacht. Auf jeder Karte stehen ab sofort sechs klar getrennte, messbare Erfolgsfaktoren – links alles rund um den Spieltag (KAD, PKT, KON), rechts alles rund um Transfermarkt und Kaderführung (PRO, EFF, DIS). Jeder Einzelwert vergleicht dich weiterhin fair mit deinen direkten Liga-Kollegen auf einer Skala von 50 bis 99.",
+            "Der zweite große Schritt: Die sechs Werte zählen nicht mehr blind gleich stark, sondern nach ihrer echten Bedeutung für langfristigen Kickbase-Erfolg. Die Leistung auf dem Platz stellt 45 Prozent der Gesamtwertung, der Transfermarkt 30 Prozent und deine Verlässlichkeit bei Kaderführung und Stabilität 25 Prozent. In deinem Account kannst du unter der Karte jederzeit die genauen Prozentgewichte und alle Vergleichswerte deiner Liga aufklappen."
+          ],
+          "callout": {
+            "title": "Die 3 Säulen & 6 Attribute der neuen Karte (100 % Gesamtscore)",
+            "items": [
+              "KAD – Startelf-Qualität (25 %): Deine erwarteten Punkte vor Anpfiff (xP) – das wichtigste Maß für glücks-bereinigtes Können.",
+              "PKT – Punkte-Output (20 %): Deine echten Saisonpunkte – harte Ergebnisse statt verzerrter Punkte pro Million.",
+              "PRO – Trading-Gewinn (20 %): Dein insgesamt erwirtschafteter, gewichteter Transfergewinn.",
+              "DIS – Aufstellungs-Disziplin (15 %): Hohe Startelf-Sicherheit abzüglich vermeidbarer Patzer wie Spieltage im Minus oder leere Startelf-Plätze.",
+              "KON – Konstanz (10 %): Wie stabil dein Boden an schwächeren Wochenenden ist (Durchschnitt der 3 schwächsten Spieltage + geringe Streuung).",
+              "EFF – Trading-Effizienz (10 %): Gewinn pro abgeschlossenem Deal kombiniert mit deiner Trefferquote (Win-Rate) – Qualität statt bloßer Masse."
+            ]
+          }
+        },
+        {
+          "heading": "Die 4 Elite-Karten des Ligasystems",
+          "paragraphs": [
+            "Ab einem Gesamtscore von 90 leuchtet eine Manager-Karte im goldenen Elite-Glanz. Mit dem neuen Modell erreichen aktuell genau vier Manager diesen Status – und jeder einzelne davon hat ihn sich ohne jede Schwachstelle verdient.",
+            "Ganz vorne thront Liga-3-Spitzenreiter Geißbock (94) mit einer fast unwirklichen Konstanz von 98 und sechs Werten über 92. Knapp dahinter folgt Liga-2-Primus Stomping Tantrum (93), der den besten Trading-Gewinn seiner Liga (PRO 95) mit dem höchsten Startelf-Niveau verbindet. Zwei der größten Gewinner der Reform sind leongarcon (von 79 auf 90 – allein seine drei schwächsten Spieltage liegen im Schnitt bei über 940 Punkten, KON 97!) und Liga-1-Tabellenführer Justin (von 78 auf 90, mit KAD 95 und DIS 92 endlich an der Spitze seiner Liga)."
+          ],
+          "gallery": {
+            "caption": "Goldener Glow ab 90 OVR: Die vier aktuellen Elite-Manager",
+            "items": [
+              {
+                "src": "/feed-images/manager-cards/geissbock.png",
+                "label": "Geißbock (Liga 3)",
+                "sublabel": "94 Elite · Alle 6 Werte über 92, Konstanz 98"
+              },
+              {
+                "src": "/feed-images/manager-cards/stomping-tantrum.png",
+                "label": "Stomping Tantrum (Liga 2)",
+                "sublabel": "93 Elite · Stärkster Allrounder (PRO 95, KAD 94)"
+              },
+              {
+                "src": "/feed-images/manager-cards/leongarcon.png",
+                "label": "leongarcon (Liga 2)",
+                "sublabel": "90 Elite · Sprung von 79, unfassbare KON 97"
+              },
+              {
+                "src": "/feed-images/manager-cards/justin.png",
+                "label": "Justin (Liga 1)",
+                "sublabel": "90 Elite · Sprung von 78, KAD 95 & DIS 92"
+              }
+            ]
+          }
+        },
+        {
+          "heading": "Direktvergleich #1: Ergebnis vs. Prozess auf einen Blick",
+          "paragraphs": [
+            "Die größte Stärke der neuen Karte zeigt sich im Zusammenspiel von KAD (erwartete Startelf-Qualität) und PKT (echte Punkte). Man braucht keine lange Tabelle mehr, um sofort zu erkennen, wer gerade über oder unter seinen Möglichkeiten punktet.",
+            "Schau auf DeinHomieEnobi (78) neben JulianD47 (74): Enobi glänzt bei den harten Ergebnissen (PKT 92) und am Transfermarkt (PRO 94, EFF 90), hat bei Startelf-Qualität (KAD 62) und Disziplin (DIS 58) aber noch spürbar Luft nach oben – ein perfektes Bild seines starken Laufs. Bei JulianD47 dreht sich die Karte komplett um: Starke Aufstellungen (KAD 81) und ordentliche Effizienz (EFF 79), aber nur PKT 65. Ein einziger Blick auf die beiden Karten reicht, um den Unterschied zwischen Glückslauf und Pechsträhne abzulesen."
+          ],
+          "gallery": {
+            "caption": "Zwei völlig entgegengesetzte Saison-Geschichten auf einen Blick",
+            "items": [
+              {
+                "src": "/feed-images/manager-cards/enobi.png",
+                "label": "DeinHomieEnobi (78 · Liga 1)",
+                "sublabel": "PKT 92 & PRO 94 – aber KAD 62 & DIS 58"
+              },
+              {
+                "src": "/feed-images/manager-cards/juliand47.png",
+                "label": "JulianD47 (74 · Liga 2)",
+                "sublabel": "KAD 81 & EFF 79 – aber nur PKT 65 (Pech)"
+              }
+            ]
+          }
+        },
+        {
+          "heading": "Direktvergleich #2: Disziplin, Trading-Power und ehrliche Härte",
+          "paragraphs": [
+            "Auch die unterschiedlichen Manager-Typen werden auf der neuen Karte kristallklar sichtbar. Blake (85) beweist in Liga 1, dass man auch ohne Riesen-Trading-Volumen (PRO 67) zur absoluten Spitze gehören kann: Mit eiserner Aufstellungs-Disziplin (DIS 93), starker Konstanz (KON 92) und Top-Startelfs (KAD 93) holt er sich verdient Gold.",
+            "Ganz anders sieht das Profil von Liga-3-Trading-Gigant casper (87) aus: Überragender Profit (PRO 97), erstklassiger Kader (KAD 93) und starke Punkte (PKT 94) – aber sein einziger Spieltag im Minus schlägt gnadenlos auf Disziplin (DIS 67) und Konstanz (KON 66) durch und kostet ihn aktuell den Elite-Status. Und am Tabellenende zeigt das Beispiel Flocke (54), wie ehrlich das neue Rating geworden ist: Ohne das verzerrende alte Verkaufstiming (98) spiegeln alle sechs Werte realistisch wider, wo die Lücken durch zehn leere Startelf-Plätze liegen."
+          ],
+          "gallery": {
+            "caption": "Drei verschiedene Profile: Disziplin-Meister, Markt-Gigant mit Minus-Malus & ehrliche Baustelle",
+            "items": [
+              {
+                "src": "/feed-images/manager-cards/blake.png",
+                "label": "Blake (85 · Liga 1)",
+                "sublabel": "KAD 93, DIS 93, KON 92 trotz PRO 67"
+              },
+              {
+                "src": "/feed-images/manager-cards/casper.png",
+                "label": "casper (87 · Liga 3)",
+                "sublabel": "PRO 97 & KAD 93 – Im-Minus kostet DIS 67"
+              },
+              {
+                "src": "/feed-images/manager-cards/flocke.png",
+                "label": "Flocke (54 · Liga 3)",
+                "sublabel": "Ehrliches Rating nach 10 leeren Slots"
+              }
+            ]
+          }
+        },
+        {
+          "heading": "Alle neuen Manager-Ratings: Liga 1",
+          "paragraphs": [
+            "In Liga 1 löst Justin (90, Elite) das bisherige Spitzenbild ab, dicht gefolgt von einem extrem starken Gold-Block aus Esel (88), Blake (85), Vinnie JR (85) und Leon Weinrich (84, bester Trader der Liga mit PRO 95 und EFF 92)."
+          ],
+          "table": {
+            "caption": "Liga 1 – Neues gewichtetes Manager-Rating (Stand nach 10 Spieltagen)",
+            "columns": [
+              "#",
+              "Manager",
+              "OVR",
+              "KAD",
+              "PKT",
+              "PRO",
+              "DIS",
+              "KON",
+              "EFF"
+            ],
+            "rows": [
+              ["1.", "Justin", "90", "95", "92", "87", "92", "79", "86"],
+              ["2.", "Esel", "88", "85", "90", "89", "90", "93", "85"],
+              ["3.", "Blake", "85", "93", "85", "67", "93", "92", "82"],
+              ["4.", "Vinnie JR", "85", "87", "83", "80", "87", "83", "88"],
+              ["5.", "Leon Weinrich", "84", "84", "75", "95", "73", "87", "92"],
+              ["6.", "DeinHomieEnobi", "78", "62", "92", "94", "58", "80", "90"],
+              ["7.", "Wat Mamba", "66", "61", "65", "65", "67", "78", "67"],
+              ["8.", "Mo6", "60", "62", "58", "52", "76", "54", "52"],
+              ["9.", "Curl3z", "52", "51", "51", "53", "51", "51", "52"]
+            ]
+          }
+        },
+        {
+          "heading": "Alle neuen Manager-Ratings: Liga 2",
+          "paragraphs": [
+            "Liga 2 stellt gleich zwei Elite-Karten: Stomping Tantrum (93) und leongarcon (90) setzen die Maßstäbe. Dahinter punktet J0tt (85) vor allem über seine Liga-Bestmarke in der Disziplin (DIS 93), während Ansgar Trinkmann (78) stark vom Transfermarkt (PRO 90) getragen wird."
+          ],
+          "table": {
+            "caption": "Liga 2 – Neues gewichtetes Manager-Rating (Stand nach 10 Spieltagen)",
+            "columns": [
+              "#",
+              "Manager",
+              "OVR",
+              "KAD",
+              "PKT",
+              "PRO",
+              "DIS",
+              "KON",
+              "EFF"
+            ],
+            "rows": [
+              ["1.", "Stomping Tantrum", "93", "94", "94", "95", "92", "88", "92"],
+              ["2.", "leongarcon", "90", "92", "93", "85", "91", "97", "84"],
+              ["3.", "J0tt", "85", "87", "83", "76", "93", "88", "85"],
+              ["4.", "franzi__j", "81", "81", "79", "84", "82", "72", "84"],
+              ["5.", "Ansgar Trinkmann", "78", "71", "80", "90", "68", "75", "86"],
+              ["6.", "JulianD47", "74", "81", "65", "74", "74", "68", "79"],
+              ["7.", "AchtSieben", "58", "56", "64", "54", "57", "63", "51"],
+              ["8.", "CarlCarlsenCarlsen", "51", "51", "51", "51", "51", "51", "55"]
+            ]
+          }
+        },
+        {
+          "heading": "Alle neuen Manager-Ratings: Liga 3",
+          "paragraphs": [
+            "In Liga 3 führt Geißbock (94) mit dem höchsten Gesamtwert aller drei Ligen. Spannend dahinter: Sebastian (83, vorher nur 71!) klettert dank DIS 95 und KAD 92 bis auf Platz 3, während Puliester (81) mit EFF 95 die stärkste Trading-Effizienz der Liga abliefert."
+          ],
+          "table": {
+            "caption": "Liga 3 – Neues gewichtetes Manager-Rating (Stand nach 10 Spieltagen)",
+            "columns": [
+              "#",
+              "Manager",
+              "OVR",
+              "KAD",
+              "PKT",
+              "PRO",
+              "DIS",
+              "KON",
+              "EFF"
+            ],
+            "rows": [
+              ["1.", "Geißbock", "94", "94", "96", "92", "94", "98", "94"],
+              ["2.", "casper", "87", "93", "94", "97", "67", "66", "92"],
+              ["3.", "Sebastian", "83", "92", "87", "63", "95", "88", "68"],
+              ["4.", "Puliester", "81", "85", "83", "93", "63", "60", "95"],
+              ["5.", "kushler", "79", "77", "77", "83", "72", "81", "89"],
+              ["6.", "KönigMichi", "72", "79", "69", "57", "94", "68", "60"],
+              ["7.", "Fynn", "62", "59", "63", "56", "66", "73", "61"],
+              ["8.", "Marci", "59", "53", "54", "59", "75", "61", "54"],
+              ["9.", "Flocke", "54", "52", "52", "58", "51", "55", "55"]
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "slug": "glueck-oder-koennen-xp-analyse",
+      "category": "spieltag",
+      "featured": false,
       "edition": "Saison-Analyse · Spieltag 1–10",
       "date": "2026-11-25",
       "readTimeMin": 7,
