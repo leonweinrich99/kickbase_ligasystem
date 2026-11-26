@@ -65,14 +65,24 @@ const HeroCarousel = ({ articles, activeCat }) => {
 
   const handleScroll = () => {
     const el = scrollRef.current;
-    if (!el || el.clientWidth === 0) return;
-    setActiveIndex(Math.round(el.scrollLeft / el.clientWidth));
+    if (!el || el.children.length === 0) return;
+    let closest = 0;
+    let minDiff = Infinity;
+    for (let i = 0; i < el.children.length; i += 1) {
+      const diff = Math.abs(el.children[i].offsetLeft - el.scrollLeft);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closest = i;
+      }
+    }
+    setActiveIndex(closest);
   };
 
   const goTo = (i) => {
     const el = scrollRef.current;
-    if (!el) return;
-    el.scrollTo({ left: i * el.clientWidth, behavior: 'smooth' });
+    const child = el?.children?.[i];
+    if (!el || !child) return;
+    el.scrollTo({ left: child.offsetLeft, behavior: 'smooth' });
   };
 
   if (articles.length === 0) return null;
@@ -316,7 +326,7 @@ const FeedPage = () => {
 
   const leadArticle = useMemo(() => {
     if (filtered.length === 0) return null;
-    return filtered.find((a) => a.featured) || filtered[0];
+    return filtered[0];
   }, [filtered]);
 
   const restArticles = useMemo(() => {
@@ -324,15 +334,12 @@ const FeedPage = () => {
     return filtered.filter((a) => a.slug !== leadArticle.slug);
   }, [filtered, leadArticle]);
 
-  // "Alle"-Tab: bis zu 3 "featured" Artikel (idealerweise einer je Kategorie)
-  // oben im Swipe-Karussell, darunter je Kategorie ein durchscrollbares
-  // Regal mit den uebrigen Artikeln dieser Kategorie.
-  const heroArticles = useMemo(() => {
-    const featured = baseArticles.filter((a) => a.featured);
-    if (featured.length >= 3) return featured.slice(0, 3);
-    const rest = baseArticles.filter((a) => !a.featured);
-    return [...featured, ...rest].slice(0, 3);
-  }, [baseArticles]);
+  // "Alle"-Tab: immer die 5 neuesten Artikel oben im Swipe-Karussell,
+  // darunter je Kategorie ein durchscrollbares Regal mit den uebrigen Artikeln.
+  const heroArticles = useMemo(
+    () => baseArticles.slice(0, 5),
+    [baseArticles],
+  );
 
   const heroSlugs = useMemo(() => new Set(heroArticles.map((a) => a.slug)), [heroArticles]);
 
