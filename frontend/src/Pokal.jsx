@@ -391,7 +391,7 @@ const Pokal = () => {
   return (
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10 font-sans select-none">
     <div className="max-w-[1600px] mx-auto bg-[#000000]">
-      {/* Einheitlicher, overflow-sicherer Header mit eigenem Status-Slot */}
+      {/* Einheitlicher, overflow-sicherer Header */}
       <TabPageHeader
         className="mb-4 sm:mb-8"
         logo={<img src={logo} alt="Kickbase Liga Logo" className="w-full h-full object-contain p-0.5 sm:p-1" />}
@@ -407,21 +407,6 @@ const Pokal = () => {
             <span className="text-[10px] font-bold text-gray-300 group-hover:text-white transition-colors whitespace-nowrap">Pokalmodus</span>
           </Link>
         )}
-        statusStrip={currentMatchday != null ? (
-          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-xl bg-[#171717] border border-[#8b5cf6]/30 px-3 py-2 text-[11px] sm:text-xs">
-            <span className="inline-flex items-center gap-1.5 font-bold text-purple-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#8b5cf6] shrink-0" />
-              <span>BL-Spieltag {currentMatchday}</span>
-            </span>
-            {roundSchedule[currentRound] && (
-              <span className="text-[#a78bfa] font-semibold">
-                {roundSchedule[currentRound].matchday === currentMatchday
-                  ? `Aktuelle Runde: ${currentRound}`
-                  : `Nächste Runde: ${currentRound} (ST ${roundSchedule[currentRound].matchday})`}
-              </span>
-            )}
-          </div>
-        ) : null}
       >
         {/* Runden-Umschalter (mobil), automatisch auf aktuelle Runde durchgeschoben */}
         <div className="flex xl:hidden w-full items-center gap-2 sm:gap-4">
