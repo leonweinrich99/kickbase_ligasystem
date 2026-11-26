@@ -380,16 +380,68 @@ const ChartTooltip = ({ active, payload, label }) => {
   );
 };
 
-// Exakte App-Punkte-Farbskala (identisch zu LivePlayerCircle::pointColor):
-// < 0 rot, 0 grau, 1-99 orange, 100-199 gruen, >= 200 dunkelgruen; xP cyan.
-const getMatchdayBarFill = (pt) => {
-  if (pt.isXp) return '#22d3ee';
-  if (!pt.played) return '#333740';
-  if (pt.points < 0) return '#ef4444';
-  if (pt.points === 0) return '#6b7280';
-  if (pt.points < 100) return '#fb923c';
-  if (pt.points < 200) return '#4ade80';
-  return '#15803d';
+// Einheitliche, nicht-lineare Punkte-Balken-Skala (ueber alle Spieler identisch):
+// - 0 Punkte       -> 0 % (Grundlinie)
+// - 100 Punkte     -> 50 % (exakt die Mitte!)
+// - 100..700 Pkt   -> 50 %..100 % (nach oben hin flacher werdend, logarithmisch komprimiert)
+// - Minuspunkte    -> Betrag |p| nach oben als roter Balken (0..700 fester Rahmen)
+const POINTS_BAR_MAX = 700;
+const getNormalizedPointBarRatio = (points) => {
+  const absPts = Math.min(POINTS_BAR_MAX, Math.max(0, Math.abs(points || 0)));
+  if (absPts <= 0) return 0;
+  if (absPts <= 100) return 0.5 * (absPts / 100);
+  const t = (absPts - 100) / (POINTS_BAR_MAX - 100);
+  return 0.5 + 0.5 * (Math.log1p(3 * t) / Math.log(4));
+};
+
+// Exakte App-Punkte-Farbskala inkl. Gold-Bereich ab 400 Punkten:
+// < 0 rot, 0 grau, 1-99 orange, 100-199 gruen, 200-399 dunkelgruen, >= 400 gold; xP cyan.
+const getMatchdayBarStyle = (pt, heightPx) => {
+  if (pt.isXp) {
+    return {
+      height: `${heightPx}px`,
+      backgroundColor: 'rgba(34, 211, 238, 0.28)',
+      border: '1.5px dashed #22d3ee',
+    };
+  }
+  if (!pt.played || pt.points === 0) {
+    return {
+      height: '3px',
+      backgroundColor: pt.played ? '#6b7280' : '#333740',
+    };
+  }
+  if (pt.points < 0) {
+    return {
+      height: `${heightPx}px`,
+      backgroundColor: '#ef4444',
+    };
+  }
+  if (pt.points < 100) {
+    return {
+      height: `${heightPx}px`,
+      backgroundColor: '#fb923c',
+    };
+  }
+  if (pt.points < 200) {
+    return {
+      height: `${heightPx}px`,
+      backgroundColor: '#4ade80',
+    };
+  }
+  if (pt.points < 400) {
+    return {
+      height: `${heightPx}px`,
+      backgroundColor: '#15803d',
+      border: '1px solid #22c55e',
+    };
+  }
+  // Goldener Bereich ab 400 Punkten
+  return {
+    height: `${heightPx}px`,
+    background: 'linear-gradient(180deg, #fde047 0%, #eab308 55%, #b45309 100%)',
+    border: '1px solid #fef08a',
+    boxShadow: '0 0 10px rgba(250, 204, 21, 0.42)',
+  };
 };
 
 const MiniStat = ({ label, value, positive }) => (
@@ -650,12 +702,13 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, leagueKey = 
 
   return (
     <div className="w-full bg-[#000000] min-h-screen relative flex flex-col pb-10">
-      {/* Moderner, rahmenloser Detail-Header im Trading-Advisor-Button-Stil */}
-      <div className="sticky sticky-safe-top z-50 px-4 sm:px-6 pt-3 pb-2 flex items-center justify-between pointer-events-none">
-        <IconBackButton onClick={onClose} className="pointer-events-auto" />
-      </div>
+      <div className="max-w-3xl w-full mx-auto relative flex flex-col flex-1">
+        {/* Moderner Detail-Header im normalen Fluss (kein sticky-Ruckeln beim Scrollen) */}
+        <div className="px-4 sm:px-6 pt-4 pb-2 flex items-center justify-between relative z-20">
+          <IconBackButton onClick={onClose} />
+        </div>
 
-        <div className="overflow-y-auto min-h-0 pt-2 pb-8 relative">
+        <div className="min-h-0 pt-1 pb-8 relative">
           
           {/* Hero background image with dynamic masking */}
           <div className="absolute top-0 right-0 z-0 pointer-events-none overflow-hidden" style={{ width: '100%', height: '240px', display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-start' }}>
@@ -905,13 +958,9 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, leagueKey = 
               ? Math.round(playedCurrentOnly.reduce((s, m) => s + m.points, 0) / playedCurrentOnly.length)
               : null;
 
-            const maxPos = Math.max(120, ...allPointsForScale.map((pt) => (pt.played || pt.isXp ? Math.max(0, pt.points || 0) : 0)));
-            const minNeg = Math.min(0, ...allPointsForScale.map((pt) => (pt.played ? Math.min(0, pt.points || 0) : 0)));
-            const totalBarZonePx = 108;
-            const negZonePx = minNeg < 0
-              ? Math.max(16, Math.min(30, Math.round((Math.abs(minNeg) / (maxPos + Math.abs(minNeg))) * totalBarZonePx)))
-              : 0;
-            const posZonePx = totalBarZonePx - negZonePx;
+            const barZonePx = 120;
+            const line100BottomPx = Math.round(barZonePx * 0.5); // 100 Pkt = exakt Mitte (50%)
+            const line400BottomPx = Math.round(barZonePx * getNormalizedPointBarRatio(400)); // 400 Pkt = Gold-Grenze (~83%)
 
             return (
               <div className="mb-8">
@@ -941,10 +990,11 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, leagueKey = 
                   )}
                 </div>
 
-                {/* Borderless, durchgehend wischbare Saison-Timeline:
+                {/* Borderless, durchgehend wischbare Saison-Timeline mit fester 0..700 Skala
+                    (100 Pkt = Mitte, ab 400 Pkt Gold, Minus = rot nach oben):
                     Saison-Trenner + Spieltag -> Gegner-Logo -> Ergebnis -> Balken -> Punkte -> Minuten */}
                 <div ref={pointsScrollRef} className="overflow-x-auto no-scrollbar w-full">
-                  <div className="flex items-stretch gap-1 min-w-max px-4 sm:px-6 py-1">
+                  <div className="flex items-stretch gap-1 min-w-max px-4 sm:px-6 py-1 relative">
                     {timelineItems.map((item) => {
                       if (item.type === 'season') {
                         return (
@@ -969,16 +1019,10 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, leagueKey = 
                       }
 
                       const pt = item.pt;
-                      const fill = getMatchdayBarFill(pt);
-                      const is200Plus = !pt.isXp && pt.played && pt.points >= 200;
-                      const isPositive = (pt.played || pt.isXp) && pt.points > 0;
-                      const isNegative = pt.played && !pt.isXp && pt.points < 0;
-                      const posH = isPositive
-                        ? Math.max(5, Math.round((pt.points / maxPos) * (posZonePx - 6)))
-                        : 0;
-                      const negH = isNegative && minNeg < 0
-                        ? Math.max(5, Math.round((Math.abs(pt.points) / Math.abs(minNeg)) * (negZonePx - 4)))
-                        : 0;
+                      const hasBarValue = (pt.played || pt.isXp) && pt.points !== 0;
+                      const ratio = hasBarValue ? getNormalizedPointBarRatio(pt.points) : 0;
+                      const barHeightPx = hasBarValue ? Math.max(5, Math.round(ratio * barZonePx)) : 3;
+                      const barStyle = getMatchdayBarStyle(pt, barHeightPx);
 
                       const ptsText = pt.isXp
                         ? `${pt.points}`
@@ -1037,54 +1081,28 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, leagueKey = 
                             {resultText}
                           </div>
 
-                          {/* 4. Balken (positiv ueber 0-Linie, negativ darunter) */}
+                          {/* 4. Einheitlicher Balken (0..700, 100=Mitte, 400+=Gold, Minus=rot nach oben) */}
                           <div
-                            className="w-full flex flex-col items-center mt-2 relative"
-                            style={{ height: `${totalBarZonePx}px` }}
+                            className="w-full flex flex-col justify-end items-center mt-2 relative"
+                            style={{ height: `${barZonePx}px` }}
                           >
+                            {/* Dezente 400-Pkt Gold-Grenze & 100-Pkt Mittellinie */}
                             <div
-                              className="w-full flex items-end justify-center relative"
-                              style={{ height: `${posZonePx}px` }}
-                            >
-                              {isPositive ? (
-                                <div
-                                  className="w-[20px] rounded-t-[5px] rounded-b-[2px] transition-all"
-                                  style={{
-                                    height: `${posH}px`,
-                                    backgroundColor: pt.isXp ? 'rgba(34, 211, 238, 0.28)' : fill,
-                                    border: pt.isXp
-                                      ? '1.5px dashed #22d3ee'
-                                      : is200Plus
-                                        ? '1px solid #22c55e'
-                                        : 'none',
-                                  }}
-                                />
-                              ) : !isNegative ? (
-                                <div
-                                  className="w-[14px] h-[3px] rounded-full mb-[1px]"
-                                  style={{ backgroundColor: fill }}
-                                />
-                              ) : null}
-                            </div>
+                              className="pointer-events-none absolute inset-x-0 border-t border-dashed border-yellow-400/20"
+                              style={{ bottom: `${line400BottomPx}px` }}
+                            />
+                            <div
+                              className="pointer-events-none absolute inset-x-0 border-t border-dashed border-white/[0.08]"
+                              style={{ bottom: `${line100BottomPx}px` }}
+                            />
 
-                            <div className="w-full h-[1px] bg-white/10 shrink-0" />
+                            <div
+                              className={`relative z-10 ${hasBarValue ? 'w-[20px] rounded-t-[5px] rounded-b-[2px]' : 'w-[14px] rounded-full mb-[1px]'}`}
+                              style={barStyle}
+                            />
 
-                            {negZonePx > 0 && (
-                              <div
-                                className="w-full flex items-start justify-center"
-                                style={{ height: `${negZonePx}px` }}
-                              >
-                                {isNegative && (
-                                  <div
-                                    className="w-[20px] rounded-b-[5px] rounded-t-[2px]"
-                                    style={{
-                                      height: `${negH}px`,
-                                      backgroundColor: fill,
-                                    }}
-                                  />
-                                )}
-                              </div>
-                            )}
+                            {/* Feste 0-Grundlinie */}
+                            <div className="w-full h-[1px] bg-white/15 shrink-0" />
                           </div>
 
                           {/* 5. Punkte als Zahl */}
@@ -1325,6 +1343,7 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, leagueKey = 
           </div>
           
         </div>
+      </div>
     </div>
   );
 };

@@ -7,18 +7,16 @@ import AnimatedPoints from './AnimatedPoints';
 // die Spielerfotos RUND, die Punktzahl steht GROSS UNTER dem Namen statt auf
 // dem Foto (siehe Recherche an echten App-Screenshots, Chat 23.11.2026).
 //
-// Farbskala NUR nach erreichten Punkten (Owner-Vorgabe 23.11.2026, ersetzt
-// die vorherige Spielstatus-basierte Faerbung):
-// < 0 rot, genau 0 grau, 1-99 orange, 100-199 gruen, ab 200 dunkelgruen.
-// Exportiert, damit die Live-Ranking-Liste (LiveLineupPage.jsx) dieselbe
-// Skala fuer die Gesamtpunkte je Manager nutzt.
+// Farbskala NUR nach erreichten Punkten:
+// < 0 rot, genau 0 grau, 1-99 orange, 100-199 gruen, 200-399 dunkelgruen, >= 400 gold.
 export const pointColor = (points) => {
   if (points == null) return 'text-[#8b92a5]';
   if (points < 0) return 'text-red-500';
   if (points === 0) return 'text-[#8b92a5]';
   if (points < 100) return 'text-orange-400';
   if (points < 200) return 'text-green-400';
-  return 'text-green-700';
+  if (points < 400) return 'text-green-700';
+  return 'text-yellow-400';
 };
 
 const LivePlayerCircle = ({

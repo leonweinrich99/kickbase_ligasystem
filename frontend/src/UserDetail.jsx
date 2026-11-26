@@ -549,21 +549,18 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
         </div>
       )}
 
-      {/* Moderner, rahmenloser Detail-Header im Trading-Advisor-Button-Stil */}
-      <div className="sticky sticky-safe-top z-50 px-4 sm:px-6 pt-3 pb-2 pointer-events-none">
-        <div className="max-w-[1400px] mx-auto flex items-center justify-between gap-2">
-          <IconBackButton onClick={goBack} className="pointer-events-auto" />
-          <SubpageActionButton
-            onClick={() => setIsModalOpen(true)}
-            icon={Users}
-            iconClassName="text-[#ff5c3e]"
-            label="Vergleichen"
-            className="pointer-events-auto"
-          />
-        </div>
+      {/* Moderner Detail-Header im normalen Fluss (kein sticky-Ruckeln beim Scrollen) */}
+      <div className="max-w-3xl w-full mx-auto px-4 sm:px-6 pt-4 pb-2 flex items-center justify-between gap-2">
+        <IconBackButton onClick={goBack} />
+        <SubpageActionButton
+          onClick={() => setIsModalOpen(true)}
+          icon={Users}
+          iconClassName="text-[#ff5c3e]"
+          label="Vergleichen"
+        />
       </div>
 
-      <div className="max-w-[1400px] w-full mx-auto pt-3 sm:pt-5 pb-8 px-4 sm:px-6">
+      <div className="max-w-3xl w-full mx-auto pt-3 sm:pt-5 pb-8 px-4 sm:px-6">
 
         {/* Name, Platz & grosses rundes Foto-Medaillon rechts (wie im
             Trading Advisor) - extra Abstand nach oben (pt-6/pt-8), damit das

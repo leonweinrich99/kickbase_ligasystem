@@ -95,8 +95,8 @@ const PlayerLiveDetailPage = () => {
 
   return (
     <div className="w-full bg-[#000000] min-h-screen relative flex flex-col pb-10">
-      <div className="sticky sticky-safe-top z-50 px-4 sm:px-6 pt-3 pb-2 pointer-events-none">
-        <IconBackButton onClick={goBack} className="pointer-events-auto" />
+      <div className="max-w-3xl w-full mx-auto px-4 sm:px-6 pt-4 pb-2">
+        <IconBackButton onClick={goBack} />
       </div>
 
       {!player ? (

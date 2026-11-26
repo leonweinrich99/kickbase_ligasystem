@@ -149,12 +149,12 @@ const SeasonView = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
     : (showSplash ? <LoadingScreen /> : <div className="min-h-screen bg-[#000000]"></div>);
 
   return (
-    <div className="min-h-screen bg-[#000000] p-4 sm:p-10 font-sans select-none flex flex-col">
+    <div className="min-h-screen bg-[#000000] font-sans select-none flex flex-col">
       <div className="flex-1">
         <Routes>
-          <Route index element={dashboardElement} />
+          <Route index element={<div className="p-4 sm:p-10">{dashboardElement}</div>} />
           <Route path="user/:id" element={<UserDetail dataBase={dataBase} routeBase={routeBase} mode={mode} />} />
-          <Route path="compare/:id1/:id2" element={<CompareView dataBase={dataBase} routeBase={routeBase} />} />
+          <Route path="compare/:id1/:id2" element={<div className="p-4 sm:p-10"><CompareView dataBase={dataBase} routeBase={routeBase} /></div>} />
           <Route path="optimale-elf" element={<OptimalTeam dataBase={dataBase} routeBase={routeBase} />} />
           <Route path="optimale-elf/:matchday" element={<OptimalTeam dataBase={dataBase} routeBase={routeBase} />} />
         </Routes>
