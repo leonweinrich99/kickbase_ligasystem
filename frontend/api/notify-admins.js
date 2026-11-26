@@ -61,6 +61,7 @@ export default async function handler(req, res) {
     const tokens = [];
     adminsSnap.forEach((docSnap) => {
       const data = docSnap.data();
+      if (data.notificationPrefs?.adminSignups === false) return;
       if (Array.isArray(data.fcmTokens)) tokens.push(...data.fcmTokens);
     });
 

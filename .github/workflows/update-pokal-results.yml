@@ -55,3 +55,12 @@ jobs:
           git commit -m "Automatisches Update: Pokal-Ergebnisse [skip ci]" || echo "Keine Änderungen zu commiten"
           git pull origin main --rebase -X ours || true
           git push origin main
+
+      - name: Push bei neuen Pokal-Ergebnissen auslösen
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          sleep 45
+          curl -sf -X POST "https://www.developtimize.de/api/notify-pokal-results" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -H "Cache-Control: no-cache" || echo "Hinweis: Pokal-Ergebnis-Push übersprungen"

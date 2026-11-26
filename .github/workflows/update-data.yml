@@ -79,3 +79,12 @@ jobs:
           git commit -m "Automatisches Update: Kickbase Daten & Historie [skip ci]" || echo "Keine Änderungen zu commiten"
           git pull origin main --rebase -X ours || true
           git push origin main
+
+      - name: Push bei verbesserten Manager-Ratings auslösen
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          sleep 45
+          curl -sf -X POST "https://www.developtimize.de/api/notify-rating-changes" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -H "Cache-Control: no-cache" || echo "Hinweis: Rating-Push übersprungen"

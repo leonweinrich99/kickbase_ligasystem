@@ -1,0 +1,31 @@
+name: Push bei neuen Artikeln
+
+# Loest nach jedem Push auf `main`, der `feed-articles.json` oder
+# `weekly-summary.json` aendert, den Deduplizierungs-Check unter
+# `/api/notify-articles` aus. Alte Artikel werden nie doppelt gesendet
+# (Deduplizierung in Firestore `settings/pushState`).
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'frontend/public/feed-articles.json'
+      - 'frontend/public/weekly-summary.json'
+  workflow_dispatch:
+
+jobs:
+  notify-articles:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Warte auf Vercel-Deployment der neuen JSON-Daten
+        run: sleep 45
+
+      - name: Artikel-Push auslösen
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          curl -sf -X POST "https://www.developtimize.de/api/notify-articles" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -H "Cache-Control: no-cache" \
+            -o response.json
+          echo "Antwort:"
+          cat response.json

@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { collection, onSnapshot, doc, updateDoc, deleteField, query, orderBy } from 'firebase/firestore';
-import { Check, X, AlertTriangle, MoreVertical, MessageCircle, RefreshCw, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { collection, onSnapshot, doc, updateDoc, deleteField, query, orderBy, writeBatch } from 'firebase/firestore';
+import { Check, X, AlertTriangle, MoreVertical, MessageCircle, RefreshCw, CheckCircle2, XCircle, Clock, Bell } from 'lucide-react';
 import { db } from './firebase';
 import { useAuth } from './AuthContext';
 import PushNotificationCard from './PushNotificationCard';
 import AdminMessengerCard from './AdminMessengerCard';
+import { resolveNotificationPrefs } from './pushNotifications';
 import { useBackNavigation } from './useBackNavigation';
 import PageHeader from './ui/PageHeader';
 import CloseButton from './ui/CloseButton';
@@ -143,6 +144,7 @@ const AdminPanel = () => {
   const [updateStatusOk, setUpdateStatusOk] = useState(true);
   const [openMenuId, setOpenMenuId] = useState(null);
   const [showMessenger, setShowMessenger] = useState(false);
+  const [resettingPrompt, setResettingPrompt] = useState(false);
   const menuRef = useRef(null);
 
   const handleManualUpdate = async () => {
@@ -241,6 +243,30 @@ const AdminPanel = () => {
   const unlinkedCount = users.filter(u => !u.kickbaseId).length;
   const changeRequestsCount = users.filter(u => u.kickbaseChangeRequest).length;
 
+  const approvedUsers = users.filter((u) => u.status === 'approved');
+  const pushUsers = approvedUsers.filter((u) => Array.isArray(u.fcmTokens) && u.fcmTokens.length > 0);
+  const pushLiveCount = pushUsers.filter((u) => resolveNotificationPrefs(u).liveEvents).length;
+  const pushSquadCount = pushUsers.filter((u) => resolveNotificationPrefs(u).squadAlert).length;
+  const pushArticlesCount = pushUsers.filter((u) => resolveNotificationPrefs(u).articles).length;
+
+  const resetPushPromptForAll = async () => {
+    if (!window.confirm('Soll die Push-Abfrage für alle freigegebenen Manager beim nächsten App-Öffnen erneut angezeigt werden?')) {
+      return;
+    }
+    setResettingPrompt(true);
+    try {
+      const batch = writeBatch(db);
+      approvedUsers.forEach((u) => {
+        batch.update(doc(db, 'users', u.id), { pushPromptVersion: 0 });
+      });
+      await batch.commit();
+    } catch (e) {
+      console.error('Reset push prompt failed:', e);
+    } finally {
+      setResettingPrompt(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10">
       <div className="max-w-4xl mx-auto">
@@ -259,6 +285,29 @@ const AdminPanel = () => {
         </div>
 
         <PushNotificationCard />
+
+        {/* Push-Reichweite ueber alle freigegebenen Manager + Re-Prompt-Ausloeser */}
+        {!loading && approvedUsers.length > 0 && (
+          <div className="card-surface rounded-xl px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-gray-100">
+                <Bell size={13} className="text-[#ff5c3e]" />
+                <span>Push-Abdeckung: {pushUsers.length} / {approvedUsers.length} Manager erreichbar</span>
+              </div>
+              <div className="text-[11px] text-[#8b92a5] mt-0.5 tabular-nums">
+                Live-Events: {pushLiveCount} · Kader-Alarm: {pushSquadCount} · Artikel: {pushArticlesCount}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={resetPushPromptForAll}
+              disabled={resettingPrompt}
+              className="px-3 py-1.5 rounded-lg bg-[#171717] border border-[#2e2e2e] text-[10px] font-black uppercase tracking-widest text-gray-300 hover:text-white hover:border-[#404040] transition-colors shrink-0 disabled:opacity-50 cursor-pointer"
+            >
+              {resettingPrompt ? 'Setze zurück...' : 'Abfrage neu starten'}
+            </button>
+          </div>
+        )}
 
         {showMessenger && (
           <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setShowMessenger(false)}>

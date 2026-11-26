@@ -65,7 +65,7 @@ export default async function handler(req, res) {
       // reminderPrefs.pokal fehlt bei Bestandsnutzern (vor Einfuehrung der
       // Einzel-Toggles) -> als "an" behandeln (entspricht dem bisherigen
       // Verhalten: Push aktiviert = Pokal-Erinnerung aktiviert).
-      if (data.reminderPrefs?.pokal === false) return;
+      if (data.notificationPrefs?.pokal === false || (data.notificationPrefs?.pokal == null && data.reminderPrefs?.pokal === false)) return;
       if (!Array.isArray(userTokens)) return;
       userTokens.forEach((token) => {
         if (!tokenOwners.has(token)) tokenOwners.set(token, userSnap.ref);

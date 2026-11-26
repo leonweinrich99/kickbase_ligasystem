@@ -112,3 +112,13 @@ jobs:
           git commit -m "Weekly Summary: Neue Montags-Ausgabe [skip ci]" || echo "Keine Änderungen zu commiten"
           git pull origin main --rebase -X ours || true
           git push origin main
+
+      - name: Push-Benachrichtigung für neue Weekly-Ausgabe auslösen
+        if: steps.tz_check.outputs.should_run == 'true'
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          sleep 45
+          curl -sf -X POST "https://www.developtimize.de/api/notify-articles" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -H "Cache-Control: no-cache" || echo "Hinweis: Artikel-Push übersprungen"

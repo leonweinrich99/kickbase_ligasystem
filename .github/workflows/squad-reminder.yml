@@ -4,7 +4,8 @@ name: Kader-Erinnerung
 # die Begruendung). Ruft einfach den bestehenden Vercel-Endpoint per HTTP auf.
 on:
   schedule:
-    - cron: '0 7 * * 5' # Freitags 07:00 UTC (~08:00-09:00 Berlin)
+    - cron: '0 18 * * 4'   # Donnerstag 19:00/20:00 Berlin (früher Kader-Alarm vor dem Wochenende)
+    - cron: '30 15 * * 5'  # Freitag 16:30/17:30 Berlin (letzter Check vor 20:30-Anpfiff)
   workflow_dispatch:
 
 jobs:

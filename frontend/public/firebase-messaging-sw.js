@@ -33,15 +33,18 @@ self.addEventListener('activate', (event) => event.waitUntil(clients.claim()));
 // Benachrichtigung anzeigen - zusaetzlich zu unserem eigenen
 // showNotification()-Aufruf hier, was zu doppelten Benachrichtigungen fuehrt.
 messaging.onBackgroundMessage((payload) => {
-  const title = payload.data?.title || 'Ligasystem';
+  const data = payload?.data || {};
+  const title = data.title || 'Kickbase Ligasystem';
   const options = {
-    body: payload.data?.body || '',
+    body: data.body || '',
     icon: '/icons/icon-192.png',
     badge: '/icons/icon-192.png',
-    data: { url: payload.data?.link || '/admin' }
+    tag: data.tag || undefined,
+    renotify: Boolean(data.tag),
+    data: { url: data.link || '/' }
   };
   self.registration.showNotification(title, options);
-  
+
   if ('setAppBadge' in navigator) {
     navigator.setAppBadge(1).catch(() => {});
   }
@@ -53,18 +56,19 @@ self.addEventListener('notificationclick', (event) => {
   if ('clearAppBadge' in navigator) {
     navigator.clearAppBadge().catch(() => {});
   }
-  const targetUrl = event.notification.data?.url || '/admin';
+  const targetUrl = event.notification.data?.url || '/';
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       for (const client of clientList) {
         if ('focus' in client) {
-          client.navigate(targetUrl);
+          if ('navigate' in client) client.navigate(targetUrl).catch(() => {});
           return client.focus();
         }
       }
       if (clients.openWindow) {
         return clients.openWindow(targetUrl);
       }
+      return undefined;
     })
   );
 });

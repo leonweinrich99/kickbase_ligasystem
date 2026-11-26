@@ -113,7 +113,7 @@ const Account = () => {
         </MenuGroup>
 
         <MenuGroup title="Persönlich" index={4}>
-          <MenuRow to="/account/reminders" icon={Bell} label="Erinnerungen" />
+          <MenuRow to="/account/reminders" icon={Bell} label="Benachrichtigungen" />
           <MenuRow onClick={tour.start} icon={HelpCircle} label="App-Tutorial ansehen" />
         </MenuGroup>
 

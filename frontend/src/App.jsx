@@ -6,6 +6,7 @@ import ScrollToTop from './ScrollToTop';
 import { AuthProvider } from './AuthContext';
 import AuthGate from './AuthGate';
 import { TourProvider } from './Tour';
+import PushPromptModal from './PushPromptModal';
 
 // Route-Level Code Splitting: schwere Unterseiten (Recharts, Trading Advisor,
 // Pokal, Live, Newsfeed, Admin) werden erst beim Besuch nachgeladen.
@@ -88,6 +89,7 @@ function App() {
                 </Suspense>
               </div>
               <TabBar />
+              <PushPromptModal />
             </AuthGate>
           </TourProvider>
         </div>
