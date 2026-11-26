@@ -193,10 +193,10 @@ const OptimalTeam = ({ dataBase = '', routeBase = '' }) => {
 
               {/* Aufstellung Rows */}
               <div className="flex flex-col justify-between h-full gap-2 relative z-10">
-                <PositionRow players={st} />
-                <PositionRow players={mf} />
-                <PositionRow players={aw} />
-                <PositionRow players={tw} />
+                <PositionRow players={st} onPlayerClick={(pid) => pid && navigate(`/player/${encodeURIComponent(String(pid))}`)} />
+                <PositionRow players={mf} onPlayerClick={(pid) => pid && navigate(`/player/${encodeURIComponent(String(pid))}`)} />
+                <PositionRow players={aw} onPlayerClick={(pid) => pid && navigate(`/player/${encodeURIComponent(String(pid))}`)} />
+                <PositionRow players={tw} onPlayerClick={(pid) => pid && navigate(`/player/${encodeURIComponent(String(pid))}`)} />
               </div>
             </div>
           )}

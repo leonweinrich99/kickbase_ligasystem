@@ -90,11 +90,9 @@ const HotShotsSection = () => {
     return { topPlayers: players, teamLogos: logos, generatedDate: genDate };
   }, [bundle]);
 
-  const openInAdvisor = (playerId) => {
-    if (!isAdmin || !playerId) return;
-    navigate(`/admin/advisor?playerId=${encodeURIComponent(String(playerId))}`, {
-      state: { openPlayerId: String(playerId), returnOnClose: true },
-    });
+  const openPlayerDetail = (playerId) => {
+    if (!playerId) return;
+    navigate(`/player/${encodeURIComponent(String(playerId))}`);
   };
 
   if (!loading && topPlayers.length === 0) return null;
@@ -145,13 +143,13 @@ const HotShotsSection = () => {
       ) : (
         <div>
           {topPlayers.map((entry, idx) => (
-            <AdvisorPlayerCard
-              key={`${entry.playerId ?? entry.name}-${idx}`}
-              entry={entry}
-              teamLogo={teamLogos[entry.team]}
-              showGenericBadges
-              onClick={isAdmin ? () => openInAdvisor(entry.playerId) : undefined}
-            />
+              <AdvisorPlayerCard
+                key={`${entry.playerId ?? entry.name}-${idx}`}
+                entry={entry}
+                teamLogo={teamLogos[entry.team]}
+                showGenericBadges
+                onClick={entry.playerId ? () => openPlayerDetail(entry.playerId) : undefined}
+              />
           ))}
         </div>
       )}

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ExternalLink } from 'lucide-react';
 import { buildLineupWithDummies } from '../liveLineupUtils';
 import { normalizeStartProbCode } from '../startProbMeta';
@@ -175,13 +176,20 @@ const MarketTrendBadge = ({ amount, dir }) => {
   );
 };
 
-const SquadPitchCircle = ({ player, size, containerSize }) => {
+const SquadPitchCircle = ({ player, size, containerSize, onPlayerClick }) => {
   const [imgFailed, setImgFailed] = useState(false);
   const fullImgUrl = player.imagePath ? `${IMAGE_BASE}${player.imagePath}` : null;
   const showPhoto = !player.isDummy && fullImgUrl && !isDummyImage(fullImgUrl) && !imgFailed;
+  const clickable = !player.isDummy && player.id != null && Boolean(onPlayerClick);
 
   return (
-    <div className={`flex flex-col items-center ${containerSize} select-none`}>
+    <div
+      role={clickable ? 'button' : undefined}
+      tabIndex={clickable ? 0 : undefined}
+      onClick={clickable ? () => onPlayerClick(player.id) : undefined}
+      onKeyDown={clickable ? (e) => (e.key === 'Enter' || e.key === ' ') && onPlayerClick(player.id) : undefined}
+      className={`flex flex-col items-center ${containerSize} select-none ${clickable ? 'cursor-pointer transition-transform hover:scale-105 active:scale-95' : ''}`}
+    >
       <div className={`relative ${size}`}>
         <div
           className={`w-full h-full rounded-full overflow-hidden shadow-lg bg-[#171717] flex items-center justify-center ${
@@ -221,7 +229,7 @@ const SquadPitchCircle = ({ player, size, containerSize }) => {
   );
 };
 
-const SquadPitchRow = ({ players }) => {
+const SquadPitchRow = ({ players, onPlayerClick }) => {
   if (!players || players.length === 0) return null;
   const itemCount = players.length;
   const size = itemCount > 4 ? 'w-12 h-12 sm:w-14 sm:h-14' : 'w-14 h-14 sm:w-16 sm:h-16';
@@ -229,13 +237,13 @@ const SquadPitchRow = ({ players }) => {
   return (
     <div className="flex justify-center items-start flex-nowrap gap-1 sm:gap-4 w-full px-2 mb-4 last:mb-0">
       {players.map((p) => (
-        <SquadPitchCircle key={p.id} player={p} size={size} containerSize={containerSize} />
+        <SquadPitchCircle key={p.id} player={p} size={size} containerSize={containerSize} onPlayerClick={onPlayerClick} />
       ))}
     </div>
   );
 };
 
-const SquadListRow = ({ player, isBench, xpSeason }) => {
+const SquadListRow = ({ player, isBench, xpSeason, onPlayerClick }) => {
   const posCode = toPosCode(player.position);
   const posLabel = POS_CODE_TO_LABEL[posCode] || 'MF';
   const isInjured = typeof player.status === 'number' && player.status !== 0;
@@ -282,12 +290,17 @@ const SquadListRow = ({ player, isBench, xpSeason }) => {
       metaSecondary={metaSecondary}
       primaryMetric={formatCompactMoney(player.marketValue)}
       secondaryMetric={secondaryMetric}
+      onClick={player.id != null && onPlayerClick ? () => onPlayerClick(player.id) : undefined}
     />
   );
 };
 
 const CurrentSquadView = ({ players, liveStartingIds, loading }) => {
+  const navigate = useNavigate();
   const [xpById, setXpById] = useState(() => new Map());
+  const openPlayerDetail = (pid) => {
+    if (pid != null) navigate(`/player/${encodeURIComponent(String(pid))}`);
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -398,10 +411,10 @@ const CurrentSquadView = ({ players, liveStartingIds, loading }) => {
         )}
 
         <div className="relative z-10 w-full px-2 sm:px-4 flex flex-col pt-3 sm:pt-2">
-          <SquadPitchRow players={st} />
-          <SquadPitchRow players={mf} />
-          <SquadPitchRow players={aw} />
-          <SquadPitchRow players={tw} />
+          <SquadPitchRow players={st} onPlayerClick={openPlayerDetail} />
+          <SquadPitchRow players={mf} onPlayerClick={openPlayerDetail} />
+          <SquadPitchRow players={aw} onPlayerClick={openPlayerDetail} />
+          <SquadPitchRow players={tw} onPlayerClick={openPlayerDetail} />
         </div>
 
         <div className="relative z-10 flex items-end justify-between px-4 sm:px-8 mt-4">
@@ -466,6 +479,7 @@ const CurrentSquadView = ({ players, liveStartingIds, loading }) => {
                       player={player}
                       isBench={!starterIds.has(String(player.id))}
                       xpSeason={xpInfo?.xpSeason}
+                      onPlayerClick={openPlayerDetail}
                     />
                   );
                 })}

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Info, RefreshCw, CheckCircle2, XCircle, Star, SlidersHorizontal, X, ChevronDown, AlertTriangle } from 'lucide-react';
+import { LineChart, Line, BarChart, Bar, Cell, ReferenceLine, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { Info, RefreshCw, CheckCircle2, XCircle, Star, SlidersHorizontal, X, ChevronDown, AlertTriangle, ArrowRight } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import { useBackNavigation } from './useBackNavigation';
 import { useFavorites } from './useFavorites';
@@ -23,6 +23,11 @@ import {
   getEffectiveXp,
 } from './advisorSquadEval';
 import { buildPlayerXpMap } from './playerXpModel';
+import {
+  loadPlayerCatalogBundle,
+  loadTransfersByPlayerId,
+  extractMatchdayPointsSeries,
+} from './playerDetailData';
 
 // Zeigt die Auswertungen des "Kickbase Trading Advisor" an (siehe
 // backend/advisor/, generiert per GitHub Action aus
@@ -375,18 +380,42 @@ const StarIcon = ({ filled }) => (
 const ChartTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   const point = payload[0].payload;
+  const val = point.mv !== undefined ? point.mv : point.mv_predicted;
   return (
-    <div className="bg-[#0a0a0a]/80 backdrop-blur-sm border border-[#2e2e2e] rounded-xl px-3 py-2 shadow-xl">
-      <div className="text-[10px] text-[#8b92a5] mb-1">
-        {formatShortDate(label, true)}
-        {point.isPredicted && " (Prognose)"}
-      </div>
-      <div className={`text-sm font-bold ${point.isPredicted ? 'text-[#eab308]' : 'text-cyan-400'}`}>
-        {formatMoney(point.mv !== undefined ? point.mv : point.mv_predicted)}
-      </div>
-      {typeof point.points === 'number' && (
-        <div className="text-[10px] text-[#8b92a5] mt-0.5">{point.points} Punkte an diesem Spieltag</div>
-      )}
+    <div className="bg-[#0e0e0e]/95 border border-white/15 rounded-lg px-2 py-1 shadow-lg pointer-events-none whitespace-nowrap">
+      <span className={`text-xs font-bold tabular-nums ${point.isPredicted ? 'text-[#eab308]' : 'text-white'}`}>
+        {formatCompactMoney(val)}
+      </span>
+      <span className="text-[10px] text-[#8b92a5] ml-1.5 tabular-nums">
+        {formatShortDate(label, false)}{point.isPredicted ? ' · Prog.' : ''}
+      </span>
+    </div>
+  );
+};
+
+const PointsChartTooltip = ({ active, payload }) => {
+  if (!active || !payload?.length) return null;
+  const pt = payload[0].payload;
+  return (
+    <div className="bg-[#0e0e0e]/95 border border-white/15 rounded-lg px-2 py-1 shadow-lg pointer-events-none whitespace-nowrap">
+      <span
+        className={`text-xs font-bold tabular-nums ${
+          pt.isXp
+            ? 'text-cyan-400'
+            : !pt.played
+              ? 'text-[#8b92a5]'
+              : pt.points >= 100
+                ? 'text-emerald-400'
+                : pt.points < 0
+                  ? 'text-red-400'
+                  : 'text-white'
+        }`}
+      >
+        {pt.isXp ? `${pt.points} xP` : pt.played ? `${pt.points} Pkt` : 'n.e.'}
+      </span>
+      <span className="text-[10px] text-[#8b92a5] ml-1.5 tabular-nums">
+        {pt.label}{pt.opponent ? ` · ${pt.isHome ? 'vs' : '@'} ${pt.opponent}` : ''}
+      </span>
     </div>
   );
 };
@@ -485,57 +514,17 @@ const TrendArrow = ({ code }) => {
 };
 
 
-const generateAIReasoning = (player) => {
-  if (player.predictedChange === undefined) return null;
-  const isRising = player.predictedChange >= 0;
-  const changeStr = formatMoney(Math.abs(player.predictedChange));
-  const trend = isRising ? "einen Anstieg" : "einen Wertverlust";
-  
-  let sentences = [];
-  
-  sentences.push(`Die KI prognostiziert für morgen ${trend} um ca. ${changeStr}.`);
+const TRANSFER_LEAGUE_COLORS = {
+  'LIGA 1': '#4ba6ff',
+  'LIGA 2': '#ff5c3e',
+  'LIGA 3': '#22c55e',
+};
 
-  const reasons = [];
-  if (isRising) {
-    if (player.buyReasons?.includes('rising_value')) reasons.push("das Marktmomentum stark positiv ist");
-    if (player.buyReasons?.includes('likely_starter')) reasons.push("hohe Startelf-Chancen bestehen");
-    if (player.avgPoints > 70) reasons.push("der Punkteschnitt exzellent ist");
-    if (player.teamOfTheWeek) reasons.push("die Nominierung fürs Team der Woche den Hype pusht");
-    if (!reasons.length) reasons.push("die Algorithmen subtile, positive Marktsignale in der Datenhistorie erkennen");
-    
-    // Join logic with "und"
-    let reasonText = reasons.join(", ");
-    if (reasons.length > 1) {
-        reasonText = reasons.slice(0, -1).join(", ") + " und " + reasons[reasons.length - 1];
-    }
-    sentences.push(`Dieser Trend wird gestützt, da ${reasonText}.`);
-  } else {
-    if (player.sellReasons?.includes('injured_or_suspended') || player.sellReasons?.includes('confirmed_injured_external') || (player.status && player.status !== 0)) reasons.push("der Spieler aktuell ausfällt");
-    if (player.sellReasons?.includes('falling_value')) reasons.push("bereits ein klarer Abwärtstrend messbar ist");
-    if (player.sellReasons?.includes('benched_last_matchday')) reasons.push("er zuletzt nicht zum Einsatz kam");
-    if (player.sellReasons?.includes('low_starting_probability')) reasons.push("seine Spielzeiten unsicher sind");
-    if (!reasons.length) reasons.push("die Marktdynamik für diesen Spieler aktuell spürbar abkühlt");
-    
-    let reasonText = reasons.join(", ");
-    if (reasons.length > 1) {
-        reasonText = reasons.slice(0, -1).join(", ") + " und " + reasons[reasons.length - 1];
-    }
-    sentences.push(`Die Abwertung droht, weil ${reasonText}.`);
-  }
-  
-  if (player.predictedChange3d !== undefined) {
-    if (player.predictedChange > 0 && player.predictedChange3d < 0) {
-      sentences.push("⚠️ Vorsicht: Auf 3-Tages-Sicht kippt die Prognose ins Negative.");
-    } else if (player.predictedChange < 0 && player.predictedChange3d > 0) {
-      sentences.push("💡 Lichtblick: Auf 3-Tages-Sicht rechnet das Modell bereits wieder mit einer Erholung.");
-    }
-  }
-
-  if (player.squadEval?.reasonText) {
-    sentences.unshift(player.squadEval.reasonText);
-  }
-
-  return sentences.join(" ");
+const formatTransferDate = (iso) => {
+  if (!iso) return '–';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return String(iso).slice(0, 10);
+  return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getFullYear()).slice(2)}`;
 };
 
 export const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, onToggleFavorite }) => {
@@ -552,6 +541,13 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, 
   }, []);
 
   const [remoteHistory, setRemoteHistory] = useState(null);
+  const [matchdayPoints, setMatchdayPoints] = useState([]);
+  const [fallbackXp, setFallbackXp] = useState(null);
+  const [playerTransfers, setPlayerTransfers] = useState([]);
+  const [showNextXp, setShowNextXp] = useState(true);
+  const [transferFilter, setTransferFilter] = useState('ALL');
+  const [showAllTransfers, setShowAllTransfers] = useState(false);
+
   useEffect(() => {
     let cancelled = false;
     loadPlayerHistoryMap().then((map) => {
@@ -560,6 +556,20 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, 
       if (Array.isArray(list) && list.length > 0) {
         setRemoteHistory(list);
       }
+    });
+    loadPlayerCatalogBundle().then((bundle) => {
+      if (cancelled || !bundle) return;
+      const pid = String(player.playerId);
+      const cat = bundle.catalogMap.get(pid);
+      if (cat) {
+        setMatchdayPoints(extractMatchdayPointsSeries(cat, bundle.teamNamesById));
+      }
+      const xp = bundle.xpMap.get(pid) || null;
+      if (xp) setFallbackXp(xp);
+    });
+    loadTransfersByPlayerId().then((map) => {
+      if (cancelled || !map) return;
+      setPlayerTransfers(map.get(String(player.playerId)) || []);
     });
     return () => { cancelled = true; };
   }, [player.playerId]);
@@ -825,19 +835,267 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, 
             </div>
           )}
 
-          {/* KI Analyse Block */}
-          {player.predictedChange !== undefined && (
-            <div className="px-4 sm:px-6 mb-8">
-              <div className="bg-[#111111] border border-[#2e2e2e] rounded-xl p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-[10px] font-bold tracking-widest text-[#22d3ee] uppercase">KI Analyse</span>
+          {/* Spieltags-Punkte + xP-Vorschau fuer naechsten Spieltag */}
+          {(() => {
+            const effectiveXpSeason = typeof player.xpSeason === 'number' ? player.xpSeason : fallbackXp?.xpSeason;
+            const effectiveXpNext = typeof player.xpNext === 'number' ? player.xpNext : fallbackXp?.xpNext;
+            const effectiveNextMd = player.nextMatchday ?? fallbackXp?.nextMatchday ?? (matchdayPoints.length > 0 ? matchdayPoints[matchdayPoints.length - 1].day + 1 : null);
+            const effectiveNextOpp = player.nextOpponent ?? fallbackXp?.nextOpponent ?? null;
+            const effectiveIsHome = player.isHome ?? fallbackXp?.isHome ?? null;
+            const effectiveMatchup = player.xpMatchupFactor ?? fallbackXp?.matchupFactor ?? null;
+
+            const chartPoints = [...matchdayPoints];
+            if (showNextXp && typeof effectiveXpNext === 'number' && effectiveNextMd != null) {
+              chartPoints.push({
+                day: effectiveNextMd,
+                label: `ST ${effectiveNextMd}`,
+                points: effectiveXpNext,
+                played: true,
+                opponent: effectiveNextOpp,
+                isHome: effectiveIsHome,
+                isXp: true,
+              });
+            }
+
+            if (chartPoints.length === 0) return null;
+
+            const playedOnly = matchdayPoints.filter((m) => m.played);
+            const avgPlayed = playedOnly.length > 0
+              ? Math.round(playedOnly.reduce((s, m) => s + m.points, 0) / playedOnly.length)
+              : null;
+
+            return (
+              <div className="px-4 sm:px-6 mb-8">
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <div className="min-w-0">
+                    <h3 className="text-lg font-semibold text-white leading-tight">Spieltags-Punkte</h3>
+                    {avgPlayed != null && (
+                      <div className="text-[11px] text-[#8b92a5] tabular-nums mt-0.5">
+                        Ø {avgPlayed} Pkt ({playedOnly.length} Einsätze){typeof effectiveXpSeason === 'number' ? ` · ${effectiveXpSeason} xP` : ''}
+                      </div>
+                    )}
+                  </div>
+                  {typeof effectiveXpNext === 'number' && effectiveNextMd != null && (
+                    <button
+                      type="button"
+                      onClick={() => setShowNextXp((v) => !v)}
+                      className={`shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-colors cursor-pointer ${
+                        showNextXp
+                          ? 'bg-cyan-500/15 text-cyan-300 border-cyan-400/45'
+                          : 'bg-white/[0.04] text-[#8b92a5] border-white/10 hover:text-white'
+                      }`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${showNextXp ? 'bg-cyan-400' : 'bg-[#626978]'}`} />
+                      <span>xP ST {effectiveNextMd}</span>
+                    </button>
+                  )}
                 </div>
-                <p className="text-xs sm:text-sm text-[#8b92a5] leading-relaxed">
-                  {generateAIReasoning(player)}
-                </p>
+
+                <div className="h-[150px] sm:h-[175px] w-full card-surface rounded-2xl px-2 pt-3 pb-1">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartPoints} margin={{ top: 8, right: 6, left: -18, bottom: 0 }}>
+                      <XAxis
+                        dataKey="label"
+                        stroke="#4b5563"
+                        fontSize={9}
+                        tickLine={false}
+                        axisLine={false}
+                        tickFormatter={(l) => String(l).replace('ST ', '')}
+                      />
+                      <YAxis
+                        stroke="#4b5563"
+                        fontSize={9}
+                        tickLine={false}
+                        axisLine={false}
+                        tickCount={4}
+                        tick={{ fill: '#6b7280', fontSize: 9 }}
+                      />
+                      <ReferenceLine y={0} stroke="#2e2e2e" strokeWidth={1} />
+                      <Tooltip
+                        content={<PointsChartTooltip />}
+                        cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                      />
+                      <Bar dataKey="points" radius={[4, 4, 2, 2]} maxBarSize={26}>
+                        {chartPoints.map((pt) => {
+                          const fill = pt.isXp
+                            ? '#22d3ee'
+                            : !pt.played
+                              ? '#262626'
+                              : pt.points >= 100
+                                ? '#10b981'
+                                : pt.points < 0
+                                  ? '#ef4444'
+                                  : '#d1d5db';
+                          return (
+                            <Cell
+                              key={`${pt.day}-${pt.isXp ? 'xp' : 'pt'}`}
+                              fill={fill}
+                              fillOpacity={pt.isXp ? 0.82 : 0.92}
+                              stroke={pt.isXp ? '#67e8f9' : 'none'}
+                              strokeDasharray={pt.isXp ? '3 2' : undefined}
+                              strokeWidth={pt.isXp ? 1.2 : 0}
+                            />
+                          );
+                        })}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {showNextXp && typeof effectiveXpNext === 'number' && effectiveNextMd != null && (
+                  <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[11px] px-1">
+                    <span className="text-[#8b92a5]">
+                      Prognose ST {effectiveNextMd}
+                      {effectiveNextOpp ? ` (${effectiveIsHome ? 'vs.' : '@'} ${effectiveNextOpp})` : ''}
+                    </span>
+                    <span className="font-bold text-cyan-400 tabular-nums">
+                      {effectiveXpNext} xP
+                      {typeof effectiveMatchup === 'number' && Math.abs(effectiveMatchup - 1) >= 0.02 && (
+                        <span className={`ml-1.5 text-[10px] ${effectiveMatchup > 1 ? 'text-emerald-400' : 'text-red-400'}`}>
+                          ({effectiveMatchup > 1 ? '+' : ''}{Math.round((effectiveMatchup - 1) * 100)}% Matchup)
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            );
+          })()}
+
+          {/* Trading-Historie zwischen den Managern */}
+          {playerTransfers.length > 0 && (() => {
+            const leaguesPresent = [...new Set(playerTransfers.map((t) => t._league).filter(Boolean))].sort();
+            const hasDirectDeals = playerTransfers.some((t) => t.buyerName && t.sellerName);
+            const filteredTransfers = playerTransfers.filter((t) => {
+              if (transferFilter === 'DIRECT') return Boolean(t.buyerName && t.sellerName);
+              if (transferFilter !== 'ALL') return t._league === transferFilter;
+              return true;
+            });
+            const visibleTransfers = showAllTransfers ? filteredTransfers : filteredTransfers.slice(0, 8);
+
+            return (
+              <div className="px-4 sm:px-6 mb-8">
+                <div className="flex items-center justify-between gap-2 mb-2.5">
+                  <h3 className="text-lg font-semibold text-white">Trading-Historie</h3>
+                  <span className="text-[11px] text-[#8b92a5] tabular-nums">
+                    {filteredTransfers.length} {filteredTransfers.length === 1 ? 'Transfer' : 'Transfers'}
+                  </span>
+                </div>
+
+                {(leaguesPresent.length > 1 || hasDirectDeals) && (
+                  <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 mb-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setTransferFilter('ALL')}
+                      className={`shrink-0 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-colors cursor-pointer ${
+                        transferFilter === 'ALL'
+                          ? 'bg-white text-black border-white'
+                          : 'bg-white/[0.04] text-[#8b92a5] border-white/10 hover:text-white'
+                      }`}
+                    >
+                      Alle
+                    </button>
+                    {hasDirectDeals && (
+                      <button
+                        type="button"
+                        onClick={() => setTransferFilter('DIRECT')}
+                        className={`shrink-0 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-colors cursor-pointer ${
+                          transferFilter === 'DIRECT'
+                            ? 'bg-purple-500 text-white border-purple-400'
+                            : 'bg-white/[0.04] text-purple-300 border-purple-400/25 hover:text-white'
+                        }`}
+                      >
+                        Manager-Deals
+                      </button>
+                    )}
+                    {leaguesPresent.map((lg) => (
+                      <button
+                        key={lg}
+                        type="button"
+                        onClick={() => setTransferFilter(lg)}
+                        className={`shrink-0 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-colors cursor-pointer ${
+                          transferFilter === lg
+                            ? 'bg-white/20 text-white border-white/40'
+                            : 'bg-white/[0.04] text-[#8b92a5] border-white/10 hover:text-white'
+                        }`}
+                      >
+                        {lg}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <div className="space-y-1.5">
+                  {visibleTransfers.map((tr) => {
+                    const isDirect = Boolean(tr.buyerName && tr.sellerName);
+                    const fromLabel = tr.sellerName || 'Markt';
+                    const toLabel = tr.buyerName || 'Markt';
+                    const mvAt = typeof tr.marketValueAtTimeOfTransfer === 'number' ? tr.marketValueAtTimeOfTransfer : null;
+                    const diff = mvAt && typeof tr.price === 'number' ? tr.price - mvAt : null;
+                    const diffPct = mvAt && mvAt > 0 && diff != null ? (diff / mvAt) * 100 : null;
+                    const lgColor = TRANSFER_LEAGUE_COLORS[tr._league] || '#8b92a5';
+
+                    return (
+                      <div
+                        key={tr.id || `${tr.date}-${fromLabel}-${toLabel}-${tr.price}`}
+                        className={`card-surface rounded-xl px-3 py-2.5 flex items-center justify-between gap-3 ${
+                          isDirect ? 'border-purple-500/35' : ''
+                        }`}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5 text-xs font-semibold text-white min-w-0">
+                            <span className={`truncate ${tr.sellerName ? 'text-gray-200' : 'text-[#8b92a5]'}`}>
+                              {fromLabel}
+                            </span>
+                            <ArrowRight size={11} className={`shrink-0 ${isDirect ? 'text-purple-400' : 'text-[#626978]'}`} />
+                            <span className={`truncate ${tr.buyerName ? 'text-white' : 'text-[#8b92a5]'}`}>
+                              {toLabel}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-[#8b92a5] tabular-nums">
+                            <span>{formatTransferDate(tr.date)}</span>
+                            {tr._league && (
+                              <>
+                                <span>·</span>
+                                <span className="font-bold" style={{ color: lgColor }}>{tr._league}</span>
+                              </>
+                            )}
+                            {isDirect && (
+                              <>
+                                <span>·</span>
+                                <span className="font-bold text-purple-300">Direktdeal</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="text-right shrink-0">
+                          <div className="text-xs sm:text-sm font-bold text-white tabular-nums leading-none">
+                            {formatCompactMoney(tr.price)}
+                          </div>
+                          {diff != null && Math.abs(diff) >= 5000 && (
+                            <div className={`text-[10px] font-semibold tabular-nums mt-1 leading-none ${diff > 0 ? 'text-amber-400/90' : 'text-emerald-400/90'}`}>
+                              {formatSignedCompactMoney(diff)} {diffPct != null ? `(${diffPct > 0 ? '+' : ''}${Math.round(diffPct)}%)` : ''}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {filteredTransfers.length > 8 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllTransfers((v) => !v)}
+                    className="mt-2.5 w-full py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-[11px] font-bold text-gray-300 transition-colors cursor-pointer"
+                  >
+                    {showAllTransfers ? 'Weniger anzeigen' : `Alle ${filteredTransfers.length} Transfers anzeigen`}
+                  </button>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Key Statistics Grid (Scalable Style) */}
           <div className="px-4 sm:px-6">

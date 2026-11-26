@@ -105,15 +105,15 @@ const PlayerRowCard = ({
 
       {/* Optionale Aktion oben links (z.B. Favoriten-Stern im Trading Advisor) */}
       {leadingAction && (
-        <div className="absolute top-1.5 left-1.5 z-10">
+        <div className="absolute top-1 left-2 z-10">
           {leadingAction}
         </div>
       )}
 
-      {/* Startelf-Wahrscheinlichkeit als kleiner Kreis links unten auf dem Spielerbild */}
+      {/* Startelf-Wahrscheinlichkeit als kleiner Kreis links mittig auf dem Spielerbild */}
       {startProb != null && (
-        <div className="absolute bottom-1 left-1.5 z-10 rounded-full bg-black/85 p-[1.5px] shadow-md pointer-events-none">
-          <StartProbBadge prob={startProb} variant="icon" size={15} />
+        <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10 rounded-full bg-black/85 p-[1.5px] shadow-md pointer-events-none">
+          <StartProbBadge prob={startProb} variant="icon" size={16} />
         </div>
       )}
 
