@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Clock, Flame, Trophy, TrendingUp, Newspaper, ArrowUpRight, Quote } from 'lucide-react';
+import { ArrowLeft, Clock, Flame, Trophy, TrendingUp, Newspaper, ArrowUpRight, Quote, Megaphone } from 'lucide-react';
 import { getCategoryMeta, formatArticleDate, sortArticlesByDateDesc } from './feedMeta';
 import AdBanner from './ui/AdBanner';
 
@@ -8,6 +8,7 @@ const CategoryIcon = ({ id, size = 12 }) => {
   if (id === 'spieltag') return <Flame size={size} />;
   if (id === 'pokal') return <Trophy size={size} />;
   if (id === 'trading') return <TrendingUp size={size} />;
+  if (id === 'allgemein') return <Megaphone size={size} />;
   return <Newspaper size={size} />;
 };
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Newspaper, Trophy, TrendingUp, Flame, Clock, BarChart3, ChevronRight, CalendarRange } from 'lucide-react';
+import { Newspaper, Trophy, TrendingUp, Flame, Clock, BarChart3, ChevronRight, CalendarRange, Megaphone } from 'lucide-react';
 import PageHeader from './ui/PageHeader';
 import { FEED_CATEGORIES, getCategoryMeta, formatArticleDate, sortArticlesByDateDesc } from './feedMeta';
 import { useAuth } from './AuthContext';
@@ -14,6 +14,7 @@ const CategoryIcon = ({ id, size = 13 }) => {
   if (id === 'spieltag') return <Flame size={size} />;
   if (id === 'pokal') return <Trophy size={size} />;
   if (id === 'trading') return <TrendingUp size={size} />;
+  if (id === 'allgemein') return <Megaphone size={size} />;
   if (id === 'weekly') return <CalendarRange size={size} />;
   return <Newspaper size={size} />;
 };
@@ -301,7 +302,7 @@ const FeedPage = () => {
   const ticker = useMemo(() => feedData?.ticker || [], [feedData]);
 
   const counts = useMemo(() => {
-    const map = { all: baseArticles.length + weeklyArticles.length, spieltag: 0, pokal: 0, trading: 0, weekly: weeklyArticles.length };
+    const map = { all: baseArticles.length + weeklyArticles.length, spieltag: 0, pokal: 0, trading: 0, allgemein: 0, weekly: weeklyArticles.length };
     baseArticles.forEach((a) => {
       if (map[a.category] != null) map[a.category] += 1;
     });
@@ -341,6 +342,7 @@ const FeedPage = () => {
       { id: 'spieltag', title: 'Spieltagsberichte', articles: byCategory('spieltag'), accentColor: '#ff5c3e' },
       { id: 'pokal', title: 'Pokal', articles: byCategory('pokal'), accentColor: '#f59e0b' },
       { id: 'trading', title: 'The Trading Journal', articles: byCategory('trading'), accentColor: '#10b981' },
+      { id: 'allgemein', title: 'Allgemein', articles: byCategory('allgemein'), accentColor: '#38bdf8' },
     ];
     if (isAdmin && weeklyArticles.length > 0) {
       list.push({ id: 'weekly', title: 'Weekly', articles: weeklyArticles, accentColor: '#a855f7' });
@@ -357,6 +359,7 @@ const FeedPage = () => {
   };
 
   const isTradingView = activeCat === 'trading';
+  const isAllgemeinView = activeCat === 'allgemein';
   const isWeeklyView = activeCat === 'weekly' && isAdmin;
 
   return (
@@ -374,27 +377,33 @@ const FeedPage = () => {
                 ? 'ADMIN-VORSCHAU · WOCHENBERICHT'
                 : isTradingView
                   ? 'MARKET DESK & ANALYSEN'
-                  : 'REDAKTION & ANALYSEN'
+                  : isAllgemeinView
+                    ? 'LIGASYSTEM · UPDATES & SPECIALS'
+                    : 'REDAKTION & ANALYSEN'
             }
             accentColor={
               isWeeklyView
                 ? '#a855f7'
                 : isTradingView
                   ? '#10b981'
-                  : activeCat === 'pokal'
-                    ? '#f59e0b'
-                    : '#ff5c3e'
+                  : isAllgemeinView
+                    ? '#38bdf8'
+                    : activeCat === 'pokal'
+                      ? '#f59e0b'
+                      : '#ff5c3e'
             }
             title={
               isWeeklyView
                 ? 'WEEKLY SUMMARY'
                 : isTradingView
                   ? 'THE TRADING JOURNAL'
-                  : activeCat === 'pokal'
-                    ? 'POKAL-CHRONIK'
-                    : activeCat === 'spieltag'
-                      ? 'SPIELTAGSBERICHTE'
-                      : 'NEWSFEED'
+                  : isAllgemeinView
+                    ? 'ALLGEMEIN'
+                    : activeCat === 'pokal'
+                      ? 'POKAL-CHRONIK'
+                      : activeCat === 'spieltag'
+                        ? 'SPIELTAGSBERICHTE'
+                        : 'NEWSFEED'
             }
           />
         </div>

@@ -40,6 +40,16 @@ export const FEED_CATEGORIES = [
     isWsj: true,
   },
   {
+    id: 'allgemein',
+    label: 'Allgemein',
+    shortLabel: 'Allgemein',
+    accent: '#38bdf8',
+    badgeClass: 'bg-sky-500/15 text-sky-400 border-sky-400/35',
+    pillActiveClass: 'bg-sky-500 text-black border-sky-400',
+    borderAccent: 'border-l-sky-400',
+    calloutClass: 'bg-sky-500/10 border-sky-400/30',
+  },
+  {
     id: 'weekly',
     label: 'Weekly',
     shortLabel: 'Weekly',
