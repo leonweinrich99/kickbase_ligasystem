@@ -211,6 +211,31 @@ const AUDIT_SCRIPT = `(() => {
     }
   }
 
+  for (const card of document.querySelectorAll('[data-layout-guard="player-card"]')) {
+    const cr = card.getBoundingClientRect();
+    if (cr.width === 0 || cr.height === 0) continue;
+    if (cr.right > vw + 1) {
+      issues.push({
+        type: 'player-card-overflow',
+        detail: 'player-card right (' + Math.round(cr.right) + ') > viewport (' + vw + ')'
+      });
+      break;
+    }
+    const center = card.querySelector('[data-layout-guard="player-card-center"]');
+    const right = card.querySelector('[data-layout-guard="player-card-right"]');
+    if (center && right) {
+      const midR = center.getBoundingClientRect();
+      const rightR = right.getBoundingClientRect();
+      if (midR.right > rightR.left + 1) {
+        issues.push({
+          type: 'player-card-overlap',
+          detail: 'player-card center (' + Math.round(midR.right) + ') overlaps right (' + Math.round(rightR.left) + ')'
+        });
+        break;
+      }
+    }
+  }
+
   return {
     vw,
     docScrollW,

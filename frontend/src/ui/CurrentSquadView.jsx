@@ -1,8 +1,22 @@
-import React, { useMemo, useState } from 'react';
-import { Info, ExternalLink } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { ExternalLink } from 'lucide-react';
 import { buildLineupWithDummies } from '../liveLineupUtils';
 import { normalizeStartProbCode } from '../startProbMeta';
-import StartProbBadge, { StartProbLegend } from './StartProbBadge';
+import { buildPlayerXpMap } from '../playerXpModel';
+import StartProbBadge from './StartProbBadge';
+import PlayerRowCard from './PlayerRowCard';
+
+// Gecachter Loader fuer xP-Werte der Spielerkarten in "Mein Kader"
+let squadXpMapPromise = null;
+const loadSquadXpMap = () => {
+  if (!squadXpMapPromise) {
+    squadXpMapPromise = fetch('/history/all_players.json')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((raw) => (Array.isArray(raw) ? buildPlayerXpMap(raw).byId : new Map()))
+      .catch(() => new Map());
+  }
+  return squadXpMapPromise;
+};
 
 // Offizieller Kickbase Universal Link (verifiziert fuer iOS apple-app-site-association
 // & Android assetlinks.json) - oeffnet die installierte Kickbase-App direkt.
@@ -221,86 +235,69 @@ const SquadPitchRow = ({ players }) => {
   );
 };
 
-const SquadListRow = ({ player, isBench }) => {
-  const [imgFailed, setImgFailed] = useState(false);
+const SquadListRow = ({ player, isBench, xpSeason }) => {
   const posCode = toPosCode(player.position);
   const posLabel = POS_CODE_TO_LABEL[posCode] || 'MF';
-  const posColor = POSITION_COLORS[posCode] || '#8b92a5';
-  const fullImgUrl = player.imagePath ? `${IMAGE_BASE}${player.imagePath}` : null;
-  const showPhoto = fullImgUrl && !isDummyImage(fullImgUrl) && !imgFailed;
   const isInjured = typeof player.status === 'number' && player.status !== 0;
   const statusText = isInjured ? (STATUS_LABELS[player.status] || `Status ${player.status}`) : null;
 
+  const metaStatus = statusText
+    ? { label: statusText, tone: 'orange' }
+    : isBench
+      ? { label: 'Bank', tone: 'muted' }
+      : { label: 'Startelf', tone: 'emerald' };
+
+  const metaSecondary = typeof xpSeason === 'number'
+    ? `${xpSeason} xP`
+    : (player.teamName || null);
+
+  const hasAmount = typeof player.mvTrendAmount === 'number' && !Number.isNaN(player.mvTrendAmount);
+  const isRising = hasAmount ? player.mvTrendAmount > 0 : player.mvTrendDir === 1;
+  const isFalling = hasAmount ? player.mvTrendAmount < 0 : player.mvTrendDir === 2;
+  const secondaryMetric = (hasAmount || player.mvTrendDir != null)
+    ? {
+        text: `${isRising ? '▲' : isFalling ? '▼' : '▬'} ${
+          hasAmount
+            ? formatSignedCompactMoney(player.mvTrendAmount)
+            : isRising
+              ? 'Steigend'
+              : isFalling
+                ? 'Fallend'
+                : 'Stabil'
+        }`,
+        tone: isRising ? 'green' : isFalling ? 'red' : 'muted',
+      }
+    : null;
+
   return (
-    <div className="relative overflow-hidden w-full flex items-center gap-3 px-3 py-2.5 card-surface rounded-xl">
-      {/* Avatar + Club Crest */}
-      <div className="relative w-10 h-10 shrink-0">
-        <div className="w-10 h-10 rounded-full overflow-hidden bg-[#171717] ring-1 ring-white/15 flex items-center justify-center">
-          {showPhoto ? (
-            <img
-              src={fullImgUrl}
-              alt={player.name}
-              className="w-full h-full object-cover object-top"
-              onError={() => setImgFailed(true)}
-            />
-          ) : (
-            <span className="text-xs font-bold text-[#626978] uppercase">
-              {(player.lastName || player.name || '?').substring(0, 2)}
-            </span>
-          )}
-        </div>
-        {player.teamLogo && (
-          <img
-            src={player.teamLogo}
-            alt=""
-            className="w-4 h-4 object-contain absolute -bottom-0.5 -right-0.5 bg-black/80 rounded-full p-[1px]"
-            onError={(e) => { e.target.style.display = 'none'; }}
-          />
-        )}
-      </div>
-
-      {/* Name, Position, Startelf-Prognose */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5 min-w-0">
-          <span className="text-[10px] font-black shrink-0" style={{ color: posColor }}>
-            {posLabel}
-          </span>
-          <span className="text-[13px] sm:text-sm font-bold text-white truncate">
-            {player.name}
-          </span>
-          {isBench && (
-            <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/[0.06] text-[#8b92a5] border border-white/10 shrink-0">
-              Bank
-            </span>
-          )}
-        </div>
-
-        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-          <StartProbBadge prob={player.prob} variant="compact" />
-          {statusText && (
-            <span className="text-[8px] font-bold uppercase tracking-wider bg-orange-500/10 text-orange-400 border border-orange-500/30 rounded px-1.5 py-0.5 shrink-0">
-              {statusText}
-            </span>
-          )}
-          {player.teamName && (
-            <span className="text-[10px] text-[#626978] truncate">{player.teamName}</span>
-          )}
-        </div>
-      </div>
-
-      {/* Marktwert + 24h Marktwert-Tendenz */}
-      <div className="text-right shrink-0">
-        <div className="text-[13px] sm:text-sm font-bold text-gray-100 tabular-nums leading-none">
-          {formatCompactMoney(player.marketValue)}
-        </div>
-        <MarketTrendBadge amount={player.mvTrendAmount} dir={player.mvTrendDir} />
-      </div>
-    </div>
+    <PlayerRowCard
+      player={{
+        name: player.name,
+        position: posLabel,
+        imagePath: player.imagePath,
+        teamLogo: player.teamLogo,
+        startProb: player.prob,
+      }}
+      metaStatus={metaStatus}
+      metaSecondary={metaSecondary}
+      primaryMetric={formatCompactMoney(player.marketValue)}
+      secondaryMetric={secondaryMetric}
+    />
   );
 };
 
 const CurrentSquadView = ({ players, liveStartingIds, loading }) => {
-  const [showLegend, setShowLegend] = useState(false);
+  const [xpById, setXpById] = useState(() => new Map());
+
+  useEffect(() => {
+    let cancelled = false;
+    loadSquadXpMap().then((map) => {
+      if (!cancelled) setXpById(map);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const {
     pitchLineup,
@@ -443,27 +440,13 @@ const CurrentSquadView = ({ players, liveStartingIds, loading }) => {
         <ExternalLink size={14} className="text-[#ff5c3e] shrink-0" />
       </a>
 
-      {/* Liste unterhalb des Fussballfelds: nach Positionen gruppiert mit Marktwert, Tendenz & Startelf-Prognose */}
+      {/* Liste unterhalb des Fussballfelds: nach Positionen gruppiert im einheitlichen Karten-Design */}
       <div className="mt-5">
         <div className="flex items-center justify-between gap-2 mb-3">
           <h3 className="text-xs font-black uppercase tracking-widest text-gray-200">
             Kader nach Position
           </h3>
-          <button
-            type="button"
-            onClick={() => setShowLegend((v) => !v)}
-            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer ${
-              showLegend
-                ? 'bg-cyan-500/20 border-cyan-400/50 text-cyan-300'
-                : 'bg-white/[0.04] border-white/15 text-[#8b92a5] hover:text-white'
-            }`}
-          >
-            <Info size={11} />
-            <span>Legende</span>
-          </button>
         </div>
-
-        {showLegend && <StartProbLegend className="mb-3.5" />}
 
         <div className="flex flex-col gap-4">
           {groupedByPosition.map((group) => (
@@ -475,13 +458,17 @@ const CurrentSquadView = ({ players, liveStartingIds, loading }) => {
                 </span>
               </div>
               <div className="flex flex-col gap-2">
-                {group.players.map((player) => (
-                  <SquadListRow
-                    key={player.id}
-                    player={player}
-                    isBench={!starterIds.has(String(player.id))}
-                  />
-                ))}
+                {group.players.map((player) => {
+                  const xpInfo = xpById.get(String(player.id));
+                  return (
+                    <SquadListRow
+                      key={player.id}
+                      player={player}
+                      isBench={!starterIds.has(String(player.id))}
+                      xpSeason={xpInfo?.xpSeason}
+                    />
+                  );
+                })}
               </div>
             </div>
           ))}
