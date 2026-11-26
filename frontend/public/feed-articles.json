@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-25T17:25:00.000Z",
+  "updatedAt": "2026-11-25T18:10:00.000Z",
   "ticker": [
     {
       "tag": "MAKRO",
@@ -241,20 +241,20 @@
       "author": "Ligasystem Datenredaktion",
       "kicker": "DATENANALYSE · SONDERAUSGABE",
       "title": "Glück oder Können?",
-      "subtitle": "260 offizielle Startelfs aus zehn Spieltagen auf dem Prüfstand: Warum ein einzelnes Wochenende zu rund 80 Prozent Lotterie ist, sich Qualität über eine Saison aber trotzdem klar durchsetzt – inklusive leicht verständlicher Erklärung, aller drei Erwartungstabellen und dem Fazit, was einen guten Kickbase-Manager wirklich ausmacht.",
+      "subtitle": "260 offizielle Startelfs aus zehn Spieltagen auf dem Prüfstand: Warum ein einzelnes Wochenende noch zu rund drei Vierteln Lotterie ist, sich Qualität über zehn Spieltage aber schon zu 80 Prozent durchsetzt – inklusive leicht verständlicher Erklärung, aller drei Erwartungstabellen und dem Fazit, was einen guten Kickbase-Manager wirklich ausmacht.",
       "image": "/feed-images/glueck-oder-koennen.svg",
       "heroStats": [
         {
           "label": "1 Spieltag (Können)",
-          "value": "17 %"
+          "value": "23 %"
         },
         {
           "label": "10 Spieltage (Können)",
-          "value": "73 %"
+          "value": "80 %"
         },
         {
           "label": "Erwartet vs. Echt",
-          "value": "854 vs. 855"
+          "value": "851 vs. 855"
         }
       ],
       "tags": [
@@ -270,13 +270,13 @@
           "heading": "Kurz erklärt: Wie wir Glück und Können überhaupt messen",
           "paragraphs": [
             "Kaum eine Frage spaltet Kickbase-Ligen so zuverlässig wie diese: Gewinnt am Ende wirklich der bessere Manager – oder einfach derjenige mit dem größten Glück? Wenn der Konkurrent am Sonntagabend durch einen späten Doppelpack doch noch vorbeizieht, fühlt sich das Spiel oft wie reines Würfeln an.",
-            "Um das Bauchgefühl durch echte Zahlen zu ersetzen, haben wir alle 260 offiziellen Startelf-Aufstellungen unserer 26 Manager aus den ersten zehn Spieltagen ausgewertet. Für jede einzelne Aufstellung haben wir berechnet, wie viele Punkte sie vor Anpfiff realistisch erwarten ließ – diese Zahl nennen wir xP (kurz für „Expected Points“, also erwartete Punkte). Wichtig: In diesen Wert fließen nur Daten ein, die vor dem jeweiligen Spieltag bekannt waren – also Einsatzwahrscheinlichkeit und bisheriger Punkteschnitt der Spieler, aber auch eigene Patzer wie unbesetzte Positionen (-100 Punkte Strafe) oder ein negativer Kontostand zum Anpfiff (0 erwartete Punkte).",
-            "Der große Qualitätstest: Über alle 260 Aufstellungen zusammen prognostiziert unser Modell im Schnitt 854 erwartete Punkte – und tatsächlich erzielt wurden im Schnitt 855 Punkte. Im Gesamtdurchschnitt trifft die Rechnung die Realität also fast auf den Punkt genau."
+            "Um das Bauchgefühl durch echte Zahlen zu ersetzen, haben wir alle 260 offiziellen Startelf-Aufstellungen unserer 26 Manager aus den ersten zehn Spieltagen ausgewertet. Für jede einzelne Aufstellung haben wir berechnet, wie viele Punkte sie vor Anpfiff realistisch erwarten ließ – diese Zahl nennen wir xP (kurz für „Expected Points“, also erwartete Punkte). Wichtig: In diesen Wert fließen nur Daten ein, die vor dem jeweiligen Spieltag bekannt waren – also Einsatzwahrscheinlichkeit, bisherige Form, Marktwert, Teamstärke sowie Heimvorteil und Gegnerstärke, aber auch eigene Patzer wie unbesetzte Positionen (-100 Punkte Strafe) oder ein negativer Kontostand zum Anpfiff (0 erwartete Punkte).",
+            "Der große Qualitätstest: Über alle 260 Aufstellungen zusammen prognostiziert unser verfeinertes Modell im Schnitt 851 erwartete Punkte – und tatsächlich erzielt wurden im Schnitt 855 Punkte. Im Gesamtdurchschnitt trifft die Rechnung die Realität also fast auf den Punkt genau."
           ],
           "callout": {
             "title": "Kleines Begriffs-Lexikon für diesen Artikel",
             "items": [
-              "xP (Expected Points / erwartete Punkte): Die Punktzahl, die eine Startelf vor dem Spieltag realistisch erwarten lässt – der Maßstab für saubere Manager-Arbeit.",
+              "xP (Expected Points / erwartete Punkte): Die Punktzahl, die eine Startelf vor dem Spieltag anhand von Form, Einsatzchance, Marktwert, Heim-/Auswärts- und Gegnerstärke realistisch erwarten lässt.",
               "Abweichung (+/-): Der Unterschied zwischen echten Punkten und erwarteten Punkten. Ein deutliches Plus heißt: mehr geholt als erwartet. Ein deutliches Minus: weniger geholt als erwartet.",
               "Nuller / DNP („Did Not Play“): Ein aufgestellter Spieler, der am Spieltag gar nicht zum Einsatz kam und daher 0 Punkte liefert.",
               "Overpay: Der prozentuale Aufpreis, den ein Manager beim Kauf über dem aktuellen Marktwert bezahlt."
@@ -286,14 +286,14 @@
         {
           "heading": "Ein Wochenende ist Lotterie – zehn Spieltage sind bereits Können",
           "paragraphs": [
-            "Schaut man sich nur einen einzelnen Spieltag an, gewinnt tatsächlich meist der Zufall: Nur rund 17 Prozent der Punkteunterschiede an einem einzelnen Wochenende lassen sich durch die bessere Startelf erklären (rechnet man Spieltage im Minus mit ein, sind es rund 24 Prozent). Der Grund ist simpel: Der Qualitätsunterschied zwischen den Managern liegt im Schnitt bei etwa ±130 Punkten pro Spieltag – die zufälligen Schwankungen von Woche zu Woche (ein Tor hier, eine Rote Karte oder ein Elfer-Fehlschuss dort) betragen jedoch ±262 Punkte und sind damit doppelt so groß. An einem einzelnen Spieltag – und damit auch im K.-o.-Pokal – entscheidet also zu rund 80 Prozent das Glück.",
-            "Über mehrere Wochen dreht sich dieses Bild allerdings erstaunlich schnell. Weil sich gute und schlechte Einzelwochenenden gegenseitig ausgleichen, erklären die erwarteten Punkte der Startelf schon nach zehn Spieltagen stolze 73 Prozent der gesamten Tabellenunterschiede. Hochgerechnet auf eine volle Bundesliga-Saison mit 34 Spieltagen steigt der Können-Anteil auf rund 85 bis 90 Prozent. Kurzfristig regiert der Zufall – langfristig setzt sich Qualität fast immer durch.",
+            "Schaut man sich nur einen einzelnen Spieltag an, gewinnt tatsächlich meist der Zufall: Nur rund 23 Prozent der Punkteunterschiede an einem regulären Wochenende lassen sich durch die bessere Startelf erklären (rechnet man Spieltage im Minus mit ein, sind es rund 30 Prozent). Der Grund ist simpel: Der Qualitätsunterschied zwischen den Managern liegt im Schnitt bei etwa ±133 Punkten pro Spieltag – die zufälligen Schwankungen von Woche zu Woche (ein Tor hier, eine Rote Karte oder ein Elfer-Fehlschuss dort) betragen jedoch ±248 Punkte und sind damit fast doppelt so groß. An einem einzelnen Spieltag – und damit auch im K.-o.-Pokal – entscheidet also zu rund 75 bis 80 Prozent das Glück.",
+            "Über mehrere Wochen dreht sich dieses Bild allerdings erstaunlich schnell. Weil sich gute und schlechte Einzelwochenenden gegenseitig ausgleichen, erklären die erwarteten Punkte der Startelf schon nach zehn Spieltagen stolze 80 Prozent der gesamten Tabellenunterschiede. Hochgerechnet auf eine volle Bundesliga-Saison mit 34 Spieltagen steigt der Können-Anteil auf rund 88 bis 92 Prozent. Kurzfristig regiert der Zufall – langfristig setzt sich Qualität fast immer durch.",
             "Noch spannender wird es, wenn man vergleicht, welche Manager-Fähigkeiten aus unserem Rating-System am stärksten mit echten Saisonpunkten zusammenhängen: Ganz vorne liegen die Startelf-Qualität und der Trading-Gewinn – während Sparsamkeit beim Bieten (niedriger Overpay) praktisch gar keinen Vorteil bringt."
           ],
           "callout": {
             "title": "Was wirklich für Punkte sorgt (Auswertung über alle 26 Manager nach 10 Spieltagen)",
             "items": [
-              "Startelf-Qualität (erwartete Punkte / xP): erklärt 73 % der Punkteunterschiede – der mit Abstand stärkste Faktor.",
+              "Startelf-Qualität (erwartete Punkte / xP): erklärt 80 % der Punkteunterschiede – der mit Abstand stärkste Faktor.",
               "Trading-Gewinn am Transfermarkt: erklärt 67 % – wer viel Gewinn erwirtschaftet, kann sich schlicht bessere Stammspieler leisten.",
               "Marktaktivität (Anzahl der Transfers): erklärt 47 % – aktive Manager bauen im Schnitt deutlich stärkere Kader.",
               "Durchschnittlicher Kaderwert: erklärt 40 % – mehr investiertes Kapital zahlt direkt auf die Punktausbeute ein.",
@@ -306,18 +306,18 @@
           "heading": "Was hinter „Glück“ wirklich steckt: Ausreißer, News-Gespür oder mutige Strategie?",
           "paragraphs": [
             "Wer deutlich mehr Punkte holt als erwartet, wird schnell pauschal als „Glückspilz“ abgestempelt. Ein genauer Blick auf die einzelnen Spieler zeigt aber: Nicht jedes große Plus ist reiner Zufall. Hinter den größten positiven Abweichungen stecken drei sehr unterschiedliche Muster.",
-            "Erstens gibt es echte Einzelspieltags-Explosionen, die niemand planen kann. Liga-1-Überraschungszweiter DeinHomieEnobi holte pro Spieltag +220 Punkte mehr als erwartet (Platz 2 statt Erwartungsplatz 8). Allein zwölf 200+-Ausbrüche brachten ihm +2.110 Zusatzpunkte – darunter Luis Díaz (525 Punkte statt 151 erwartet), Maarten Vandevoordt (335), Anthony Caci (310), Phillip Tietz (321) und Alphonso Davies (320). Trotzdem war nicht alles Zufall: Mit elf Überraschungs-Startern – allen voran Torwart Daniel Batz (im Schnitt 188 Punkte bei 50 erwartet) – bewies Enobi auch ein gutes Gespür für kurzfristige Aufstellungsnews.",
-            "Zweitens zahlt sich mutiges Timing bei Rückkehrern aus. Esel (+115 Punkte pro Spieltag über Erwartung, Platz 3 in Liga 1) profitierte ebenfalls von elf Überraschungs-Startern (+841 Punkte): Er stellte Jamal Musiala (333 Punkte) und Nico Schlotterbeck (+375 Punkte in drei Spielen) genau rechtzeitig zu ihrem Comeback auf, dazu kamen starke Wochenenden von Antonio Nusa (+311) und Phillipp Mwene (302).",
-            "Drittens lässt sich ein Teil des Plus sogar als echtes strategisches Können werten: das bewusste Setzen auf Durchstarter und Spieler mit besonders hoher Punktdecke (also Stars, die an guten Tagen regelmäßig 250+ Punkte holen können). Liga-3-Spitzenreiter Geißbock (+144 pro Spieltag) hielt alle zehn Spieltage unbeirrt an Niclas Füllkrug fest (im Schnitt 157 statt 104 erwartete Punkte → +522 Punkte) und erkannte Durchstarter wie Jordy Makengo (+311), Igor Matanović (+243) und Antonio Nusa (+226) extrem früh. Ganz ähnlich ging Ansgar Trinkmann (+91 pro Spieltag, Platz 4 statt Erwartungsplatz 6 in Liga 2) vor: Er setzte konsequent auf Bayern- und Leipzig-Spieler mit maximalem Punkte-Potenzial – und wurde mit Top-Tagen von Harry Kane (345), Antonio Nusa (334), David Raum (331), Dayot Upamecano (272) und Ezechiel Banzuzi (275) belohnt."
+            "Erstens gibt es echte Einzelspieltags-Explosionen, die niemand planen kann. Liga-1-Überraschungszweiter DeinHomieEnobi holte pro Spieltag +203 Punkte mehr als erwartet (Platz 2 statt Erwartungsplatz 7). Allein zwölf 200+-Ausbrüche brachten ihm enorme Zusatzpunkte – darunter Luis Díaz (525 Punkte), Maarten Vandevoordt (335), Anthony Caci (310), Phillip Tietz (321) und Alphonso Davies (320). Trotzdem war nicht alles Zufall: Mit elf Überraschungs-Startern – allen voran Torwart Daniel Batz (im Schnitt 188 Punkte) – bewies Enobi auch ein gutes Gespür für kurzfristige Aufstellungsnews.",
+            "Zweitens zahlt sich mutiges Timing bei Rückkehrern aus. Esel (+95 Punkte pro Spieltag über Erwartung, Platz 3 in Liga 1) profitierte ebenfalls von elf Überraschungs-Startern: Er stellte Jamal Musiala (333 Punkte) und Nico Schlotterbeck genau rechtzeitig zu ihrem Comeback auf, dazu kamen starke Wochenenden von Antonio Nusa und Phillipp Mwene (302).",
+            "Drittens lässt sich ein Teil des Plus sogar als echtes strategisches Können werten: das bewusste Setzen auf Durchstarter und Spieler mit besonders hoher Punktdecke (also Stars, die an guten Tagen regelmäßig 250+ Punkte holen können). Liga-3-Spitzenreiter Geißbock (+134 pro Spieltag, auch nach erwarteten Punkten Erster!) hielt alle zehn Spieltage unbeirrt an Niclas Füllkrug fest (im Schnitt 157 Punkte) und erkannte Durchstarter wie Jordy Makengo, Igor Matanović und Antonio Nusa extrem früh. Ganz ähnlich ging Ansgar Trinkmann (+60 pro Spieltag, Platz 4 statt Erwartungsplatz 6 in Liga 2) vor: Er setzte konsequent auf Bayern- und Leipzig-Spieler mit maximalem Punkte-Potenzial – und wurde mit Top-Tagen von Harry Kane (345), Antonio Nusa (334), David Raum (331), Dayot Upamecano (272) und Ezechiel Banzuzi (275) belohnt."
           ]
         },
         {
           "heading": "Pech oder eigenes Versagen? Ein Blick auf die Sorgenkinder",
           "paragraphs": [
             "Am unteren Ende der Abweichungstabelle ist die Trennung noch wichtiger – denn wer deutlich weniger Punkte holt als erwartet, kann entweder gnadenloses Pech gehabt oder selbst vermeidbare Fehler gemacht haben.",
-            "Der größte Pechvogel im gesamten Ligasystem heißt JulianD47 (-127 Punkte pro Spieltag unter Erwartung, Platz 6 statt Erwartungsplatz 5 in Liga 2). Kein einziger leerer Platz in der Startelf, kein einziger Spieltag im Minus – trotzdem erwischten seine Stammspieler 26-mal rabenschwarze Tage. Dazu kamen schmerzhafte Minuspunkte wie Felix Uduokhai (-60 am 7. Spieltag), Warmed Omari (-31), Tim Skarke (-23) und Diego Moreira (-20) sowie ungewöhnlich schwache Serien von Igor Matanović (im Schnitt 85 statt 138 Saisonschnitt) und Phillip Tietz (im Schnitt 91). Ganz ähnlich hart traf es Mo6 in Liga 1 (-69 pro Spieltag, 0 leere Plätze): Füllkrug (-46 am 1. Spieltag), Stefan Posch (-34), Yuito Suzuki (-20 bei 122 Saisonschnitt), Younes Ebnoutalib (-7 bei 137 Saisonschnitt) und zwei unerwartete Nuller von Ridle Baku (158 Saisonschnitt) kosteten ihn rund zwei Tabellenplätze.",
-            "Bei Curl3z (-168 pro Spieltag, Liga 1) und KönigMichi (-100 pro Spieltag, Liga 3) mischen sich Pech und Eigenanteil. Curl3z erwischte historisch schlechtes Timing bei eigentlich starken Spielern (Adam Daghim im Schnitt 67 statt 120 Saisonschnitt, Caci 41, Marius Wolf 22 sowie sieben unerwartete Ausfälle ohne Einsatz), ließ aber gleichzeitig vier Startelf-Plätze komplett frei (am 2. Spieltag standen nur sieben Spieler auf dem Feld) und stellte 14-mal Spieler ohne echte Einsatzchance auf. KönigMichi trafen sieben überraschende Nuller (-600 erwartete Punkte) sowie gebrauchte Einzeltage wie Suzuki (-20) und Jae-Sung Lee (-25), kombiniert mit mehreren aufgestellten 0-Punkte-Spielern.",
-            "Am anderen Ende steht klar vermeidbare Kaderpflege: Bei Flocke (-160 pro Spieltag, Liga 3) gehen rund 85 Prozent des Minus auf eigene Versäumnisse zurück – zehn leer gelassene Startelf-Plätze (-1.000 Strafpunkte) und 17 vermeidbare Einsätze von Spielern, die gar nicht spielten, darunter Josip Juranović (6×), Albian Hajdari (5×) und Nicolai Remberg (4×). Genauso teuer waren die drei Spieltage im Minus: Puliester (8. Spieltag), casper (5. Spieltag) und CarlCarlsenCarlsen (6. Spieltag) gingen mit negativem Kontostand ins Wochenende und verschenkten so jeweils einen kompletten Spieltag – das Modell rechnet solche Spieltage konsequent mit 0 erwarteten Punkten an."
+            "Der größte Pechvogel im gesamten Ligasystem heißt JulianD47 (-114 Punkte pro Spieltag unter Erwartung, Platz 6 statt Erwartungsplatz 4 in Liga 2). Kein einziger leerer Platz in der Startelf, kein einziger Spieltag im Minus – trotzdem erwischten seine Stammspieler 26-mal rabenschwarze Tage. Dazu kamen schmerzhafte Minuspunkte wie Felix Uduokhai (-60 am 7. Spieltag), Warmed Omari (-31), Tim Skarke (-23) und Diego Moreira (-20) sowie ungewöhnlich schwache Serien von Igor Matanović (im Schnitt 85 statt 138 Saisonschnitt) und Phillip Tietz (im Schnitt 91). Ganz ähnlich hart traf es Mo6 in Liga 1 (-39 pro Spieltag, 0 leere Plätze): Füllkrug (-46 am 1. Spieltag), Stefan Posch (-34), Yuito Suzuki (-20 bei 122 Saisonschnitt), Younes Ebnoutalib (-7 bei 137 Saisonschnitt) und zwei unerwartete Nuller von Ridle Baku (158 Saisonschnitt) kosteten ihn rund zwei Tabellenplätze.",
+            "Bei Curl3z (-142 pro Spieltag, Liga 1) und KönigMichi (-85 pro Spieltag, Liga 3) mischen sich Pech und Eigenanteil. Curl3z erwischte historisch schlechtes Timing bei eigentlich starken Spielern (Adam Daghim im Schnitt 67 statt 120 Saisonschnitt, Caci 41, Marius Wolf 22 sowie sieben unerwartete Ausfälle ohne Einsatz), ließ aber gleichzeitig vier Startelf-Plätze komplett frei (am 2. Spieltag standen nur sieben Spieler auf dem Feld) und stellte 14-mal Spieler ohne echte Einsatzchance auf. KönigMichi trafen sieben überraschende Nuller sowie gebrauchte Einzeltage wie Suzuki (-20) und Jae-Sung Lee (-25), kombiniert mit mehreren aufgestellten 0-Punkte-Spielern.",
+            "Am anderen Ende steht klar vermeidbare Kaderpflege: Bei Flocke (-116 pro Spieltag, Liga 3) gehen der Großteil des Rückstands und der letzte Platz in der Erwartungstabelle auf eigene Versäumnisse zurück – zehn leer gelassene Startelf-Plätze (-1.000 Strafpunkte) und 17 vermeidbare Einsätze von Spielern, die gar nicht spielten, darunter Josip Juranović (6×), Albian Hajdari (5×) und Nicolai Remberg (4×). Genauso teuer waren die drei Spieltage im Minus: Puliester (8. Spieltag), casper (5. Spieltag) und CarlCarlsenCarlsen (6. Spieltag) gingen mit negativem Kontostand ins Wochenende und verschenkten so jeweils einen kompletten Spieltag – das Modell rechnet solche Spieltage konsequent mit 0 erwarteten Punkten an."
           ],
           "quote": {
             "text": "Derselbe Spieler, zwei völlig verschiedene Welten: Anthony Caci lieferte bei Enobi 310 Punkte in einem Spiel – bei Curl3z im Schnitt 41. Phillip Tietz explodierte für 321 Punkte – bei JulianD47 kam er in sechs Einsätzen auf im Schnitt 91. Und Niclas Füllkrug bescherte Geißbock im Schnitt 157 Punkte über zehn Spieltage – Mo6 erwischte ihn am 1. Spieltag bei -46.",
@@ -327,8 +327,8 @@
         {
           "heading": "Tabelle nach erwarteten Punkten: Liga 1",
           "paragraphs": [
-            "In Liga 1 bestätigt der Blick auf die erwarteten Punkte zunächst den Tabellenführer: Justin steht sowohl nach erwarteten (998) als auch nach echten Punkten (1.032) völlig verdient ganz oben. Dahinter zeigt sich ein klares Bild: Blake (Erwartungsplatz 2, mit +1 praktisch punktgenau auf Soll) und Leon Weinrich (Erwartungsplatz 3, nur -11 Abweichung) liefern deutlich stabilere Aufstellungen ab, als ihre echten Tabellenplätze (#4 und #6) auf den ersten Blick zeigen.",
-            "Am weitesten klaffen Erwartung und Wirklichkeit bei DeinHomieEnobi (+220 pro Spieltag, Platz 2 statt Erwartungsplatz 8) und Esel (+115, Platz 3 statt 4) auseinander. Im Tabellenkeller deutet bei Mo6 (Erwartungsplatz 6, real #8) vieles auf eine Aufholjagd hin, während Curl3z in beiden Tabellen Letzter ist."
+            "In Liga 1 bestätigt der Blick auf die erwarteten Punkte zunächst den Tabellenführer: Justin steht sowohl nach erwarteten (984) als auch nach echten Punkten (1.032) völlig verdient ganz oben. Dahinter liegen vier Manager eng beieinander: Blake (960, mit +1 praktisch punktgenau auf Soll), Vinnie JR (923), Esel (916) und Leon Weinrich (913, nur -14 Abweichung).",
+            "Am weitesten klaffen Erwartung und Wirklichkeit bei DeinHomieEnobi (+203 pro Spieltag, Platz 2 statt Erwartungsplatz 7) und Esel (+95, Platz 3 statt 4) auseinander. Im Tabellenkeller deutet bei Mo6 (Erwartungsplatz 6, real #8) weiter einiges auf Aufholpotenzial hin, während Curl3z in beiden Tabellen Letzter ist."
           ],
           "table": {
             "caption": "Liga 1 – Tabelle nach erwarteten Punkten (Durchschnitt pro Spieltag, Spieltag 1–10)",
@@ -344,10 +344,10 @@
               [
                 "1.",
                 "Justin",
-                "998",
+                "984",
                 "1.032",
                 "#1",
-                "+34"
+                "+48"
               ],
               [
                 "2.",
@@ -359,59 +359,59 @@
               ],
               [
                 "3.",
-                "Leon Weinrich",
-                "910",
-                "899",
-                "#6",
-                "-11"
+                "Vinnie JR",
+                "923",
+                "950",
+                "#5",
+                "+27"
               ],
               [
                 "4.",
                 "Esel",
-                "896",
+                "916",
                 "1.011",
                 "#3",
-                "+115"
+                "+95"
               ],
               [
                 "5.",
-                "Vinnie JR",
-                "894",
-                "950",
-                "#5",
-                "+56"
+                "Leon Weinrich",
+                "913",
+                "899",
+                "#6",
+                "-14"
               ],
               [
                 "6.",
                 "Mo6",
-                "860",
+                "830",
                 "791",
                 "#8",
-                "-69"
+                "-39"
               ],
               [
                 "7.",
-                "Wat Mamba",
-                "826",
-                "857",
-                "#7",
-                "+31"
+                "DeinHomieEnobi",
+                "828",
+                "1.031",
+                "#2",
+                "+203"
               ],
               [
                 "8.",
-                "DeinHomieEnobi",
-                "811",
-                "1.031",
-                "#2",
-                "+220"
+                "Wat Mamba",
+                "827",
+                "857",
+                "#7",
+                "+30"
               ],
               [
                 "9.",
                 "Curl3z",
-                "739",
+                "713",
                 "571",
                 "#9",
-                "-168"
+                "-142"
               ]
             ]
           }
@@ -419,8 +419,8 @@
         {
           "heading": "Tabelle nach erwarteten Punkten: Liga 2",
           "paragraphs": [
-            "Liga 2 stellt das aktuell stabilste Spitzenduo des gesamten Ligasystems: Stomping Tantrum (1.068 erwartete Punkte – Bestwert über alle drei Ligen!) und leongarcon (1.030) punkten praktisch ohne Glücks- oder Pech-Verzerrung (-8 bzw. +9 Abweichung) und stehen völlig zu Recht auf Platz 1 und 2. Auch J0tt auf Rang 3 liegt genau dort, wo seine Aufstellungen hingehören.",
-            "Dahinter wird es spannend: franzi__j (950 erwartete Punkte) und vor allem Pechvogel JulianD47 (946, -127 Abweichung) stellen eigentlich auf Top-4-Niveau auf, wurden aber von Ansgar Trinkmann (+91 pro Spieltag, Platz 4 statt Erwartungsplatz 6) dank seiner starken Bayern- und Leipzig-Ausreißer überholt. Bei CarlCarlsenCarlsen drückt zusätzlich der Spieltag im Minus (6. Spieltag) den Schnitt."
+            "Liga 2 stellt das aktuell stabilste Spitzenduo des gesamten Ligasystems: Stomping Tantrum (1.065 erwartete Punkte – Bestwert über alle drei Ligen!) und leongarcon (1.044) punkten praktisch exakt auf Erwartungsniveau (jeweils -5 Abweichung) und stehen völlig zu Recht auf Platz 1 und 2. Auch J0tt auf Rang 3 (981) liegt genau dort, wo seine Aufstellungen hingehören.",
+            "Dahinter wird es spannend: Pechvogel JulianD47 (933, -114 Abweichung) und franzi__j (929, -20) stellen klar auf Top-5-Niveau auf, wurden aber von Ansgar Trinkmann (855 erwartete Punkte, +60 pro Spieltag, Platz 4 statt Erwartungsplatz 6) dank seiner starken Bayern- und Leipzig-Ausreißer überholt. Bei CarlCarlsenCarlsen drückt zusätzlich der Spieltag im Minus (6. Spieltag) den Schnitt."
           ],
           "table": {
             "caption": "Liga 2 – Tabelle nach erwarteten Punkten (Durchschnitt pro Spieltag, Spieltag 1–10)",
@@ -436,66 +436,66 @@
               [
                 "1.",
                 "Stomping Tantrum",
-                "1.068",
+                "1.065",
                 "1.060",
                 "#1",
-                "-8"
+                "-5"
               ],
               [
                 "2.",
                 "leongarcon",
-                "1.030",
+                "1.044",
                 "1.039",
                 "#2",
-                "+9"
+                "-5"
               ],
               [
                 "3.",
                 "J0tt",
-                "956",
+                "981",
                 "940",
                 "#3",
-                "-16"
-              ],
-              [
-                "4.",
-                "franzi__j",
-                "950",
-                "909",
-                "#5",
                 "-41"
               ],
               [
-                "5.",
+                "4.",
                 "JulianD47",
-                "946",
+                "933",
                 "819",
                 "#6",
-                "-127"
+                "-114"
+              ],
+              [
+                "5.",
+                "franzi__j",
+                "929",
+                "909",
+                "#5",
+                "-20"
               ],
               [
                 "6.",
                 "Ansgar Trinkmann",
-                "824",
+                "855",
                 "915",
                 "#4",
-                "+91"
+                "+60"
               ],
               [
                 "7.",
                 "AchtSieben",
-                "724",
+                "709",
                 "806",
                 "#7",
-                "+82"
+                "+97"
               ],
               [
                 "8.",
                 "CarlCarlsenCarlsen",
-                "533",
+                "546",
                 "560",
                 "#8",
-                "+27"
+                "+14"
               ]
             ]
           }
@@ -503,8 +503,8 @@
         {
           "heading": "Tabelle nach erwarteten Punkten: Liga 3",
           "paragraphs": [
-            "In Liga 3 liegen an der Spitze gleich drei Manager in ihrer wöchentlichen Aufstellungsqualität fast gleichauf: Sebastian (943 erwartete Punkte), Geißbock (933) und casper (923 – und das trotz eines Spieltags im Minus am 5. Spieltag!). Den Unterschied in der echten Tabelle macht Geißbocks starkes Plus von +144 Punkten pro Spieltag, das ihn auf Platz 1 hebt, während Sebastian (-40) leicht unter seinen Möglichkeiten geblieben ist.",
-            "Dahinter überzeugt Puliester (871 erwartete Punkte, -10 Abweichung) trotz seines teuren Aussetzers im Minus (8. Spieltag) mit sauberer Konstanz auf Rang 4. KönigMichi (Erwartungsplatz 5, real #6, -100 Abweichung) hat eigentlich mehr Potenzial als sein aktueller Platz, während Flocke (zehn leere Startelf-Plätze) weit unter seinen Möglichkeiten bleibt."
+            "In Liga 3 deckt sich die Erwartungstabelle an der Spitze eins zu eins mit der echten Tabelle: Geißbock (943 erwartete Punkte), casper (925 – trotz eines Spieltags im Minus am 5. Spieltag!), Sebastian (919) und Puliester (858, mit +3 praktisch punktgenau trotz eines Aussetzers im Minus am 8. Spieltag) stehen exakt auf den Plätzen 1 bis 4.",
+            "Den großen Abstand nach oben macht Geißbocks starkes Plus von +134 Punkten pro Spieltag aus. Dahinter hat KönigMichi (Erwartungsplatz 5, real #6, -85 Abweichung) strukturell mehr Potenzial als sein aktueller Platz, während im Tabellenkeller Marci (601) und Flocke (601, belastet durch zehn leere Startelf-Plätze) fast gleichauf liegen."
           ],
           "table": {
             "caption": "Liga 3 – Tabelle nach erwarteten Punkten (Durchschnitt pro Spieltag, Spieltag 1–10)",
@@ -519,75 +519,75 @@
             "rows": [
               [
                 "1.",
-                "Sebastian",
+                "Geißbock",
                 "943",
-                "903",
-                "#3",
-                "-40"
+                "1.077",
+                "#1",
+                "+134"
               ],
               [
                 "2.",
-                "Geißbock",
-                "933",
-                "1.077",
-                "#1",
-                "+144"
+                "casper",
+                "925",
+                "981",
+                "#2",
+                "+56"
               ],
               [
                 "3.",
-                "casper",
-                "923",
-                "981",
-                "#2",
-                "+58"
+                "Sebastian",
+                "919",
+                "903",
+                "#3",
+                "-16"
               ],
               [
                 "4.",
                 "Puliester",
-                "871",
+                "858",
                 "861",
                 "#4",
-                "-10"
+                "+3"
               ],
               [
                 "5.",
                 "KönigMichi",
-                "835",
+                "820",
                 "735",
                 "#6",
-                "-100"
+                "-85"
               ],
               [
                 "6.",
                 "kushler",
-                "822",
+                "812",
                 "794",
                 "#5",
-                "-28"
+                "-18"
               ],
               [
                 "7.",
                 "Fynn",
-                "717",
+                "696",
                 "683",
                 "#7",
-                "-34"
+                "-13"
               ],
               [
                 "8.",
-                "Flocke",
-                "645",
-                "485",
-                "#9",
-                "-160"
+                "Marci",
+                "601",
+                "550",
+                "#8",
+                "-51"
               ],
               [
                 "9.",
-                "Marci",
-                "582",
-                "550",
-                "#8",
-                "-32"
+                "Flocke",
+                "601",
+                "485",
+                "#9",
+                "-116"
               ]
             ]
           }
@@ -601,11 +601,11 @@
           "callout": {
             "title": "Die 5 goldenen Regeln für starke Kickbase-Manager",
             "items": [
-              "1. Gute Entscheidungen vor Einzel-Ergebnissen: Achte jede Woche auf eine starke, realistisch punktende Startelf – über die Saison entscheidet das zu 73 bis 90 Prozent über deinen Tabellenplatz.",
+              "1. Gute Entscheidungen vor Einzel-Ergebnissen: Achte jede Woche auf eine starke, realistisch punktende Startelf – über die Saison entscheidet das zu 80 bis 90 Prozent über deinen Tabellenplatz.",
               "2. Aktiv und mit Gewinn traden: Transfergewinne sind kein Selbstzweck, sondern der Treibstoff, der dir die besten Stammspieler der Bundesliga bezahlbar macht.",
               "3. Vermeidbare Fehler komplett abstellen: Nie im Minus in den Spieltag gehen, keine Startelf-Plätze leer lassen und verletzte oder dauerhaft aussortierte Spieler rechtzeitig ersetzen.",
               "4. Mut zu Top-Spielern und News-Gespür: Nicht am falschen Ende geizen (Sparsamkeit beim Bieten bringt allein keine Punkte) – lieber gezielt in Stars mit großer Punktdecke, Comebacks und frühe Durchstarter investieren.",
-              "5. Ruhig bleiben, wenn es mal nicht läuft: Schwankungen von ±262 Punkten an einem Wochenende sind völlig normal. Wer trotz Pech-Phasen sauber weiterarbeitet, holt sich die Punkte über 34 Spieltage fast immer zurück."
+              "5. Ruhig bleiben, wenn es mal nicht läuft: Schwankungen von ±248 Punkten an einem Wochenende sind völlig normal. Wer trotz Pech-Phasen sauber weiterarbeitet, holt sich die Punkte über 34 Spieltage fast immer zurück."
             ]
           }
         }

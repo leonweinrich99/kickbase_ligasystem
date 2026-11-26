@@ -147,11 +147,12 @@ function loadManagerSquadValues() {
 // jedem Spieltag aufgestellten Startelfen (`startelf-md1..N.json`). Da diese Teams
 // am Freitag 20:30 real aufgestellt wurden, ist Budget-Konformitaet garantiert.
 //
-// Streng OHNE Ergebnis-Glueck ("Point-in-Time"):
+// Streng OHNE Ergebnis-Glueck ("Point-in-Time", xP v2):
 // Fuer jeden Spieltag d zaehlen fuer jeden aufgestellten Spieler NUR Informationen
-// VOR Spieltag d (`day < d` + Vorsaison als Prior fuer fruehe Spieltage, sowie
-// ab ST 11 das vor Anstoss eingefrorene Kickbase-`prob` aus `kickoff-squads/md{d}.json`):
-//   E[Pkt | vor ST d] = p_start * Ø_Startelf_Pkt + (1 - p_start) * p_joker * Ø_Joker_Pkt
+// VOR Spieltag d (`day < d` + Vorsaison als sanfter Prior, Pre-Matchday-Marktwert
+// aus `player-history.json`, Heim-/Auswaerts- und Gegnerstaerke aus Spielen < d,
+// sowie ab ST 11 das vor Anstoss eingefrorene Kickbase-`prob` aus `kickoff-squads/md{d}.json`):
+//   E[Pkt | vor ST d] = p_start * Ø_Startelf_Pkt(Matchup) + (1 - p_start) * p_joker * Ø_Joker_Pkt
 // Was am Spieltag d dann tatsaechlich passierte (Rote Karte, Traumtor, Glueck/Pech),
 // fliesst mit 0 % in den Score ein!
 const PROB_WEIGHT_BY_CODE = {
@@ -164,9 +165,155 @@ const PROB_WEIGHT_BY_CODE = {
 const PRIOR_START_PROB = 0.55;
 const PRIOR_START_PTS = 82;
 const PRIOR_JOKER_PTS = 26;
+const XP_SHRINKAGE_WEIGHT = 4.0;
+const XP_RECENCY_DECAY = 0.95;
 
 function parsePlayedMinutes(mp) {
     return parseInt(String(mp || '0'), 10) || 0;
+}
+
+// Marktwert streng VOR dem Spieltags-Anstoss (mind. 1 Tag vorher, kein Leakage)
+function getPreMatchdayMarketValue(mvHistory, playerId, kickoffDate) {
+    if (!mvHistory || kickoffDate == null) return null;
+    const ms = kickoffDate instanceof Date ? kickoffDate.getTime() : new Date(kickoffDate).getTime();
+    if (!Number.isFinite(ms)) return null;
+    const dayBefore = new Date(ms - 24 * 60 * 60 * 1000);
+    const val = historicalMarketValue(mvHistory, playerId, dayBefore);
+    return (val != null && val > 0) ? val : null;
+}
+
+// Baut pro Spieltag streng rueckwirkend (nur Spiele mit day < d + Vorsaison) den
+// Liga-Kontext: Ligaschnitt, Heim-/Auswaertsfaktor, Teamstaerke, zugelassene
+// Gegnerpunkte sowie eine log-lineare Marktwert-zu-Punkte-Kurve fuer Neuzugaenge.
+function buildPreMatchdayLeagueContexts(players, mvHistory, matchdayKickoffs, days) {
+    const contexts = new Map();
+    const parsedPlayers = (players || []).map(p => {
+        const pid = String(p.i || p.id || '');
+        const seasons = Array.isArray(p?.performance?.it) ? p.performance.it : [];
+        const curSeason = seasons.length > 0 ? seasons[seasons.length - 1] : null;
+        const prevSeason = seasons.length >= 2 ? seasons[seasons.length - 2] : null;
+        const prevEntries = (Array.isArray(prevSeason?.ph) ? prevSeason.ph : [])
+            .filter(e => e.st === 5 || (e.st === 3 && parsePlayedMinutes(e.mp) > 0) || e.st === 4);
+        const curPh = Array.isArray(curSeason?.ph) ? curSeason.ph : [];
+        return { pid, prevEntries, curPh };
+    });
+
+    for (const day of days) {
+        const teamFor = new Map();
+        const teamOpp = new Map();
+        const prevTeamFor = new Map();
+        const prevTeamOpp = new Map();
+        let curHomeSum = 0, curHomeN = 0, curAwaySum = 0, curAwayN = 0;
+        let prevHomeSum = 0, prevHomeN = 0, prevAwaySum = 0, prevAwayN = 0;
+        let curAllSum = 0, curAllN = 0, prevAllSum = 0, prevAllN = 0;
+        const mvSamples = [];
+
+        for (const { pid, prevEntries, curPh } of parsedPlayers) {
+            for (const e of prevEntries) {
+                if (e.st !== 5 || typeof e.p !== 'number') continue;
+                prevAllSum += e.p;
+                prevAllN++;
+                const pt = String(e.pt || '');
+                const t1 = String(e.t1 || '');
+                const t2 = String(e.t2 || '');
+                if (pt && t1 && t2) {
+                    const isHome = pt === t1;
+                    const opp = isHome ? t2 : t1;
+                    if (isHome) { prevHomeSum += e.p; prevHomeN++; } else { prevAwaySum += e.p; prevAwayN++; }
+                    const tf = prevTeamFor.get(pt) || { sum: 0, n: 0 }; tf.sum += e.p; tf.n++; prevTeamFor.set(pt, tf);
+                    const to = prevTeamOpp.get(opp) || { sum: 0, n: 0 }; to.sum += e.p; to.n++; prevTeamOpp.set(opp, to);
+                }
+            }
+            for (const e of curPh) {
+                if (typeof e.day !== 'number' || e.day >= day || e.st !== 5 || typeof e.p !== 'number') continue;
+                curAllSum += e.p;
+                curAllN++;
+                const pt = String(e.pt || '');
+                const t1 = String(e.t1 || '');
+                const t2 = String(e.t2 || '');
+                if (pt && t1 && t2) {
+                    const isHome = pt === t1;
+                    const opp = isHome ? t2 : t1;
+                    if (isHome) { curHomeSum += e.p; curHomeN++; } else { curAwaySum += e.p; curAwayN++; }
+                    const tf = teamFor.get(pt) || { sum: 0, n: 0 }; tf.sum += e.p; tf.n++; teamFor.set(pt, tf);
+                    const to = teamOpp.get(opp) || { sum: 0, n: 0 }; to.sum += e.p; to.n++; teamOpp.set(opp, to);
+                }
+                const eKickoff = matchdayKickoffs.get(e.day);
+                const mv = getPreMatchdayMarketValue(mvHistory, pid, eKickoff);
+                if (mv && mv >= 500000) {
+                    mvSamples.push({ x: Math.log10(mv / 1_000_000), y: e.p });
+                }
+            }
+        }
+
+        const leagueMean = curAllN >= 100
+            ? curAllSum / curAllN
+            : (prevAllN > 0 ? prevAllSum / prevAllN : PRIOR_START_PTS);
+
+        const homeAvg = (curHomeSum + 0.25 * prevHomeSum) / Math.max(1, curHomeN + 0.25 * prevHomeN);
+        const awayAvg = (curAwaySum + 0.25 * prevAwaySum) / Math.max(1, curAwayN + 0.25 * prevAwayN);
+        const haMean = (homeAvg + awayAvg) / 2 || leagueMean;
+        const homeMult = haMean > 0 ? homeAvg / haMean : 1.0;
+        const awayMult = haMean > 0 ? awayAvg / haMean : 1.0;
+
+        // Fuer Spieltag 1 (noch keine cur-Spiele) Vorsaison-Starter + Pre-MD1-MV fuer die MV-Kurve nutzen
+        if (mvSamples.length < 80) {
+            const md1Kickoff = matchdayKickoffs.get(1) || matchdayKickoffs.get(day);
+            for (const { pid, prevEntries } of parsedPlayers) {
+                const mv = getPreMatchdayMarketValue(mvHistory, pid, md1Kickoff);
+                if (!mv || mv < 500000) continue;
+                const starts = prevEntries.filter(e => e.st === 5 && typeof e.p === 'number');
+                if (starts.length >= 5) {
+                    const avg = starts.reduce((s, e) => s + e.p, 0) / starts.length;
+                    mvSamples.push({ x: Math.log10(mv / 1_000_000), y: avg });
+                }
+            }
+        }
+
+        let mvA = 65;
+        let mvB = 52;
+        if (mvSamples.length >= 20) {
+            const mx = mvSamples.reduce((s, o) => s + o.x, 0) / mvSamples.length;
+            const my = mvSamples.reduce((s, o) => s + o.y, 0) / mvSamples.length;
+            let num = 0, den = 0;
+            for (const o of mvSamples) {
+                num += (o.x - mx) * (o.y - my);
+                den += (o.x - mx) ** 2;
+            }
+            if (den > 0) {
+                mvB = num / den;
+                mvA = my - mvB * mx;
+            }
+        }
+
+        const getTeamForAvg = (tid) => {
+            const key = String(tid || '');
+            const c = teamFor.get(key) || { sum: 0, n: 0 };
+            const pr = prevTeamFor.get(key) || { sum: 0, n: 0 };
+            const prW = Math.min(25, pr.n * 0.12);
+            const prMean = pr.n > 0 ? pr.sum / pr.n : leagueMean;
+            return (c.sum + prW * prMean + 15 * leagueMean) / (c.n + prW + 15);
+        };
+
+        const getOppAllowedRatio = (oppTid) => {
+            const key = String(oppTid || '');
+            const c = teamOpp.get(key) || { sum: 0, n: 0 };
+            const pr = prevTeamOpp.get(key) || { sum: 0, n: 0 };
+            const prW = Math.min(25, pr.n * 0.12);
+            const prMean = pr.n > 0 ? pr.sum / pr.n : leagueMean;
+            const allowed = (c.sum + prW * prMean + 25 * leagueMean) / (c.n + prW + 25);
+            return leagueMean > 0 ? (allowed / leagueMean) : 1.0;
+        };
+
+        const predictFromMV = (mv) => {
+            if (!mv || mv < 500000) return leagueMean;
+            return Math.max(45, Math.min(185, mvA + mvB * Math.log10(mv / 1_000_000)));
+        };
+
+        contexts.set(day, { leagueMean, homeMult, awayMult, getTeamForAvg, getOppAllowedRatio, predictFromMV });
+    }
+
+    return contexts;
 }
 
 function loadHistoricalStartelfs(historyDir) {
@@ -211,10 +358,26 @@ function loadPreKickoffPlayerSnapshots(historyDir) {
 
 // Berechnet fuer einen Spieler den rein vor-spieltaglichen Erwartungswert (xP)
 // fuer Spieltag `day` - streng OHNE das Ergebnis von Spieltag `day` oder spaeter!
-function estimatePreMatchdayPlayerXp(playerId, day, playerMap, preKickoffMap) {
+function estimatePreMatchdayPlayerXp(playerId, day, playerMap, preKickoffMap, leagueCtx, mvHistory, kickoffDate) {
     const pid = String(playerId);
     const player = playerMap.get(pid) || playerMap.get(playerId);
     const preSnap = preKickoffMap ? preKickoffMap[pid] : null;
+    const preMV = getPreMatchdayMarketValue(mvHistory, pid, kickoffDate);
+
+    // Spieler nicht im aktiven Bundesliga-Katalog (typischerweise 500k-Lueckenfueller
+    // ohne Bundesliga-Einsaetze -> nicht pauschal 49 xP schenken!). Nur falls ein
+    // echter hochpreisiger Spieler (>= 2 Mio.) spaeter aus der Liga wechselte,
+    // nutzen wir einen moderaten MV-Fallback.
+    if (!player) {
+        if (preMV && preMV >= 2_000_000 && leagueCtx) {
+            const mvPts = leagueCtx.predictFromMV(preMV);
+            const pStart = 0.35;
+            const expectedStartPts = pStart * mvPts;
+            const expectedJokerPts = (1 - pStart) * 0.25 * PRIOR_JOKER_PTS;
+            return { pStart, expectedStartPts, expectedJokerPts, expectedPoints: expectedStartPts + expectedJokerPts };
+        }
+        return { pStart: 0, expectedStartPts: 0, expectedJokerPts: 0, expectedPoints: 0 };
+    }
 
     // 1. Historische Spiele VOR Spieltag `day` sammeln (aktuelle Saison day < d +
     //    unmittelbare Vorsaison als sanfter Prior fuer fruehe Spieltage).
@@ -226,15 +389,16 @@ function estimatePreMatchdayPlayerXp(playerId, day, playerMap, preKickoffMap) {
     const prevSeasonEntries = (Array.isArray(prevSeason?.ph) ? prevSeason.ph : [])
         .filter(e => e.st === 5 || (e.st === 3 && parsePlayedMinutes(e.mp) > 0) || e.st === 4);
 
-    const curBefore = (Array.isArray(curSeason?.ph) ? curSeason.ph : [])
+    const curPh = Array.isArray(curSeason?.ph) ? curSeason.ph : [];
+    const curBefore = curPh
         .filter(e => typeof e.day === 'number' && e.day < day && (e.st === 5 || e.st === 3 || e.st === 4 || e.st === 1))
         .sort((a, b) => a.day - b.day);
+    const matchEntry = curPh.find(e => e.day === day) || null;
 
     // 2. Startelf-Wahrscheinlichkeit VOR Spieltag `day`:
     //    - Falls Pre-Kickoff-Snapshot vorhanden (ab ST 11): direkt offizielle Kickbase-Prognose!
     //    - Sonst (rueckwirkend ST 1..10): Fokus auf die AKTUELLE Rolle unmittelbar vor `day`
-    //      (letzte 2-3 Spiele), damit zurueckgekehrte Stammspieler (z.B. Zentner nach Verletzung)
-    //      sofort wieder realistische 95-100 % statt durch alte Ausfaelle verzerrte 40 % bekommen.
+    //      (letzte 2-3 Spiele), plus Marktwert-Signal fuer Bundesliga-Neuzugaenge ohne Historie.
     let pStart;
     if (preSnap) {
         if (typeof preSnap.st === 'number' && preSnap.st !== 0) {
@@ -270,32 +434,62 @@ function estimatePreMatchdayPlayerXp(playerId, day, playerMap, preKickoffMap) {
             pStart = weightTotal > 0 ? Math.max(0, Math.min(1, weightedStarts / weightTotal)) : PRIOR_START_PROB;
         } else if (prevSeasonEntries.length > 0) {
             pStart = prevSeasonEntries.filter(e => e.st === 5).length / prevSeasonEntries.length;
+        } else if (preMV) {
+            // Bundesliga-Neuzugang ohne Historie (z.B. Spieltag 1): teurer Star startet fast immer, 500k-Spieler selten
+            if (preMV >= 20_000_000) pStart = 0.92;
+            else if (preMV >= 10_000_000) pStart = 0.82;
+            else if (preMV >= 5_000_000) pStart = 0.68;
+            else if (preMV < 1_500_000) pStart = 0.30;
+            else pStart = PRIOR_START_PROB;
         } else {
             pStart = PRIOR_START_PROB;
         }
     }
 
-    // 3. Erwartete Startelf-Punkte (nur aus echten Startelf-Einsaetzen st=5 VOR `day`)
+    // 3. Erwartete Startelf-Punkte (Empirical-Bayes Shrinkage Richtung MV+Team-Prior + leichte Formgewichtung)
     const curStartPts = curBefore.filter(e => e.st === 5 && typeof e.p === 'number').map(e => e.p);
     const prevStartPts = prevSeasonEntries.filter(e => e.st === 5 && typeof e.p === 'number').map(e => e.p);
 
-    // Sanfter Prior, der bei >= 4 eigenen Startelf-Spielen stark zuruecktritt
-    const priorWeight = curStartPts.length >= 4 ? 0.4 : 1.0;
-    let startPtsSum = priorWeight * PRIOR_START_PTS;
-    let startPtsWeight = priorWeight;
+    const ownTid = matchEntry?.pt ? String(matchEntry.pt) : String(player.tid || '');
+    let priorAnchor = leagueCtx ? leagueCtx.leagueMean : PRIOR_START_PTS;
+    if (leagueCtx) {
+        if (preMV && ownTid) {
+            priorAnchor = 0.7 * leagueCtx.predictFromMV(preMV) + 0.3 * leagueCtx.getTeamForAvg(ownTid);
+        } else if (preMV) {
+            priorAnchor = leagueCtx.predictFromMV(preMV);
+        } else if (ownTid) {
+            priorAnchor = leagueCtx.getTeamForAvg(ownTid);
+        }
+    }
+
+    let startPtsSum = XP_SHRINKAGE_WEIGHT * priorAnchor;
+    let startPtsWeight = XP_SHRINKAGE_WEIGHT;
     if (prevStartPts.length > 0) {
         const prevAvg = prevStartPts.reduce((a, b) => a + b, 0) / prevStartPts.length;
         const wPrev = curStartPts.length >= 5 ? 0.5 : Math.min(2, prevStartPts.length * 0.2);
         startPtsSum += wPrev * prevAvg;
         startPtsWeight += wPrev;
     }
-    curStartPts.forEach(p => {
-        startPtsSum += p;
-        startPtsWeight += 1;
+    curStartPts.forEach((p, idx) => {
+        const recencyW = Math.pow(XP_RECENCY_DECAY, curStartPts.length - 1 - idx);
+        startPtsSum += recencyW * p;
+        startPtsWeight += recencyW;
     });
-    const avgStartPts = Math.max(0, startPtsSum / startPtsWeight);
+    let avgStartPts = Math.max(0, startPtsSum / startPtsWeight);
 
-    // 4. Empirische Joker-Quote & Joker-Punkte aus Nicht-Startelf-Spielen VOR `day`
+    // 4. Matchup-Anpassung (Heim/Auswaerts * Gegnerstaerke - rein aus Spielplan & Spielen < day!)
+    if (leagueCtx && matchEntry && matchEntry.pt && matchEntry.t1 && matchEntry.t2) {
+        const pt = String(matchEntry.pt);
+        const t1 = String(matchEntry.t1);
+        const t2 = String(matchEntry.t2);
+        const isHome = pt === t1;
+        const oppTid = isHome ? t2 : t1;
+        const haMult = isHome ? leagueCtx.homeMult : leagueCtx.awayMult;
+        const oppMult = leagueCtx.getOppAllowedRatio(oppTid);
+        avgStartPts *= haMult * oppMult;
+    }
+
+    // 5. Empirische Joker-Quote & Joker-Punkte aus Nicht-Startelf-Spielen VOR `day`
     const allBefore = [...prevSeasonEntries.slice(-8), ...curBefore];
     const subEntries = allBefore.filter(e => e.st === 3 && parsePlayedMinutes(e.mp) > 0 && typeof e.p === 'number');
     const unusedEntries = allBefore.filter(e => e.st === 4 || (e.st === 3 && parsePlayedMinutes(e.mp) === 0));
@@ -320,7 +514,7 @@ function estimatePreMatchdayPlayerXp(playerId, day, playerMap, preKickoffMap) {
     return { pStart, expectedStartPts, expectedJokerPts, expectedPoints };
 }
 
-function evaluateHistoricalLineups(uid, startelfByDay, preKickoffByDay, playerMap) {
+function evaluateHistoricalLineups(uid, startelfByDay, preKickoffByDay, playerMap, xpLeagueCtxByDay, mvHistory, matchdayKickoffs) {
     const days = [...startelfByDay.keys()].sort((a, b) => a - b);
     const breakdown = [];
 
@@ -329,6 +523,8 @@ function evaluateHistoricalLineups(uid, startelfByDay, preKickoffByDay, playerMa
         if (!mgrEntry || !Array.isArray(mgrEntry.lineup)) continue;
 
         const preSnap = preKickoffByDay.get(day) || null;
+        const leagueCtx = xpLeagueCtxByDay ? xpLeagueCtxByDay.get(day) : null;
+        const kickoffDate = matchdayKickoffs ? matchdayKickoffs.get(day) : null;
         const lineup = mgrEntry.lineup;
         const actualPoints = typeof mgrEntry.pointsMatchday === 'number' ? mgrEntry.pointsMatchday : null;
         const rawLineupSum = lineup.reduce((s, p) => s + (p.points || 0), 0);
@@ -361,7 +557,7 @@ function evaluateHistoricalLineups(uid, startelfByDay, preKickoffByDay, playerMa
 
         if (!isNegativeBudgetDay) {
             for (const p of lineup) {
-                const prof = estimatePreMatchdayPlayerXp(p.id, day, playerMap, preSnap);
+                const prof = estimatePreMatchdayPlayerXp(p.id, day, playerMap, preSnap, leagueCtx, mvHistory, kickoffDate);
                 expectedPts += prof.expectedPoints;
                 jokerPts += prof.expectedJokerPts;
                 startProbSum += prof.pStart;
@@ -948,6 +1144,7 @@ function run() {
     // Kader + Transferhistorie - gleiches Prinzip wie die Startelf-Rekonstruktion).
     const matchdayPoints = loadMatchdayPoints(historyDir);
     const matchdayKickoffs = computeMatchdayKickoffs(players);
+    const xpLeagueCtxByDay = buildPreMatchdayLeagueContexts(players, mvHistory, matchdayKickoffs, [...startelfByDay.keys()]);
     const matchdayDays = [...matchdayPoints.keys()].filter(d => matchdayKickoffs.has(d)).sort((a, b) => a - b);
     const matchdayCutoffsDesc = matchdayDays
         .map(day => ({ day, cutoffTime: matchdayKickoffs.get(day) }))
@@ -1198,7 +1395,7 @@ function run() {
                 const budget = parseSignedMoney(u.estimatedBudget);
                 const squadInfo = managerSquads.get(String(uid)) || null;
                 const squadHeadcountReadiness = squadInfo ? computeSquadReadiness(squadInfo.positionCounts, squadInfo.total) : null;
-                const squadEval = evaluateHistoricalLineups(uid, startelfByDay, preKickoffByDay, playerMap);
+                const squadEval = evaluateHistoricalLineups(uid, startelfByDay, preKickoffByDay, playerMap, xpLeagueCtxByDay, mvHistory, matchdayKickoffs);
                 const squadReadiness = squadEval ? squadEval.avgStartProbability : null;
                 const squadRiskPenalty = 0;
 
