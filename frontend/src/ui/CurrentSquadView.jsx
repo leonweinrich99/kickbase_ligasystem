@@ -161,9 +161,10 @@ const MarketTrendBadge = ({ amount, dir }) => {
         : 'Stabil';
 
   return (
-    <div className={`text-[10px] sm:text-[11px] font-bold tabular-nums leading-none mt-1 ${colorClass}`}>
-      {arrow} {label}
-    </div>
+    <span className={`inline-flex items-center gap-0.5 text-[10px] sm:text-[11px] font-bold tabular-nums leading-none whitespace-nowrap ${colorClass}`}>
+      <span aria-hidden="true">{arrow}</span>
+      <span>{label}</span>
+    </span>
   );
 };
 
@@ -414,27 +415,40 @@ const CurrentSquadView = ({ players, liveStartingIds, loading }) => {
           <SquadPitchRow players={tw} onPlayerClick={openPlayerDetail} />
         </div>
 
-        <div className="relative z-10 flex items-end justify-between px-4 sm:px-8 mt-4">
-          <div className="text-left">
-            <div className="text-xl sm:text-2xl font-extrabold text-cyan-400 leading-none tabular-nums">
-              {hasStartersXp ? `${startersXp.toLocaleString('de-DE')} xP` : '–'}
+        <div className="relative z-10 flex items-start justify-between gap-3 mx-6 sm:mx-8 mt-4 pt-3 border-t border-white/[0.07]">
+          <div className="flex flex-col items-start min-w-0">
+            <div className="h-6 sm:h-7 flex items-baseline">
+              <span className="text-lg sm:text-2xl font-extrabold text-cyan-400 leading-none tabular-nums whitespace-nowrap">
+                {hasStartersXp ? startersXp.toLocaleString('de-DE') : '–'}
+              </span>
+              {hasStartersXp && (
+                <span className="text-xs sm:text-sm font-bold text-cyan-400/75 leading-none ml-1 whitespace-nowrap">
+                  xP
+                </span>
+              )}
             </div>
-            <div className="text-[10px] font-semibold uppercase tracking-widest text-[#8b92a5] mt-1">
-              Startelf xP
+            <div className="h-4 flex items-center mt-1">
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-[#8b92a5] leading-none whitespace-nowrap">
+                Startelf xP
+              </span>
             </div>
           </div>
 
-          <div className="text-right">
-            <div className="text-xl sm:text-2xl font-extrabold text-white leading-none tabular-nums">
-              {formatCompactMoney(startersValue)}
+          <div className="flex flex-col items-end min-w-0">
+            <div className="h-6 sm:h-7 flex items-baseline justify-end">
+              <span className="text-lg sm:text-2xl font-extrabold text-white leading-none tabular-nums whitespace-nowrap">
+                {formatCompactMoney(startersValue)}
+              </span>
             </div>
-            {hasStartersTrend ? (
-              <MarketTrendBadge amount={startersTrend} dir={null} />
-            ) : (
-              <div className="text-[10px] font-semibold uppercase tracking-widest text-[#8b92a5] mt-1">
-                Startelf-Wert
-              </div>
-            )}
+            <div className="h-4 flex items-center justify-end mt-1">
+              {hasStartersTrend ? (
+                <MarketTrendBadge amount={startersTrend} dir={null} />
+              ) : (
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-[#8b92a5] leading-none whitespace-nowrap">
+                  Startelf-Wert
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>
