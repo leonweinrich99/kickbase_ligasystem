@@ -250,6 +250,52 @@ export const fetchBundesligaMatches = async ({ matchday = null, season = null, n
   return fetchOpenLigaDirect({ matchday, season });
 };
 
+export const fetchBundesligaTable = async ({ season = null } = {}) => {
+  const resolvedSeason = season || getDefaultBundesligaSeason();
+  try {
+    const res = await fetch(`/api/live-bundesliga-matches?mode=table&season=${resolvedSeason}`);
+    const contentType = res.headers.get('content-type') || '';
+    if (res.ok && contentType.includes('application/json')) {
+      const json = await res.json();
+      if (Array.isArray(json?.table)) return json;
+    }
+  } catch {
+    // Fallback direkt auf OpenLigaDB
+  }
+
+  const directRes = await fetch(`${OPENLIGA_BASE}/getbltable/bl1/${resolvedSeason}`, {
+    headers: { Accept: 'application/json' },
+  });
+  if (!directRes.ok) {
+    throw new Error('Bundesliga-Tabelle konnte nicht geladen werden');
+  }
+  const rawTable = await directRes.json();
+  if (!Array.isArray(rawTable)) {
+    throw new Error('Unerwartete Antwort bei Bundesliga-Tabelle');
+  }
+
+  return {
+    source: 'openligadb-direct',
+    season: resolvedSeason,
+    fetchedAt: new Date().toISOString(),
+    table: rawTable.map((row, idx) => ({
+      rank: idx + 1,
+      openLigaId: row.teamInfoId ?? null,
+      name: row.teamName || '',
+      shortName: row.shortName || row.teamName || '',
+      logo: row.teamIconUrl || null,
+      matches: row.matches ?? 0,
+      won: row.won ?? 0,
+      draw: row.draw ?? 0,
+      lost: row.lost ?? 0,
+      goals: row.goals ?? 0,
+      opponentGoals: row.opponentGoals ?? 0,
+      goalDiff: row.goalDiff ?? ((row.goals ?? 0) - (row.opponentGoals ?? 0)),
+      points: row.points ?? 0,
+    })),
+  };
+};
+
 export const fetchBundesligaLastChange = async ({ season, matchday }) => {
   if (!season || !matchday) return null;
   try {

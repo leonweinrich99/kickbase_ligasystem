@@ -185,6 +185,36 @@ async function fetchJson(url) {
 export default async function handler(req, res) {
   const { matchday, season, mode, nocache } = req.query || {};
 
+  if (mode === 'table') {
+    const seasonNum = parseInt(season, 10) || getDefaultBundesligaSeason();
+    const rawTable = await fetchJson(`${OPENLIGA_BASE}/getbltable/bl1/${seasonNum}`);
+    if (!Array.isArray(rawTable)) {
+      return res.status(502).json({ error: 'Bundesliga-Tabelle konnte nicht geladen werden' });
+    }
+    const table = rawTable.map((row, idx) => ({
+      rank: idx + 1,
+      openLigaId: row.teamInfoId ?? null,
+      name: row.teamName || '',
+      shortName: row.shortName || row.teamName || '',
+      logo: row.teamIconUrl || null,
+      matches: row.matches ?? 0,
+      won: row.won ?? 0,
+      draw: row.draw ?? 0,
+      lost: row.lost ?? 0,
+      goals: row.goals ?? 0,
+      opponentGoals: row.opponentGoals ?? 0,
+      goalDiff: row.goalDiff ?? ((row.goals ?? 0) - (row.opponentGoals ?? 0)),
+      points: row.points ?? 0,
+    }));
+    res.setHeader('Cache-Control', 's-maxage=120, stale-while-revalidate=300');
+    return res.status(200).json({
+      source: 'openligadb',
+      season: seasonNum,
+      fetchedAt: new Date().toISOString(),
+      table,
+    });
+  }
+
   // Leichtgewichtiger Check fuer das Live-Polling: liefert nur den letzten
   // Aenderungszeitstempel des Spieltags (OpenLigaDB-Empfehlung fuer Polling).
   if (mode === 'lastchange') {

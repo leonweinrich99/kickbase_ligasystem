@@ -1,10 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, ChevronDown, ArrowLeft, MapPin, Users, Radio } from 'lucide-react';
 import {
   matchOpenLigaTeamToKickbase,
   formatKickoffLabel,
   formatKickoffFull,
-  formatUpdateTime,
+  fetchBundesligaTable,
 } from '../openLigaDb';
 
 const TeamCrest = ({ logo, fallbackLogo, name, sizeClass = 'w-7 h-7' }) => {
@@ -475,6 +475,136 @@ export const SelectedTeamMatchBanner = ({
   );
 };
 
+const getTableZoneColor = (rank) => {
+  if (rank <= 4) return '#3b82f6'; // Champions League
+  if (rank === 5) return '#f97316'; // Europa League
+  if (rank === 6) return '#22c55e'; // Conference League
+  if (rank === 16) return '#eab308'; // Relegation
+  if (rank >= 17) return '#ef4444'; // Abstieg
+  return null;
+};
+
+const BundesligaTableView = ({ season, teamsList, onSelectKickbaseTeam }) => {
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchBundesligaTable({ season })
+      .then((res) => {
+        if (!cancelled) {
+          setRows(res?.table || []);
+          setError(null);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(err?.message || 'Bundesliga-Tabelle konnte nicht geladen werden');
+          setLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [season]);
+
+  if (loading && rows.length === 0) {
+    return (
+      <div className="flex flex-col gap-1.5">
+        {Array.from({ length: 9 }, (_, i) => (
+          <div key={i} className="h-11 rounded-xl card-surface animate-pulse" />
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="card-surface rounded-2xl p-4 text-center text-xs text-red-400">
+        {error}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="card-surface rounded-2xl overflow-hidden">
+        <div className="grid grid-cols-[26px_1fr_28px_36px_38px] sm:grid-cols-[30px_1fr_32px_72px_42px_42px] items-center gap-1.5 px-3 py-2 border-b border-white/10 text-[9px] font-black uppercase tracking-widest text-[#626978]">
+          <span className="text-center">#</span>
+          <span>Verein</span>
+          <span className="text-center">Sp</span>
+          <span className="hidden sm:block text-center">S-U-N</span>
+          <span className="text-right">Diff</span>
+          <span className="text-right">Pkt</span>
+        </div>
+
+        <div className="divide-y divide-white/[0.05]">
+          {rows.map((row) => {
+            const zoneColor = getTableZoneColor(row.rank);
+            const kbTeam = matchOpenLigaTeamToKickbase(row, teamsList);
+            const logo = kbTeam?.logo || row.logo;
+            const clickable = Boolean(kbTeam && onSelectKickbaseTeam);
+
+            return (
+              <div
+                key={row.openLigaId ?? row.name}
+                role={clickable ? 'button' : undefined}
+                tabIndex={clickable ? 0 : undefined}
+                onClick={clickable ? () => onSelectKickbaseTeam(kbTeam.id) : undefined}
+                onKeyDown={clickable ? (e) => (e.key === 'Enter' || e.key === ' ') && onSelectKickbaseTeam(kbTeam.id) : undefined}
+                className={`relative grid grid-cols-[26px_1fr_28px_36px_38px] sm:grid-cols-[30px_1fr_32px_72px_42px_42px] items-center gap-1.5 px-3 py-2.5 text-xs transition-colors ${
+                  clickable ? 'hover:bg-white/[0.04] cursor-pointer active:bg-white/[0.06]' : ''
+                }`}
+              >
+                {zoneColor && (
+                  <span
+                    className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full"
+                    style={{ backgroundColor: zoneColor }}
+                  />
+                )}
+                <span className="text-center text-[11px] font-bold text-[#8b92a5] tabular-nums">
+                  {row.rank}
+                </span>
+                <div className="flex items-center gap-2 min-w-0">
+                  <TeamCrest logo={logo} fallbackLogo={row.logo} name={row.shortName} sizeClass="w-5 h-5" />
+                  <span className="font-semibold text-gray-100 truncate">
+                    {row.shortName || row.name}
+                  </span>
+                </div>
+                <span className="text-center text-[11px] text-[#8b92a5] tabular-nums">
+                  {row.matches}
+                </span>
+                <span className="hidden sm:block text-center text-[11px] text-[#8b92a5] tabular-nums">
+                  {row.won}-{row.draw}-{row.lost}
+                </span>
+                <span className={`text-right text-[11px] font-semibold tabular-nums ${
+                  row.goalDiff > 0 ? 'text-emerald-400' : row.goalDiff < 0 ? 'text-red-400' : 'text-[#8b92a5]'
+                }`}>
+                  {row.goalDiff > 0 ? `+${row.goalDiff}` : row.goalDiff}
+                </span>
+                <span className="text-right text-xs sm:text-sm font-extrabold text-white tabular-nums">
+                  {row.points}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Kompakte Zonen-Legende */}
+      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[10px] text-[#626978] px-1">
+        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#3b82f6]" />CL</span>
+        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#f97316]" />EL</span>
+        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#22c55e]" />ECL</span>
+        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#eab308]" />Rel.</span>
+        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#ef4444]" />Abstieg</span>
+      </div>
+    </div>
+  );
+};
+
 const BundesligaMatchesSection = ({
   matchesData,
   loading,
@@ -489,6 +619,7 @@ const BundesligaMatchesSection = ({
   newEventIds,
   autoPollingActive,
 }) => {
+  const [subTab, setSubTab] = useState('matches'); // 'matches' | 'table'
   const [toggledIds, setToggledIds] = useState({});
 
   const matches = matchesData?.matches || [];
@@ -514,108 +645,129 @@ const BundesligaMatchesSection = ({
 
   return (
     <div className="flex flex-col gap-2.5">
-      {/* Spieltag-Steuerung & Live-Ticker-Status */}
-      <div className="card-surface rounded-2xl px-3.5 py-2.5 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5">
+      {/* Umschalter: Partien <-> Bundesliga Tabelle */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex gap-2">
           <button
             type="button"
-            disabled={!canPrev || loading}
-            onClick={() => canPrev && onChangeMatchday(displayedDay - 1)}
-            aria-label="Vorheriger Spieltag"
-            className="w-7 h-7 rounded-lg bg-[#171717] border border-white/10 flex items-center justify-center text-gray-300 hover:text-white hover:border-white/25 disabled:opacity-30 transition-colors cursor-pointer"
+            onClick={() => setSubTab('matches')}
+            className={`px-3.5 py-1.5 rounded-full whitespace-nowrap text-xs border transition-colors cursor-pointer ${
+              subTab === 'matches'
+                ? 'bg-[#ef4444]/15 border-[#ef4444] text-white font-semibold'
+                : 'border-[#2e2e2e] text-[#8b92a5] font-medium hover:text-white'
+            }`}
           >
-            <ChevronLeft size={15} />
+            Partien
           </button>
-
-          <div className="px-2 text-center min-w-[104px]">
-            <div className="text-xs sm:text-sm font-bold text-white leading-tight">
-              {displayedDay ? `${displayedDay}. Spieltag` : 'Bundesliga'}
-            </div>
-            <div className="text-[10px] font-medium text-[#626978] leading-tight mt-0.5">
-              OpenLigaDB
-            </div>
-          </div>
-
           <button
             type="button"
-            disabled={!canNext || loading}
-            onClick={() => canNext && onChangeMatchday(displayedDay + 1)}
-            aria-label="Nächster Spieltag"
-            className="w-7 h-7 rounded-lg bg-[#171717] border border-white/10 flex items-center justify-center text-gray-300 hover:text-white hover:border-white/25 disabled:opacity-30 transition-colors cursor-pointer"
+            onClick={() => setSubTab('table')}
+            className={`px-3.5 py-1.5 rounded-full whitespace-nowrap text-xs border transition-colors cursor-pointer ${
+              subTab === 'table'
+                ? 'bg-[#ef4444]/15 border-[#ef4444] text-white font-semibold'
+                : 'border-[#2e2e2e] text-[#8b92a5] font-medium hover:text-white'
+            }`}
           >
-            <ChevronRight size={15} />
+            Tabelle
           </button>
-
-          {!isCurrentDay && currentMatchday != null && (
-            <button
-              type="button"
-              onClick={() => onChangeMatchday(currentMatchday)}
-              className="ml-1 px-2 py-1 rounded-lg bg-[#ff5c3e]/15 border border-[#ff5c3e]/40 text-[10px] font-bold text-[#ff5c3e] hover:bg-[#ff5c3e]/25 transition-colors cursor-pointer"
-            >
-              Aktuell
-            </button>
-          )}
         </div>
 
-        <div className="flex flex-col items-end shrink-0">
-          {autoPollingActive ? (
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#ef4444]">
-              <Radio size={11} className="animate-pulse" />
-              <span>Live-Abruf</span>
-            </span>
-          ) : (
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-[#626978]">
-              Partien
-            </span>
-          )}
-          {matchesData?.fetchedAt && (
-            <span className="text-[10px] text-[#626978] tabular-nums">
-              {formatUpdateTime(matchesData.fetchedAt)}
-            </span>
-          )}
-        </div>
+        {autoPollingActive && (
+          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#ef4444]">
+            <Radio size={11} className="animate-pulse" />
+            <span>Live</span>
+          </span>
+        )}
       </div>
 
-      {error && (
-        <div className="card-surface rounded-2xl p-4 text-center">
-          <div className="text-xs text-red-400 mb-2">{error}</div>
-          <button
-            type="button"
-            onClick={onRetry}
-            className="px-3 py-1.5 rounded-lg bg-[#171717] border border-white/15 text-xs font-semibold text-gray-200 hover:text-white cursor-pointer"
-          >
-            Erneut versuchen
-          </button>
-        </div>
-      )}
+      {subTab === 'table' ? (
+        <BundesligaTableView
+          season={matchesData?.season ?? null}
+          teamsList={teamsList}
+          onSelectKickbaseTeam={onSelectKickbaseTeam}
+        />
+      ) : (
+        <>
+          {/* Spieltag-Steuerung */}
+          <div className="card-surface rounded-2xl px-3 py-2 flex items-center justify-between gap-2">
+            <button
+              type="button"
+              disabled={!canPrev || loading}
+              onClick={() => canPrev && onChangeMatchday(displayedDay - 1)}
+              aria-label="Vorheriger Spieltag"
+              className="w-8 h-8 rounded-lg bg-[#171717] border border-white/10 flex items-center justify-center text-gray-300 hover:text-white hover:border-white/25 disabled:opacity-30 transition-colors cursor-pointer shrink-0"
+            >
+              <ChevronLeft size={16} />
+            </button>
 
-      {loading && matches.length === 0 ? (
-        <div className="flex flex-col gap-2.5">
-          {Array.from({ length: 5 }, (_, i) => (
-            <div key={i} className="h-[78px] rounded-2xl card-surface animate-pulse" />
-          ))}
-        </div>
-      ) : matches.length > 0 ? (
-        <div className="flex flex-col gap-2.5">
-          {matches.map((match) => (
-            <MatchCard
-              key={match.matchId}
-              match={match}
-              kbHome={matchOpenLigaTeamToKickbase(match.home, teamsList)}
-              kbAway={matchOpenLigaTeamToKickbase(match.away, teamsList)}
-              isExpanded={isMatchExpanded(match)}
-              onToggleExpand={() => toggleMatch(match)}
-              onSelectKickbaseTeam={onSelectKickbaseTeam}
-              isUpdated={changedMatchIds?.has(match.matchId)}
-              newEventIds={newEventIds}
-            />
-          ))}
-        </div>
-      ) : !error ? (
-        <div className="card-surface rounded-2xl p-6 text-center text-xs text-[#8b92a5]">
-          Keine Bundesliga-Partien für diesen Spieltag gefunden.
-        </div>
-      ) : null}
+            <div className="flex items-center justify-center gap-2 min-w-0">
+              <span className="text-xs sm:text-sm font-bold text-white leading-tight whitespace-nowrap">
+                {displayedDay ? `${displayedDay}. Spieltag` : 'Bundesliga'}
+              </span>
+              {!isCurrentDay && currentMatchday != null && (
+                <button
+                  type="button"
+                  onClick={() => onChangeMatchday(currentMatchday)}
+                  className="px-2 py-0.5 rounded-md bg-[#ff5c3e]/15 border border-[#ff5c3e]/40 text-[10px] font-bold text-[#ff5c3e] hover:bg-[#ff5c3e]/25 transition-colors cursor-pointer shrink-0"
+                >
+                  Aktuell
+                </button>
+              )}
+            </div>
+
+            <button
+              type="button"
+              disabled={!canNext || loading}
+              onClick={() => canNext && onChangeMatchday(displayedDay + 1)}
+              aria-label="Nächster Spieltag"
+              className="w-8 h-8 rounded-lg bg-[#171717] border border-white/10 flex items-center justify-center text-gray-300 hover:text-white hover:border-white/25 disabled:opacity-30 transition-colors cursor-pointer shrink-0"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+
+          {error && (
+            <div className="card-surface rounded-2xl p-4 text-center">
+              <div className="text-xs text-red-400 mb-2">{error}</div>
+              <button
+                type="button"
+                onClick={onRetry}
+                className="px-3 py-1.5 rounded-lg bg-[#171717] border border-white/15 text-xs font-semibold text-gray-200 hover:text-white cursor-pointer"
+              >
+                Erneut versuchen
+              </button>
+            </div>
+          )}
+
+          {loading && matches.length === 0 ? (
+            <div className="flex flex-col gap-2.5">
+              {Array.from({ length: 5 }, (_, i) => (
+                <div key={i} className="h-[78px] rounded-2xl card-surface animate-pulse" />
+              ))}
+            </div>
+          ) : matches.length > 0 ? (
+            <div className="flex flex-col gap-2.5">
+              {matches.map((match) => (
+                <MatchCard
+                  key={match.matchId}
+                  match={match}
+                  kbHome={matchOpenLigaTeamToKickbase(match.home, teamsList)}
+                  kbAway={matchOpenLigaTeamToKickbase(match.away, teamsList)}
+                  isExpanded={isMatchExpanded(match)}
+                  onToggleExpand={() => toggleMatch(match)}
+                  onSelectKickbaseTeam={onSelectKickbaseTeam}
+                  isUpdated={changedMatchIds?.has(match.matchId)}
+                  newEventIds={newEventIds}
+                />
+              ))}
+            </div>
+          ) : !error ? (
+            <div className="card-surface rounded-2xl p-6 text-center text-xs text-[#8b92a5]">
+              Keine Bundesliga-Partien für diesen Spieltag gefunden.
+            </div>
+          ) : null}
+        </>
+      )}
     </div>
   );
 };

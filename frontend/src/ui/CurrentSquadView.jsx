@@ -209,12 +209,8 @@ const SquadPitchCircle = ({ player, size, containerSize, onPlayerClick }) => {
         )}
       </div>
 
-      <span className={`mt-1 text-[10px] sm:text-[11px] font-semibold truncate max-w-full text-center leading-tight ${player.isDummy ? 'text-[#525866]' : 'text-gray-100'}`}>
+      <span className={`mt-1.5 text-[10px] sm:text-[11px] font-semibold truncate max-w-full text-center leading-tight ${player.isDummy ? 'text-[#525866]' : 'text-gray-100'}`}>
         {player.isDummy ? 'Frei' : (player.lastName || player.name)}
-      </span>
-
-      <span className="text-[9px] sm:text-[10px] font-bold text-[#8b92a5] tabular-nums leading-tight mt-0.5">
-        {player.isDummy ? '–' : formatCompactMoney(player.marketValue)}
       </span>
     </div>
   );
@@ -305,32 +301,42 @@ const CurrentSquadView = ({ players, liveStartingIds, loading }) => {
 
   const {
     pitchLineup,
-    startersCount,
-    benchCount,
     starterIds,
     groupedByPosition,
-    totalValue,
-    totalTrend,
-    hasAnyTrend,
+    startersValue,
+    startersTrend,
+    hasStartersTrend,
+    startersXp,
+    hasStartersXp,
     formationLabel,
   } = useMemo(() => {
     const normalized = (players || []).map((p) => ({
       ...p,
       position: toPosCode(p.position),
     }));
-    const { starters: stList, bench: bnList, starterIds: stIds } = splitStartersAndBench(normalized, liveStartingIds);
+    const { starters: stList, starterIds: stIds } = splitStartersAndBench(normalized, liveStartingIds);
     const padded = buildLineupWithDummies(stList);
     const awCount = stList.filter((p) => p.position === 2).length;
     const mfCount = stList.filter((p) => p.position === 3).length;
     const stCount = stList.filter((p) => p.position === 4).length;
-    const sumMv = normalized.reduce((sum, p) => sum + (p.marketValue || 0), 0);
+    const sumStartersMv = stList.reduce((sum, p) => sum + (p.marketValue || 0), 0);
 
-    let sumTrend = 0;
-    let trendFound = false;
-    for (const p of normalized) {
+    let sumStartersTrend = 0;
+    let startersTrendFound = false;
+    let sumStartersXp = 0;
+    let startersXpFound = false;
+    for (const p of stList) {
       if (typeof p.mvTrendAmount === 'number' && !Number.isNaN(p.mvTrendAmount)) {
-        sumTrend += p.mvTrendAmount;
-        trendFound = true;
+        sumStartersTrend += p.mvTrendAmount;
+        startersTrendFound = true;
+      }
+      const xpInfo = xpById.get(String(p.id));
+      const xpVal = typeof xpInfo?.xpNext === 'number'
+        ? xpInfo.xpNext
+        : (typeof xpInfo?.xpSeason === 'number' ? xpInfo.xpSeason : null);
+      if (xpVal != null) {
+        sumStartersXp += xpVal;
+        startersXpFound = true;
       }
     }
 
@@ -355,16 +361,16 @@ const CurrentSquadView = ({ players, liveStartingIds, loading }) => {
 
     return {
       pitchLineup: padded,
-      startersCount: stList.length,
-      benchCount: bnList.length,
       starterIds: stIds,
       groupedByPosition: groups,
-      totalValue: sumMv,
-      totalTrend: sumTrend,
-      hasAnyTrend: trendFound,
+      startersValue: sumStartersMv,
+      startersTrend: sumStartersTrend,
+      hasStartersTrend: startersTrendFound,
+      startersXp: Math.round(sumStartersXp),
+      hasStartersXp: startersXpFound,
       formationLabel: stList.length > 0 ? `${awCount}-${mfCount}-${stCount}` : null,
     };
-  }, [players, liveStartingIds]);
+  }, [players, liveStartingIds, xpById]);
 
   if (loading && (!players || players.length === 0)) {
     return <div className="text-center text-[#8b92a5] text-sm py-10">Lade aktuellen Kader…</div>;
@@ -410,23 +416,23 @@ const CurrentSquadView = ({ players, liveStartingIds, loading }) => {
 
         <div className="relative z-10 flex items-end justify-between px-4 sm:px-8 mt-4">
           <div className="text-left">
-            <div className="text-xs font-bold text-gray-200 tabular-nums">
-              {players.length} Spieler
+            <div className="text-xl sm:text-2xl font-extrabold text-cyan-400 leading-none tabular-nums">
+              {hasStartersXp ? `${startersXp.toLocaleString('de-DE')} xP` : '–'}
             </div>
-            <div className="text-[10px] font-semibold uppercase tracking-widest text-[#8b92a5] mt-0.5 tabular-nums">
-              {startersCount} Startelf · {benchCount} Bank
+            <div className="text-[10px] font-semibold uppercase tracking-widest text-[#8b92a5] mt-1">
+              Startelf xP
             </div>
           </div>
 
           <div className="text-right">
             <div className="text-xl sm:text-2xl font-extrabold text-white leading-none tabular-nums">
-              {formatCompactMoney(totalValue)}
+              {formatCompactMoney(startersValue)}
             </div>
-            {hasAnyTrend ? (
-              <MarketTrendBadge amount={totalTrend} dir={null} />
+            {hasStartersTrend ? (
+              <MarketTrendBadge amount={startersTrend} dir={null} />
             ) : (
               <div className="text-[10px] font-semibold uppercase tracking-widest text-[#8b92a5] mt-1">
-                Kaderwert
+                Startelf-Wert
               </div>
             )}
           </div>
