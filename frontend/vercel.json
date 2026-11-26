@@ -10,6 +10,15 @@
     }
   ],
   "rewrites": [
+    { "source": "/api/push-test", "destination": "/api/push?action=test" },
+    { "source": "/api/notify-admins", "destination": "/api/push?action=notify-admins" },
+    { "source": "/api/admin-broadcast", "destination": "/api/push?action=admin-broadcast" },
+    { "source": "/api/notify-articles", "destination": "/api/push?action=articles" },
+    { "source": "/api/notify-rating-changes", "destination": "/api/push?action=rating" },
+    { "source": "/api/pokal-reminder", "destination": "/api/push?action=pokal-reminder" },
+    { "source": "/api/notify-pokal-results", "destination": "/api/push?action=pokal-results" },
+    { "source": "/api/squad-reminder", "destination": "/api/push?action=squad-reminder" },
+    { "source": "/api/live-event-push", "destination": "/api/push?action=live-events" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }
