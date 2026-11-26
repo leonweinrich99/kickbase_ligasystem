@@ -7,6 +7,7 @@ import LoadingScreen from './LoadingScreen';
 import useMinimumDelay from './useMinimumDelay';
 import { shouldShowSplash, markSplashShown } from './appLoadState';
 import ManagerAvatar from './ui/ManagerAvatar';
+import TabPageHeader from './ui/TabPageHeader';
 import { isMatchdayWindowBerlin } from './matchdaySchedule';
 
 // "Sieger SF13" & Co. sind Platzhalter für noch nicht ausgespielte Partien,
@@ -130,7 +131,7 @@ const MobileRoundView = ({ matches, isFirstRound, isFinal, leagueColors, nameToI
 
 const RoundColumn = ({ matches, title, schedule, isCurrent = false, markFirst = false, leagueColors, nameToId, onOpenCompare, pokalMembers }) => {
   return (
-    <div className={`flex flex-col justify-around gap-2 sm:gap-4 flex-1 ${isCurrent ? 'rounded-2xl bg-[#8b5cf6]/[0.05] ring-1 ring-[#8b5cf6]/35 px-2.5 py-3 -my-3' : ''}`}>
+    <div className={`flex flex-col justify-around gap-2 sm:gap-4 flex-1 ${isCurrent ? 'rounded-2xl bg-[#8b5cf6]/[0.05] ring-1 ring-[#8b5cf6]/35 px-2.5 py-3' : 'py-3'}`}>
       <div className={`text-[10px] sm:text-xs font-black uppercase text-center tracking-widest mb-2 ${isCurrent ? 'text-white opacity-100' : 'text-[#8b92a5] opacity-70'}`}>
         <div className="flex items-center justify-center gap-1.5">
           {isCurrent && <span className="w-1.5 h-1.5 rounded-full bg-[#8b5cf6] shadow-[0_0_8px_#8b5cf6]" />}
@@ -390,46 +391,45 @@ const Pokal = () => {
   return (
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10 font-sans select-none">
     <div className="max-w-[1600px] mx-auto bg-[#000000]">
-      {/* Header */}
-      <div className="flex flex-col mb-4 sm:mb-8 border-b border-[#2e2e2e] pb-4 sm:pb-6 gap-4">
-
-        {/* Top Row: Logo, Title, Neuer-Pokalmodus-Badge (oben rechts, mobil) */}
-        <div className="flex justify-between items-start gap-2 w-full">
-          <div className="flex items-center gap-3 sm:gap-6 min-w-0 flex-1">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center p-0.5 sm:p-1 overflow-hidden flex-shrink-0">
-              <img src={logo} alt="Kickbase Liga Logo" className="w-full h-full object-contain" />
-            </div>
-            <div className="min-w-0 pr-1">
-              <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                <div className="text-[9px] sm:text-[11px] font-semibold tracking-wider text-[#8b5cf6]">SAISON 26/27</div>
-                {currentMatchday != null && (
-                  <span className="inline-flex items-center gap-1.5 text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#8b5cf6]/15 border border-[#8b5cf6]/40 text-purple-200 whitespace-nowrap">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#8b5cf6]" />
-                    BL-Spieltag {currentMatchday}
-                    {roundSchedule[currentRound]?.matchday === currentMatchday
-                      ? ` · ${currentRound}`
-                      : roundSchedule[currentRound]
-                        ? ` · Nächste Runde: ${currentRound} (ST ${roundSchedule[currentRound].matchday})`
-                        : ''}
-                  </span>
-                )}
-              </div>
-              <h1 className="text-[19px] sm:text-3xl font-bold tracking-tight uppercase leading-[1.1] break-words">Pokal</h1>
-            </div>
-          </div>
-
+      {/* Einheitlicher, overflow-sicherer Header mit eigenem Status-Slot */}
+      <TabPageHeader
+        className="mb-4 sm:mb-8"
+        logo={<img src={logo} alt="Kickbase Liga Logo" className="w-full h-full object-contain p-0.5 sm:p-1" />}
+        eyebrow="SAISON 26/27"
+        accentColor="#8b5cf6"
+        title="Pokal"
+        right={(
           <Link
             to="/pokal-rules"
-            className="sm:hidden shrink-0 flex items-center gap-1.5 bg-[#171717] border border-[#8b5cf6]/40 hover:border-[#8b5cf6] transition-colors rounded-full pl-2.5 pr-3 py-1.5 shadow-lg active:scale-95 group mt-1"
+            className="sm:hidden shrink-0 flex items-center gap-1.5 bg-[#171717] border border-[#8b5cf6]/40 hover:border-[#8b5cf6] transition-colors rounded-full pl-2.5 pr-3 py-1.5 shadow-lg active:scale-95 group"
           >
             <span className="text-[7px] font-black uppercase text-white bg-[#8b5cf6] rounded-full px-1.5 py-0.5 tracking-widest leading-none">Neu</span>
             <span className="text-[10px] font-bold text-gray-300 group-hover:text-white transition-colors whitespace-nowrap">Pokalmodus</span>
           </Link>
-        </div>
-
-        {/* Zweite Zeile: Runden-Umschalter (mobil), automatisch auf aktuelle Runde durchgeschoben */}
+        )}
+        statusStrip={currentMatchday != null ? (
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-xl bg-[#171717] border border-[#8b5cf6]/30 px-3 py-2 text-[11px] sm:text-xs">
+            <span className="inline-flex items-center gap-1.5 font-bold text-purple-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#8b5cf6] shrink-0" />
+              <span>BL-Spieltag {currentMatchday}</span>
+            </span>
+            {roundSchedule[currentRound] && (
+              <span className="text-[#a78bfa] font-semibold">
+                {roundSchedule[currentRound].matchday === currentMatchday
+                  ? `Aktuelle Runde: ${currentRound}`
+                  : `Nächste Runde: ${currentRound} (ST ${roundSchedule[currentRound].matchday})`}
+              </span>
+            )}
+          </div>
+        ) : null}
+      >
+        {/* Runden-Umschalter (mobil), automatisch auf aktuelle Runde durchgeschoben */}
         <div className="flex xl:hidden w-full items-center gap-2 sm:gap-4">
-          <div ref={tabsRef} className="flex overflow-x-auto gap-2 no-scrollbar h-12 items-center flex-1 bg-[#171717] border border-[#2e2e2e] rounded-xl px-2 shadow-lg">
+          <div
+            ref={tabsRef}
+            data-layout-guard="tab-strip"
+            className="flex overflow-x-auto gap-2 no-scrollbar min-h-[52px] py-1.5 items-center flex-1 bg-[#171717] border border-[#2e2e2e] rounded-xl px-2 shadow-lg"
+          >
             {rounds.map(round => {
               const isCurrent = round === currentRound;
               const isActive = activeRound === round;
@@ -438,12 +438,12 @@ const Pokal = () => {
                   key={round}
                   data-round={round}
                   onClick={() => handleRoundChange(round)}
-                  className={`px-4 py-1.5 rounded-lg whitespace-nowrap text-xs transition-all flex-shrink-0 ${
+                  className={`px-3.5 py-1.5 rounded-lg whitespace-nowrap text-xs transition-all flex-shrink-0 border ${
                     isActive
-                      ? 'bg-white text-black font-semibold'
+                      ? 'bg-white text-black font-semibold border-white'
                       : isCurrent
-                        ? 'text-white font-semibold bg-[#8b5cf6]/15 border border-[#8b5cf6]/40'
-                        : 'text-[#8b92a5] font-medium hover:text-white'
+                        ? 'text-white font-semibold bg-[#8b5cf6]/15 border-[#8b5cf6]/40'
+                        : 'text-[#8b92a5] font-medium border-transparent hover:text-white'
                   }`}
                 >
                   <span className="inline-flex items-center gap-1.5">
@@ -462,7 +462,7 @@ const Pokal = () => {
             })}
           </div>
         </div>
-      </div>
+      </TabPageHeader>
 
       {/* Mobile Bracket View (Inhalt der Runde) */}
       <div data-tour="pokal-bracket" className="block xl:hidden -mx-4 pb-10 overflow-hidden">
@@ -499,22 +499,24 @@ const Pokal = () => {
       {/* Desktop Bracket View - Tree structure */}
       <div data-tour="pokal-bracket" className="hidden xl:block relative pb-10">
         
-        {/* Zoom Controls */}
-        <div className="absolute right-8 top-0 flex items-center gap-1.5 bg-[#171717] border border-[#2e2e2e] p-1.5 rounded-xl z-20 shadow-lg">
-          <button onClick={() => setZoomLevel(prev => Math.max(0.4, prev - 0.15))} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#2e2e2e] text-[#8b92a5] hover:text-white transition-colors">
-            <Minus size={18} strokeWidth={2.5} />
-          </button>
-          <span className="text-[11px] font-black w-12 text-center text-gray-300 tracking-wider">{Math.round(zoomLevel * 100)}%</span>
-          <button onClick={() => setZoomLevel(prev => Math.min(1.5, prev + 0.15))} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#2e2e2e] text-[#8b92a5] hover:text-white transition-colors">
-            <Plus size={18} strokeWidth={2.5} />
-          </button>
-          <div className="w-[1px] h-5 bg-[#2e2e2e] mx-1"></div>
-          <button onClick={() => setZoomLevel(1)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#2e2e2e] text-[#8b92a5] hover:text-white transition-colors" title="Reset Zoom">
-            <RotateCcw size={15} strokeWidth={2.5} />
-          </button>
+        {/* Zoom Controls im normalen Fluss oberhalb des Baums (ueberlagert niemals Runden-Titel) */}
+        <div className="flex justify-end mb-3">
+          <div className="flex items-center gap-1.5 bg-[#171717] border border-[#2e2e2e] p-1.5 rounded-xl shadow-lg">
+            <button onClick={() => setZoomLevel(prev => Math.max(0.4, prev - 0.15))} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#2e2e2e] text-[#8b92a5] hover:text-white transition-colors">
+              <Minus size={18} strokeWidth={2.5} />
+            </button>
+            <span className="text-[11px] font-black w-12 text-center text-gray-300 tracking-wider">{Math.round(zoomLevel * 100)}%</span>
+            <button onClick={() => setZoomLevel(prev => Math.min(1.5, prev + 0.15))} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#2e2e2e] text-[#8b92a5] hover:text-white transition-colors">
+              <Plus size={18} strokeWidth={2.5} />
+            </button>
+            <div className="w-[1px] h-5 bg-[#2e2e2e] mx-1"></div>
+            <button onClick={() => setZoomLevel(1)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#2e2e2e] text-[#8b92a5] hover:text-white transition-colors" title="Reset Zoom">
+              <RotateCcw size={15} strokeWidth={2.5} />
+            </button>
+          </div>
         </div>
 
-        <div ref={desktopScrollRef} className="overflow-x-auto custom-scrollbar mt-6">
+        <div ref={desktopScrollRef} className="overflow-x-auto custom-scrollbar">
           <div 
             className="min-w-max flex justify-center items-stretch gap-6 px-8 py-8 mx-auto"
             style={{ zoom: zoomLevel }}

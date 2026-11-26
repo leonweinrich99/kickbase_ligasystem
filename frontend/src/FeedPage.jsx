@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Newspaper, Trophy, TrendingUp, Flame, Clock, BarChart3, ChevronRight, CalendarRange, Megaphone } from 'lucide-react';
-import PageHeader from './ui/PageHeader';
+import TabPageHeader from './ui/TabPageHeader';
 import { FEED_CATEGORIES, getCategoryMeta, formatArticleDate, sortArticlesByDateDesc } from './feedMeta';
 import { useAuth } from './AuthContext';
 import newsLogo from './assets/news_logo.svg';
@@ -364,58 +364,53 @@ const FeedPage = () => {
 
   return (
     <div className="min-h-screen bg-[#000000] text-white px-4 sm:px-6 pt-5 pb-12 max-w-3xl mx-auto">
-      {/* Ebene-1 Header - gleiches Icon-Box-Format wie Liga/Pokal/Account
-          (Owner-Wunsch 24.11.2026: "Header bei allen Tabs einheitlich"). */}
-      <div className="flex items-center justify-between gap-3 mb-4">
-        <div className="flex items-center gap-3 sm:gap-6 min-w-0">
-          <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center overflow-hidden flex-shrink-0">
-            <img src={newsLogo} alt="News Logo" className="w-full h-full object-contain" />
-          </div>
-          <PageHeader
-            eyebrow={
-              isWeeklyView
-                ? 'ADMIN-VORSCHAU · WOCHENBERICHT'
-                : isTradingView
-                  ? 'MARKET DESK & ANALYSEN'
-                  : isAllgemeinView
-                    ? 'LIGASYSTEM · UPDATES & SPECIALS'
-                    : 'REDAKTION & ANALYSEN'
-            }
-            accentColor={
-              isWeeklyView
-                ? '#a855f7'
-                : isTradingView
-                  ? '#10b981'
-                  : isAllgemeinView
-                    ? '#38bdf8'
-                    : activeCat === 'pokal'
-                      ? '#f59e0b'
-                      : '#ff5c3e'
-            }
-            title={
-              isWeeklyView
-                ? 'WEEKLY SUMMARY'
-                : isTradingView
-                  ? 'THE TRADING JOURNAL'
-                  : isAllgemeinView
-                    ? 'ALLGEMEIN'
-                    : activeCat === 'pokal'
-                      ? 'POKAL-CHRONIK'
-                      : activeCat === 'spieltag'
-                        ? 'SPIELTAGSBERICHTE'
-                        : 'NEWSFEED'
-            }
-          />
-        </div>
-        {feedData?.updatedAt && (
+      {/* Ebene-1 Header - einheitlicher, overflow-sicherer TabPageHeader */}
+      <TabPageHeader
+        bordered={false}
+        className="mb-4"
+        logo={<img src={newsLogo} alt="News Logo" className="w-full h-full object-contain" />}
+        eyebrow={
+          isWeeklyView
+            ? 'ADMIN-VORSCHAU · WOCHENBERICHT'
+            : isTradingView
+              ? 'MARKET DESK & ANALYSEN'
+              : isAllgemeinView
+                ? 'LIGASYSTEM · UPDATES & SPECIALS'
+                : 'REDAKTION & ANALYSEN'
+        }
+        accentColor={
+          isWeeklyView
+            ? '#a855f7'
+            : isTradingView
+              ? '#10b981'
+              : isAllgemeinView
+                ? '#38bdf8'
+                : activeCat === 'pokal'
+                  ? '#f59e0b'
+                  : '#ff5c3e'
+        }
+        title={
+          isWeeklyView
+            ? 'WEEKLY SUMMARY'
+            : isTradingView
+              ? 'THE TRADING JOURNAL'
+              : isAllgemeinView
+                ? 'ALLGEMEIN'
+                : activeCat === 'pokal'
+                  ? 'POKAL-CHRONIK'
+                  : activeCat === 'spieltag'
+                    ? 'SPIELTAGSBERICHTE'
+                    : 'NEWSFEED'
+        }
+        right={feedData?.updatedAt ? (
           <div className="text-right shrink-0 pb-0.5">
             <div className="text-[9px] font-semibold uppercase tracking-widest text-[#8b92a5]">Ausgabe</div>
-            <div className="text-xs font-semibold text-gray-300 tabular-nums">
+            <div className="text-xs font-semibold text-gray-300 tabular-nums whitespace-nowrap">
               {formatArticleDate(feedData.updatedAt.slice(0, 10))}
             </div>
           </div>
-        )}
-      </div>
+        ) : null}
+      />
 
       {/* Kategorie-Filter-Leiste */}
       <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 mb-4">

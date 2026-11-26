@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { RefreshCw, ChevronDown, Radio } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import ManagerAvatar from './ui/ManagerAvatar';
-import PageHeader from './ui/PageHeader';
+import TabPageHeader from './ui/TabPageHeader';
 import AnimatedPoints from './ui/AnimatedPoints';
 import LiveLineupPitch from './ui/LiveLineupGrid';
 import CurrentSquadView from './ui/CurrentSquadView';
@@ -1266,26 +1266,27 @@ const LiveLineupPage = () => {
   return (
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10 pb-28 sm:pb-28">
       <div className="max-w-[700px] mx-auto">
-        <div className="flex flex-col mb-5 border-b border-[#2e2e2e] pb-4 gap-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 sm:gap-6 min-w-0">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-[#ef4444]/10 flex items-center justify-center shrink-0">
-                <span className="relative flex h-3.5 w-3.5 sm:h-4 sm:w-4">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ef4444] opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3.5 w-3.5 sm:h-4 sm:w-4 bg-[#ef4444]"></span>
-                </span>
-              </div>
-              <PageHeader eyebrow={displayedMatchday ? `SPIELTAG ${displayedMatchday} · LIVE` : 'LIVE'} accentColor="#ef4444" title="Live Punkte" />
+        <TabPageHeader
+          className="mb-5"
+          logo={(
+            <div className="w-full h-full rounded-2xl bg-[#ef4444]/10 flex items-center justify-center">
+              <span className="relative flex h-3.5 w-3.5 sm:h-4 sm:w-4">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ef4444] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3.5 w-3.5 sm:h-4 sm:w-4 bg-[#ef4444]"></span>
+              </span>
             </div>
-
-            {/* Passiver Backend-Live-Status (kein manueller Refresh-Button) */}
+          )}
+          eyebrow={displayedMatchday ? `SPIELTAG ${displayedMatchday} · LIVE` : 'LIVE'}
+          accentColor="#ef4444"
+          title="Live Punkte"
+          right={(
             <div className="flex items-center gap-2 shrink-0">
               {rateLimited ? (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border bg-amber-500/10 border-amber-400/35 text-[10px] font-bold uppercase tracking-wider text-amber-300">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border bg-amber-500/10 border-amber-400/35 text-[10px] font-bold uppercase tracking-wider text-amber-300 whitespace-nowrap">
                   <span>Pause</span>
                 </span>
               ) : blLiveActive ? (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border bg-[#ef4444]/15 border-[#ef4444]/40 text-[10px] font-bold uppercase tracking-wider text-[#ef4444]">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border bg-[#ef4444]/15 border-[#ef4444]/40 text-[10px] font-bold uppercase tracking-wider text-[#ef4444] whitespace-nowrap">
                   {bgSyncing ? (
                     <RefreshCw size={11} className="animate-spin" />
                   ) : (
@@ -1294,15 +1295,15 @@ const LiveLineupPage = () => {
                   <span>Live · 60s</span>
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border bg-[#171717] border-[#2e2e2e] text-[10px] font-semibold uppercase tracking-wider text-[#626978]">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border bg-[#171717] border-[#2e2e2e] text-[10px] font-semibold uppercase tracking-wider text-[#626978] whitespace-nowrap">
                   <span>Auto-Live</span>
                 </span>
               )}
             </div>
-          </div>
-
+          )}
+        >
           <ModeSwitch mode={mode} onChange={setMode} />
-        </div>
+        </TabPageHeader>
 
         {autoSyncBanner && (
           <div

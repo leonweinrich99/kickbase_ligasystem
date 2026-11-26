@@ -31,7 +31,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="min-h-screen bg-[#000000]">
+        <div className="min-h-screen w-full max-w-full overflow-x-clip bg-[#000000]">
           <ScrollToTop />
 
           {/* Progressiver iOS-Safe-Area-Blur (angelehnt an Apples Liquid-Glass

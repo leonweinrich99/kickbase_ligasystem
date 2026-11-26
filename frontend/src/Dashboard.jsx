@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Users, Star, Trophy, Info, ChevronLeft, ChevronRight, TrendingUp, TrendingDown } from 'lucide-react';
 import logo from './assets/logo.png';
-import PageHeader from './ui/PageHeader';
+import TabPageHeader from './ui/TabPageHeader';
 import CloseButton from './ui/CloseButton';
 import ManagerAvatar from './ui/ManagerAvatar';
 import AdBanner from './ui/AdBanner';
@@ -29,53 +29,42 @@ export const Header = ({
   const displayLabel = isTrueTable ? 'Wahre Tabelle' : (currentView === 'saison' ? 'Gesamt' : `Spieltag ${currentView}`);
 
   return (
-    <div className="flex flex-col mb-4 sm:mb-8 border-b border-[#2e2e2e] pb-4 sm:pb-6 gap-4">
-
-      {/* Top Row: Logo, Title, and Optimale-Elf-Badge */}
-      <div className="flex justify-between items-start gap-2 w-full">
-        {/* Left: Logo & Title */}
-        <div className="flex items-center gap-3 sm:gap-6 min-w-0 flex-1">
-          <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center p-0.5 sm:p-1 overflow-hidden flex-shrink-0">
-            <img src={logo} alt="Kickbase Liga Logo" className="w-full h-full object-contain" />
-          </div>
-          <div className="min-w-0 pr-1">
-            <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-              <div className="text-[9px] sm:text-[11px] font-semibold tracking-wider text-[#ff5c3e]">SAISON 26/27</div>
-              {mode === 'archive' && (
-                <div className="text-[8px] sm:text-[9px] font-semibold tracking-widest text-[#8b92a5] bg-[#1f1f1f] border border-[#2e2e2e] rounded-full px-2 py-0.5 uppercase">Archiv</div>
-              )}
-            </div>
-            <h1 className="text-[19px] sm:text-3xl font-bold tracking-tight uppercase leading-[1.1] break-words">
-              {mode === 'archive' ? <>Qualifikations<br />gruppe</> : 'Ligasystem'}
-            </h1>
-          </div>
+    <TabPageHeader
+      className="mb-4 sm:mb-8"
+      logo={<img src={logo} alt="Kickbase Liga Logo" className="w-full h-full object-contain p-0.5 sm:p-1" />}
+      eyebrow="SAISON 26/27"
+      eyebrowBadge={mode === 'archive' ? (
+        <div className="text-[8px] sm:text-[9px] font-semibold tracking-widest text-[#8b92a5] bg-[#1f1f1f] border border-[#2e2e2e] rounded-full px-2 py-0.5 uppercase">
+          Archiv
         </div>
-
-        {/* Right: Optimale-Elf-Badge (oben, wie die Pokal-Kachel) */}
+      ) : null}
+      accentColor="#ff5c3e"
+      title={mode === 'archive' ? <>Qualifikations<br />gruppe</> : 'Ligasystem'}
+      right={(
         <Link
           to={`${routeBase}/optimale-elf`}
           data-tour="optimal-team-button"
-          className="shrink-0 flex items-center gap-1.5 bg-[#171717] border border-[#ff5c3e]/40 hover:border-[#ff5c3e] transition-colors rounded-full pl-2.5 pr-3 py-1.5 shadow-lg active:scale-95 group mt-1"
+          className="shrink-0 flex items-center gap-1.5 bg-[#171717] border border-[#ff5c3e]/40 hover:border-[#ff5c3e] transition-colors rounded-full pl-2.5 pr-3 py-1.5 shadow-lg active:scale-95 group"
         >
           <Star size={12} fill="#ff5c3e" stroke="#ff5c3e" strokeWidth={1} className="shrink-0" />
           <span className="text-[10px] font-bold text-gray-300 group-hover:text-white transition-colors whitespace-nowrap">
             Top Elf
           </span>
         </Link>
-      </div>
-
+      )}
+    >
       {/* Bottom Row: Controls */}
       <div className="flex w-full sm:w-auto justify-between sm:justify-end items-center gap-2 sm:gap-4">
         {/* Spieltag-Wechsler (Pfeil-Design) - "Die wahre Tabelle" ist hier einfach
             ein zusätzlicher Klick-Stopp nach "Gesamt", kein eigenes Element. */}
-        <div data-tour="matchday-switcher" className="bg-[#171717] border border-[#2e2e2e] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden flex-1 sm:flex-initial justify-between h-12">
+        <div data-tour="matchday-switcher" className="bg-[#171717] border border-[#2e2e2e] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden flex-1 sm:flex-initial justify-between h-12 min-w-0">
           <button
             onClick={onPrev}
-            className="px-3 sm:px-5 h-full text-[#8b92a5] hover:text-[#ff5c3e] transition-colors bg-[#141414] active:scale-90"
+            className="px-3 sm:px-5 h-full text-[#8b92a5] hover:text-[#ff5c3e] transition-colors bg-[#141414] active:scale-90 shrink-0"
           >
             <ChevronLeft size={18} />
           </button>
-          <span className="px-2 sm:px-6 text-[11px] sm:text-sm text-gray-200 whitespace-nowrap uppercase tracking-widest text-center flex-1 flex items-center justify-center gap-1.5">
+          <span className="px-2 sm:px-6 text-[11px] sm:text-sm text-gray-200 whitespace-nowrap uppercase tracking-widest text-center flex-1 flex items-center justify-center gap-1.5 min-w-0 truncate">
             {displayLabel}
             {isTrueTable && (
               <span
@@ -93,20 +82,20 @@ export const Header = ({
           </span>
           <button
             onClick={onNext}
-            className="px-3 sm:px-5 h-full text-[#8b92a5] hover:text-[#ff5c3e] transition-colors bg-[#141414] active:scale-90"
+            className="px-3 sm:px-5 h-full text-[#8b92a5] hover:text-[#ff5c3e] transition-colors bg-[#141414] active:scale-90 shrink-0"
           >
             <ChevronRight size={18} />
           </button>
         </div>
 
         {/* Teilnehmer Kachel */}
-        <div className="bg-[#171717] border border-[#2e2e2e] rounded-xl px-3 sm:px-5 h-12 shadow-lg flex items-center gap-2 sm:gap-3 min-w-0">
+        <div className="bg-[#171717] border border-[#2e2e2e] rounded-xl px-3 sm:px-5 h-12 shadow-lg flex items-center gap-2 sm:gap-3 shrink-0">
           <UsersIcon className="text-[#8b92a5] sm:hidden" />
           <span className="text-[8px] sm:text-[10px] font-bold text-[#8b92a5] tracking-widest leading-none uppercase hidden sm:inline">Teilnehmer</span>
           <span className="text-sm sm:text-base font-bold text-gray-200 leading-none">{participants}</span>
         </div>
       </div>
-    </div>
+    </TabPageHeader>
   );
 };
 

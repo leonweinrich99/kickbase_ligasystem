@@ -7,7 +7,7 @@ import { useTour } from './Tour';
 import accountLogo from './assets/account_logo.png';
 import { SeasonSnapshot } from './AccountStats';
 import ManagerRatingBadge from './ManagerRatingBadge';
-import PageHeader from './ui/PageHeader';
+import TabPageHeader from './ui/TabPageHeader';
 import ManagerAvatar from './ui/ManagerAvatar';
 
 const fadeUp = {
@@ -57,30 +57,31 @@ const Account = () => {
   return (
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10">
       <div className="max-w-lg mx-auto">
-        <Motion.div variants={fadeUp} initial="hidden" animate="show" custom={0} className="flex items-center justify-between gap-3 mb-6">
-          <div className="flex items-center gap-3 sm:gap-6 min-w-0">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center overflow-hidden flex-shrink-0">
-              <img src={accountLogo} alt="Account Logo" className="w-full h-full object-contain" />
-            </div>
-            <PageHeader eyebrow="SAISON 26/27" title={`${getGreeting()}${firstName ? `, ${firstName}` : ''}`} />
-          </div>
-
-          <div className="flex items-center gap-2 sm:gap-3">
-            {profile?.kickbaseId && <ManagerRatingBadge kickbaseId={profile.kickbaseId} />}
-            {isFirebaseConfigured && user && (
-              <Link to="/account/profile" className="relative shrink-0" aria-label="Profil öffnen">
-                <ManagerAvatar
-                  name={profile?.kickbaseName}
-                  photoURL={user.photoURL}
-                  size={48}
-                  ringColor="#ff5c3e"
-                />
-                {isAdmin && (
-                  <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-purple-500 border-2 border-black flex items-center justify-center text-[7px] font-black text-white">A</span>
+        <Motion.div variants={fadeUp} initial="hidden" animate="show" custom={0} className="mb-6">
+          <TabPageHeader
+            bordered={false}
+            logo={<img src={accountLogo} alt="Account Logo" className="w-full h-full object-contain" />}
+            eyebrow="SAISON 26/27"
+            title={`${getGreeting()}${firstName ? `, ${firstName}` : ''}`}
+            right={(
+              <div className="flex items-center gap-2 sm:gap-3">
+                {profile?.kickbaseId && <ManagerRatingBadge kickbaseId={profile.kickbaseId} />}
+                {isFirebaseConfigured && user && (
+                  <Link to="/account/profile" className="relative shrink-0" aria-label="Profil öffnen">
+                    <ManagerAvatar
+                      name={profile?.kickbaseName}
+                      photoURL={user.photoURL}
+                      size={48}
+                      ringColor="#ff5c3e"
+                    />
+                    {isAdmin && (
+                      <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-purple-500 border-2 border-black flex items-center justify-center text-[7px] font-black text-white">A</span>
+                    )}
+                  </Link>
                 )}
-              </Link>
+              </div>
             )}
-          </div>
+          />
         </Motion.div>
 
         {profile?.kickbaseId ? (

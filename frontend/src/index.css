@@ -13,6 +13,9 @@
 html {
   height: 100%;
   background-color: var(--color-brand-bg);
+  /* Globaler Horizontal-Overflow-Schutz: `clip` verhindert seitliches Ausbrechen
+     der Seite ohne `position: sticky` oder innere Scroll-Container zu brechen. */
+  overflow-x: clip;
   /* Pinch-Zoom deaktivieren, Scrollen bleibt erlaubt (App-Feeling) */
   touch-action: pan-x pan-y;
   -webkit-text-size-adjust: 100%;
@@ -21,6 +24,8 @@ html {
 
 body {
   min-height: 100%;
+  max-width: 100%;
+  overflow-x: clip;
   background-color: var(--color-brand-bg);
   color: white;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -52,6 +57,8 @@ body {
 
 #root {
   min-height: 100%;
+  max-width: 100%;
+  overflow-x: clip;
   background-color: var(--color-brand-bg);
 }
 
