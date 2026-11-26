@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
-import { LineChart, Line, BarChart, Bar, Cell, ReferenceLine, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Info, RefreshCw, CheckCircle2, XCircle, Star, SlidersHorizontal, X, ChevronDown, AlertTriangle, ArrowRight } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import { useBackNavigation } from './useBackNavigation';
@@ -398,59 +398,6 @@ const getMatchdayBarFill = (pt) => {
   if (pt.points < 100) return '#fb923c';
   if (pt.points < 200) return '#4ade80';
   return '#15803d';
-};
-
-const PointsChartTooltip = ({ active, payload }) => {
-  if (!active || !payload?.length) return null;
-  const pt = payload[0].payload;
-  const valColor = pt.isXp
-    ? 'text-cyan-400'
-    : !pt.played
-      ? 'text-[#8b92a5]'
-      : pointColor(pt.points);
-  return (
-    <div className="bg-[#0e0e0e]/95 border border-white/15 rounded-lg px-2 py-1 shadow-lg pointer-events-none whitespace-nowrap">
-      <span className={`text-xs font-bold tabular-nums ${valColor}`}>
-        {pt.isXp ? `${pt.points} xP` : pt.played ? `${pt.points} Pkt` : 'n.e.'}
-      </span>
-      <span className="text-[10px] text-[#8b92a5] ml-1.5 tabular-nums">
-        {pt.label}{pt.opponent ? ` · ${pt.isHome === true ? 'vs' : pt.isHome === false ? '@' : ''} ${pt.opponent}`.replace(/\s+/g, ' ') : ''}
-      </span>
-    </div>
-  );
-};
-
-const MatchdayAxisTick = ({ x, y, payload, pointMap }) => {
-  const pt = pointMap.get(payload?.value);
-  if (!pt) return null;
-  return (
-    <g transform={`translate(${x},${y})`}>
-      <text
-        x={0}
-        y={10}
-        textAnchor="middle"
-        fill={pt.isXp ? '#22d3ee' : '#8b92a5'}
-        fontSize={10}
-        fontWeight={pt.isXp ? 700 : 600}
-      >
-        {pt.day}
-      </text>
-      {pt.oppLogo ? (
-        <image
-          href={pt.oppLogo}
-          x={-9}
-          y={16}
-          width={18}
-          height={18}
-          preserveAspectRatio="xMidYMid meet"
-        />
-      ) : pt.opponent ? (
-        <text x={0} y={29} textAnchor="middle" fill="#626978" fontSize={8} fontWeight={700}>
-          {pt.opponent.slice(0, 3).toUpperCase()}
-        </text>
-      ) : null}
-    </g>
-  );
 };
 
 const MiniStat = ({ label, value, positive }) => (
@@ -942,8 +889,14 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, 
             const avgPlayed = playedOnly.length > 0
               ? Math.round(playedOnly.reduce((s, m) => s + m.points, 0) / playedOnly.length)
               : null;
-            const pointMap = new Map(chartPoints.map((pt) => [pt.label, pt]));
-            const chartWidth = Math.max(chartPoints.length * 40, 320);
+
+            const maxPos = Math.max(120, ...chartPoints.map((pt) => (pt.played || pt.isXp ? Math.max(0, pt.points || 0) : 0)));
+            const minNeg = Math.min(0, ...chartPoints.map((pt) => (pt.played ? Math.min(0, pt.points || 0) : 0)));
+            const totalBarZonePx = 108;
+            const negZonePx = minNeg < 0
+              ? Math.max(16, Math.min(30, Math.round((Math.abs(minNeg) / (maxPos + Math.abs(minNeg))) * totalBarZonePx)))
+              : 0;
+            const posZonePx = totalBarZonePx - negZonePx;
 
             return (
               <div className="px-4 sm:px-6 mb-8">
@@ -993,53 +946,145 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, isFavorite, 
                   </div>
                 )}
 
-                <div className="card-surface rounded-2xl pt-3 pb-2 px-1 overflow-hidden">
+                {/* Kompakte, horizontal wischbare Spalten-Grafik:
+                    Spieltag -> Gegner-Logo -> Ergebnis -> Balken -> Punkte (Zahl) -> Minuten */}
+                <div className="card-surface rounded-2xl py-3 px-2 overflow-hidden">
                   <div ref={pointsScrollRef} className="overflow-x-auto no-scrollbar">
-                    <div style={{ width: `${chartWidth}px`, minWidth: '100%' }}>
-                      <BarChart
-                        width={chartWidth}
-                        height={196}
-                        data={chartPoints}
-                        margin={{ top: 10, right: 10, left: -16, bottom: 26 }}
-                      >
-                        <XAxis
-                          dataKey="label"
-                          interval={0}
-                          height={40}
-                          tickLine={false}
-                          axisLine={false}
-                          tick={(tickProps) => <MatchdayAxisTick {...tickProps} pointMap={pointMap} />}
-                        />
-                        <YAxis
-                          stroke="#4b5563"
-                          fontSize={9}
-                          tickLine={false}
-                          axisLine={false}
-                          tickCount={4}
-                          tick={{ fill: '#6b7280', fontSize: 9 }}
-                        />
-                        <ReferenceLine y={0} stroke="#2e2e2e" strokeWidth={1} />
-                        <Tooltip
-                          content={<PointsChartTooltip />}
-                          cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                        />
-                        <Bar dataKey="points" radius={[4, 4, 2, 2]} maxBarSize={22}>
-                          {chartPoints.map((pt) => {
-                            const fill = getMatchdayBarFill(pt);
-                            const is200Plus = !pt.isXp && pt.played && pt.points >= 200;
-                            return (
-                              <Cell
-                                key={`${pt.day}-${pt.isXp ? 'xp' : 'pt'}`}
-                                fill={fill}
-                                fillOpacity={pt.isXp ? 0.8 : 0.95}
-                                stroke={pt.isXp ? '#67e8f9' : is200Plus ? '#22c55e' : 'none'}
-                                strokeDasharray={pt.isXp ? '3 2' : undefined}
-                                strokeWidth={pt.isXp ? 1.2 : is200Plus ? 1 : 0}
-                              />
-                            );
-                          })}
-                        </Bar>
-                      </BarChart>
+                    <div className="flex items-stretch gap-1 min-w-max px-1">
+                      {chartPoints.map((pt) => {
+                        const fill = getMatchdayBarFill(pt);
+                        const is200Plus = !pt.isXp && pt.played && pt.points >= 200;
+                        const isPositive = (pt.played || pt.isXp) && pt.points > 0;
+                        const isNegative = pt.played && !pt.isXp && pt.points < 0;
+                        const posH = isPositive
+                          ? Math.max(5, Math.round((pt.points / maxPos) * (posZonePx - 6)))
+                          : 0;
+                        const negH = isNegative && minNeg < 0
+                          ? Math.max(5, Math.round((Math.abs(pt.points) / Math.abs(minNeg)) * (negZonePx - 4)))
+                          : 0;
+
+                        const ptsText = pt.isXp
+                          ? `${pt.points}`
+                          : pt.played
+                            ? `${pt.points}`
+                            : '–';
+                        const ptsColorClass = pt.isXp
+                          ? 'text-cyan-400'
+                          : pt.played
+                            ? pointColor(pt.points)
+                            : 'text-[#525866]';
+                        const minutesText = pt.isXp
+                          ? 'xP'
+                          : pt.played
+                            ? `${pt.minutes}'`
+                            : "0'";
+                        const resultText = pt.isXp
+                          ? (pt.isHome === true ? 'Heim' : pt.isHome === false ? 'Ausw.' : 'Progn.')
+                          : (pt.score || '–');
+
+                        return (
+                          <div
+                            key={`${pt.day}-${pt.isXp ? 'xp' : 'pt'}`}
+                            title={`${pt.label}${pt.opponent ? ` (${pt.isHome === true ? 'vs.' : pt.isHome === false ? '@' : ''} ${pt.opponent})` : ''}${pt.score ? ` ${pt.score}` : ''} · ${pt.isXp ? `${pt.points} xP` : pt.played ? `${pt.points} Pkt (${pt.minutes}')` : 'nicht eingesetzt'}`}
+                            className={`w-[46px] shrink-0 flex flex-col items-center rounded-xl py-1.5 transition-colors ${
+                              pt.isXp ? 'bg-cyan-500/[0.07]' : 'hover:bg-white/[0.03]'
+                            }`}
+                          >
+                            {/* 1. Spieltag */}
+                            <div className={`text-[10px] font-bold tabular-nums leading-none ${pt.isXp ? 'text-cyan-400' : 'text-[#8b92a5]'}`}>
+                              ST {pt.day}
+                            </div>
+
+                            {/* 2. Gegner-Logo */}
+                            <div className="w-5 h-5 mt-1.5 flex items-center justify-center shrink-0">
+                              {pt.oppLogo ? (
+                                <img
+                                  src={pt.oppLogo}
+                                  alt={pt.opponent || ''}
+                                  loading="lazy"
+                                  decoding="async"
+                                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                  className="w-5 h-5 object-contain"
+                                />
+                              ) : pt.opponent ? (
+                                <span className="text-[8px] font-black text-[#626978] uppercase">
+                                  {pt.opponent.slice(0, 3)}
+                                </span>
+                              ) : (
+                                <span className="text-[9px] text-[#4b5563]">–</span>
+                              )}
+                            </div>
+
+                            {/* 3. Ergebnis */}
+                            <div className={`text-[9px] font-semibold tabular-nums leading-none mt-1 ${pt.isXp ? 'text-cyan-300/80' : 'text-[#626978]'}`}>
+                              {resultText}
+                            </div>
+
+                            {/* 4. Balken (positiv ueber 0-Linie, negativ darunter) */}
+                            <div
+                              className="w-full flex flex-col items-center mt-2 relative"
+                              style={{ height: `${totalBarZonePx}px` }}
+                            >
+                              {/* Positiv-Bereich */}
+                              <div
+                                className="w-full flex items-end justify-center relative"
+                                style={{ height: `${posZonePx}px` }}
+                              >
+                                {isPositive ? (
+                                  <div
+                                    className="w-[20px] rounded-t-[5px] rounded-b-[2px] transition-all"
+                                    style={{
+                                      height: `${posH}px`,
+                                      backgroundColor: pt.isXp ? 'rgba(34, 211, 238, 0.28)' : fill,
+                                      border: pt.isXp
+                                        ? '1.5px dashed #22d3ee'
+                                        : is200Plus
+                                          ? '1px solid #22c55e'
+                                          : 'none',
+                                    }}
+                                  />
+                                ) : !isNegative ? (
+                                  <div
+                                    className="w-[14px] h-[3px] rounded-full mb-[1px]"
+                                    style={{ backgroundColor: fill }}
+                                  />
+                                ) : null}
+                              </div>
+
+                              {/* 0-Linie */}
+                              <div className="w-full h-[1px] bg-white/10 shrink-0" />
+
+                              {/* Negativ-Bereich (falls Minuspunkte in dieser Saison vorkommen) */}
+                              {negZonePx > 0 && (
+                                <div
+                                  className="w-full flex items-start justify-center"
+                                  style={{ height: `${negZonePx}px` }}
+                                >
+                                  {isNegative && (
+                                    <div
+                                      className="w-[20px] rounded-b-[5px] rounded-t-[2px]"
+                                      style={{
+                                        height: `${negH}px`,
+                                        backgroundColor: fill,
+                                      }}
+                                    />
+                                  )}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* 5. Punkte als Zahl */}
+                            <div className={`text-[12px] font-extrabold tabular-nums leading-none mt-2 ${ptsColorClass}`}>
+                              {ptsText}
+                            </div>
+
+                            {/* 6. Minuten gespielt */}
+                            <div className={`text-[9px] font-semibold tabular-nums leading-none mt-1 ${pt.isXp ? 'text-cyan-400/80 uppercase' : 'text-[#626978]'}`}>
+                              {minutesText}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
