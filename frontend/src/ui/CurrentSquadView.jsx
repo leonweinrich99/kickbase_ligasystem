@@ -3,21 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { ExternalLink } from 'lucide-react';
 import { buildLineupWithDummies } from '../liveLineupUtils';
 import { normalizeStartProbCode } from '../startProbMeta';
-import { buildPlayerXpMap } from '../playerXpModel';
+import { loadPlayerCatalogBundle } from '../playerDetailData';
 import StartProbBadge from './StartProbBadge';
 import PlayerRowCard from './PlayerRowCard';
 
-// Gecachter Loader fuer xP-Werte der Spielerkarten in "Mein Kader"
-let squadXpMapPromise = null;
-const loadSquadXpMap = () => {
-  if (!squadXpMapPromise) {
-    squadXpMapPromise = fetch('/history/all_players.json')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((raw) => (Array.isArray(raw) ? buildPlayerXpMap(raw).byId : new Map()))
-      .catch(() => new Map());
-  }
-  return squadXpMapPromise;
-};
+// Nutzt die kompakte ~170-KB players-lite.json (statt 40 MB all_players.json)
+const loadSquadXpMap = () => loadPlayerCatalogBundle().then((b) => b.xpMap || new Map());
 
 // Offizieller Kickbase Universal Link (verifiziert fuer iOS apple-app-site-association
 // & Android assetlinks.json) - oeffnet die installierte Kickbase-App direkt.

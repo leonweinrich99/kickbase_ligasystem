@@ -84,6 +84,8 @@ const PlayerRowCard = ({
           <img
             src={player.teamLogo}
             alt=""
+            loading="lazy"
+            decoding="async"
             onError={(e) => { e.currentTarget.style.display = 'none'; }}
             className="absolute top-1/2 -translate-y-1/2 left-4 w-16 h-16 sm:w-20 sm:h-20 object-contain opacity-[0.12] mix-blend-screen"
           />
@@ -92,6 +94,8 @@ const PlayerRowCard = ({
           <img
             src={resolvedImageUrl}
             alt=""
+            loading="lazy"
+            decoding="async"
             onError={(e) => { e.currentTarget.style.display = 'none'; }}
             className="h-[150%] w-auto object-cover object-top pointer-events-none"
             style={{

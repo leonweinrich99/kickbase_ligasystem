@@ -3,29 +3,24 @@ import { useNavigate } from 'react-router-dom';
 import { Flame, Sparkles, ChevronRight } from 'lucide-react';
 import { useAuth } from '../AuthContext';
 import { enrichPlayerWithCatalog } from '../advisorSquadEval';
-import { buildPlayerXpMap } from '../playerXpModel';
+import { loadAdvisorDataCached, loadPlayerCatalogBundle } from '../playerDetailData';
 import { formatArticleDate } from '../feedMeta';
 import AdvisorPlayerCard from './AdvisorPlayerCard';
 
 const HOT_SHOTS_LIMIT = 10;
 
-// Gecachter Loader fuer die Trading-Advisor-Datenbank + all_players.json,
-// damit Tab-Wechsel im Newsfeed kein wiederholtes Laden ausloesen.
+// Gecachter Loader fuer Trading-Advisor-Datenbank + players-lite.json (~170 KB statt 40 MB)
 let hotShotsPromise = null;
 const loadHotShotsBundle = () => {
   if (!hotShotsPromise) {
     hotShotsPromise = Promise.all([
-      fetch('/advisor-data.json', { cache: 'no-cache' })
-        .then((res) => (res.ok ? res.json() : null))
-        .catch(() => null),
-      fetch('/history/all_players.json')
-        .then((res) => (res.ok ? res.json() : null))
-        .catch(() => null),
-    ]).then(([advisorData, allPlayersRaw]) => {
+      loadAdvisorDataCached(),
+      loadPlayerCatalogBundle(),
+    ]).then(([advisorData, catalogBundle]) => {
       if (!advisorData) {
         hotShotsPromise = null;
       }
-      return { advisorData, allPlayersRaw };
+      return { advisorData, catalogBundle };
     });
   }
   return hotShotsPromise;
@@ -55,30 +50,20 @@ const HotShotsSection = () => {
 
   const { topPlayers, teamLogos, generatedDate } = useMemo(() => {
     const advisorData = bundle?.advisorData;
-    const allPlayersRaw = bundle?.allPlayersRaw;
-
-    const catalogMap = new Map();
-    const logos = {};
-    if (Array.isArray(allPlayersRaw)) {
-      allPlayersRaw.forEach((p) => {
-        if (p?.i != null) catalogMap.set(String(p.i), p);
-        if (p?.tn && p?.tim && !logos[p.tn]) {
-          logos[p.tn] = `https://kickbase.b-cdn.net/${p.tim}`;
-        }
-      });
-    }
+    const catalogBundle = bundle?.catalogBundle;
+    const catalogMap = catalogBundle?.catalogMap || new Map();
+    const xpMap = catalogBundle?.xpMap || new Map();
+    const logos = { ...(catalogBundle?.teamLogos || {}) };
 
     const teamsData = advisorData?.leagues ? Object.values(advisorData.leagues)[0]?.teams || [] : [];
     teamsData.forEach((t) => {
-      if (t.tn) {
+      if (t.tn && !logos[t.tn]) {
         const svgKey = Object.keys(t).find((k) => typeof t[k] === 'string' && t[k].endsWith('.svg'));
         if (svgKey) {
           logos[t.tn] = `https://kickbase.b-cdn.net/${t[svgKey]}`;
         }
       }
     });
-
-    const xpMap = Array.isArray(allPlayersRaw) ? buildPlayerXpMap(allPlayersRaw).byId : new Map();
 
     const players = (advisorData?.players || [])
       .map((p) => enrichPlayerWithCatalog(p, catalogMap, xpMap))

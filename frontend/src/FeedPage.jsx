@@ -59,6 +59,8 @@ const TickerTrackItems = ({ items, keyPrefix }) => (
 const SwipeableMarketTicker = ({ items }) => {
   const scrollerRef = useRef(null);
   const pausedRef = useRef(false);
+  const visibleRef = useRef(true);
+  const halfWidthRef = useRef(0);
   const resumeTimerRef = useRef(null);
   const dragRef = useRef({ active: false, startX: 0, startScrollLeft: 0 });
   const subPixelCarryRef = useRef(0);
@@ -83,6 +85,28 @@ const SwipeableMarketTicker = ({ items }) => {
     const el = scrollerRef.current;
     if (!el || !items || items.length === 0) return undefined;
 
+    const measure = () => {
+      halfWidthRef.current = el.scrollWidth / 2;
+    };
+    measure();
+
+    let ro = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(measure);
+      ro.observe(el);
+    }
+
+    let io = null;
+    if (typeof IntersectionObserver !== 'undefined') {
+      io = new IntersectionObserver(
+        (entries) => {
+          visibleRef.current = Boolean(entries[0]?.isIntersecting);
+        },
+        { threshold: 0.01 },
+      );
+      io.observe(el);
+    }
+
     let rafId = 0;
     let lastTs = performance.now();
     const SPEED_PX_PER_SEC = 28;
@@ -91,19 +115,14 @@ const SwipeableMarketTicker = ({ items }) => {
       const dt = Math.min(0.1, (now - lastTs) / 1000);
       lastTs = now;
 
-      const halfWidth = el.scrollWidth / 2;
-      if (halfWidth > 0) {
-        if (!pausedRef.current) {
-          subPixelCarryRef.current += SPEED_PX_PER_SEC * dt;
-          const wholePx = Math.floor(subPixelCarryRef.current);
-          if (wholePx >= 1) {
-            el.scrollLeft += wholePx;
-            subPixelCarryRef.current -= wholePx;
-          }
-        }
-        // Nahtlose Endlosschleife in beide Richtungen
-        if (el.scrollLeft >= halfWidth) {
-          el.scrollLeft -= halfWidth;
+      const halfWidth = halfWidthRef.current;
+      if (halfWidth > 0 && visibleRef.current && !pausedRef.current) {
+        subPixelCarryRef.current += SPEED_PX_PER_SEC * dt;
+        const wholePx = Math.floor(subPixelCarryRef.current);
+        if (wholePx >= 1) {
+          const next = el.scrollLeft + wholePx;
+          el.scrollLeft = next >= halfWidth ? next - halfWidth : next;
+          subPixelCarryRef.current -= wholePx;
         }
       }
       rafId = requestAnimationFrame(tick);
@@ -112,6 +131,8 @@ const SwipeableMarketTicker = ({ items }) => {
     rafId = requestAnimationFrame(tick);
     return () => {
       cancelAnimationFrame(rafId);
+      ro?.disconnect();
+      io?.disconnect();
       if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
     };
   }, [items]);
@@ -119,7 +140,7 @@ const SwipeableMarketTicker = ({ items }) => {
   const handleScroll = () => {
     const el = scrollerRef.current;
     if (!el) return;
-    const halfWidth = el.scrollWidth / 2;
+    const halfWidth = halfWidthRef.current || el.scrollWidth / 2;
     if (halfWidth > 0 && el.scrollLeft >= halfWidth) {
       el.scrollLeft -= halfWidth;
     }

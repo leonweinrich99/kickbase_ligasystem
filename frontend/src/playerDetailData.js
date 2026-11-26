@@ -1,49 +1,70 @@
-import { buildPlayerXpMap } from './playerXpModel';
 import { enrichPlayerWithCatalog } from './advisorSquadEval';
 
 const IMAGE_BASE = 'https://kickbase.b-cdn.net/';
 
 let catalogBundlePromise = null;
+let matchdaysBundlePromise = null;
 let transfersByPlayerPromise = null;
 let advisorDataPromise = null;
+let managerLeagueMapPromise = null;
 
 /**
- * Laedt und cached all_players.json inkl. Team-Logos, Team-Namen und
- * kalibriertem Spieler-xP (xpSeason & xpNext).
+ * Laedt und cached die kompakte ~170-KB-Datei `/history/players-lite.json`
+ * (statt der 40 MB grossen `all_players.json`) inkl. vorberechnetem xP
+ * (`xpSeason`, `xpNext`, `nextOpponent`, `isHome`, `matchupFactor`).
  */
 export function loadPlayerCatalogBundle() {
   if (!catalogBundlePromise) {
-    catalogBundlePromise = fetch('/history/all_players.json')
-      .then((res) => (res.ok ? res.json() : []))
-      .then((raw) => {
-        const list = Array.isArray(raw) ? raw : [];
+    catalogBundlePromise = fetch('/history/players-lite.json')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        const list = Array.isArray(json?.players) ? json.players : [];
+        const rawTeams = json?.teams && typeof json.teams === 'object' ? json.teams : {};
+        const nextMatchday = json?.nextMatchday ?? null;
+
         const catalogMap = new Map();
         const teamLogos = {};
         const teamNamesById = new Map();
         const teamLogosById = new Map();
+        const xpMap = new Map();
 
-        for (const p of list) {
-          if (p?.i != null) catalogMap.set(String(p.i), p);
-          if (p?.tid != null && p?.tn) {
-            teamNamesById.set(String(p.tid), p.tn);
-          }
-          if (p?.tn && p?.tim && !teamLogos[p.tn]) {
-            teamLogos[p.tn] = `${IMAGE_BASE}${p.tim}`;
-          }
-          if (p?.tid != null && p?.tim && !teamLogosById.has(String(p.tid))) {
-            teamLogosById.set(String(p.tid), `${IMAGE_BASE}${p.tim}`);
+        for (const [tid, info] of Object.entries(rawTeams)) {
+          if (info?.n) teamNamesById.set(String(tid), info.n);
+          if (info?.im) {
+            const url = `${IMAGE_BASE}${info.im}`;
+            teamLogosById.set(String(tid), url);
+            if (info.n && !teamLogos[info.n]) teamLogos[info.n] = url;
           }
         }
 
-        const xpResult = buildPlayerXpMap(list);
+        for (const p of list) {
+          if (p?.i == null) continue;
+          const pid = String(p.i);
+          catalogMap.set(pid, p);
+          if (p.tn && p.tim && !teamLogos[p.tn]) {
+            teamLogos[p.tn] = `${IMAGE_BASE}${p.tim}`;
+          }
+          if (p.xp) {
+            xpMap.set(pid, {
+              xpSeason: p.xp.s,
+              xpNext: p.xp.n,
+              matchupFactor: p.xp.m,
+              isHome: p.xp.h,
+              nextOpponent: p.xp.o,
+              nextMatchday: p.xp.md ?? nextMatchday,
+              pStart: p.xp.ps,
+            });
+          }
+        }
+
         return {
           allPlayersRaw: list,
           catalogMap,
           teamLogos,
           teamNamesById,
           teamLogosById,
-          xpMap: xpResult.byId,
-          nextMatchday: xpResult.nextMatchday,
+          xpMap,
+          nextMatchday,
         };
       })
       .catch(() => {
@@ -60,6 +81,77 @@ export function loadPlayerCatalogBundle() {
       });
   }
   return catalogBundlePromise;
+}
+
+/**
+ * Lazy-Loader fuer die kompakten Spieltags-Punkte ueber ALLE Saisons
+ * (`/history/player-matchdays.json`) - wird erst geladen, wenn eine
+ * Spieler-Detailseite geoeffnet wird.
+ */
+export function loadPlayerMatchdaysBundle() {
+  if (!matchdaysBundlePromise) {
+    matchdaysBundlePromise = fetch('/history/player-matchdays.json')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        const rawTeams = json?.teams && typeof json.teams === 'object' ? json.teams : {};
+        const byId = json?.byId && typeof json.byId === 'object' ? json.byId : {};
+        return {
+          nextMatchday: json?.nextMatchday ?? null,
+          teams: rawTeams,
+          byId,
+        };
+      })
+      .catch(() => {
+        matchdaysBundlePromise = null;
+        return { nextMatchday: null, teams: {}, byId: {} };
+      });
+  }
+  return matchdaysBundlePromise;
+}
+
+/**
+ * Entpackt alle Saisons eines Spielers aus `player-matchdays.json` (neueste Saison zuerst).
+ * Tupel-Format: [day, pts, st, minutes, oppTid, isHome(1/0/null), t1g, t2g, isPlayed(1/0)]
+ */
+export function unpackPlayerMatchdaySeasons(bundle, playerId) {
+  if (!bundle?.byId) return [];
+  const rawSeasons = bundle.byId[String(playerId)] || [];
+  const teams = bundle.teams || {};
+
+  // Neueste Saison zuerst (z.B. 2026/2027, 2025/2026, ...)
+  return [...rawSeasons].reverse().map((s, idx) => {
+    const shortLabel = String(s.ti || '')
+      .replace(/^20(\d{2})\/20(\d{2})$/, '$1/$2')
+      .trim() || s.ti;
+    const entries = (Array.isArray(s.ph) ? s.ph : []).map((row) => {
+      const [day, pts, st, minutes, oppTid, isHomeNum, t1g, t2g, isPlayedNum] = row;
+      const teamInfo = oppTid ? teams[String(oppTid)] : null;
+      const isPlayed = isPlayedNum === 1;
+      const played = isPlayed && typeof pts === 'number' && (st === 5 || st === 3 || minutes > 0);
+      return {
+        day,
+        label: `ST ${day}`,
+        points: typeof pts === 'number' ? pts : 0,
+        hasNumericPoints: typeof pts === 'number',
+        played,
+        isUpcoming: !isPlayed,
+        statusCode: st,
+        minutes: minutes || 0,
+        opponent: teamInfo?.n || null,
+        oppLogo: teamInfo?.im ? `${IMAGE_BASE}${teamInfo.im}` : null,
+        isHome: isHomeNum === 1 ? true : isHomeNum === 0 ? false : null,
+        score: typeof t1g === 'number' && typeof t2g === 'number' ? `${t1g}:${t2g}` : null,
+        isXp: false,
+      };
+    });
+
+    return {
+      title: s.ti || shortLabel,
+      shortLabel,
+      isCurrentSeason: idx === 0,
+      entries,
+    };
+  });
 }
 
 /**
@@ -93,6 +185,35 @@ export function loadTransfersByPlayerId() {
 }
 
 /**
+ * Ordnet Kickbase-Manager-IDs & -Namen ihrer Liga ('LIGA 1' / 'LIGA 2' / 'LIGA 3') zu,
+ * damit die Trading-Historie gezielt auf den eigenen Markt gefiltert werden kann.
+ */
+export function loadManagerLeagueMap() {
+  if (!managerLeagueMapPromise) {
+    managerLeagueMapPromise = fetch('/data.json')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        const byId = new Map();
+        const byName = new Map();
+        for (const league of (json?.leagues || [])) {
+          const lgName = String(league?.name || '').toUpperCase().trim();
+          if (!lgName) continue;
+          for (const u of (league?.users || [])) {
+            if (u?.id != null) byId.set(String(u.id), lgName);
+            if (u?.name) byName.set(String(u.name).toLowerCase().trim(), lgName);
+          }
+        }
+        return { byId, byName };
+      })
+      .catch(() => {
+        managerLeagueMapPromise = null;
+        return { byId: new Map(), byName: new Map() };
+      });
+  }
+  return managerLeagueMapPromise;
+}
+
+/**
  * Laedt und cached /advisor-data.json fuer die standalone Spieler-Detailseite.
  */
 export function loadAdvisorDataCached() {
@@ -108,57 +229,8 @@ export function loadAdvisorDataCached() {
 }
 
 /**
- * Extrahiert den Spieltags-Punkteverlauf der aktuellen Saison fuer einen Spieler
- * aus all_players.json (`performance.it[last].ph`), inkl. Gegner & Spielminuten.
- */
-export function extractMatchdayPointsSeries(catalogPlayer, teamNamesById = new Map()) {
-  if (!catalogPlayer) return [];
-  const seasons = Array.isArray(catalogPlayer?.performance?.it) ? catalogPlayer.performance.it : [];
-  if (seasons.length === 0) return [];
-  const curSeason = seasons[seasons.length - 1];
-  const ph = Array.isArray(curSeason?.ph) ? curSeason.ph : [];
-  const ownTid = String(catalogPlayer?.tid || '');
-
-  const played = ph
-    .filter((e) => e && typeof e.day === 'number' && (e.mdst === 2 || typeof e.p === 'number'))
-    .sort((a, b) => a.day - b.day);
-
-  return played.map((e) => {
-    const t1 = String(e.t1 || '');
-    const t2 = String(e.t2 || '');
-    const isHome = ownTid && t1 ? ownTid === t1 : null;
-    const oppTid = isHome === true ? t2 : isHome === false ? t1 : null;
-    const opponent = oppTid ? (teamNamesById.get(oppTid) || null) : null;
-    const oppLogo = isHome === true
-      ? (e.t2im ? `${IMAGE_BASE}${e.t2im}` : null)
-      : isHome === false
-        ? (e.t1im ? `${IMAGE_BASE}${e.t1im}` : null)
-        : null;
-    const hasPoints = typeof e.p === 'number' && !Number.isNaN(e.p);
-    const minutes = parseInt(String(e.mp || '0'), 10) || 0;
-    const score = typeof e.t1g === 'number' && typeof e.t2g === 'number'
-      ? `${e.t1g}:${e.t2g}`
-      : null;
-
-    return {
-      day: e.day,
-      label: `ST ${e.day}`,
-      points: hasPoints ? e.p : 0,
-      played: hasPoints && (e.st === 5 || e.st === 3 || minutes > 0),
-      statusCode: e.st ?? null,
-      minutes,
-      opponent,
-      oppLogo,
-      isHome,
-      score,
-      isXp: false,
-    };
-  });
-}
-
-/**
  * Findet und reichert einen Spieler fuer /player/:playerId aus advisor-data.json
- * und all_players.json an (funktioniert fuer alle 500+ Bundesliga-Spieler).
+ * und players-lite.json an (funktioniert fuer alle 450+ Bundesliga-Spieler).
  */
 export async function resolveFullPlayerById(playerId) {
   const pid = String(playerId || '');
@@ -169,7 +241,6 @@ export async function resolveFullPlayerById(playerId) {
 
   const { catalogMap, teamLogos, xpMap } = bundle;
 
-  // Team-Logos ggf. aus advisor-data ergaenzen
   const mergedTeamLogos = { ...teamLogos };
   const teamsData = advisorData?.leagues ? Object.values(advisorData.leagues)[0]?.teams || [] : [];
   for (const t of teamsData) {
