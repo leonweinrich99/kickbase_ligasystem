@@ -14,7 +14,7 @@ import ligaLogo from '../assets/logo.png';
 //   zusaetzliches Liga-Kuerzel als Text mehr - nur das Logo)
 // - clubLogo      -> entfaellt (kein Vereinswappen-Aequivalent vorhanden)
 // - playerImage   -> Manager-Profilbild (Kickbase-Bild > App-Profilbild > Buchstabe)
-// - 6 Statistiken -> PRO/OVP/PKT (links), AKT/KAD/TIM (rechts)
+// - 6 Statistiken -> KAD/PKT/KON (links: Spieltag), PRO/EFF/DIS (rechts: Management)
 // - bottomLogo    -> kleiner Ball statt Fussballschuh
 
 const CARD_W = 484;
@@ -202,16 +202,16 @@ export default function FifaManagerCard({ rating, photoURL }) {
             {/* Trennlinie ueber den Statistiken */}
             <line x1="101" y1="418" x2="383" y2="418" stroke={theme.text} strokeWidth="2" />
 
-            {/* Statistiken links: PRO / OVP / PKT */}
-            {[['PRO', rating.pro], ['OVP', rating.ovp], ['PKT', rating.pkt]].map(([label, value], i) => (
+            {/* Statistiken links (Spieltag): KAD / PKT / KON */}
+            {[['KAD', rating.kad], ['PKT', rating.pkt], ['KON', rating.kon]].map(([label, value], i) => (
               <text key={label} x="113" y={STAT_ROW_Y[i]} textAnchor="start" dominantBaseline="central" fill={theme.text}>
                 <tspan fontSize="31" fontWeight="600">{value}</tspan>
                 <tspan dx="9" fontSize="21" fontWeight="500" fill={theme.subtext}>{label}</tspan>
               </text>
             ))}
 
-            {/* Statistiken rechts: AKT / KAD / TIM */}
-            {[['AKT', rating.akt], ['KAD', rating.kad], ['TIM', rating.tim]].map(([label, value], i) => (
+            {/* Statistiken rechts (Management): PRO / EFF / DIS */}
+            {[['PRO', rating.pro], ['EFF', rating.eff], ['DIS', rating.dis]].map(([label, value], i) => (
               <text key={label} x="288" y={STAT_ROW_Y[i]} textAnchor="start" dominantBaseline="central" fill={theme.text}>
                 <tspan fontSize="31" fontWeight="600">{value}</tspan>
                 <tspan dx="9" fontSize="21" fontWeight="500" fill={theme.subtext}>{label}</tspan>

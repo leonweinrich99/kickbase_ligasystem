@@ -1196,6 +1196,7 @@ function run() {
 
                 // Realisierte Trades: Kauf + späterer Verkauf desselben Spielers (FIFO)
                 let completedTrades = 0;
+                let profitableTrades = 0;
                 let forcedCompletedTrades = 0;
                 let realizedProfit = 0;
                 let forcedRealizedProfit = 0;
@@ -1287,6 +1288,7 @@ function run() {
                         realizedProfit += profit;
                         if (forced) forcedRealizedProfit += profit;
                         completedTrades++;
+                        if (profit > 0) profitableTrades++;
                         if (forced) forcedCompletedTrades++;
 
                         weightedProfitSum += profit * weight;
@@ -1406,14 +1408,48 @@ function run() {
                     perfBonus = Math.min(10, (ppm / 3) * 10);
                 }
 
-                // Gesamtwertung (ratings[uid].score/level/cardTier): einfacher Durchschnitt
-                // der 6 finalen Kartenwerte statt eines eigenen Bonus-Modells (Owner-Vorgabe
-                // 29.08.2026, "mache einfach den Durchschnitt", Issue 7c948567). Da PRO/KAD/
-                // TIM erst im ZWEITEN Durchlauf (liga-relativ, Ende von run()) final gesetzt
-                // werden, MUSS diese Berechnung dort passieren, nicht hier im ersten
-                // Durchlauf - sonst dieselbe Race-artige Inkonsistenz wie in Issue c94c39b3
-                // (Score aus Zwischenstand statt Endstand). Hier nur Platzhalter, echte
-                // Werte am Ende von run() (siehe "Gesamtwertung" im zweiten Durchlauf).
+                // DIS (Aufstellungs-Disziplin): Startelf-Sicherheit abzueglich vermeidbarer
+                // Basics-Patzer (Im-Minus-Spieltage & bestaetigte leere Startelf-Slots).
+                const negDays = squadEval ? (squadEval.negativeBudgetDays || 0) : 0;
+                const emptySlots = squadEval ? (squadEval.totalMissingSlots || 0) : 0;
+                const avgStartProb = squadEval ? squadEval.avgStartProbability : null;
+                const disciplineRaw = avgStartProb != null
+                    ? (avgStartProb * 100 - negDays * 10 - emptySlots * 2.5)
+                    : null;
+
+                // KON (Konstanz): 70 % Bodenbildung (Ø der 3 schwaechsten Spieltage) +
+                // 30 % geringe relative Streuung (1 - Variationskoeffizient).
+                const mdActuals = (squadEval?.breakdown || [])
+                    .map(b => b.actualPoints)
+                    .filter(v => typeof v === 'number' && Number.isFinite(v));
+                let konFloor3 = null;
+                let konStdPoints = null;
+                let konMinPoints = null;
+                let konMaxPoints = null;
+                let konCv = null;
+                let consistencyRaw = null;
+                if (mdActuals.length >= 2) {
+                    const sortedAct = [...mdActuals].sort((a, b) => a - b);
+                    const worstSlice = sortedAct.slice(0, Math.min(3, sortedAct.length));
+                    konFloor3 = worstSlice.reduce((a, b) => a + b, 0) / worstSlice.length;
+                    const meanAct = mdActuals.reduce((a, b) => a + b, 0) / mdActuals.length;
+                    konStdPoints = Math.sqrt(mdActuals.reduce((s, v) => s + (v - meanAct) ** 2, 0) / mdActuals.length);
+                    konMinPoints = sortedAct[0];
+                    konMaxPoints = sortedAct[sortedAct.length - 1];
+                    konCv = meanAct > 0 ? (konStdPoints / meanAct) : 1;
+                    consistencyRaw = konFloor3 * 0.7 + (1 - Math.min(1, konCv)) * 600 * 0.3;
+                }
+
+                // EFF (Trading-Effizienz): Ø Gewinn pro abgeschlossenem Deal (gedaempft
+                // bei < 8 Trades gegen Mini-Sample-Ausreisser) + Trefferquote (Win-Rate).
+                const winRate = completedTrades > 0 ? (profitableTrades / completedTrades) : null;
+                const profitPerTrade = weightedTradeWeight > 0
+                    ? (weightedTotalProfit / Math.max(8, completedTrades))
+                    : null;
+
+                // Gesamtwertung: gewichteter Durchschnitt der 6 neuen Kernattribute
+                // (KAD 25 %, PKT 20 %, PRO 20 %, DIS 15 %, KON 10 %, EFF 10 %).
+                // Finale Berechnung erfolgt im zweiten Durchlauf nach liga-relativer Skalierung.
                 const score = NEUTRAL_CARD_SCORE;
                 const level = 'Bronze';
 
@@ -1423,64 +1459,27 @@ function run() {
                     level,
                     cardTier: computeCardTier(level),
                     league: leagueCode(l.name),
+                    weights: { kad: 0.25, pkt: 0.20, pro: 0.20, dis: 0.15, kon: 0.10, eff: 0.10 },
 
-                    // FIFA-Karten-Attribute (0-99), sechs statt der frueheren drei
-                    // Teilscores - siehe computeXxxScore-Funktionen weiter oben. Alle 6
-                    // sind hier noch Platzhalter (neutral 50) - werden im zweiten Durchlauf
-                    // nach der Liga-weiten Vergleichsrunde final gesetzt (siehe Ende von run()).
-                    pro: computeProScore(weightedTradeWeight > 0),
+                    // 6 neue gewichtete FIFA-Karten-Attribute (50-99, liga-relativ):
+                    // Links (Spieltag): KAD / PKT / KON | Rechts (Management): PRO / EFF / DIS
+                    kad: NEUTRAL_CARD_SCORE,
+                    pkt: NEUTRAL_CARD_SCORE,
+                    pro: NEUTRAL_CARD_SCORE,
+                    dis: NEUTRAL_CARD_SCORE,
+                    kon: NEUTRAL_CARD_SCORE,
+                    eff: NEUTRAL_CARD_SCORE,
+
+                    // Legacy-Felder bleiben fuer etwaige Skripte erhalten, fliessen aber NICHT in OVR ein
                     ovp: NEUTRAL_CARD_SCORE,
-                    pkt: computePktScore(ppm, userPoints > 0),
                     akt: NEUTRAL_CARD_SCORE,
-                    kad: computeKadScore(squadReadiness, squadRiskPenalty),
-                    tim: computeTimScore(saleTimingProfit, saleTimingSampleSize),
+                    tim: NEUTRAL_CARD_SCORE,
 
-                    // Vollstaendige Rechenbasis fuer die "So wird deine Karte berechnet"-
-                    // Sektion im Frontend (ManagerRatingPage) - damit die Anzeige exakt die
-                    // gleichen Rohwerte/Formeln zeigt, die auch tatsaechlich verwendet wurden,
-                    // statt einer im Frontend nachgebauten (und potenziell abweichenden) Kopie.
+                    // Vollstaendige Rechenbasis fuer "So wird deine Karte berechnet" (ManagerRatingPage)
                     calculation: {
-                        pro: {
-                            score: computeProScore(weightedTradeWeight > 0),
-                            weightedTotalProfit: weightedTradeWeight > 0 ? weightedTotalProfit : null,
-                            completedTrades,
-                            openPositions,
-                            orphanSales,
-                            saleTimingSampleSize,
-                        },
-                        // score/leaguePercentile/leagueRank/leagueSize werden im zweiten
-                        // Durchlauf gesetzt (Liga-Vergleich, siehe Ende von run()).
-                        ovp: {
-                            score: NEUTRAL_CARD_SCORE,
-                            purchaseCount: overpayRatios.length,
-                            averageOverpayRatio: overpayRatios.length > 0 ? avgOverpayRatio : null,
-                        },
-                        pkt: {
-                            score: computePktScore(ppm, userPoints > 0),
-                            points: userPoints,
-                            totalSpent,
-                            managerSquadValue: managerSquadValue > 0 ? managerSquadValue : null,
-                            ppmBasis,
-                            ppm: userPoints > 0 ? ppm : null,
-                            // Nur gesetzt, wenn ppmBasis === 'perMatchdayAverage': Anzahl
-                            // Spieltage, die in den Durchschnitt eingeflossen sind, und die
-                            // vollstaendige Aufschluesselung je Spieltag (Punkte, Kaderwert
-                            // zum Cutoff, Verhaeltnis) fuer Transparenz/Debugging.
-                            matchdaysUsed: ppmMatchdaysUsed,
-                            matchdayBreakdown: ppmBreakdown,
-                            averageMatchdaySquadValue: ppmBreakdown && ppmBreakdown.length > 0
-                                ? ppmBreakdown.reduce((s, b) => s + b.squadValue, 0) / ppmBreakdown.length
-                                : null,
-                            perfBonus,
-                        },
-                        akt: {
-                            score: NEUTRAL_CARD_SCORE,
-                            buys: trades.buys.length,
-                            sells: trades.sells.length,
-                            totalTransactions,
-                        },
                         kad: {
-                            score: computeKadScore(squadReadiness, squadRiskPenalty),
+                            score: NEUTRAL_CARD_SCORE,
+                            weight: 0.25,
                             basis: 'historicalLineupsXp',
                             matchdaysEvaluated: squadEval ? squadEval.matchdaysEvaluated : 0,
                             squadTotal: squadInfo ? squadInfo.total : null,
@@ -1490,10 +1489,79 @@ function run() {
                             avgStartProbability: squadEval ? squadEval.avgStartProbability : null,
                             avgLikelyStarters: squadEval ? squadEval.avgLikelyStarters : null,
                             avgActualPoints: squadEval ? squadEval.avgActualPoints : null,
-                            totalMissingSlots: squadEval ? squadEval.totalMissingSlots : 0,
-                            negativeBudgetDays: squadEval ? squadEval.negativeBudgetDays : 0,
+                            totalMissingSlots: emptySlots,
+                            negativeBudgetDays: negDays,
                             strengthScore: squadEval ? squadEval.strengthScore : null,
                             matchdayBreakdown: squadEval ? squadEval.breakdown : [],
+                        },
+                        pkt: {
+                            score: NEUTRAL_CARD_SCORE,
+                            weight: 0.20,
+                            points: userPoints,
+                            avgPoints: mdActuals.length > 0 ? Math.round(userPoints / mdActuals.length) : null,
+                            matchdaysCount: mdActuals.length,
+                            totalSpent,
+                            managerSquadValue: managerSquadValue > 0 ? managerSquadValue : null,
+                            ppmBasis,
+                            ppm: userPoints > 0 ? ppm : null,
+                            matchdaysUsed: ppmMatchdaysUsed,
+                            matchdayBreakdown: ppmBreakdown,
+                            averageMatchdaySquadValue: ppmBreakdown && ppmBreakdown.length > 0
+                                ? ppmBreakdown.reduce((s, b) => s + b.squadValue, 0) / ppmBreakdown.length
+                                : null,
+                            perfBonus,
+                        },
+                        pro: {
+                            score: NEUTRAL_CARD_SCORE,
+                            weight: 0.20,
+                            weightedTotalProfit: weightedTradeWeight > 0 ? weightedTotalProfit : null,
+                            completedTrades,
+                            profitableTrades,
+                            openPositions,
+                            orphanSales,
+                            saleTimingSampleSize,
+                        },
+                        dis: {
+                            score: NEUTRAL_CARD_SCORE,
+                            weight: 0.15,
+                            disciplineRaw,
+                            avgStartProbability: avgStartProb,
+                            avgLikelyStarters: squadEval ? squadEval.avgLikelyStarters : null,
+                            negativeBudgetDays: negDays,
+                            totalMissingSlots: emptySlots,
+                            matchdaysEvaluated: squadEval ? squadEval.matchdaysEvaluated : 0,
+                        },
+                        kon: {
+                            score: NEUTRAL_CARD_SCORE,
+                            weight: 0.10,
+                            consistencyRaw,
+                            floor3: konFloor3 != null ? Math.round(konFloor3) : null,
+                            stdPoints: konStdPoints != null ? Math.round(konStdPoints) : null,
+                            minPoints: konMinPoints,
+                            maxPoints: konMaxPoints,
+                            cv: konCv,
+                            matchdaysCount: mdActuals.length,
+                        },
+                        eff: {
+                            score: NEUTRAL_CARD_SCORE,
+                            weight: 0.10,
+                            profitPerTrade,
+                            winRate,
+                            profitableTrades,
+                            completedTrades,
+                            weightedTotalProfit: weightedTradeWeight > 0 ? weightedTotalProfit : null,
+                        },
+                        // Legacy-Blöcke fuer rueckwaertskompatible Analysen (nicht auf Karte/OVR)
+                        ovp: {
+                            score: NEUTRAL_CARD_SCORE,
+                            purchaseCount: overpayRatios.length,
+                            averageOverpayRatio: overpayRatios.length > 0 ? avgOverpayRatio : null,
+                        },
+                        akt: {
+                            score: NEUTRAL_CARD_SCORE,
+                            buys: trades.buys.length,
+                            sells: trades.sells.length,
+                            totalTransactions,
                         },
                         tim: {
                             score: computeTimScore(saleTimingProfit, saleTimingSampleSize),
@@ -1612,35 +1680,34 @@ function run() {
                 ratings[uid].ovp = score;
             });
 
-            // PKT (Punkte pro Million): Schwellenwert dynamisch am Liga-Mittelwert
-            // statt fix ~3 (Owner-Vorgabe 29.08.2026). Nur unter Managern mit echt
-            // vorliegenden Punkten/PPM vergleichen; ohne Punkte bleibt neutral.
-            const pktMembers = memberUids.filter(uid => ratings[uid].calculation.pkt.ppm != null);
-            const pktValues = pktMembers.map(uid => ratings[uid].calculation.pkt.ppm);
+            // PKT (Echte Saisonpunkte): liga-relativ via z-Score auf Basis der echten
+            // Gesamtpunkte (statt PPM, das reiche/starke Kader verzerrt bestrafte).
+            const pktMembers = memberUids.filter(uid => ratings[uid].calculation.pkt.points > 0);
+            const pktValues = pktMembers.map(uid => ratings[uid].calculation.pkt.points);
             const pktMean = pktValues.length > 0 ? pktValues.reduce((a, b) => a + b, 0) / pktValues.length : 0;
+            const pktStd = pktValues.length > 1
+                ? Math.sqrt(pktValues.reduce((s, v) => s + (v - pktMean) ** 2, 0) / (pktValues.length - 1))
+                : 0;
             const pktRanked = [...pktValues].sort((a, b) => b - a);
             memberUids.forEach(uid => {
-                const ppm = ratings[uid].calculation.pkt.ppm;
-                if (ppm == null) return; // bleibt neutral (Platzhalter aus erstem Durchlauf)
-                const percentile = percentileRank(ppm, pktValues, true);
-                const score = computePktScoreFromMean(ppm, pktMean);
+                const ptsVal = ratings[uid].calculation.pkt.points;
+                if (!(ptsVal > 0)) return;
+                const zScore = pktStd > 1e-9 ? (ptsVal - pktMean) / pktStd : 0;
+                const percentile = percentileRank(ptsVal, pktValues, true);
+                const score = computeLeagueRelativeScore(zScore);
                 Object.assign(ratings[uid].calculation.pkt, {
                     leaguePercentile: percentile,
-                    leagueRank: pktRanked.indexOf(ppm) + 1,
+                    leagueRank: pktRanked.indexOf(ptsVal) + 1,
                     leagueSize: pktValues.length,
-                    leagueMeanPpm: pktMean,
+                    leagueMeanPoints: Math.round(pktMean),
+                    leagueStd: pktStd,
+                    zScore,
                     score,
                 });
                 ratings[uid].pkt = score;
             });
 
-            // PRO (Profit): liga-relativ wie PKT/OVP/AKT (Owner-Vorgabe 29.08.2026).
-            // Z-Score der gewichteten Gesamtsumme (nicht mehr Durchschnitt, siehe
-            // weightedTotalProfit - Owner-Feedback 23.11.2026, "nur Profit" statt
-            // gewichteter Durchschnitt inkl. Verkaufs-Timing) gegen Mittelwert/
-            // Streuung der Liga - kein Log-Transform (anders als AKT), da Profit
-            // negativ sein kann. Nur unter Managern mit echt vorliegenden gewichteten
-            // Trades vergleichen; ohne Trades bleibt neutral.
+            // PRO (Profit): liga-relativ via z-Score der gewichteten Gesamtsumme.
             const proMembers = memberUids.filter(uid => ratings[uid].calculation.pro.weightedTotalProfit != null);
             const proValues = proMembers.map(uid => ratings[uid].calculation.pro.weightedTotalProfit);
             const proMean = proValues.length > 0 ? proValues.reduce((a, b) => a + b, 0) / proValues.length : 0;
@@ -1650,7 +1717,7 @@ function run() {
             const proRanked = [...proValues].sort((a, b) => b - a);
             memberUids.forEach(uid => {
                 const totalProfitWeighted = ratings[uid].calculation.pro.weightedTotalProfit;
-                if (totalProfitWeighted == null) return; // bleibt neutral (Platzhalter aus erstem Durchlauf)
+                if (totalProfitWeighted == null) return;
                 const zScore = proStd > 1e-9 ? (totalProfitWeighted - proMean) / proStd : 0;
                 const percentile = percentileRank(totalProfitWeighted, proValues, true);
                 const score = computeLeagueRelativeScore(zScore);
@@ -1666,9 +1733,7 @@ function run() {
                 ratings[uid].pro = score;
             });
 
-            // KAD (Kaderstaerke): liga-relativ auf Basis der erwarteten Punkte
-            // der besten gueltigen 11er-Startelf (strengthScore = expectedLineupPoints
-            // minus moderatem Abzug nur bei fehlenden Slots im kritischen Bereich).
+            // KAD (Startelf-Qualitaet / xP v2): liga-relativ auf Basis der erwarteten Punkte.
             const kadMembers = memberUids.filter(uid => ratings[uid].calculation.kad.strengthScore != null);
             const kadValues = kadMembers.map(uid => ratings[uid].calculation.kad.strengthScore);
             const kadMean = kadValues.length > 0 ? kadValues.reduce((a, b) => a + b, 0) / kadValues.length : 0;
@@ -1678,7 +1743,7 @@ function run() {
             const kadRanked = [...kadValues].sort((a, b) => b - a);
             memberUids.forEach(uid => {
                 const strength = ratings[uid].calculation.kad.strengthScore;
-                if (strength == null) return; // bleibt neutral
+                if (strength == null) return;
                 const zScore = kadStd > 1e-9 ? (strength - kadMean) / kadStd : 0;
                 const percentile = percentileRank(strength, kadValues, true);
                 const score = computeLeagueRelativeScore(zScore);
@@ -1694,9 +1759,99 @@ function run() {
                 ratings[uid].kad = score;
             });
 
-            // TIM (Verkaufstiming, 7-Tage-Perspektive): liga-relativ auf Basis
-            // des durchschnittlichen prozentualen 7T-Timing-Effekts (averageTimingPct),
-            // damit teure Einzelspieler nicht viele normale Trades ueberlagern.
+            // DIS (Aufstellungs-Disziplin): liga-relativ auf Basis Startelf-Sicherheit
+            // minus Strafen fuer Im-Minus-Spieltage und leere Slots.
+            const disMembers = memberUids.filter(uid => ratings[uid].calculation.dis.disciplineRaw != null);
+            const disValues = disMembers.map(uid => ratings[uid].calculation.dis.disciplineRaw);
+            const disMean = disValues.length > 0 ? disValues.reduce((a, b) => a + b, 0) / disValues.length : 0;
+            const disStd = disValues.length > 1
+                ? Math.sqrt(disValues.reduce((s, v) => s + (v - disMean) ** 2, 0) / (disValues.length - 1))
+                : 0;
+            const disRanked = [...disValues].sort((a, b) => b - a);
+            memberUids.forEach(uid => {
+                const disVal = ratings[uid].calculation.dis.disciplineRaw;
+                if (disVal == null) return;
+                const zScore = disStd > 1e-9 ? (disVal - disMean) / disStd : 0;
+                const percentile = percentileRank(disVal, disValues, true);
+                const score = computeLeagueRelativeScore(zScore);
+                Object.assign(ratings[uid].calculation.dis, {
+                    leaguePercentile: percentile,
+                    leagueRank: disRanked.indexOf(disVal) + 1,
+                    leagueSize: disValues.length,
+                    leagueMean: disMean,
+                    leagueStd: disStd,
+                    zScore,
+                    score,
+                });
+                ratings[uid].dis = score;
+            });
+
+            // KON (Konstanz): liga-relativ auf Basis Floor (3 schwaechste ST) + geringe Streuung.
+            const konMembers = memberUids.filter(uid => ratings[uid].calculation.kon.consistencyRaw != null);
+            const konValues = konMembers.map(uid => ratings[uid].calculation.kon.consistencyRaw);
+            const konMean = konValues.length > 0 ? konValues.reduce((a, b) => a + b, 0) / konValues.length : 0;
+            const konStd = konValues.length > 1
+                ? Math.sqrt(konValues.reduce((s, v) => s + (v - konMean) ** 2, 0) / (konValues.length - 1))
+                : 0;
+            const konRanked = [...konValues].sort((a, b) => b - a);
+            memberUids.forEach(uid => {
+                const konVal = ratings[uid].calculation.kon.consistencyRaw;
+                if (konVal == null) return;
+                const zScore = konStd > 1e-9 ? (konVal - konMean) / konStd : 0;
+                const percentile = percentileRank(konVal, konValues, true);
+                const score = computeLeagueRelativeScore(zScore);
+                Object.assign(ratings[uid].calculation.kon, {
+                    leaguePercentile: percentile,
+                    leagueRank: konRanked.indexOf(konVal) + 1,
+                    leagueSize: konValues.length,
+                    leagueMean: konMean,
+                    leagueStd: konStd,
+                    zScore,
+                    score,
+                });
+                ratings[uid].kon = score;
+            });
+
+            // EFF (Trading-Effizienz): liga-relativ aus 65 % Ø Profit/Deal + 35 % Win-Rate.
+            const effMembers = memberUids.filter(uid => ratings[uid].calculation.eff.profitPerTrade != null);
+            const effPptVals = effMembers.map(uid => ratings[uid].calculation.eff.profitPerTrade);
+            const effPptMean = effPptVals.length > 0 ? effPptVals.reduce((a, b) => a + b, 0) / effPptVals.length : 0;
+            const effPptStd = effPptVals.length > 1
+                ? Math.sqrt(effPptVals.reduce((s, v) => s + (v - effPptMean) ** 2, 0) / (effPptVals.length - 1))
+                : 0;
+            const effWrMembers = effMembers.filter(uid => ratings[uid].calculation.eff.winRate != null && ratings[uid].calculation.eff.completedTrades >= 3);
+            const effWrVals = effWrMembers.map(uid => ratings[uid].calculation.eff.winRate);
+            const effWrMean = effWrVals.length > 0 ? effWrVals.reduce((a, b) => a + b, 0) / effWrVals.length : 0.5;
+            const effWrStd = effWrVals.length > 1
+                ? Math.sqrt(effWrVals.reduce((s, v) => s + (v - effWrMean) ** 2, 0) / (effWrVals.length - 1))
+                : 0;
+            const effBlendedByUid = new Map();
+            effMembers.forEach(uid => {
+                const e = ratings[uid].calculation.eff;
+                const zPpt = effPptStd > 1e-9 ? (e.profitPerTrade - effPptMean) / effPptStd : 0;
+                const zWr = (e.winRate != null && e.completedTrades >= 3 && effWrStd > 1e-9)
+                    ? (e.winRate - effWrMean) / effWrStd
+                    : zPpt;
+                effBlendedByUid.set(uid, 0.65 * zPpt + 0.35 * zWr);
+            });
+            const effBlendValues = [...effBlendedByUid.values()];
+            const effBlendRanked = [...effBlendValues].sort((a, b) => b - a);
+            memberUids.forEach(uid => {
+                if (!effBlendedByUid.has(uid)) return;
+                const zScore = effBlendedByUid.get(uid);
+                const percentile = percentileRank(zScore, effBlendValues, true);
+                const score = computeLeagueRelativeScore(zScore);
+                Object.assign(ratings[uid].calculation.eff, {
+                    leaguePercentile: percentile,
+                    leagueRank: effBlendRanked.indexOf(zScore) + 1,
+                    leagueSize: effBlendValues.length,
+                    zScore,
+                    score,
+                });
+                ratings[uid].eff = score;
+            });
+
+            // Legacy TIM (nicht mehr auf der Karte / im OVR)
             const timMembers = memberUids.filter(uid => ratings[uid].calculation.tim.averageTimingPct != null);
             const timValues = timMembers.map(uid => ratings[uid].calculation.tim.averageTimingPct);
             const timMean = timValues.length > 0 ? timValues.reduce((a, b) => a + b, 0) / timValues.length : 0;
@@ -1706,7 +1861,7 @@ function run() {
             const timRanked = [...timValues].sort((a, b) => b - a);
             memberUids.forEach(uid => {
                 const avgTimingPct = ratings[uid].calculation.tim.averageTimingPct;
-                if (avgTimingPct == null) return; // bleibt neutral
+                if (avgTimingPct == null) return;
                 const zScore = timStd > 1e-9 ? (avgTimingPct - timMean) / timStd : 0;
                 const percentile = percentileRank(avgTimingPct, timValues, true);
                 const score = computeLeagueRelativeScore(zScore);
@@ -1722,16 +1877,20 @@ function run() {
                 ratings[uid].tim = score;
             });
 
-            // Gesamtwertung: einfacher Durchschnitt der 6 finalen Kartenwerte statt
-            // eines eigenen Bonus-Modells (Owner-Vorgabe 29.08.2026, Issue 7c948567).
-            // Muss HIER laufen, NACH den obigen PRO/OVP/PKT/AKT/KAD/TIM-Bloecken -
-            // zu diesem Zeitpunkt sind fuer jeden Manager in memberUids alle 6 Werte
-            // final (liga-relativ), nicht mehr die Platzhalter aus dem ersten
-            // Durchlauf. Level-Schwellen unveraendert (90/75/60/45).
+            // Gewichtete Gesamtwertung (OVR) aus den 6 Kernattributen:
+            // Auf dem Platz (45%): KAD 25% + PKT 20%
+            // Transfermarkt (30%): PRO 20% + EFF 10%
+            // Kaderfuehrung (25%): DIS 15% + KON 10%
             memberUids.forEach(uid => {
                 const r = ratings[uid];
-                const avgScore = (r.pro + r.ovp + r.pkt + r.akt + r.kad + r.tim) / 6;
-                const finalScore = Math.round(avgScore);
+                const weightedScore =
+                    r.kad * 0.25 +
+                    r.pkt * 0.20 +
+                    r.pro * 0.20 +
+                    r.dis * 0.15 +
+                    r.kon * 0.10 +
+                    r.eff * 0.10;
+                const finalScore = Math.round(weightedScore);
 
                 let level = 'Bronze';
                 if (finalScore >= 90) level = 'Elite';

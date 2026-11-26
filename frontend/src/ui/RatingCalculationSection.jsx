@@ -20,7 +20,6 @@ import { TIER_ACCENT } from './FifaManagerCard';
 const fmtEUR = (val) => `${Math.round(val).toLocaleString('de-DE')} €`;
 const fmtSignedEUR = (val) => `${val > 0 ? '+' : ''}${fmtEUR(val)}`;
 const fmtPct = (val) => `${(val * 100).toFixed(1).replace('.', ',')} %`;
-const fmtSignedPct = (val) => `${val > 0 ? '+' : ''}${fmtPct(val)}`;
 const fmtNum1 = (val) => val.toFixed(1).replace('.', ',');
 const fmtPts = (val) => `${Math.round(val).toLocaleString('de-DE')} Pkt`;
 
@@ -106,7 +105,7 @@ const EmptyState = ({ children }) => (
   </div>
 );
 
-function StatCalcCard({ label, title, score, isOpen, onToggle, factors, emptyNote }) {
+function StatCalcCard({ label, title, weightPct, score, isOpen, onToggle, factors, emptyNote }) {
   const accent = TIER_ACCENT[scoreToTier(score)];
   return (
     <div
@@ -124,7 +123,14 @@ function StatCalcCard({ label, title, score, isOpen, onToggle, factors, emptyNot
           {label}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-bold text-white">{title}</div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold text-white truncate">{title}</span>
+            {weightPct != null && (
+              <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-[#222222] text-gray-400 shrink-0 tabular-nums">
+                {weightPct} %
+              </span>
+            )}
+          </div>
           {emptyNote && !isOpen && <div className="text-[11px] text-gray-500 truncate">{emptyNote}</div>}
         </div>
         <div className="text-xl font-black shrink-0" style={{ color: accent }}>{score}</div>
@@ -137,115 +143,38 @@ function StatCalcCard({ label, title, score, isOpen, onToggle, factors, emptyNot
 
 export default function RatingCalculationSection({
   calculation,
-  proLeaguePeers,
-  ovpLeaguePeers,
-  aktLeaguePeers,
-  pktLeaguePeers,
   kadLeaguePeers,
-  timLeaguePeers,
+  pktLeaguePeers,
+  proLeaguePeers,
+  disLeaguePeers,
+  konLeaguePeers,
+  effLeaguePeers,
 }) {
   const [openKey, setOpenKey] = useState(null);
   if (!calculation) return null;
   const toggle = (key) => setOpenKey((cur) => (cur === key ? null : key));
 
-  const { pro, ovp, pkt, akt, kad, tim } = calculation;
-  const proAccent = TIER_ACCENT[scoreToTier(pro.score)];
-  const ovpAccent = TIER_ACCENT[scoreToTier(ovp.score)];
-  const aktAccent = TIER_ACCENT[scoreToTier(akt.score)];
-  const pktAccent = TIER_ACCENT[scoreToTier(pkt.score)];
+  const { kad, pkt, pro, dis, kon, eff } = calculation;
+  if (!kad || !pkt || !pro || !dis || !kon || !eff) return null;
+
   const kadAccent = TIER_ACCENT[scoreToTier(kad.score)];
-  const timAccent = TIER_ACCENT[scoreToTier(tim.score)];
+  const pktAccent = TIER_ACCENT[scoreToTier(pkt.score)];
+  const proAccent = TIER_ACCENT[scoreToTier(pro.score)];
+  const disAccent = TIER_ACCENT[scoreToTier(dis.score)];
+  const konAccent = TIER_ACCENT[scoreToTier(kon.score)];
+  const effAccent = TIER_ACCENT[scoreToTier(eff.score)];
 
   return (
     <div>
       <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8b92a5] mb-1">So wird deine Karte berechnet</div>
-      <p className="text-[11px] text-gray-500 mb-3">Die Einflussfaktoren aus deiner Trading-Historie hinter jedem Kartenwert (1–99) - eingefärbt wie eine eigene Bronze-/Silber-/Gold-Bewertung.</p>
+      <p className="text-[11px] text-gray-500 mb-3">
+        Dein Gesamtscore ist der gewichtete Durchschnitt der 6 wichtigsten Erfolgsfaktoren im Liga-Vergleich (Auf dem Platz 45 %, Transfermarkt 30 %, Kaderführung 25 %).
+      </p>
 
       <div className="space-y-2">
-        {/* PRO */}
+        {/* KAD (25 %) */}
         <StatCalcCard
-          label="PRO" title="Profit" score={pro.score}
-          isOpen={openKey === 'pro'} onToggle={() => toggle('pro')}
-          emptyNote={pro.weightedTotalProfit == null ? 'Noch keine Trades' : undefined}
-          factors={pro.weightedTotalProfit == null ? (
-            <EmptyState>Noch keine bewerteten Trades vorhanden – Wert bleibt neutral bei 50.</EmptyState>
-          ) : (
-            <FactorGrid>
-              <FactorChip value={fmtSignedEUR(pro.weightedTotalProfit)} label="Profit" highlight />
-              <FactorChip value={pro.completedTrades} label="Trades" highlight />
-              <LeagueCompareBar percentile={pro.leaguePercentile} rank={pro.leagueRank} total={pro.leagueSize} accent={proAccent} />
-              <LeaguePeerList peers={proLeaguePeers} formatValue={fmtSignedEUR} />
-            </FactorGrid>
-          )}
-        />
-
-        {/* OVP */}
-        <StatCalcCard
-          label="OVP" title="Overpay-Disziplin" score={ovp.score}
-          isOpen={openKey === 'ovp'} onToggle={() => toggle('ovp')}
-          emptyNote={ovp.averageOverpayRatio == null ? 'Noch keine Käufe' : undefined}
-          factors={ovp.averageOverpayRatio == null ? (
-            <EmptyState>Noch keine Käufe mit bekanntem Marktwert – Wert bleibt neutral bei 50.</EmptyState>
-          ) : (
-            <FactorGrid>
-              <FactorChip value={fmtPct(ovp.averageOverpayRatio)} label="Ø Aufschlag beim Kauf" highlight />
-              <FactorChip value={ovp.purchaseCount} label="Analysierte Käufe" highlight />
-              <LeagueCompareBar percentile={ovp.leaguePercentile} rank={ovp.leagueRank} total={ovp.leagueSize} accent={ovpAccent} />
-              <LeaguePeerList peers={ovpLeaguePeers} formatValue={fmtPct} />
-            </FactorGrid>
-          )}
-        />
-
-        {/* PKT */}
-        <StatCalcCard
-          label="PKT" title="Punkte pro Million" score={pkt.score}
-          isOpen={openKey === 'pkt'} onToggle={() => toggle('pkt')}
-          emptyNote={pkt.ppm == null ? 'Noch keine Punktedaten' : undefined}
-          factors={pkt.ppm == null ? (
-            <EmptyState>Noch keine Punktedaten vorhanden – Wert bleibt neutral bei 50, sobald die Saison Punkte liefert wird er live berechnet.</EmptyState>
-          ) : (
-            <FactorGrid>
-              <FactorChip value={fmtNum1(pkt.ppm)} label="Punkte pro Million" highlight />
-              <FactorChip
-                value={pkt.leagueMeanPpm != null ? fmtNum1(pkt.leagueMeanPpm) : '–'}
-                label="Ø der Liga"
-              />
-              <FactorChip value={pkt.points.toLocaleString('de-DE')} label="Liga-Punkte" />
-              {pkt.ppmBasis === 'perMatchdayAverage' ? (
-                <FactorChip
-                  value={fmtEUR(pkt.averageMatchdaySquadValue)}
-                  label={`Ø Kaderwert/Spieltag (${pkt.matchdaysUsed})`}
-                />
-              ) : (
-                <FactorChip
-                  value={fmtEUR(pkt.ppmBasis === 'squadValue' ? pkt.managerSquadValue : pkt.totalSpent)}
-                  label={pkt.ppmBasis === 'squadValue' ? 'Aktueller Kaderwert (Fallback)' : 'Investierte Summe (Fallback)'}
-                />
-              )}
-              <LeagueCompareBar percentile={pkt.leaguePercentile} rank={pkt.leagueRank} total={pkt.leagueSize} accent={pktAccent} />
-              <LeaguePeerList peers={pktLeaguePeers} formatValue={fmtNum1} />
-            </FactorGrid>
-          )}
-        />
-
-        {/* AKT */}
-        <StatCalcCard
-          label="AKT" title="Marktaktivität" score={akt.score}
-          isOpen={openKey === 'akt'} onToggle={() => toggle('akt')}
-          factors={(
-            <FactorGrid>
-              <FactorChip value={akt.totalTransactions} label="Transaktionen gesamt" highlight />
-              <FactorChip value={akt.buys} label="Käufe" />
-              <FactorChip value={akt.sells} label="Verkäufe" />
-              <LeagueCompareBar percentile={akt.leaguePercentile} rank={akt.leagueRank} total={akt.leagueSize} accent={aktAccent} />
-              <LeaguePeerList peers={aktLeaguePeers} formatValue={(v) => `${v}`} />
-            </FactorGrid>
-          )}
-        />
-
-        {/* KAD */}
-        <StatCalcCard
-          label="KAD" title="Kaderstärke" score={kad.score}
+          label="KAD" title="Startelf-Qualität (xP)" weightPct={25} score={kad.score}
           isOpen={openKey === 'kad'} onToggle={() => toggle('kad')}
           emptyNote={kad.expectedLineupPoints == null ? 'Keine Startelf-Daten' : undefined}
           factors={kad.expectedLineupPoints == null ? (
@@ -254,7 +183,7 @@ export default function RatingCalculationSection({
             <FactorGrid>
               <FactorChip
                 value={fmtPts(kad.expectedLineupPoints)}
-                label={`Ø Erwartungswert / ST (${kad.matchdaysEvaluated || 0} ST)`}
+                label={`Ø Erwartete Punkte / ST (${kad.matchdaysEvaluated || 0} ST)`}
                 highlight
               />
               <FactorChip
@@ -268,7 +197,7 @@ export default function RatingCalculationSection({
               {kad.avgActualPoints != null && (
                 <FactorChip
                   value={fmtPts(kad.avgActualPoints)}
-                  label="Ø echte Punkte (nur Info)"
+                  label="Ø echte Punkte (Vergleich)"
                   highlight
                 />
               )}
@@ -278,35 +207,133 @@ export default function RatingCalculationSection({
           )}
         />
 
-        {/* TIM */}
+        {/* PKT (20 %) */}
         <StatCalcCard
-          label="TIM" title="Verkaufstiming" score={tim.score}
-          isOpen={openKey === 'tim'} onToggle={() => toggle('tim')}
-          emptyNote={tim.sampleSize === 0 ? 'Noch keine bewertbaren Verkäufe' : undefined}
-          factors={tim.sampleSize === 0 ? (
-            <EmptyState>Noch keine bewertbaren Verkäufe – Wert bleibt neutral bei 50.</EmptyState>
+          label="PKT" title="Punkte-Output" weightPct={20} score={pkt.score}
+          isOpen={openKey === 'pkt'} onToggle={() => toggle('pkt')}
+          emptyNote={!(pkt.points > 0) ? 'Noch keine Punktedaten' : undefined}
+          factors={!(pkt.points > 0) ? (
+            <EmptyState>Noch keine Punktedaten vorhanden – Wert bleibt neutral bei 50.</EmptyState>
+          ) : (
+            <FactorGrid>
+              <FactorChip value={fmtPts(pkt.points)} label="Saisonpunkte gesamt" highlight />
+              <FactorChip
+                value={pkt.avgPoints != null ? fmtPts(pkt.avgPoints) : '–'}
+                label={`Ø pro Spieltag (${pkt.matchdaysCount || 0} ST)`}
+              />
+              <FactorChip
+                value={pkt.leagueMeanPoints != null ? fmtPts(pkt.leagueMeanPoints) : '–'}
+                label="Ø der Liga"
+              />
+              {pkt.ppm != null && (
+                <FactorChip
+                  value={`${fmtNum1(pkt.ppm)} Pkt/Mio`}
+                  label="Kader-Effizienz (nur Info)"
+                  highlight
+                />
+              )}
+              <LeagueCompareBar percentile={pkt.leaguePercentile} rank={pkt.leagueRank} total={pkt.leagueSize} accent={pktAccent} />
+              <LeaguePeerList peers={pktLeaguePeers} formatValue={fmtPts} />
+            </FactorGrid>
+          )}
+        />
+
+        {/* PRO (20 %) */}
+        <StatCalcCard
+          label="PRO" title="Trading-Gewinn" weightPct={20} score={pro.score}
+          isOpen={openKey === 'pro'} onToggle={() => toggle('pro')}
+          emptyNote={pro.weightedTotalProfit == null ? 'Noch keine Trades' : undefined}
+          factors={pro.weightedTotalProfit == null ? (
+            <EmptyState>Noch keine bewerteten Trades vorhanden – Wert bleibt neutral bei 50.</EmptyState>
+          ) : (
+            <FactorGrid>
+              <FactorChip value={fmtSignedEUR(pro.weightedTotalProfit)} label="Gewichteter Profit" highlight />
+              <FactorChip value={pro.completedTrades} label="Abgeschlossene Trades" highlight />
+              <LeagueCompareBar percentile={pro.leaguePercentile} rank={pro.leagueRank} total={pro.leagueSize} accent={proAccent} />
+              <LeaguePeerList peers={proLeaguePeers} formatValue={fmtSignedEUR} />
+            </FactorGrid>
+          )}
+        />
+
+        {/* DIS (15 %) */}
+        <StatCalcCard
+          label="DIS" title="Aufstellungs-Disziplin" weightPct={15} score={dis.score}
+          isOpen={openKey === 'dis'} onToggle={() => toggle('dis')}
+          emptyNote={dis.disciplineRaw == null ? 'Keine Startelf-Daten' : undefined}
+          factors={dis.disciplineRaw == null ? (
+            <EmptyState>Noch keine Startelf-Daten für die Disziplin-Wertung vorhanden.</EmptyState>
           ) : (
             <FactorGrid>
               <FactorChip
-                value={tim.averageTimingPct != null ? fmtSignedPct(tim.averageTimingPct) : fmtSignedEUR(tim.averageTimingProfit)}
-                label="Ø 7-Tage-Timing-Effekt"
+                value={`${Math.round((dis.avgStartProbability ?? 0) * 100)} %`}
+                label="Ø Startelf-Sicherheit"
+              />
+              <FactorChip
+                value={dis.avgLikelyStarters != null ? `${fmtNum1(dis.avgLikelyStarters)} / 11` : '–'}
+                label="Ø sichere Starter"
+              />
+              <FactorChip
+                value={dis.negativeBudgetDays ?? 0}
+                label="Spieltage im Minus"
+              />
+              <FactorChip
+                value={dis.totalMissingSlots ?? 0}
+                label="Leere Startelf-Plätze"
+              />
+              <LeagueCompareBar percentile={dis.leaguePercentile} rank={dis.leagueRank} total={dis.leagueSize} accent={disAccent} />
+              <LeaguePeerList peers={disLeaguePeers} formatValue={(v) => `${Math.round(v)} Pkt`} />
+            </FactorGrid>
+          )}
+        />
+
+        {/* KON (10 %) */}
+        <StatCalcCard
+          label="KON" title="Konstanz" weightPct={10} score={kon.score}
+          isOpen={openKey === 'kon'} onToggle={() => toggle('kon')}
+          emptyNote={kon.floor3 == null ? 'Zu wenige Spieltage' : undefined}
+          factors={kon.floor3 == null ? (
+            <EmptyState>Erst ab 2 gespielten Spieltagen berechenbar.</EmptyState>
+          ) : (
+            <FactorGrid>
+              <FactorChip
+                value={fmtPts(kon.floor3)}
+                label="Ø der 3 schwächsten Spieltage (Floor)"
                 highlight
               />
               <FactorChip
-                value={fmtSignedEUR(tim.averageTimingProfit || 0)}
-                label={(tim.averageTimingProfit || 0) >= 0 ? 'Ø vermiedener Verlust (7T)' : 'Ø entgangener Gewinn (7T)'}
+                value={kon.stdPoints != null ? `±${kon.stdPoints} Pkt` : '–'}
+                label="Spieltags-Schwankung"
               />
               <FactorChip
-                value={`${tim.goodExits ?? 0} / ${tim.sampleSize}${tim.goodExitRate != null ? ` (${Math.round(tim.goodExitRate * 100)} %)` : ''}`}
-                label="Rechtzeitig verkauft"
+                value={`${kon.minPoints ?? '–'} / ${kon.maxPoints ?? '–'}`}
+                label="Min / Max Spieltag"
+              />
+              <LeagueCompareBar percentile={kon.leaguePercentile} rank={kon.leagueRank} total={kon.leagueSize} accent={konAccent} />
+              <LeaguePeerList peers={konLeaguePeers} formatValue={fmtPts} />
+            </FactorGrid>
+          )}
+        />
+
+        {/* EFF (10 %) */}
+        <StatCalcCard
+          label="EFF" title="Trading-Effizienz" weightPct={10} score={eff.score}
+          isOpen={openKey === 'eff'} onToggle={() => toggle('eff')}
+          emptyNote={eff.profitPerTrade == null ? 'Noch keine Trades' : undefined}
+          factors={eff.profitPerTrade == null ? (
+            <EmptyState>Noch keine abgeschlossenen Trades vorhanden – Wert bleibt neutral bei 50.</EmptyState>
+          ) : (
+            <FactorGrid>
+              <FactorChip value={fmtSignedEUR(eff.profitPerTrade)} label="Ø Profit pro Trade" highlight />
+              <FactorChip
+                value={eff.winRate != null ? fmtPct(eff.winRate) : '–'}
+                label="Trefferquote (Win-Rate)"
               />
               <FactorChip
-                value={`${tim.tooEarlyExits ?? 0} früh · ${tim.tooLateExits ?? 0} spät`}
-                label="Zu früh / zu spät (7T)"
-                highlight
+                value={`${eff.profitableTrades ?? 0} / ${eff.completedTrades ?? 0}`}
+                label="Profitable Deals"
               />
-              <LeagueCompareBar percentile={tim.leaguePercentile} rank={tim.leagueRank} total={tim.leagueSize} accent={timAccent} />
-              <LeaguePeerList peers={timLeaguePeers} formatValue={fmtSignedPct} />
+              <LeagueCompareBar percentile={eff.leaguePercentile} rank={eff.leagueRank} total={eff.leagueSize} accent={effAccent} />
+              <LeaguePeerList peers={effLeaguePeers} formatValue={fmtSignedEUR} />
             </FactorGrid>
           )}
         />

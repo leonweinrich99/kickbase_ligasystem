@@ -35,45 +35,44 @@ const ManagerRatingPage = () => {
       });
   }, [kickbaseId]);
 
-  // Liga-Vergleichslisten fuer OVP/AKT (siehe RatingCalculationSection) -
-  // muss VOR den frühen Returns stehen (Rules of Hooks), daher robust gegen
-  // rating/allRatings === null.
+  // Liga-Vergleichslisten fuer alle 6 gewichteten Karten-Attribute
   const leaguePeers = useMemo(() => {
-    if (!allRatings || !rating) return { pro: [], ovp: [], akt: [], pkt: [], kad: [], tim: [] };
+    if (!allRatings || !rating) return { kad: [], pkt: [], pro: [], dis: [], kon: [], eff: [] };
     const peers = Object.entries(allRatings)
       .filter(([, r]) => r.league === rating.league)
       .map(([uid, r]) => ({ uid, name: r.name, r }));
-
-    const pro = peers
-      .filter(p => p.r.calculation?.pro?.weightedTotalProfit != null)
-      .map(p => ({ name: p.name, value: p.r.calculation.pro.weightedTotalProfit, isYou: p.uid === kickbaseId }))
-      .sort((a, b) => b.value - a.value);
-
-    const ovp = peers
-      .filter(p => p.r.calculation?.ovp?.averageOverpayRatio != null)
-      .map(p => ({ name: p.name, value: p.r.calculation.ovp.averageOverpayRatio, isYou: p.uid === kickbaseId }))
-      .sort((a, b) => a.value - b.value);
-
-    const akt = peers
-      .map(p => ({ name: p.name, value: p.r.calculation.akt.totalTransactions, isYou: p.uid === kickbaseId }))
-      .sort((a, b) => b.value - a.value);
-
-    const pkt = peers
-      .filter(p => p.r.calculation?.pkt?.ppm != null)
-      .map(p => ({ name: p.name, value: p.r.calculation.pkt.ppm, isYou: p.uid === kickbaseId }))
-      .sort((a, b) => b.value - a.value);
 
     const kad = peers
       .filter(p => p.r.calculation?.kad?.expectedLineupPoints != null)
       .map(p => ({ name: p.name, value: p.r.calculation.kad.expectedLineupPoints, isYou: p.uid === kickbaseId }))
       .sort((a, b) => b.value - a.value);
 
-    const tim = peers
-      .filter(p => p.r.calculation?.tim?.averageTimingPct != null)
-      .map(p => ({ name: p.name, value: p.r.calculation.tim.averageTimingPct, isYou: p.uid === kickbaseId }))
+    const pkt = peers
+      .filter(p => (p.r.calculation?.pkt?.points || 0) > 0)
+      .map(p => ({ name: p.name, value: p.r.calculation.pkt.points, isYou: p.uid === kickbaseId }))
       .sort((a, b) => b.value - a.value);
 
-    return { pro, ovp, akt, pkt, kad, tim };
+    const pro = peers
+      .filter(p => p.r.calculation?.pro?.weightedTotalProfit != null)
+      .map(p => ({ name: p.name, value: p.r.calculation.pro.weightedTotalProfit, isYou: p.uid === kickbaseId }))
+      .sort((a, b) => b.value - a.value);
+
+    const dis = peers
+      .filter(p => p.r.calculation?.dis?.disciplineRaw != null)
+      .map(p => ({ name: p.name, value: p.r.calculation.dis.disciplineRaw, isYou: p.uid === kickbaseId }))
+      .sort((a, b) => b.value - a.value);
+
+    const kon = peers
+      .filter(p => p.r.calculation?.kon?.floor3 != null)
+      .map(p => ({ name: p.name, value: p.r.calculation.kon.floor3, isYou: p.uid === kickbaseId }))
+      .sort((a, b) => b.value - a.value);
+
+    const eff = peers
+      .filter(p => p.r.calculation?.eff?.profitPerTrade != null)
+      .map(p => ({ name: p.name, value: p.r.calculation.eff.profitPerTrade, isYou: p.uid === kickbaseId }))
+      .sort((a, b) => b.value - a.value);
+
+    return { kad, pkt, pro, dis, kon, eff };
   }, [allRatings, rating, kickbaseId]);
 
   if (loading) {
@@ -115,12 +114,12 @@ const ManagerRatingPage = () => {
             die vom Backend mitgelieferten Rohdaten/Formeln 1:1. */}
         <RatingCalculationSection
           calculation={rating.calculation}
-          proLeaguePeers={leaguePeers.pro}
-          ovpLeaguePeers={leaguePeers.ovp}
-          aktLeaguePeers={leaguePeers.akt}
-          pktLeaguePeers={leaguePeers.pkt}
           kadLeaguePeers={leaguePeers.kad}
-          timLeaguePeers={leaguePeers.tim}
+          pktLeaguePeers={leaguePeers.pkt}
+          proLeaguePeers={leaguePeers.pro}
+          disLeaguePeers={leaguePeers.dis}
+          konLeaguePeers={leaguePeers.kon}
+          effLeaguePeers={leaguePeers.eff}
         />
       </div>
     </div>
