@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Trophy, Wallet, Star, SearchX } from 'lucide-react';
 import { useBackNavigation } from './useBackNavigation';
-import { BackButton } from './ui/CloseButton';
+import { IconBackButton } from './ui/CloseButton';
 import PositionRow from './ui/PositionRow';
 
 // Vollbild-Seite (eigene Route) statt Overlay-Modal - gleiche Design-Strategie
@@ -98,16 +98,16 @@ const OptimalTeam = ({ dataBase = '', routeBase = '' }) => {
 
   return (
     <div className="w-full bg-[#000000] min-h-screen relative flex flex-col pb-10">
-      {/* Header mit Zurueck-Button (Page-Look, wie Advisor::PlayerDetailView) */}
-      <div className="sticky sticky-safe-top z-50 bg-[#000000]/90 backdrop-blur-md px-4 sm:px-6 py-4 flex items-center justify-between border-b border-[#2e2e2e]/50">
-        <BackButton onClick={goBack} />
+      {/* Moderner Detail-Header im normalen Fluss (kein sticky-Ruckeln beim Scrollen) */}
+      <div className="max-w-[700px] w-full mx-auto px-4 sm:px-6 pt-4 pb-2 flex items-center justify-between gap-2">
+        <IconBackButton onClick={goBack} />
         <div className="flex items-center gap-2 text-[#ff5c3e]">
           <Star size={16} strokeWidth={2.5} fill="#ff5c3e" />
           <span className="text-xs font-bold uppercase tracking-wider">Die Optimale Elf</span>
         </div>
       </div>
 
-      <div className="max-w-[700px] w-full mx-auto pt-6 pb-8 px-4 sm:px-6">
+      <div className="max-w-[700px] w-full mx-auto pt-3 pb-8 px-4 sm:px-6">
         {/* Matchday Toggle & Summary */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-6">
           <div className="bg-[#171717] border border-[#2e2e2e] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden w-full md:w-auto justify-between h-12">

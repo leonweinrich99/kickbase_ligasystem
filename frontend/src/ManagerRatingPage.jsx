@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 import { useBackNavigation } from './useBackNavigation';
-import { BackButton } from './ui/CloseButton';
+import { IconBackButton } from './ui/CloseButton';
 import FifaManagerCard from './ui/FifaManagerCard';
 import RatingCalculationSection from './ui/RatingCalculationSection';
 
@@ -95,12 +95,12 @@ const ManagerRatingPage = () => {
 
   return (
     <div className="w-full bg-[#000000] min-h-screen relative flex flex-col pb-10">
-      {/* Header mit Zurueck-Button (Page-Look) */}
-      <div className="sticky sticky-safe-top z-50 bg-[#000000]/90 backdrop-blur-md px-4 sm:px-6 py-4 flex items-center border-b border-[#2e2e2e]/50">
-        <BackButton onClick={goBack} />
+      {/* Moderner Detail-Header im normalen Fluss (kein sticky-Ruckeln beim Scrollen) */}
+      <div className="max-w-[600px] w-full mx-auto px-4 sm:px-6 pt-4 pb-2 flex items-center">
+        <IconBackButton onClick={goBack} />
       </div>
 
-      <div className="max-w-[600px] w-full mx-auto pt-6 pb-8 px-4 sm:px-6 flex flex-col gap-6">
+      <div className="max-w-[600px] w-full mx-auto pt-3 pb-8 px-4 sm:px-6 flex flex-col gap-6">
         <div>
           <h2 className="text-[17px] sm:text-3xl font-black tracking-tight uppercase leading-[1.1] break-words">Manager Rating</h2>
           <p className="text-sm text-[#8b92a5] mt-1">Wie gut managst du deinen Kader?</p>

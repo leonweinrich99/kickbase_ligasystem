@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Clock, Flame, Trophy, TrendingUp, Newspaper, ArrowUpRight, Quote, Megaphone } from 'lucide-react';
+import { Clock, Flame, Trophy, TrendingUp, Newspaper, ArrowUpRight, Quote, Megaphone } from 'lucide-react';
 import { getCategoryMeta, formatArticleDate, sortArticlesByDateDesc } from './feedMeta';
+import { IconBackButton } from './ui/CloseButton';
 import AdBanner from './ui/AdBanner';
 
 const CategoryIcon = ({ id, size = 12 }) => {
@@ -90,32 +91,23 @@ const FeedArticlePage = () => {
 
   return (
     <div className="min-h-screen bg-[#000000] text-white pb-14">
-      {/* Sticky Zurueck-Leiste unterhalb der iOS Safe-Area */}
-      <div className="sticky sticky-safe-top z-30 bg-black/80 backdrop-blur-xl border-b border-white/10">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 h-12 flex items-center justify-between gap-3">
-          <button
-            type="button"
-            onClick={handleBack}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-300 hover:text-white active:scale-95 transition-all cursor-pointer"
-          >
-            <ArrowLeft size={16} />
-            <span>Newsfeed</span>
-          </button>
+      {/* Moderner Detail-Header im normalen Fluss (kein sticky-Ruckeln beim Scrollen) */}
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-4 pb-2 flex items-center justify-between gap-3">
+        <IconBackButton onClick={handleBack} />
 
-          <div className="flex items-center gap-2">
-            <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${meta.badgeClass}`}>
-              <CategoryIcon id={article.category} size={10} />
-              {meta.shortLabel}
-            </span>
-            <span className="text-[11px] text-[#8b92a5] flex items-center gap-1 tabular-nums">
-              <Clock size={11} />
-              {article.readTimeMin} Min.
-            </span>
-          </div>
+        <div className="flex items-center gap-2">
+          <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${meta.badgeClass}`}>
+            <CategoryIcon id={article.category} size={10} />
+            {meta.shortLabel}
+          </span>
+          <span className="text-[11px] text-[#8b92a5] flex items-center gap-1 tabular-nums">
+            <Clock size={11} />
+            {article.readTimeMin} Min.
+          </span>
         </div>
       </div>
 
-      <article className="max-w-3xl mx-auto px-4 sm:px-6 pt-6">
+      <article className="max-w-3xl mx-auto px-4 sm:px-6 pt-3">
         {/* WSJ-Masthead bei Trading News */}
         {isWsj && (
           <div className="mb-5 border-y border-emerald-500/25 py-2.5 text-center">
