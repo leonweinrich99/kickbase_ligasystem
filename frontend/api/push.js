@@ -7,6 +7,7 @@
 // umgeschrieben.
 import {
   handleAdminBroadcast,
+  handleCommentMention,
   handleNotifyAdmins,
   handlePushTest,
 } from './_pushAdmin.js';
@@ -29,6 +30,8 @@ export default async function handler(req, res) {
       return handleNotifyAdmins(req, res);
     case 'admin-broadcast':
       return handleAdminBroadcast(req, res);
+    case 'comment-mention':
+      return handleCommentMention(req, res);
     case 'articles':
       return handleNotifyArticles(req, res);
     case 'rating':

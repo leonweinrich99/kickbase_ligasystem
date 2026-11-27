@@ -13,6 +13,7 @@
     { "source": "/api/push-test", "destination": "/api/push?action=test" },
     { "source": "/api/notify-admins", "destination": "/api/push?action=notify-admins" },
     { "source": "/api/admin-broadcast", "destination": "/api/push?action=admin-broadcast" },
+    { "source": "/api/notify-comment-mention", "destination": "/api/push?action=comment-mention" },
     { "source": "/api/notify-articles", "destination": "/api/push?action=articles" },
     { "source": "/api/notify-rating-changes", "destination": "/api/push?action=rating" },
     { "source": "/api/pokal-reminder", "destination": "/api/push?action=pokal-reminder" },

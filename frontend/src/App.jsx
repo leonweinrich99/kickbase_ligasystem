@@ -7,6 +7,12 @@ import { AuthProvider } from './AuthContext';
 import AuthGate from './AuthGate';
 import { TourProvider } from './Tour';
 import PushPromptModal from './PushPromptModal';
+import { useAppAnalytics } from './appAnalytics';
+
+function AppAnalyticsTracker() {
+  useAppAnalytics();
+  return null;
+}
 
 // Route-Level Code Splitting: schwere Unterseiten (Recharts, Trading Advisor,
 // Pokal, Live, Newsfeed, Admin) werden erst beim Besuch nachgeladen.
@@ -55,6 +61,7 @@ function App() {
 
           <TourProvider>
             <AuthGate>
+              <AppAnalyticsTracker />
               <div style={{ paddingBottom: 'calc(68px + env(safe-area-inset-bottom, 0px))' }}>
                 <Suspense fallback={<RouteFallback />}>
                   <Routes>

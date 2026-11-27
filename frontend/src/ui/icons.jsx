@@ -3,6 +3,7 @@ import {
   Activity as LucideActivity,
   AlertTriangle as LucideAlertTriangle,
   Archive as LucideArchive,
+  AtSign as LucideAtSign,
   ArrowLeft as LucideArrowLeft,
   ArrowLeftRight as LucideArrowLeftRight,
   ArrowRight as LucideArrowRight,
@@ -24,6 +25,7 @@ import {
   Clock as LucideClock,
   Compass as LucideCompass,
   ExternalLink as LucideExternalLink,
+  Eye as LucideEye,
   Flame as LucideFlame,
   Heart as LucideHeart,
   HelpCircle as LucideHelpCircle,
@@ -57,6 +59,7 @@ import {
   Sparkles as LucideSparkles,
   Star as LucideStar,
   Target as LucideTarget,
+  Trash2 as LucideTrash2,
   TrendingDown as LucideTrendingDown,
   TrendingUp as LucideTrendingUp,
   Trophy as LucideTrophy,
@@ -696,3 +699,31 @@ export const RuleEditIcon = createKickbaseIcon('RuleEditIcon', () => (
     <polygon points="4.4,14.6 9.4,19.6 3.2,20.8" fill="currentColor" opacity="0.7" />
   </>
 ), LucidePencil);
+
+export const Pencil = RuleEditIcon;
+
+export const Eye = createKickbaseIcon('Eye', () => (
+  <>
+    <polygon points="2,12 7,6 17,6 22,12 17,18 7,18" fill="currentColor" opacity="0.28" />
+    <polygon points="12,6 17,6 22,12 17,18 12,18" fill="currentColor" opacity="0.18" />
+    <polygon points="12,8.4 15.6,12 12,15.6 8.4,12" fill="currentColor" />
+  </>
+), LucideEye);
+
+export const Trash2 = createKickbaseIcon('Trash2', () => (
+  <>
+    <polygon points="4,5.5 20,5.5 20,7.8 4,7.8" fill="currentColor" />
+    <rect x="9" y="3" width="6" height="2.5" fill="currentColor" opacity="0.6" />
+    <polygon points="6,9 12,9 12,20.5 7.5,20.5 6.5,19" fill="currentColor" opacity="0.34" />
+    <polygon points="12,9 18,9 17.5,19 16.5,20.5 12,20.5" fill="currentColor" opacity="0.52" />
+    <rect x="9.3" y="11.5" width="1.8" height="6.2" fill="currentColor" />
+    <rect x="12.9" y="11.5" width="1.8" height="6.2" fill="currentColor" />
+  </>
+), LucideTrash2);
+
+export const AtSign = createKickbaseIcon('AtSign', () => (
+  <>
+    <polygon points="8,3 16,3 21,8 21,15 17.5,17 14.5,17 14.5,14.8 17.2,14.8 18.6,13.6 18.6,8.9 15.1,5.4 8.9,5.4 5.4,8.9 5.4,15.1 8.9,18.6 15,18.6 15,21 8,21 3,16 3,8" fill="currentColor" opacity="0.45" />
+    <polygon points="10,8.5 14,8.5 15.8,10.3 15.8,14 14,15.8 10,15.8 8.2,14 8.2,10.3" fill="currentColor" />
+  </>
+), LucideAtSign);

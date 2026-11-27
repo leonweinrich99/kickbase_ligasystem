@@ -1,12 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { collection, onSnapshot, doc, updateDoc, deleteField, query, orderBy, writeBatch } from 'firebase/firestore';
-import { Check, X, AlertTriangle, MoreVertical, MessageCircle, RefreshCw, CheckCircle2, XCircle, Clock, Bell } from './ui/icons';
+import { Check, X, AlertTriangle, MoreVertical, MessageCircle, RefreshCw, CheckCircle2, XCircle, Clock, Bell, BarChart3, Users } from './ui/icons';
 import { db } from './firebase';
 import { useAuth } from './AuthContext';
 import PushNotificationCard from './PushNotificationCard';
 import AdminMessengerCard from './AdminMessengerCard';
+import AdminAnalyticsCard from './AdminAnalyticsCard';
 import { resolveNotificationPrefs } from './pushNotifications';
+import { formatRelativeTime } from './articleEngagement';
+import { getBerlinDateKey } from './appAnalytics';
 import { useBackNavigation } from './useBackNavigation';
 import PageHeader from './ui/PageHeader';
 import CloseButton from './ui/CloseButton';
@@ -50,7 +53,7 @@ const UserRow = ({ u, isSelf, onSetStatus, onSetRole, onApproveKickbaseChange, o
           {isSelf && <span className="text-[8px] font-bold text-[#626978] uppercase shrink-0">(Du)</span>}
         </div>
         <div className="text-[11px] text-[#8b92a5] truncate">{u.email}</div>
-        <div className="flex items-center gap-1 mt-1">
+        <div className="flex items-center gap-1.5 flex-wrap mt-1">
           {u.kickbaseId ? (
             <span className="inline-flex items-center gap-1 text-[9px] font-bold text-green-400">
               <Check size={10} strokeWidth={4} className="shrink-0" />
@@ -60,6 +63,18 @@ const UserRow = ({ u, isSelf, onSetStatus, onSetRole, onApproveKickbaseChange, o
             <span className="inline-flex items-center gap-1 text-[9px] font-bold text-yellow-500/80">
               <AlertTriangle size={10} strokeWidth={3} className="shrink-0" />
               Kickbase nicht verknüpft{u.kickbaseName ? ` (nur Name: "${u.kickbaseName}")` : ''}
+            </span>
+          )}
+          {u.lastActiveAt && (
+            <span className="inline-flex items-center gap-1 text-[9px] text-[#8b92a5] tabular-nums">
+              <span>·</span>
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  u.lastActiveDay === getBerlinDateKey() ? 'bg-emerald-400' : 'bg-zinc-500'
+                }`}
+              />
+              <span>{formatRelativeTime(u.lastActiveAt)}</span>
+              {u.platform && <span className="text-[#626978]">({u.platform})</span>}
             </span>
           )}
         </div>
@@ -139,6 +154,7 @@ const AdminPanel = () => {
   const goBack = useBackNavigation('/account');
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('users');
   const [filter, setFilter] = useState('pending');
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateStatus, setUpdateStatus] = useState(null);
@@ -324,6 +340,38 @@ const AdminPanel = () => {
           </div>
         )}
 
+        {/* Haupt-Tabs: Nutzerverwaltung vs. Nutzung & Artikel-Insights */}
+        <div className="grid grid-cols-2 gap-2 mb-6">
+          <button
+            type="button"
+            onClick={() => setActiveTab('users')}
+            className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-[11px] font-black uppercase tracking-widest border transition-all cursor-pointer ${
+              activeTab === 'users'
+                ? 'bg-[#ff5c3e] text-white border-[#ff5c3e]'
+                : 'bg-[#171717] border-[#2e2e2e] text-[#8b92a5] hover:text-white'
+            }`}
+          >
+            <Users size={14} />
+            <span>Nutzer ({users.length})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('analytics')}
+            className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-[11px] font-black uppercase tracking-widest border transition-all cursor-pointer ${
+              activeTab === 'analytics'
+                ? 'bg-[#ff5c3e] text-white border-[#ff5c3e]'
+                : 'bg-[#171717] border-[#2e2e2e] text-[#8b92a5] hover:text-white'
+            }`}
+          >
+            <BarChart3 size={14} />
+            <span>Nutzung & Artikel</span>
+          </button>
+        </div>
+
+        {activeTab === 'analytics' ? (
+          <AdminAnalyticsCard users={users} />
+        ) : (
+          <>
         <div className="flex gap-2 mb-6 overflow-x-auto">
           {['pending', 'approved', 'admin', 'unlinked', 'changeRequests', 'rejected', 'all'].map(f => (
             <button
@@ -357,6 +405,8 @@ const AdminPanel = () => {
               />
             ))}
           </div>
+        )}
+          </>
         )}
 
         {/* Kickbase-Daten aktualisieren: bewusst ganz unten, als klar klickbarer

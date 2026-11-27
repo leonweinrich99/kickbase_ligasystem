@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Newspaper, Trophy, TrendingUp, Flame, Clock, BarChart3, ChevronRight, CalendarRange, Megaphone } from './ui/icons';
+import { Newspaper, Trophy, TrendingUp, Flame, Clock, BarChart3, ChevronRight, CalendarRange, Megaphone, Eye, MessageCircle } from './ui/icons';
 import TabPageHeader from './ui/TabPageHeader';
 import { FEED_CATEGORIES, getCategoryMeta, formatArticleDate, sortArticlesByDateDesc } from './feedMeta';
 import { useAuth } from './AuthContext';
+import { loadAllArticleStats } from './articleEngagement';
 import newsLogo from './assets/news_logo.png';
 import AdBanner from './ui/AdBanner';
 import HotShotsSection from './ui/HotShotsSection';
@@ -222,7 +223,7 @@ const SwipeableMarketTicker = ({ items }) => {
 // Swiper mit bis zu 3 Artikeln (die als "featured" markierten - je einer
 // pro Kategorie) + Punkte-Indikator darunter, wie man es aus Apple
 // News/App-Store-Karussells kennt.
-const HeroCarousel = ({ articles, activeCat }) => {
+const HeroCarousel = ({ articles, activeCat, articleStats = {} }) => {
   const scrollRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -296,13 +297,31 @@ const HeroCarousel = ({ articles, activeCat }) => {
                   {article.subtitle}
                 </p>
 
-                <div className="flex items-center gap-2 mt-3 text-[11px] text-[#8b92a5]">
+                <div className="flex items-center gap-2 mt-3 text-[11px] text-[#8b92a5] flex-wrap">
                   <span className="tabular-nums">{formatArticleDate(article.date)}</span>
                   <span>·</span>
                   <span className="inline-flex items-center gap-1 tabular-nums">
                     <Clock size={11} />
                     {article.readTimeMin} Min.
                   </span>
+                  {articleStats[article.slug]?.viewsCount > 0 && (
+                    <>
+                      <span>·</span>
+                      <span className="inline-flex items-center gap-1 tabular-nums text-gray-300">
+                        <Eye size={11} />
+                        {articleStats[article.slug].viewsCount}
+                      </span>
+                    </>
+                  )}
+                  {articleStats[article.slug]?.commentsCount > 0 && (
+                    <>
+                      <span>·</span>
+                      <span className="inline-flex items-center gap-1 tabular-nums text-gray-300">
+                        <MessageCircle size={11} />
+                        {articleStats[article.slug].commentsCount}
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
             </Link>
@@ -331,7 +350,7 @@ const HeroCarousel = ({ articles, activeCat }) => {
 // (Spieltagsberichte / Pokal / The Trading Journal) - gleiches Prinzip wie
 // die Themen-Reihen bei Apple News oder die "Mehr aus"-Leisten anderer
 // News-Apps.
-const CategoryShelf = ({ title, categoryId, articles, activeCat, accentColor, onSeeAll }) => {
+const CategoryShelf = ({ title, categoryId, articles, activeCat, accentColor, onSeeAll, articleStats = {} }) => {
   if (articles.length === 0) return null;
   return (
     <div className="mb-7">
@@ -387,6 +406,18 @@ const CategoryShelf = ({ title, categoryId, articles, activeCat, accentColor, on
                   <Clock size={9} />
                   {article.readTimeMin} Min.
                 </span>
+                {articleStats[article.slug]?.viewsCount > 0 && (
+                  <span className="inline-flex items-center gap-0.5 tabular-nums ml-auto text-gray-300">
+                    <Eye size={9} />
+                    {articleStats[article.slug].viewsCount}
+                  </span>
+                )}
+                {articleStats[article.slug]?.commentsCount > 0 && (
+                  <span className={`inline-flex items-center gap-0.5 tabular-nums text-gray-300 ${articleStats[article.slug]?.viewsCount > 0 ? '' : 'ml-auto'}`}>
+                    <MessageCircle size={9} />
+                    {articleStats[article.slug].commentsCount}
+                  </span>
+                )}
               </div>
             </Link>
           );
@@ -409,8 +440,19 @@ const FeedPage = () => {
 
   const [feedData, setFeedData] = useState(null);
   const [weeklyEditions, setWeeklyEditions] = useState([]);
+  const [articleStats, setArticleStats] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadAllArticleStats().then((map) => {
+      if (!cancelled) setArticleStats(map);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -665,7 +707,7 @@ const FeedPage = () => {
 
       {!loading && !error && activeCat === 'all' && (
         <div>
-          <HeroCarousel articles={heroArticles} activeCat={activeCat} />
+          <HeroCarousel articles={heroArticles} activeCat={activeCat} articleStats={articleStats} />
 
           {/* Werbe-Easter-Egg als native "Anzeige" zwischen Karussell und
               Regalen (Owner-Wunsch 24.11.2026). */}
@@ -681,6 +723,7 @@ const FeedPage = () => {
               articles={shelf.articles}
               activeCat={activeCat}
               accentColor={shelf.accentColor}
+              articleStats={articleStats}
               onSeeAll={() => setCategory(shelf.id)}
             />
           ))}

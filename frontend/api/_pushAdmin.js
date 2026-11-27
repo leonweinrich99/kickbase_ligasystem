@@ -161,3 +161,106 @@ export async function handleAdminBroadcast(req, res) {
     return res.status(500).json({ error: error.message });
   }
 }
+
+export async function handleCommentMention(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+  const app = getAdminApp();
+  if (!app) {
+    return res.status(200).json({ sent: 0, skipped: true, reason: 'Firebase nicht eingerichtet' });
+  }
+
+  try {
+    const decodedToken = await verifyFirebaseBearerUser(req, app);
+    if (!decodedToken?.uid) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const db = getFirestore(app);
+    const senderSnap = await db.collection('users').doc(decodedToken.uid).get();
+    if (!senderSnap.exists || senderSnap.data()?.status !== 'approved') {
+      return res.status(403).json({ error: 'Forbidden: Approved users only' });
+    }
+
+    let body = req.body;
+    if (typeof body === 'string') {
+      try {
+        body = JSON.parse(body);
+      } catch {
+        body = {};
+      }
+    }
+
+    const {
+      slug = '',
+      articleTitle = '',
+      commentText = '',
+      mentionedNames = [],
+      mentionedKickbaseIds = [],
+    } = body || {};
+
+    const cleanNames = Array.isArray(mentionedNames)
+      ? mentionedNames.map((n) => String(n || '').trim().toLowerCase()).filter(Boolean).slice(0, 5)
+      : [];
+    const cleanKbIds = Array.isArray(mentionedKickbaseIds)
+      ? mentionedKickbaseIds.map((id) => String(id || '').trim()).filter(Boolean).slice(0, 5)
+      : [];
+
+    if (cleanNames.length === 0 && cleanKbIds.length === 0) {
+      return res.status(200).json({ sent: 0, skipped: true, reason: 'Keine Erwähnungen angegeben' });
+    }
+
+    const nameSet = new Set(cleanNames);
+    const kbIdSet = new Set(cleanKbIds);
+    const senderData = senderSnap.data() || {};
+    const senderName = String(
+      senderData.kickbaseName || senderData.displayName || decodedToken.name || 'Jemand'
+    ).slice(0, 60);
+    const safeSlug = String(slug || '').replace(/[^a-zA-Z0-9_-]/g, '');
+    const safeTitle = String(articleTitle || 'Artikel').slice(0, 80);
+    const rawSnippet = String(commentText || '').trim().replace(/\s+/g, ' ');
+    const snippet = rawSnippet.length > 110 ? `${rawSnippet.slice(0, 107)}…` : rawSnippet;
+
+    const usersSnap = await db.collection('users').where('status', '==', 'approved').get();
+    const deliveries = [];
+
+    usersSnap.forEach((docSnap) => {
+      if (docSnap.id === decodedToken.uid) return; // Keine Selbst-Erwaehnung pushen
+      const data = docSnap.data();
+      if (!Array.isArray(data.fcmTokens) || data.fcmTokens.length === 0) return;
+
+      const userKbId = data.kickbaseId != null ? String(data.kickbaseId).trim() : '';
+      const userKbName = String(data.kickbaseName || '').trim().toLowerCase();
+      const userDisplayName = String(data.displayName || '').trim().toLowerCase();
+
+      const matched =
+        (userKbId && kbIdSet.has(userKbId)) ||
+        (userKbName && nameSet.has(userKbName)) ||
+        (userDisplayName && nameSet.has(userDisplayName));
+
+      if (!matched) return;
+
+      deliveries.push({
+        userRef: docSnap.ref,
+        tokens: data.fcmTokens,
+        data: {
+          title: `${senderName} hat dich erwähnt`,
+          body: snippet ? `„${snippet}“ · ${safeTitle}` : `Neuer Kommentar im Artikel „${safeTitle}“`,
+          link: safeSlug ? `/feed/${safeSlug}#kommentare` : '/feed',
+          tag: `mention-${safeSlug || 'feed'}-${Date.now()}`,
+        },
+      });
+    });
+
+    if (deliveries.length === 0) {
+      return res.status(200).json({ sent: 0, matched: 0 });
+    }
+
+    const result = await sendDeliveries({ app, db, deliveries });
+    return res.status(200).json({ ...result, matched: deliveries.length });
+  } catch (error) {
+    console.error('comment-mention error:', error.message);
+    return res.status(500).json({ error: error.message });
+  }
+}

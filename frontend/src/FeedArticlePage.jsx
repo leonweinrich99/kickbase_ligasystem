@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Clock, Flame, Trophy, TrendingUp, Newspaper, ArrowUpRight, Quote, Megaphone } from './ui/icons';
+import { Clock, Eye, Flame, Trophy, TrendingUp, Newspaper, ArrowUpRight, Quote, Megaphone } from './ui/icons';
 import { getCategoryMeta, formatArticleDate, sortArticlesByDateDesc } from './feedMeta';
 import { IconBackButton } from './ui/CloseButton';
 import AdBanner from './ui/AdBanner';
+import ArticleEngagementSection from './ui/ArticleEngagementSection';
 
 const CategoryIcon = ({ id, size = 12 }) => {
   if (id === 'spieltag') return <Flame size={size} />;
@@ -21,6 +22,7 @@ const FeedArticlePage = () => {
 
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [engagementStats, setEngagementStats] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -149,6 +151,15 @@ const FeedArticlePage = () => {
             <span className="tabular-nums">{formatArticleDate(article.date)}</span>
             <span>·</span>
             <span>{article.edition}</span>
+            {engagementStats?.viewsCount > 0 && (
+              <>
+                <span>·</span>
+                <span className="inline-flex items-center gap-1 tabular-nums text-gray-300">
+                  <Eye size={12} />
+                  {engagementStats.viewsCount} gelesen
+                </span>
+              </>
+            )}
           </div>
         </header>
 
@@ -385,6 +396,14 @@ const FeedArticlePage = () => {
             ))}
           </div>
         )}
+
+        {/* Interaktionen: Gesehen-Zaehler, Reaktionen & Kommentare mit @-Mentions */}
+        <ArticleEngagementSection
+          slug={article.slug}
+          articleTitle={article.title}
+          accent={meta.accent}
+          onStatsChange={setEngagementStats}
+        />
 
         {/* Weitere Artikel */}
         {relatedArticles.length > 0 && (
