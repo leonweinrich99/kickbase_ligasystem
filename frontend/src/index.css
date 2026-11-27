@@ -145,6 +145,129 @@ body {
   }
 }
 
+/* ============================================================================
+   OKTAGON / CHAMFERED UI SYSTEM (Subtile Variante – zentral umschaltbar!)
+   Steuerung: frontend/src/ui/shapeTheme.js (DEFAULT_UI_SHAPE = 'octagon' | 'rounded'
+   oder Env-Variable VITE_UI_SHAPE=rounded).
+   Feintuning: Einfach die --oct-* Variablen unten anpassen.
+   ============================================================================ */
+html[data-ui-shape="octagon"] {
+  --oct-card: 11px;
+  --oct-md: 7px;
+  --oct-sm: 5px;
+  --oct-pill: 6px;
+  --oct-tabbar: 14px;
+  --oct-tab: 8px;
+  --oct-bw: 1px;
+  --oct-bd-default: rgba(255, 255, 255, 0.12);
+  --oct-bd-strong: rgba(255, 255, 255, 0.24);
+}
+
+@layer components {
+  html[data-ui-shape="octagon"] .card-surface:not(.no-oct),
+  html[data-ui-shape="octagon"] .oct-box,
+  html[data-ui-shape="octagon"] .oct-md,
+  html[data-ui-shape="octagon"] .oct-sm,
+  html[data-ui-shape="octagon"] .oct-pill,
+  html[data-ui-shape="octagon"] .oct-tabbar,
+  html[data-ui-shape="octagon"] .oct-tab,
+  html[data-ui-shape="octagon"] .field-input {
+    --c: var(--oct-card);
+    --bw: var(--oct-bw);
+    --oct-bd: var(--oct-bd-default);
+    position: relative;
+    border-radius: 0 !important;
+    border-color: transparent !important;
+    clip-path: polygon(
+      var(--c) 0, calc(100% - var(--c)) 0,
+      100% var(--c), 100% calc(100% - var(--c)),
+      calc(100% - var(--c)) 100%, var(--c) 100%,
+      0 calc(100% - var(--c)), 0 var(--c)
+    );
+  }
+
+  html[data-ui-shape="octagon"] .card-surface:not(.no-oct)::before,
+  html[data-ui-shape="octagon"] .oct-box::before,
+  html[data-ui-shape="octagon"] .oct-md::before,
+  html[data-ui-shape="octagon"] .oct-sm::before,
+  html[data-ui-shape="octagon"] .oct-pill::before,
+  html[data-ui-shape="octagon"] .oct-tabbar::before,
+  html[data-ui-shape="octagon"] .oct-tab::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: var(--oct-bd);
+    z-index: 5;
+    clip-path: polygon(
+      evenodd,
+      var(--c) 0, calc(100% - var(--c)) 0,
+      100% var(--c), 100% calc(100% - var(--c)),
+      calc(100% - var(--c)) 100%, var(--c) 100%,
+      0 calc(100% - var(--c)), 0 var(--c),
+      var(--c) 0,
+      calc(var(--c) + var(--bw) * 0.414) var(--bw),
+      var(--bw) calc(var(--c) + var(--bw) * 0.414),
+      var(--bw) calc(100% - var(--c) - var(--bw) * 0.414),
+      calc(var(--c) + var(--bw) * 0.414) calc(100% - var(--bw)),
+      calc(100% - var(--c) - var(--bw) * 0.414) calc(100% - var(--bw)),
+      calc(100% - var(--bw)) calc(100% - var(--c) - var(--bw) * 0.414),
+      calc(100% - var(--bw)) calc(var(--c) + var(--bw) * 0.414),
+      calc(100% - var(--c) - var(--bw) * 0.414) var(--bw),
+      calc(var(--c) + var(--bw) * 0.414) var(--bw)
+    );
+  }
+
+  /* Größen-Varianten */
+  html[data-ui-shape="octagon"] .oct-md,
+  html[data-ui-shape="octagon"] .field-input {
+    --c: var(--oct-md);
+  }
+  html[data-ui-shape="octagon"] .oct-sm {
+    --c: var(--oct-sm);
+  }
+  html[data-ui-shape="octagon"] .oct-pill {
+    --c: var(--oct-pill);
+  }
+  html[data-ui-shape="octagon"] .oct-tabbar {
+    --c: var(--oct-tabbar);
+    --oct-bd: var(--oct-bd-strong);
+  }
+  html[data-ui-shape="octagon"] .oct-tab {
+    --c: var(--oct-tab);
+    --oct-bd: transparent;
+  }
+  html[data-ui-shape="octagon"] .oct-tab-active {
+    --oct-bd: rgba(255, 92, 62, 0.45);
+  }
+
+  /* Optionale farbige Diagonal-Rahmen */
+  html[data-ui-shape="octagon"] .oct-bd-none::before { display: none; }
+  html[data-ui-shape="octagon"] .oct-bd-accent { --oct-bd: rgba(255, 92, 62, 0.48); }
+  html[data-ui-shape="octagon"] .oct-bd-cyan { --oct-bd: rgba(34, 211, 238, 0.4); }
+  html[data-ui-shape="octagon"] .oct-bd-green { --oct-bd: rgba(34, 197, 94, 0.4); }
+  html[data-ui-shape="octagon"] .oct-bd-red { --oct-bd: rgba(239, 68, 68, 0.4); }
+  html[data-ui-shape="octagon"] .oct-bd-yellow { --oct-bd: rgba(234, 179, 8, 0.4); }
+  html[data-ui-shape="octagon"] .oct-bd-purple { --oct-bd: rgba(168, 85, 247, 0.4); }
+
+  /* Scharfes Hexagon für kleine Indikatoren (Live-Punkt, Anstoß-Hexagon) */
+  html[data-ui-shape="octagon"] .hex-beacon {
+    border-radius: 0 !important;
+    clip-path: polygon(50% 0%, 95% 25%, 95% 75%, 50% 100%, 5% 75%, 5% 25%);
+  }
+
+  html[data-ui-shape="octagon"] .hex-pitch-center {
+    border-radius: 0 !important;
+    border: none !important;
+    background: rgba(255, 255, 255, 0.9);
+    clip-path: polygon(
+      evenodd,
+      50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%, 50% 0%,
+      50% 2%, 9% 26%, 9% 74%, 50% 98%, 91% 74%, 91% 26%, 50% 2%
+    );
+  }
+}
+
 /* Alte, flache Kartenoptik (zum Zurückwechseln einfach den Block oben
    auskommentieren und diesen Block aktivieren):
 @layer components {

@@ -41,8 +41,8 @@ const UserRow = ({ u, isSelf, onSetStatus, onSetRole, onApproveKickbaseChange, o
 
   return (
     <div className="flex flex-col gap-2">
-    <div className="card-surface rounded-xl px-3.5 py-2.5 flex items-center gap-3">
-      <div className="w-8 h-8 rounded-full bg-[#1f1f1f] flex items-center justify-center font-black text-[#ff5c3e] text-xs shrink-0">
+    <div className={`card-surface oct-md rounded-xl px-3.5 py-2.5 flex items-center gap-3 ${menuOpen ? 'no-oct' : ''}`}>
+      <div className="w-8 h-8 rounded-full hex-beacon bg-[#1f1f1f] flex items-center justify-center font-black text-[#ff5c3e] text-xs shrink-0">
         {(u.displayName || u.email || '?').charAt(0).toUpperCase()}
       </div>
 
@@ -296,7 +296,7 @@ const AdminPanel = () => {
             <button
               onClick={() => setShowMessenger(true)}
               aria-label="Messenger öffnen"
-              className="w-10 h-10 flex items-center justify-center bg-[#171717] border border-[#2e2e2e] rounded-xl text-[#8b92a5] hover:text-white hover:border-[#404040] transition-all"
+              className="oct-md w-10 h-10 flex items-center justify-center bg-[#171717] border border-[#2e2e2e] rounded-xl text-[#8b92a5] hover:text-white hover:border-[#404040] transition-all"
             >
               <MessageCircle size={18} strokeWidth={2.5} />
             </button>

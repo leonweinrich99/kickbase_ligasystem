@@ -12,7 +12,7 @@ export default function CloseButton({ onClick, className = '', size = 'default',
       type="button"
       onClick={onClick}
       aria-label="Schließen"
-      className={`shrink-0 flex items-center justify-center bg-[#171717] border border-[#2e2e2e] rounded-xl text-[#8b92a5] hover:text-white hover:border-[#404040] active:scale-95 transition-colors cursor-pointer ${sizeClasses} ${className}`}
+      className={`oct-md shrink-0 flex items-center justify-center bg-[#171717] border border-[#2e2e2e] rounded-xl text-[#8b92a5] hover:text-white hover:border-[#404040] active:scale-95 transition-colors cursor-pointer ${sizeClasses} ${className}`}
       {...props}
     >
       <X size={iconSize} strokeWidth={2.5} />
@@ -31,7 +31,7 @@ export function IconBackButton({ onClick, className = '', size = 'default', ...p
       type="button"
       onClick={onClick}
       aria-label="Zurück"
-      className={`shrink-0 flex items-center justify-center bg-[#171717] border border-[#2e2e2e] rounded-xl text-gray-200 hover:text-white hover:border-[#404040] active:scale-95 transition-colors cursor-pointer ${sizeClasses} ${className}`}
+      className={`oct-md shrink-0 flex items-center justify-center bg-[#171717] border border-[#2e2e2e] rounded-xl text-gray-200 hover:text-white hover:border-[#404040] active:scale-95 transition-colors cursor-pointer ${sizeClasses} ${className}`}
       {...props}
     >
       <ArrowLeft size={iconSize} strokeWidth={2.4} />
@@ -46,7 +46,7 @@ export function SubpageActionButton({ onClick, icon: Icon, label, iconClassName 
     <button
       type="button"
       onClick={onClick}
-      className={`shrink-0 h-10 px-3.5 inline-flex items-center gap-2 bg-[#171717] border border-[#2e2e2e] rounded-xl text-xs font-bold text-gray-200 hover:text-white hover:border-[#404040] active:scale-95 transition-colors cursor-pointer ${className}`}
+      className={`oct-md shrink-0 h-10 px-3.5 inline-flex items-center gap-2 bg-[#171717] border border-[#2e2e2e] rounded-xl text-xs font-bold text-gray-200 hover:text-white hover:border-[#404040] active:scale-95 transition-colors cursor-pointer ${className}`}
       {...props}
     >
       {Icon && <Icon size={15} strokeWidth={2.3} className={`shrink-0 ${iconClassName}`} />}

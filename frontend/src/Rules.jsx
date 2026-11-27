@@ -5,6 +5,7 @@ import { useAuth } from './AuthContext';
 import { useBackNavigation } from './useBackNavigation';
 import rulesLogo from './assets/rules_logo.png';
 import pokalLogo from './assets/pokal_logo.png';
+import HexFrame from './ui/HexFrame';
 import {
   RuleFairplayIcon,
   MessageCircle,
@@ -21,11 +22,11 @@ import {
 } from './ui/icons';
 
 const colors = {
-  blue: ['border-blue-500/40 hover:border-blue-500 hover:bg-blue-500/10', 'text-blue-400'],
-  orange: ['border-orange-500/40 hover:border-orange-500 hover:bg-orange-500/10', 'text-orange-400'],
-  green: ['border-green-500/40 hover:border-green-500 hover:bg-green-500/10', 'text-green-400'],
-  red: ['border-red-500/40 hover:border-red-500 hover:bg-red-500/10', 'text-red-400'],
-  purple: ['border-purple-500/40 hover:border-purple-500 hover:bg-purple-500/10', 'text-purple-400'],
+  blue: ['border-blue-500/40 hover:border-blue-500 hover:bg-blue-500/10', 'text-blue-400', '#3b82f6'],
+  orange: ['border-orange-500/40 hover:border-orange-500 hover:bg-orange-500/10', 'text-orange-400', '#f97316'],
+  green: ['border-green-500/40 hover:border-green-500 hover:bg-green-500/10', 'text-green-400', '#22c55e'],
+  red: ['border-red-500/40 hover:border-red-500 hover:bg-red-500/10', 'text-red-400', '#ef4444'],
+  purple: ['border-purple-500/40 hover:border-purple-500 hover:bg-purple-500/10', 'text-purple-400', '#a855f7'],
 };
 
 const RULE_ICONS = {
@@ -85,18 +86,25 @@ const RuleEditForm = ({ rule, onCancel, onSave, saving }) => {
 };
 
 const RuleCard = ({ rule, number, isAdmin, isEditing, onEdit, onCancel, onSave, saving }) => {
-  const [border, text] = colors[rule.color] || colors.blue;
+  const [, text, hexColor] = colors[rule.color] || colors.blue;
 
   return (
     <Motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-50px' }} transition={{ duration: 0.5, ease: 'easeOut' }} className="group relative pl-16 sm:pl-24 mb-10">
-      <div className={`absolute left-0 top-0 w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#000000] border-2 flex items-center justify-center z-10 transition-all duration-300 ${border}`}>
-        <Icon id={rule.id} className={`w-6 h-6 sm:w-8 sm:h-8 ${text}`} />
+      <div className="absolute left-0 top-0 z-10">
+        <HexFrame
+          className="w-12 h-12 sm:w-16 sm:h-16 transition-transform duration-300 group-hover:scale-105"
+          innerClassName="bg-[#000000]"
+          ringColor={hexColor}
+          ringWidth={3.8}
+        >
+          <Icon id={rule.id} className={`w-6 h-6 sm:w-8 sm:h-8 ${text}`} />
+        </HexFrame>
       </div>
-      <div className="bg-[#171717] border border-[#2e2e2e] rounded-2xl p-5 sm:p-6 transition-all duration-300 group-hover:border-[#404040] group-hover:translate-x-1 shadow-lg relative">
+      <div className="oct-box bg-[#171717] border border-[#2e2e2e] rounded-2xl p-5 sm:p-6 transition-all duration-300 group-hover:border-[#404040] group-hover:translate-x-1 shadow-lg relative">
         {isAdmin && !isEditing && (
           <button
             onClick={() => onEdit(rule.id)}
-            className="absolute top-4 right-4 p-2 rounded-lg bg-[#000] border border-[#2e2e2e] text-[#8b92a5] hover:text-white hover:border-[#404040] active:scale-95 transition-all z-20"
+            className="absolute top-4 right-4 p-2 rounded-lg oct-sm bg-[#000] border border-[#2e2e2e] text-[#8b92a5] hover:text-white hover:border-[#404040] active:scale-95 transition-all z-20"
             title="Regel bearbeiten"
           >
             {PencilIcon}
@@ -144,7 +152,7 @@ export default function Rules({ type = 'league', backTo = '/', label = 'Regelkat
 
   return (
     <div className="max-w-4xl mx-auto py-10 px-4 relative overflow-x-hidden">
-      <button onClick={handleBack} className="absolute top-4 right-4 sm:top-10 sm:right-0 p-2 text-[#8b92a5] hover:text-white bg-[#171717] border border-[#2e2e2e] rounded-xl transition-all hover:border-[#404040] shadow-lg z-50" title="Zurück">
+      <button onClick={handleBack} className="absolute top-4 right-4 sm:top-10 sm:right-0 p-2 text-[#8b92a5] hover:text-white bg-[#171717] border border-[#2e2e2e] rounded-xl oct-md transition-all hover:border-[#404040] shadow-lg z-50" title="Zurück">
         <X size={24} strokeWidth={2.5} />
       </button>
       <Motion.header initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="text-center mb-20 pt-10 sm:pt-0">
@@ -153,7 +161,7 @@ export default function Rules({ type = 'league', backTo = '/', label = 'Regelkat
           alt={label}
           className="w-16 h-16 sm:w-20 sm:h-20 object-contain mx-auto mb-4"
         />
-        <div className={`inline-block px-3 py-1 mb-4 text-[0.85rem] font-extrabold uppercase tracking-[2.5px] border rounded-full ${accent === 'purple' ? 'text-purple-400 bg-purple-500/10 border-purple-500/20' : 'text-orange-400 bg-orange-500/10 border-orange-500/20'}`}>{rules?.season || 'Saison 26/27'}</div>
+        <div className={`inline-block px-3 py-1 mb-4 text-[0.85rem] font-extrabold uppercase tracking-[2.5px] border rounded-full oct-pill ${accent === 'purple' ? 'text-purple-400 bg-purple-500/10 border-purple-500/20 oct-bd-purple' : 'text-orange-400 bg-orange-500/10 border-orange-500/20 oct-bd-accent'}`}>{rules?.season || 'Saison 26/27'}</div>
         <h1 className="text-4xl sm:text-[3.5rem] font-black tracking-tighter uppercase leading-[1.1] mb-4 bg-gradient-to-br from-white to-[#9ca3af] bg-clip-text text-transparent">KICKBASE {isCup ? 'POKAL' : 'LIGASYSTEM'}<br />{label}</h1>
       </Motion.header>
       <div className="space-y-16">

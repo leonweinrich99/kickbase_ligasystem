@@ -123,7 +123,7 @@ export default function PushPromptModal() {
       aria-label="Benachrichtigungen einrichten"
     >
       <div
-        className="w-full max-w-md rounded-2xl bg-[#141414] border border-[#2e2e2e] shadow-2xl overflow-hidden max-h-[88vh] flex flex-col"
+        className="oct-box w-full max-w-md rounded-2xl bg-[#141414] border border-[#2e2e2e] shadow-2xl overflow-hidden max-h-[88vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -151,7 +151,7 @@ export default function PushPromptModal() {
             type="button"
             onClick={handleSnooze}
             aria-label="Schließen"
-            className="w-8 h-8 rounded-lg bg-[#1d1d1d] border border-[#2e2e2e] flex items-center justify-center text-[#8b92a5] hover:text-white shrink-0 cursor-pointer"
+            className="oct-sm w-8 h-8 rounded-lg bg-[#1d1d1d] border border-[#2e2e2e] flex items-center justify-center text-[#8b92a5] hover:text-white shrink-0 cursor-pointer"
           >
             <X size={15} />
           </button>

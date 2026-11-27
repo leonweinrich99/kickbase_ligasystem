@@ -35,7 +35,7 @@ export const Header = ({
       logo={<img src={mode === 'archive' ? archiveLogo : logo} alt={mode === 'archive' ? 'Quali-Archiv Logo' : 'Kickbase Liga Logo'} className="w-full h-full object-contain p-0.5 sm:p-1" />}
       eyebrow="SAISON 26/27"
       eyebrowBadge={mode === 'archive' ? (
-        <div className="text-[8px] sm:text-[9px] font-semibold tracking-widest text-[#8b92a5] bg-[#1f1f1f] border border-[#2e2e2e] rounded-full px-2 py-0.5 uppercase">
+        <div className="oct-pill text-[8px] sm:text-[9px] font-semibold tracking-widest text-[#8b92a5] bg-[#1f1f1f] border border-[#2e2e2e] rounded-full px-2 py-0.5 uppercase">
           Archiv
         </div>
       ) : null}
@@ -45,7 +45,7 @@ export const Header = ({
         <Link
           to={`${routeBase}/optimale-elf`}
           data-tour="optimal-team-button"
-          className="shrink-0 flex items-center gap-1.5 bg-[#171717] border border-[#ff5c3e]/40 hover:border-[#ff5c3e] transition-colors rounded-full pl-2.5 pr-3 py-1.5 shadow-lg active:scale-95 group"
+          className="oct-pill oct-bd-accent shrink-0 flex items-center gap-1.5 bg-[#171717] border border-[#ff5c3e]/40 hover:border-[#ff5c3e] transition-colors rounded-full pl-2.5 pr-3 py-1.5 shadow-lg active:scale-95 group"
         >
           <Star size={12} fill="#ff5c3e" stroke="#ff5c3e" strokeWidth={1} className="shrink-0" />
           <span className="text-[10px] font-bold text-gray-300 group-hover:text-white transition-colors whitespace-nowrap">
@@ -58,7 +58,7 @@ export const Header = ({
       <div className="flex w-full sm:w-auto justify-between sm:justify-end items-center gap-2 sm:gap-4">
         {/* Spieltag-Wechsler (Pfeil-Design) - "Die wahre Tabelle" ist hier einfach
             ein zusätzlicher Klick-Stopp nach "Gesamt", kein eigenes Element. */}
-        <div data-tour="matchday-switcher" className="bg-[#171717] border border-[#2e2e2e] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden flex-1 sm:flex-initial justify-between h-12 min-w-0">
+        <div data-tour="matchday-switcher" className="oct-md bg-[#171717] border border-[#2e2e2e] rounded-xl flex items-center shadow-lg font-semibold overflow-hidden flex-1 sm:flex-initial justify-between h-12 min-w-0">
           <button
             onClick={onPrev}
             className="px-3 sm:px-5 h-full text-[#8b92a5] hover:text-[#ff5c3e] transition-colors bg-[#141414] active:scale-90 shrink-0"
@@ -90,7 +90,7 @@ export const Header = ({
         </div>
 
         {/* Teilnehmer Kachel */}
-        <div className="bg-[#171717] border border-[#2e2e2e] rounded-xl px-3 sm:px-5 h-12 shadow-lg flex items-center gap-2 sm:gap-3 shrink-0">
+        <div className="oct-md bg-[#171717] border border-[#2e2e2e] rounded-xl px-3 sm:px-5 h-12 shadow-lg flex items-center gap-2 sm:gap-3 shrink-0">
           <UsersIcon className="text-[#8b92a5] sm:hidden" />
           <span className="text-[8px] sm:text-[10px] font-bold text-[#8b92a5] tracking-widest leading-none uppercase hidden sm:inline">Teilnehmer</span>
           <span className="text-sm sm:text-base font-bold text-gray-200 leading-none">{participants}</span>

@@ -173,7 +173,7 @@ const SelectorButton = ({ onClick, children }) => (
 );
 
 const ModeSwitch = ({ mode, onChange }) => (
-  <div className="flex gap-1.5 bg-[#171717] border border-[#2e2e2e] rounded-xl p-1 overflow-x-auto no-scrollbar">
+  <div className="oct-md flex gap-1.5 bg-[#171717] border border-[#2e2e2e] rounded-xl p-1 overflow-x-auto no-scrollbar">
     {[
       { id: 'own', label: 'Mein Kader' },
       { id: 'live', label: 'Live' },
@@ -183,7 +183,7 @@ const ModeSwitch = ({ mode, onChange }) => (
         key={opt.id}
         type="button"
         onClick={() => onChange(opt.id)}
-        className={`px-3 py-2 rounded-lg whitespace-nowrap text-xs tracking-wide transition-all flex-1 cursor-pointer ${
+        className={`oct-sm oct-bd-none px-3 py-2 rounded-lg whitespace-nowrap text-xs tracking-wide transition-all flex-1 cursor-pointer ${
           mode === opt.id
             ? 'bg-white text-black font-semibold shadow-sm'
             : 'text-[#8b92a5] font-medium hover:text-white'
@@ -1276,10 +1276,10 @@ const LiveLineupPage = () => {
             ) : mode === 'teams' ? (
               <img src={spielplanLogo} alt="Spieltag Logo" className="w-full h-full object-contain p-0.5" />
             ) : (
-              <div className="w-full h-full rounded-2xl bg-[#ef4444]/10 flex items-center justify-center">
+              <div className="oct-md oct-bd-red w-full h-full rounded-2xl bg-[#ef4444]/10 flex items-center justify-center">
                 <span className="relative flex h-3.5 w-3.5 sm:h-4 sm:w-4">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ef4444] opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3.5 w-3.5 sm:h-4 sm:w-4 bg-[#ef4444]"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full hex-beacon bg-[#ef4444] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full hex-beacon h-3.5 w-3.5 sm:h-4 sm:w-4 bg-[#ef4444]"></span>
                 </span>
               </div>
             )
@@ -1290,11 +1290,11 @@ const LiveLineupPage = () => {
           right={(
             <div className="flex items-center gap-2 shrink-0">
               {rateLimited ? (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border bg-amber-500/10 border-amber-400/35 text-[10px] font-bold uppercase tracking-wider text-amber-300 whitespace-nowrap">
+                <span className="oct-pill oct-bd-yellow inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border bg-amber-500/10 border-amber-400/35 text-[10px] font-bold uppercase tracking-wider text-amber-300 whitespace-nowrap">
                   <span>Pause</span>
                 </span>
               ) : blLiveActive ? (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border bg-[#ef4444]/15 border-[#ef4444]/40 text-[10px] font-bold uppercase tracking-wider text-[#ef4444] whitespace-nowrap">
+                <span className="oct-pill oct-bd-red inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border bg-[#ef4444]/15 border-[#ef4444]/40 text-[10px] font-bold uppercase tracking-wider text-[#ef4444] whitespace-nowrap">
                   {bgSyncing ? (
                     <RefreshCw size={11} className="animate-spin" />
                   ) : (
@@ -1303,7 +1303,7 @@ const LiveLineupPage = () => {
                   <span>Live · 60s</span>
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border bg-[#171717] border-[#2e2e2e] text-[10px] font-semibold uppercase tracking-wider text-[#626978] whitespace-nowrap">
+                <span className="oct-pill inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border bg-[#171717] border-[#2e2e2e] text-[10px] font-semibold uppercase tracking-wider text-[#626978] whitespace-nowrap">
                   <span>Auto-Live</span>
                 </span>
               )}

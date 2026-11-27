@@ -174,7 +174,7 @@ export default function Reminders() {
             <button
               onClick={handleEnable}
               disabled={busy}
-              className="w-full text-[11px] font-black uppercase tracking-widest bg-[#ff5c3e] text-white px-4 py-3.5 rounded-xl hover:bg-[#ff5c3e]/90 transition-colors disabled:opacity-50 cursor-pointer"
+              className="oct-md oct-bd-none w-full text-[11px] font-black uppercase tracking-widest bg-[#ff5c3e] text-white px-4 py-3.5 rounded-xl hover:bg-[#ff5c3e]/90 transition-colors disabled:opacity-50 cursor-pointer"
             >
               {busy ? 'Aktiviere...' : 'Benachrichtigungen aktivieren'}
             </button>
@@ -203,7 +203,7 @@ export default function Reminders() {
               <button
                 onClick={handleTestPush}
                 disabled={testing}
-                className="w-full flex items-center justify-center gap-2 text-[11px] font-black uppercase tracking-widest bg-[#ff5c3e]/15 text-[#ff5c3e] border border-[#ff5c3e]/35 px-4 py-3 rounded-xl hover:bg-[#ff5c3e]/25 transition-colors disabled:opacity-50 cursor-pointer"
+                className="oct-md oct-bd-accent w-full flex items-center justify-center gap-2 text-[11px] font-black uppercase tracking-widest bg-[#ff5c3e]/15 text-[#ff5c3e] border border-[#ff5c3e]/35 px-4 py-3 rounded-xl hover:bg-[#ff5c3e]/25 transition-colors disabled:opacity-50 cursor-pointer"
               >
                 <Send size={13} />
                 {testing ? 'Sende Test...' : 'Test-Benachrichtigung senden'}
@@ -212,7 +212,7 @@ export default function Reminders() {
               <button
                 onClick={handleDisable}
                 disabled={busy}
-                className="w-full text-[10px] font-black uppercase tracking-widest bg-[#171717] border border-[#2e2e2e] text-[#8b92a5] px-4 py-3 rounded-xl hover:text-white hover:border-[#404040] transition-colors disabled:opacity-50 cursor-pointer"
+                className="oct-md w-full text-[10px] font-black uppercase tracking-widest bg-[#171717] border border-[#2e2e2e] text-[#8b92a5] px-4 py-3 rounded-xl hover:text-white hover:border-[#404040] transition-colors disabled:opacity-50 cursor-pointer"
               >
                 {busy ? '...' : 'Auf diesem Gerät deaktivieren'}
               </button>

@@ -6,6 +6,7 @@ import { normalizeStartProbCode } from '../startProbMeta';
 import { loadPlayerCatalogBundle } from '../playerDetailData';
 import StartProbBadge from './StartProbBadge';
 import PlayerRowCard from './PlayerRowCard';
+import HexFrame from './HexFrame';
 
 // Nutzt die kompakte ~170-KB players-lite.json (statt 40 MB all_players.json)
 const loadSquadXpMap = () => loadPlayerCatalogBundle().then((b) => b.xpMap || new Map());
@@ -421,14 +422,19 @@ const SquadPitchCircle = ({
         ref={registerAvatarRef ? (el) => registerAvatarRef(String(player.id), el) : null}
         className={`relative ${size}`}
       >
-        <div
-          className={`w-full h-full rounded-full overflow-hidden shadow-lg bg-[#171717] flex items-center justify-center transition-all duration-300 ${
+        <HexFrame
+          className={`w-full h-full transition-all duration-300 ${player.isDummy ? 'opacity-55' : ''}`}
+          innerClassName="bg-[#171717]"
+          ringColor={
             player.isDummy
-              ? 'border border-dashed border-[#444444] opacity-55 hover:border-[#ff5c3e]/70'
+              ? '#555555'
               : justSwapped
-                ? 'ring-2 ring-emerald-400 shadow-[0_0_20px_rgba(52,211,153,0.45)]'
-                : 'ring-1 ring-white/20'
-          }`}
+                ? '#34d399'
+                : 'rgba(255, 255, 255, 0.24)'
+          }
+          ringWidth={justSwapped ? 4.2 : 2.6}
+          dashed={Boolean(player.isDummy)}
+          glowColor={justSwapped ? 'rgba(52, 211, 153, 0.75)' : null}
         >
           {showPhoto ? (
             <img
@@ -442,11 +448,11 @@ const SquadPitchCircle = ({
               {player.isDummy ? '+' : (player.lastName || player.name || '?').substring(0, 2)}
             </span>
           )}
-        </div>
+        </HexFrame>
 
         {/* Kickbase 5-stufiges Startelf-Prognose-Icon unten rechts am Avatar */}
         {!player.isDummy && player.prob != null && (
-          <div className="absolute -bottom-0.5 -right-0.5 rounded-full bg-black p-[1.5px] shadow">
+          <div className="absolute -bottom-0.5 -right-0.5 rounded-full hex-beacon bg-black p-[1.5px] shadow">
             <StartProbBadge prob={player.prob} variant="icon" size={16} />
           </div>
         )}
@@ -546,12 +552,12 @@ const OrbitalOptionCircle = ({
       }
     >
       <div className="relative w-full h-full transition-transform duration-150 group-hover:scale-110 group-active:scale-95">
-        <div
-          className={`w-full h-full rounded-full overflow-hidden bg-[#171717] flex items-center justify-center shadow-[0_6px_18px_rgba(0,0,0,0.75)] ${
-            samePosition
-              ? 'ring-2 ring-emerald-400/90'
-              : 'ring-2 ring-amber-400/90'
-          }`}
+        <HexFrame
+          className="w-full h-full"
+          innerClassName="bg-[#171717]"
+          ringColor={samePosition ? 'rgba(52, 211, 153, 0.92)' : 'rgba(251, 191, 36, 0.92)'}
+          ringWidth={4.2}
+          glowColor={samePosition ? 'rgba(52, 211, 153, 0.45)' : 'rgba(251, 191, 36, 0.45)'}
         >
           {showPhoto ? (
             <img
@@ -565,12 +571,12 @@ const OrbitalOptionCircle = ({
               {(player.lastName || player.name || '?').substring(0, 2)}
             </span>
           )}
-        </div>
+        </HexFrame>
 
         {/* Positions-Badge oben links bei Formationswechsel */}
         {!samePosition && (
           <span
-            className="absolute -top-1 -left-1 px-1 py-[1px] rounded-full text-[8px] font-black uppercase tracking-tight text-white shadow leading-none border border-black/70"
+            className="absolute -top-1 -left-1 px-1 py-[1px] rounded-full oct-sm oct-bd-none text-[8px] font-black uppercase tracking-tight text-white shadow leading-none border border-black/70"
             style={{ backgroundColor: POSITION_COLORS[posCode] || '#f59e0b' }}
           >
             {posLabel}
@@ -579,7 +585,7 @@ const OrbitalOptionCircle = ({
 
         {/* Startelf-Prognose-Icon unten rechts */}
         {player.prob != null && (
-          <div className="absolute -bottom-0.5 -right-0.5 rounded-full bg-black p-[1.5px] shadow">
+          <div className="absolute -bottom-0.5 -right-0.5 rounded-full hex-beacon bg-black p-[1.5px] shadow">
             <StartProbBadge prob={player.prob} variant="icon" size={14} />
           </div>
         )}
@@ -628,7 +634,13 @@ const SelectedSwapAnchor = ({ player, x, y, sizePx, xp, onClose }) => {
       title="Auswahl schließen"
     >
       <div className="relative w-full h-full">
-        <div className="w-full h-full rounded-full overflow-hidden bg-[#171717] flex items-center justify-center ring-2 ring-[#ff5c3e] shadow-[0_0_24px_rgba(255,92,62,0.5)]">
+        <HexFrame
+          className="w-full h-full"
+          innerClassName="bg-[#171717]"
+          ringColor="#ff5c3e"
+          ringWidth={4.5}
+          glowColor="rgba(255, 92, 62, 0.72)"
+        >
           {showPhoto ? (
             <img
               src={fullImgUrl}
@@ -641,9 +653,9 @@ const SelectedSwapAnchor = ({ player, x, y, sizePx, xp, onClose }) => {
               {player.isDummy ? '+' : (player.lastName || player.name || '?').substring(0, 2)}
             </span>
           )}
-        </div>
+        </HexFrame>
         {!player.isDummy && player.prob != null && (
-          <div className="absolute -bottom-0.5 -right-0.5 rounded-full bg-black p-[1.5px] shadow">
+          <div className="absolute -bottom-0.5 -right-0.5 rounded-full hex-beacon bg-black p-[1.5px] shadow">
             <StartProbBadge prob={player.prob} variant="icon" size={16} />
           </div>
         )}
@@ -965,12 +977,12 @@ const CurrentSquadView = ({ players, liveStartingIds, loading }) => {
       {/* Fussballfeld mit Startelf, radialem Spieler-Tausch & Startelf-Summary */}
       <div
         ref={pitchRef}
-        className="rounded-2xl overflow-hidden relative min-h-[480px] sm:min-h-[560px] flex flex-col justify-between py-6 sm:py-8 shadow-2xl"
+        className="oct-box rounded-2xl overflow-hidden relative min-h-[480px] sm:min-h-[560px] flex flex-col justify-between py-6 sm:py-8 shadow-2xl"
         style={{ backgroundImage: 'radial-gradient(circle at center, #1a1a1a 0%, #050505 100%)' }}
       >
         <div className="absolute inset-0 pointer-events-none opacity-5 border border-white rounded-lg m-4 sm:m-6">
           <div className="absolute top-1/2 left-0 w-full h-[1px] bg-white" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 sm:w-32 sm:h-32 border border-white rounded-full" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 sm:w-32 sm:h-32 border border-white rounded-full hex-pitch-center" />
         </div>
 
         {/* Oben links: Reset-Button bei geaenderter Startelf (ausserhalb Swap-Modus) */}
@@ -978,7 +990,7 @@ const CurrentSquadView = ({ players, liveStartingIds, loading }) => {
           <button
             type="button"
             onClick={handleResetLineup}
-            className="absolute top-3.5 left-4 sm:top-5 sm:left-6 z-20 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#ff5c3e]/15 border border-[#ff5c3e]/45 text-[11px] font-bold text-[#ff5c3e] hover:bg-[#ff5c3e]/25 transition-colors cursor-pointer"
+            className="absolute top-3.5 left-4 sm:top-5 sm:left-6 z-20 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full oct-pill oct-bd-accent bg-[#ff5c3e]/15 border border-[#ff5c3e]/45 text-[11px] font-bold text-[#ff5c3e] hover:bg-[#ff5c3e]/25 transition-colors cursor-pointer"
           >
             <RotateCcw size={11} />
             <span>Zurücksetzen</span>
@@ -988,11 +1000,11 @@ const CurrentSquadView = ({ players, liveStartingIds, loading }) => {
         {/* Oben rechts: aktuelle Formation */}
         {formationLabel && (
           <div
-            className={`absolute top-3.5 right-4 sm:top-5 sm:right-6 z-20 px-2.5 py-1 rounded-full border text-[11px] font-black tabular-nums transition-all duration-200 ${
+            className={`absolute top-3.5 right-4 sm:top-5 sm:right-6 z-20 px-2.5 py-1 rounded-full oct-pill border text-[11px] font-black tabular-nums transition-all duration-200 ${
               swapState
                 ? 'opacity-20 pointer-events-none bg-black/45 border-white/10 text-gray-200'
                 : isCustomLineup
-                  ? 'bg-[#ff5c3e]/15 border-[#ff5c3e]/45 text-[#ff5c3e]'
+                  ? 'bg-[#ff5c3e]/15 border-[#ff5c3e]/45 oct-bd-accent text-[#ff5c3e]'
                   : 'bg-black/45 border-white/10 text-gray-200'
             }`}
           >
@@ -1111,7 +1123,7 @@ const CurrentSquadView = ({ players, liveStartingIds, loading }) => {
                     e.stopPropagation();
                     openPlayerDetail(swapState.target.id);
                   }}
-                  className="pointer-events-auto inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#171717] border border-white/15 text-[11px] font-semibold text-gray-200 hover:border-white/30 hover:text-white transition-colors cursor-pointer"
+                  className="pointer-events-auto inline-flex items-center gap-1 px-2.5 py-1 rounded-full oct-pill bg-[#171717] border border-white/15 text-[11px] font-semibold text-gray-200 hover:border-white/30 hover:text-white transition-colors cursor-pointer"
                 >
                   <span>Profil</span>
                   <ArrowUpRight size={12} className="text-[#ff5c3e]" />
@@ -1127,7 +1139,7 @@ const CurrentSquadView = ({ players, liveStartingIds, loading }) => {
                   closeSwap();
                 }}
                 aria-label="Tausch abbrechen"
-                className="pointer-events-auto w-7 h-7 rounded-full bg-[#171717] border border-white/15 flex items-center justify-center text-gray-300 hover:text-white hover:border-white/30 transition-colors cursor-pointer"
+                className="pointer-events-auto w-7 h-7 rounded-full oct-sm bg-[#171717] border border-white/15 flex items-center justify-center text-gray-300 hover:text-white hover:border-white/30 transition-colors cursor-pointer"
               >
                 <X size={14} />
               </button>

@@ -1753,7 +1753,7 @@ const Advisor = () => {
             <button
               onClick={() => setShowInfo((v) => !v)}
               aria-label="Info"
-              className={`w-10 h-10 flex items-center justify-center rounded-xl border transition-all ${showInfo ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400' : 'bg-[#171717] border-[#2e2e2e] text-[#8b92a5] hover:text-white hover:border-[#404040]'}`}
+              className={`oct-md w-10 h-10 flex items-center justify-center rounded-xl border transition-all ${showInfo ? 'bg-cyan-500/20 border-cyan-500 oct-bd-cyan text-cyan-400' : 'bg-[#171717] border-[#2e2e2e] text-[#8b92a5] hover:text-white hover:border-[#404040]'}`}
             >
               <Info size={18} strokeWidth={2.5} />
             </button>
@@ -1762,7 +1762,7 @@ const Advisor = () => {
               disabled={isAdvisorUpdating}
               aria-label="Trading Advisor aktualisieren"
               title="Trading Advisor aktualisieren"
-              className="w-10 h-10 flex items-center justify-center rounded-xl bg-[#171717] border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500 transition-all disabled:opacity-50"
+              className="oct-md oct-bd-cyan w-10 h-10 flex items-center justify-center rounded-xl bg-[#171717] border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500 transition-all disabled:opacity-50"
             >
               <RefreshCw size={16} strokeWidth={2.5} className={isAdvisorUpdating ? 'animate-spin' : ''} />
             </button>

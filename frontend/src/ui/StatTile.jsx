@@ -5,7 +5,7 @@
 export default function StatTile({ icon: Icon, iconColor = '#ff5c3e', value, label, boxed = false, card = true, valueColor }) {
   const iconEl = Icon ? (
     boxed ? (
-      <div className="w-9 h-9 rounded-xl bg-[#000] flex items-center justify-center mb-1.5" style={{ color: iconColor }}>
+      <div className="oct-sm oct-bd-none w-9 h-9 rounded-xl bg-[#000] flex items-center justify-center mb-1.5" style={{ color: iconColor }}>
         <Icon size={16} />
       </div>
     ) : (
@@ -14,7 +14,7 @@ export default function StatTile({ icon: Icon, iconColor = '#ff5c3e', value, lab
   ) : null;
 
   return (
-    <div className={`flex flex-col items-center text-center ${card ? 'bg-[#1f1f1f] rounded-xl p-2.5 border border-[#2a2a2a]' : 'flex-1'}`}>
+    <div className={`flex flex-col items-center text-center ${card ? 'oct-md bg-[#1f1f1f] rounded-xl p-2.5 border border-[#2a2a2a]' : 'flex-1'}`}>
       {iconEl}
       <div className="text-sm font-black leading-none" style={{ color: valueColor || '#fff' }}>{value ?? '–'}</div>
       <div className="text-[8px] font-bold uppercase tracking-widest text-gray-500 mt-1.5">{label}</div>

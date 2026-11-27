@@ -1,5 +1,6 @@
 import React from 'react';
 import AnimatedPoints from './AnimatedPoints';
+import HexFrame from './HexFrame';
 
 // Spieler-Kreis fuer die Live-Punkte-Ansicht ("Meine 11" waehrend eines
 // laufenden Spieltags) - bewusst ANDERS als PlayerPhotoCard (dort eckige
@@ -40,10 +41,13 @@ const LivePlayerCircle = ({
       className={`relative flex flex-col items-center ${containerSize} ${onClick ? 'cursor-pointer hover:scale-105 transition-transform' : ''}`}
       onClick={onClick}
     >
-      <div
+      <HexFrame
         ref={avatarRef}
-        className={`relative ${size} rounded-full ${imagePath ? '' : 'bg-[#202020]'} overflow-hidden flex items-center justify-center shadow-md ring-1 ring-white/15 transition-shadow duration-300`}
-        style={highlightedColor ? { boxShadow: `0 0 0 2px ${highlightedColor}, 0 0 18px ${highlightedColor}` } : undefined}
+        className={`${size} transition-all duration-300`}
+        innerClassName={`${imagePath ? '' : 'bg-[#202020]'} shadow-md`}
+        ringColor={highlightedColor || 'rgba(255, 255, 255, 0.22)'}
+        ringWidth={highlightedColor ? 4.2 : 2.6}
+        glowColor={highlightedColor || null}
       >
         {imagePath ? (
           <img
@@ -55,7 +59,7 @@ const LivePlayerCircle = ({
         ) : (
           <div className="text-gray-500 font-semibold text-xs uppercase">{name?.substring(0, 2)}</div>
         )}
-      </div>
+      </HexFrame>
 
       <div className="mt-1.5 text-center w-full">
         <div className="text-[9px] sm:text-[10px] font-medium text-gray-300 truncate w-full">

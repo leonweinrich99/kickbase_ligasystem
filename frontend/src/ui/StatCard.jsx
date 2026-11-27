@@ -21,7 +21,7 @@ export default function StatCard({ icon, label, value, subValue, isRating, loadi
   return (
     <div className="card-surface p-3 sm:p-5 rounded-2xl shadow-sm hover:border-[#404040] transition-all group relative overflow-hidden flex flex-col justify-between">
       <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-        <div className="bg-[#1f1f1f] p-1.5 sm:p-2 rounded-lg group-hover:scale-110 transition-transform shrink-0">
+        <div className="oct-sm oct-bd-none bg-[#1f1f1f] p-1.5 sm:p-2 rounded-lg group-hover:scale-110 transition-transform shrink-0">
           {React.cloneElement(icon, { size: 16, className: 'sm:w-[18px] sm:h-[18px]' })}
         </div>
         <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-[#8b92a5] leading-tight">{label}</span>

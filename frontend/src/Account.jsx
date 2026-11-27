@@ -85,7 +85,7 @@ const Account = () => {
                       ringColor="#ff5c3e"
                     />
                     {isAdmin && (
-                      <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-purple-500 border-2 border-black flex items-center justify-center text-[7px] font-black text-white">A</span>
+                      <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full hex-beacon bg-purple-500 border-2 border-black flex items-center justify-center text-[7px] font-black text-white">A</span>
                     )}
                   </Link>
                 )}
@@ -102,9 +102,9 @@ const Account = () => {
           <Motion.div variants={fadeUp} initial="hidden" animate="show" custom={1}>
             <Link
               to="/account/profile"
-              className="flex items-center gap-4 border border-dashed border-[#ff5c3e]/40 rounded-2xl p-5 mb-4 hover:border-[#ff5c3e] transition-all active:scale-[0.98]"
+              className="oct-box oct-bd-accent flex items-center gap-4 border border-dashed border-[#ff5c3e]/40 rounded-2xl p-5 mb-4 hover:border-[#ff5c3e] transition-all active:scale-[0.98]"
             >
-              <div className="w-10 h-10 rounded-xl bg-[#ff5c3e]/10 text-[#ff5c3e] flex items-center justify-center shrink-0">
+              <div className="oct-sm oct-bd-none w-10 h-10 rounded-xl bg-[#ff5c3e]/10 text-[#ff5c3e] flex items-center justify-center shrink-0">
                 <Link2 size={20} strokeWidth={2.5} />
               </div>
               <div className="flex-1 min-w-0">

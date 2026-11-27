@@ -15,9 +15,9 @@ const LiveIcon = ({ active }) => (
   <div className="w-6 h-6 flex items-center justify-center">
     <span className="relative flex h-3 w-3">
       {active && (
-        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full hex-beacon bg-red-500 opacity-75"></span>
       )}
-      <span className={`relative inline-flex rounded-full h-3 w-3 ${active ? 'bg-red-500' : 'bg-[#8b92a5] opacity-50'}`}></span>
+      <span className={`relative inline-flex rounded-full hex-beacon h-3 w-3 ${active ? 'bg-red-500' : 'bg-[#8b92a5] opacity-50'}`}></span>
     </span>
   </div>
 );
@@ -86,32 +86,39 @@ const TabBar = () => {
   const { pathname } = useLocation();
 
   return (
-    <nav
-      data-tabbar="true"
-      className="fixed left-1/2 -translate-x-1/2 z-40 flex items-stretch gap-1 px-2 py-1.5 rounded-full bg-white/10 border border-white/25 backdrop-blur-xl backdrop-saturate-[1.8] shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_20px_40px_-16px_rgba(0,0,0,0.85)]"
-      style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)' }}
+    <div
+      className="fixed left-1/2 -translate-x-1/2 z-40"
+      style={{
+        bottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)',
+        filter: 'drop-shadow(0 18px 34px rgba(0, 0, 0, 0.85))',
+      }}
     >
-      {TABS.map((tab) => {
-        const active = tab.match(pathname);
-        return (
-          <Link
-            key={tab.to}
-            to={tab.to}
-            data-tour={tab.tourId}
-            className={`relative flex flex-col items-center justify-center gap-0.5 px-3 sm:px-4 py-1.5 rounded-full active:scale-95 transition-all duration-200 ${
-              active ? 'bg-[#ff5c3e]/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]' : ''
-            }`}
-          >
-            <span className={active ? 'text-[#ff5c3e]' : 'text-[#8b92a5]'}>
-              {React.createElement(tab.Icon, { active })}
-            </span>
-            <span className={`text-[8px] font-semibold uppercase tracking-widest ${active ? 'text-white' : 'text-[#8b92a5]'}`}>
-              {tab.label}
-            </span>
-          </Link>
-        );
-      })}
-    </nav>
+      <nav
+        data-tabbar="true"
+        className="oct-tabbar flex items-stretch gap-1 px-2 py-1.5 rounded-full bg-white/10 border border-white/25 backdrop-blur-xl backdrop-saturate-[1.8] shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]"
+      >
+        {TABS.map((tab) => {
+          const active = tab.match(pathname);
+          return (
+            <Link
+              key={tab.to}
+              to={tab.to}
+              data-tour={tab.tourId}
+              className={`oct-tab relative flex flex-col items-center justify-center gap-0.5 px-3 sm:px-4 py-1.5 rounded-full active:scale-95 transition-all duration-200 ${
+                active ? 'oct-tab-active bg-[#ff5c3e]/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]' : ''
+              }`}
+            >
+              <span className={active ? 'text-[#ff5c3e]' : 'text-[#8b92a5]'}>
+                {React.createElement(tab.Icon, { active })}
+              </span>
+              <span className={`text-[8px] font-semibold uppercase tracking-widest ${active ? 'text-white' : 'text-[#8b92a5]'}`}>
+                {tab.label}
+              </span>
+            </Link>
+          );
+        })}
+      </nav>
+    </div>
   );
 };
 

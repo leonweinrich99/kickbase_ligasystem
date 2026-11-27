@@ -453,12 +453,12 @@ const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId }) => {
     <div>
       <div
         ref={pitchRef}
-        className="rounded-2xl overflow-hidden relative min-h-[500px] sm:min-h-[600px] flex flex-col justify-between py-6 sm:py-8 mt-4 shadow-2xl"
+        className="oct-box rounded-2xl overflow-hidden relative min-h-[500px] sm:min-h-[600px] flex flex-col justify-between py-6 sm:py-8 mt-4 shadow-2xl"
         style={{ backgroundImage: 'radial-gradient(circle at center, #1a1a1a 0%, #050505 100%)' }}
       >
         <div className="absolute inset-0 pointer-events-none opacity-5 border border-white rounded-lg m-4 sm:m-6">
           <div className="absolute top-1/2 left-0 w-full h-[1px] bg-white"></div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 sm:w-32 sm:h-32 border border-white rounded-full"></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 sm:w-32 sm:h-32 border border-white rounded-full hex-pitch-center"></div>
         </div>
 
         {/* Minuten-Anzeige oben rechts im Spielfeld */}
@@ -467,16 +467,16 @@ const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId }) => {
             type="button"
             onClick={!isLiveEdge ? handleResetToLive : undefined}
             title={!isLiveEdge ? 'Zurück zum aktuellen Stand' : undefined}
-            className={`absolute top-3.5 right-4 sm:top-5 sm:right-6 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-full border backdrop-blur-md transition-colors ${
+            className={`absolute top-3.5 right-4 sm:top-5 sm:right-6 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-full oct-pill border backdrop-blur-md transition-colors ${
               isLiveEdge
                 ? 'bg-black/45 border-white/10 text-gray-200 cursor-default'
-                : 'bg-[#ff5c3e]/15 border-[#ff5c3e]/50 text-[#ff5c3e] hover:bg-[#ff5c3e]/25 cursor-pointer'
+                : 'bg-[#ff5c3e]/15 border-[#ff5c3e]/50 oct-bd-accent text-[#ff5c3e] hover:bg-[#ff5c3e]/25 cursor-pointer'
             }`}
           >
             {isLiveEdge && timelineMeta.hasLive && (
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ef4444] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#ef4444]"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full hex-beacon bg-[#ef4444] opacity-75"></span>
+                <span className="relative inline-flex rounded-full hex-beacon h-2 w-2 bg-[#ef4444]"></span>
               </span>
             )}
             <span className="text-xs font-black tabular-nums leading-none">{cornerMinuteLabel}</span>
@@ -500,7 +500,7 @@ const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId }) => {
           <div className="relative z-10 flex items-end justify-between px-4 sm:px-8 mt-4">
             {/* Highlight-Buttons unten links (mit Anzahl-Zaehler bei echten Spieltags-Aktionen) */}
             {realPlayers.length > 0 ? (
-              <div className="flex items-center gap-1 bg-black/55 border border-white/10 rounded-full p-1 backdrop-blur-md">
+              <div className="flex items-center gap-1 bg-black/55 border border-white/10 rounded-full oct-pill p-1 backdrop-blur-md">
                 {highlightButtons.map((btn) => (
                   <button
                     key={btn.type}
@@ -516,7 +516,7 @@ const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId }) => {
                         ? `${btn.label} abspielen (${btn.count})`
                         : `${btn.label}-Animation testen`
                     }
-                    className={`h-7 ${btn.count > 0 ? 'px-2 gap-1' : 'w-7 justify-center'} rounded-full border flex items-center text-sm active:scale-90 transition-all cursor-pointer ${
+                    className={`h-7 ${btn.count > 0 ? 'px-2 gap-1' : 'w-7 justify-center'} rounded-full oct-sm border flex items-center text-sm active:scale-90 transition-all cursor-pointer ${
                       btn.count > 0 ? btn.activeStyle : btn.idleStyle
                     }`}
                   >

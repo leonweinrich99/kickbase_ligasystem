@@ -71,12 +71,12 @@ const PlayerRowCard = ({
       tabIndex={isClickable ? 0 : undefined}
       onClick={isClickable ? onClick : undefined}
       onKeyDown={isClickable ? (e) => (e.key === 'Enter' || e.key === ' ') && onClick() : undefined}
-      className={`relative overflow-hidden w-full h-[72px] flex items-center p-3 card-surface rounded-xl shadow-sm text-left transition-all ${
+      className={`relative overflow-hidden w-full h-[72px] flex items-center p-3 card-surface oct-md rounded-xl shadow-sm text-left transition-all ${
         isClickable
           ? 'hover:border-cyan-500/50 hover:bg-[#1c1c1c] active:scale-[0.99] cursor-pointer'
           : 'cursor-default'
       } ${className}`}
-      style={accentBorder ? { borderColor: accentBorder } : undefined}
+      style={accentBorder ? { borderColor: accentBorder, '--oct-bd': accentBorder } : undefined}
     >
       {/* Links: Spieler-Portrait mit sanftem Fade + Vereinswappen-Wasserzeichen */}
       <div className="absolute top-0 left-0 bottom-0 z-0 pointer-events-none w-1/2 flex justify-start overflow-hidden rounded-l-xl">
@@ -114,9 +114,9 @@ const PlayerRowCard = ({
         </div>
       )}
 
-      {/* Startelf-Wahrscheinlichkeit als kleiner Kreis links mittig auf dem Spielerbild */}
+      {/* Startelf-Wahrscheinlichkeit als kleiner Badge links mittig auf dem Spielerbild */}
       {startProb != null && (
-        <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10 rounded-full bg-black/85 p-[1.5px] shadow-md pointer-events-none">
+        <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10 rounded-full hex-beacon bg-black/85 p-[1.5px] shadow-md pointer-events-none">
           <StartProbBadge prob={startProb} variant="icon" size={16} />
         </div>
       )}

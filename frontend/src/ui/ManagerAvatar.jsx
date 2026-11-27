@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useManagerImages } from '../useManagerImages';
+import HexFrame from './HexFrame';
 
 // Einheitlicher Manager-Avatar (App-weiter Standard, ersetzt die vielen
 // leicht unterschiedlichen Buchstaben-Kreise, die historisch entstanden
@@ -17,13 +18,12 @@ export default function ManagerAvatar({ name, photoURL, size = 40, className = '
   const src = !failed ? (kickbaseImage || photoURL || null) : null;
 
   return (
-    <div
-      className={`rounded-full overflow-hidden shrink-0 flex items-center justify-center bg-[#1f1f1f] ${className}`}
-      style={{
-        width: size,
-        height: size,
-        border: ringColor ? `${ringWidth}px solid ${ringColor}` : undefined,
-      }}
+    <HexFrame
+      className={`shrink-0 ${className}`}
+      innerClassName="bg-[#1f1f1f]"
+      style={{ width: size, height: size }}
+      ringColor={ringColor || 'rgba(255, 255, 255, 0.16)'}
+      ringWidth={ringColor ? Math.max(3.6, ringWidth * 2) : 2.2}
     >
       {src ? (
         <img
@@ -39,6 +39,6 @@ export default function ManagerAvatar({ name, photoURL, size = 40, className = '
           {name?.charAt(0)?.toUpperCase() || '?'}
         </span>
       )}
-    </div>
+    </HexFrame>
   );
 }
