@@ -244,9 +244,27 @@ const PokalMatchupSection = ({ pokalMatchId, user1, user2 }) => {
 
   const isLoadingActiveLineup = Boolean(initialLoading || (needsLiveFetch && activeUserId && !liveByUserId[activeUserId]));
 
-  // Falls kein Pokal-Match gefunden wurde (z.B. reiner Liga-Vergleich ohne Pokal-Kontext)
+  // Falls kein Pokal-Match gefunden wurde, normalen VS-Header als Fallback zeigen
   if (!initialLoading && !match) {
-    return null;
+    return (
+      <div className="flex items-center justify-between mb-8 sm:mb-10 gap-2 sm:gap-6">
+        <div className="flex flex-col items-center gap-2 w-[42%] sm:w-2/5 min-w-0">
+          <ManagerAvatar name={user1.name} ringColor="#ff5c3e" size={112} />
+          <div className="min-w-0 text-center">
+            <h1 className="text-sm sm:text-2xl font-semibold tracking-tight text-white truncate">{user1.name}</h1>
+            <div className="text-[10px] sm:text-sm font-medium text-[#ff5c3e] mt-0.5">Platz #{user1.rank}</div>
+          </div>
+        </div>
+        <div className="text-lg sm:text-3xl font-black text-[#2e2e2e] italic shrink-0">VS</div>
+        <div className="flex flex-col items-center gap-2 w-[42%] sm:w-2/5 min-w-0">
+          <ManagerAvatar name={user2.name} ringColor="#3b82f6" size={112} />
+          <div className="min-w-0 text-center">
+            <h1 className="text-sm sm:text-2xl font-semibold tracking-tight text-white truncate">{user2.name}</h1>
+            <div className="text-[10px] sm:text-sm font-medium text-[#3b82f6] mt-0.5">Platz #{user2.rank}</div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const handlePlayerClick = (player) => {
@@ -265,11 +283,11 @@ const PokalMatchupSection = ({ pokalMatchId, user1, user2 }) => {
         ? 'Endstand'
         : 'Anstehend';
 
-  const statusClass = match?.provisional
-    ? 'bg-amber-500/15 text-amber-300 border-amber-400/35'
+  const statusTextClass = match?.provisional
+    ? 'text-amber-300'
     : match?.winner
-      ? 'bg-emerald-500/15 text-emerald-300 border-emerald-400/30'
-      : 'bg-[#8b5cf6]/15 text-[#c4b5fd] border-[#8b5cf6]/35';
+      ? 'text-emerald-400'
+      : 'text-[#c4b5fd]';
 
   const emptySlotsCount = activeSource?.emptySlots || 0;
   const playerPointsSum = (activeSource?.players || []).reduce((s, p) => s + (p?.points || 0), 0);
@@ -280,96 +298,96 @@ const PokalMatchupSection = ({ pokalMatchId, user1, user2 }) => {
 
   return (
     <section className="mb-10">
-      {/* Kompaktes Pokal-Duell-Banner im Spieltag-Look (Umschalter per 1-Tap) */}
-      <div className="card-surface oct-md oct-bd-purple rounded-2xl p-3.5 mb-3 border border-[#8b5cf6]/35 shadow-[0_0_24px_rgba(139,92,246,0.08)]">
-        {/* Kopfzeile: Runde, Spieltag & Status */}
-        <div className="flex items-center justify-between gap-2 mb-3">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <Trophy size={13} className="text-[#8b5cf6] shrink-0" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-[#c4b5fd] truncate">
-              {roundName || 'Pokal-Duell'}
-            </span>
-            {schedule && (
-              <span className="text-[10px] font-medium text-[#8b92a5] truncate hidden xs:inline">
-                · ST {schedule.matchday} ({schedule.date})
-              </span>
-            )}
+      {/* Kompakte Pokal-Rundenzeile (kartenlos) */}
+      <div className="flex items-center justify-center gap-2 mb-5 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-[#8b92a5]">
+        <Trophy size={12} className="text-[#8b5cf6] shrink-0" />
+        <span className="text-[#c4b5fd]">{roundName || 'Pokal'}</span>
+        {schedule && (
+          <>
+            <span className="opacity-40">·</span>
+            <span>ST {schedule.matchday}</span>
+          </>
+        )}
+        {match && (
+          <>
+            <span className="opacity-40">·</span>
+            <span className={statusTextClass}>{statusLabel}</span>
+          </>
+        )}
+      </div>
+
+      {/* Einheitlicher VS-Header: Avatare & Namen sind direkt klickbare Umschalter, Ergebnis mittig */}
+      <div className="flex items-center justify-between mb-6 gap-2 sm:gap-6">
+        <button
+          type="button"
+          onClick={() => setActiveSide('u1')}
+          className={`flex flex-col items-center gap-2 w-[38%] sm:w-2/5 min-w-0 transition-opacity cursor-pointer ${
+            activeSide === 'u1' ? 'opacity-100' : 'opacity-55 hover:opacity-85'
+          }`}
+        >
+          <ManagerAvatar name={user1.name} ringColor="#ff5c3e" size={104} ringWidth={activeSide === 'u1' ? 2 : 1.2} />
+          <div className="min-w-0 w-full text-center">
+            <h1 className="text-sm sm:text-2xl font-semibold tracking-tight text-white truncate">{user1.name}</h1>
+            <div className="text-[10px] sm:text-sm font-medium text-[#ff5c3e] mt-0.5">Platz #{user1.rank}</div>
           </div>
-          <span className={`oct-pill px-2 py-0.5 rounded-full border text-[9px] font-black uppercase tracking-wider shrink-0 ${statusClass}`}>
-            {statusLabel}
-          </span>
+        </button>
+
+        <div className="flex flex-col items-center shrink-0 px-1">
+          {hasResult ? (
+            <div className="text-base sm:text-3xl font-black tabular-nums whitespace-nowrap tracking-tight">
+              <span className={winner1 ? 'text-emerald-400' : 'text-gray-300'}>{score1 ?? 0}</span>
+              <span className="text-gray-600 mx-1 sm:mx-2">:</span>
+              <span className={winner2 ? 'text-emerald-400' : 'text-gray-300'}>{score2 ?? 0}</span>
+            </div>
+          ) : (
+            <div className="text-lg sm:text-3xl font-black text-[#2e2e2e] italic">VS</div>
+          )}
+          {schedule?.date && (
+            <span className="text-[9px] sm:text-[11px] font-medium text-[#626978] mt-1 tabular-nums">
+              {schedule.date}
+            </span>
+          )}
         </div>
 
-        {/* 3-Spalten Match-Header (analog SelectedTeamMatchBanner im Spieltag-Tab) */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setActiveSide('u1')}
-            className={`oct-md flex items-center justify-end gap-2 min-w-0 rounded-xl px-2 py-1.5 transition-all cursor-pointer border ${
-              activeSide === 'u1'
-                ? 'oct-bd-accent bg-[#ff5c3e]/14 border-[#ff5c3e]/50'
-                : 'oct-bd-none border-transparent hover:bg-white/[0.04]'
-            }`}
-          >
-            <span className={`text-xs sm:text-sm truncate text-right ${activeSide === 'u1' ? 'text-white font-bold' : 'text-gray-300 font-medium'}`}>
-              {user1.name}
-            </span>
-            <ManagerAvatar name={user1.name} size={30} ringColor="#ff5c3e" ringWidth={1.3} />
-          </button>
-
-          <div className="oct-sm px-2.5 py-1.5 rounded-xl bg-black/55 border border-white/10 text-center min-w-[68px] tabular-nums">
-            {hasResult ? (
-              <span className="text-sm sm:text-base font-black whitespace-nowrap">
-                <span className={winner1 ? 'text-emerald-400' : 'text-gray-300'}>{score1 ?? 0}</span>
-                <span className="text-gray-600 mx-1">:</span>
-                <span className={winner2 ? 'text-emerald-400' : 'text-gray-300'}>{score2 ?? 0}</span>
-              </span>
-            ) : (
-              <span className="text-xs font-bold text-[#626978]">vs</span>
-            )}
+        <button
+          type="button"
+          onClick={() => setActiveSide('u2')}
+          className={`flex flex-col items-center gap-2 w-[38%] sm:w-2/5 min-w-0 transition-opacity cursor-pointer ${
+            activeSide === 'u2' ? 'opacity-100' : 'opacity-55 hover:opacity-85'
+          }`}
+        >
+          <ManagerAvatar name={user2.name} ringColor="#3b82f6" size={104} ringWidth={activeSide === 'u2' ? 2 : 1.2} />
+          <div className="min-w-0 w-full text-center">
+            <h1 className="text-sm sm:text-2xl font-semibold tracking-tight text-white truncate">{user2.name}</h1>
+            <div className="text-[10px] sm:text-sm font-medium text-[#3b82f6] mt-0.5">Platz #{user2.rank}</div>
           </div>
+        </button>
+      </div>
 
-          <button
-            type="button"
-            onClick={() => setActiveSide('u2')}
-            className={`oct-md flex items-center justify-start gap-2 min-w-0 rounded-xl px-2 py-1.5 transition-all cursor-pointer border ${
-              activeSide === 'u2'
-                ? 'bg-[#3b82f6]/15 border-[#3b82f6]/55'
-                : 'oct-bd-none border-transparent hover:bg-white/[0.04]'
-            }`}
-          >
-            <ManagerAvatar name={user2.name} size={30} ringColor="#3b82f6" ringWidth={1.3} />
-            <span className={`text-xs sm:text-sm truncate text-left ${activeSide === 'u2' ? 'text-white font-bold' : 'text-gray-300 font-medium'}`}>
-              {user2.name}
-            </span>
-          </button>
-        </div>
-
-        {/* Explizite Kader-Umschalt-Buttons (wie "Startelf Heim / Startelf Gast" im Spieltag-Tab) */}
-        <div className="grid grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-white/[0.06]">
-          <button
-            type="button"
-            onClick={() => setActiveSide('u1')}
-            className={`oct-md flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl text-[11px] font-bold transition-all active:scale-[0.98] cursor-pointer min-w-0 border ${
-              activeSide === 'u1'
-                ? 'bg-[#ff5c3e] text-white border-[#ff5c3e] shadow-[0_0_16px_rgba(255,92,62,0.28)]'
-                : 'bg-[#171717] text-gray-300 border-white/10 hover:border-[#ff5c3e]/50 hover:text-white'
-            }`}
-          >
-            <span className="truncate">Kader {user1.name}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveSide('u2')}
-            className={`oct-md flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl text-[11px] font-bold transition-all active:scale-[0.98] cursor-pointer min-w-0 border ${
-              activeSide === 'u2'
-                ? 'bg-[#3b82f6] text-white border-[#3b82f6] shadow-[0_0_16px_rgba(59,130,246,0.28)]'
-                : 'bg-[#171717] text-gray-300 border-white/10 hover:border-[#3b82f6]/50 hover:text-white'
-            }`}
-          >
-            <span className="truncate">Kader {user2.name}</span>
-          </button>
-        </div>
+      {/* Schlanker 2-Wege-Umschalter direkt ueber dem Spielfeld (wie ModeSwitch im Live-Tab) */}
+      <div className="oct-md flex gap-1.5 bg-[#171717] border border-[#2e2e2e] rounded-xl p-1 mb-3">
+        <button
+          type="button"
+          onClick={() => setActiveSide('u1')}
+          className={`oct-sm oct-bd-none px-3 py-2 rounded-lg text-xs tracking-wide transition-all flex-1 truncate cursor-pointer ${
+            activeSide === 'u1'
+              ? 'bg-[#ff5c3e] text-white font-semibold shadow-sm'
+              : 'text-[#8b92a5] font-medium hover:text-white'
+          }`}
+        >
+          Kader {user1.name}
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveSide('u2')}
+          className={`oct-sm oct-bd-none px-3 py-2 rounded-lg text-xs tracking-wide transition-all flex-1 truncate cursor-pointer ${
+            activeSide === 'u2'
+              ? 'bg-[#3b82f6] text-white font-semibold shadow-sm'
+              : 'text-[#8b92a5] font-medium hover:text-white'
+          }`}
+        >
+          Kader {user2.name}
+        </button>
       </div>
 
       {/* Pokal-Startelf des gewaehlten Spielers */}
