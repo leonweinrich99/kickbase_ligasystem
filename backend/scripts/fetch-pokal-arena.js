@@ -28,6 +28,7 @@ const { getConfiguredKickbaseAccounts, loadExcludedManagerNames } = require('../
 const POKAL_LEAGUE_NAME = process.env.KICKBASE_LEAGUE_POKAL_NAME || 'Pokal';
 const POKAL_DATA_PATH = path.join(__dirname, '../../frontend/public/pokal-data.json');
 const MEMBERS_PATH = path.join(__dirname, '../../frontend/public/history/pokal-league-members.json');
+const LINEUPS_PATH = path.join(__dirname, '../../frontend/public/history/pokal-lineups.json');
 const API_BASE = 'https://api.kickbase.com/v4';
 const FINALIZATION_HOUR_BERLIN = 18; // Montag 18:00 Uhr Berliner Zeit stehen finale Kickbase-Daten fest
 
@@ -141,7 +142,9 @@ async function fetchPokalMatchdayPoints() {
     console.log(`Pokal-Liga "${POKAL_LEAGUE_NAME}" (ID ${leagueId}) gefunden, ${managers.length} Teilnehmer.`);
 
     const pointsByName = {};
+    const managerByName = {};
     for (const manager of managers) {
+        managerByName[manager.n] = { id: String(manager.i), name: manager.n };
         const perf = await kickbaseGet(`${API_BASE}/leagues/${leagueId}/managers/${manager.i}/performance`, token);
         // Ein Eintrag pro Saison - der letzte ist die laufende.
         const season = (perf.it || [])[(perf.it || []).length - 1];
@@ -149,7 +152,129 @@ async function fetchPokalMatchdayPoints() {
         (season?.it || []).forEach(d => { days[d.day] = { mdp: d.mdp, cur: !!d.cur }; });
         pointsByName[manager.n] = days;
     }
-    return pointsByName;
+    return { pointsByName, managerByName, token, leagueId };
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Ruft fuer alle bereits gestarteten/abgeschlossenen Pokalrunden die echten
+// Pokal-Arena-Startelfen (teamcenter?dayNumber=N) pro beteiligtem Manager ab
+// und speichert sie in frontend/public/history/pokal-lineups.json.
+// Bereits final gespeicherte Manager-Eintraege werden wiederverwendet, damit
+// der taegliche Lauf kaum API-Calls verursacht.
+async function syncPokalLineups({ token, leagueId, managerByName, pokalData, now }) {
+    let existing = { updatedAt: null, matchdays: {} };
+    if (fs.existsSync(LINEUPS_PATH)) {
+        try {
+            const parsed = JSON.parse(fs.readFileSync(LINEUPS_PATH, 'utf8'));
+            if (parsed && typeof parsed.matchdays === 'object') {
+                existing = parsed;
+            }
+        } catch {
+            // Fallback auf leere Struktur bei defekter Datei
+        }
+    }
+
+    const forceRefresh = process.argv.includes('--refresh-lineups');
+    const roundSchedule = pokalData.meta?.roundSchedule || {};
+    let fetchedCount = 0;
+    let skippedCount = 0;
+
+    for (const round of ROUND_SEQUENCE) {
+        const schedule = roundSchedule[round.scheduleName];
+        if (!schedule || !schedule.matchday) continue;
+        const day = schedule.matchday;
+        const dayKey = String(day);
+        const finalizationTime = getRoundFinalizationUtc(schedule.date);
+        const isFinalRound = now >= finalizationTime;
+
+        const roundMatches = round.keys.flatMap((k) => pokalData[k] || []);
+        const roundHasActivity = roundMatches.some(
+            (m) => !m.isBye && (m.winner != null || m.provisional || (m.score1 || 0) !== 0 || (m.score2 || 0) !== 0)
+        );
+        if (!roundHasActivity && !isFinalRound) continue;
+
+        const targetManagers = new Map();
+        for (const match of roundMatches) {
+            if (match.isBye) continue;
+            for (const name of [match.p1, match.p2]) {
+                if (isPlaceholderName(name)) continue;
+                const mgr = managerByName[name];
+                if (mgr) targetManagers.set(mgr.id, mgr);
+            }
+        }
+        if (targetManagers.size === 0) continue;
+
+        const prevDay = existing.matchdays[dayKey] || {
+            round: round.scheduleName,
+            date: schedule.date,
+            final: false,
+            managers: {},
+        };
+        const nextManagers = { ...(prevDay.managers || {}) };
+
+        for (const [uid, mgr] of targetManagers.entries()) {
+            const prevEntry = nextManagers[uid];
+            if (!forceRefresh && prevDay.final && prevEntry && Array.isArray(prevEntry.players)) {
+                skippedCount++;
+                continue;
+            }
+
+            try {
+                const tc = await kickbaseGet(
+                    `${API_BASE}/leagues/${leagueId}/users/${uid}/teamcenter?dayNumber=${day}`,
+                    token
+                );
+                const userRow = (tc?.us || []).find((u) => String(u.i) === uid) || tc?.us?.[0] || null;
+                const lpiById = new Map();
+                for (const item of userRow?.lpi || []) {
+                    if (item && item.i != null && item.pim) {
+                        lpiById.set(String(item.i), item.pim);
+                    }
+                }
+
+                const rawSlotIds = Array.isArray(userRow?.lp) ? userRow.lp : [];
+                const emptySlots = rawSlotIds.length > 0
+                    ? rawSlotIds.filter((slot) => slot == null).length
+                    : Math.max(0, 11 - (Array.isArray(tc?.lp) ? tc.lp.length : 0));
+
+                const players = (Array.isArray(tc?.lp) ? tc.lp : [])
+                    .filter((p) => p && p.i != null)
+                    .map((p) => {
+                        const pid = String(p.i);
+                        return {
+                            playerId: pid,
+                            name: p.n || '',
+                            points: typeof p.p === 'number' ? p.p : 0,
+                            teamId: p.tid != null ? Number(p.tid) : null,
+                            imagePath: lpiById.get(pid) || null,
+                        };
+                    });
+
+                nextManagers[uid] = {
+                    name: mgr.name,
+                    pointsMatchday: typeof userRow?.mdp === 'number' ? userRow.mdp : null,
+                    emptySlots,
+                    players,
+                };
+                fetchedCount++;
+                await sleep(120);
+            } catch (err) {
+                console.warn(`⚠ Pokal-Lineup fuer ${mgr.name} (ST ${day}) fehlgeschlagen: ${err.message}`);
+            }
+        }
+
+        existing.matchdays[dayKey] = {
+            round: round.scheduleName,
+            date: schedule.date,
+            final: isFinalRound,
+            managers: nextManagers,
+        };
+    }
+
+    existing.updatedAt = new Date().toISOString();
+    fs.writeFileSync(LINEUPS_PATH, JSON.stringify(existing, null, 2));
+    console.log(`Pokal-Aufstellungen synchronisiert: ${fetchedCount} frisch geladen, ${skippedCount} final gecacht.`);
 }
 
 // Für jede Match-ID: Platzhalter-String, den eine SPÄTERE Runde für ihren Sieger
@@ -190,7 +315,7 @@ async function run() {
     const pokalData = JSON.parse(fs.readFileSync(POKAL_DATA_PATH, 'utf8'));
     const roundSchedule = pokalData.meta?.roundSchedule || {};
 
-    const pointsByName = await fetchPokalMatchdayPoints();
+    const { pointsByName, managerByName, token, leagueId } = await fetchPokalMatchdayPoints();
 
     // Für den grünen Haken im Pokal-Bracket (Pokal.jsx): welche Namen sind
     // TATSÄCHLICH schon Mitglied der Kickbase-Liga "Pokal"? Wird bei JEDEM Lauf
@@ -311,6 +436,8 @@ async function run() {
     });
 
     fs.writeFileSync(POKAL_DATA_PATH, JSON.stringify(pokalData, null, 2));
+
+    await syncPokalLineups({ token, leagueId, managerByName, pokalData, now });
 
     console.log(`\nFertig: ${resolvedCount} Duelle ausgewertet, ${tieCount} Unentschieden (manuell prüfen), ${missingDataCount} ohne Daten.`);
 }

@@ -294,7 +294,7 @@ const PokalCockpitCard = ({ kickbaseId, kickbaseName, photoURL, myEntry, status,
       <div className="flex items-center justify-between gap-3 mt-3.5 pt-3 border-t border-white/[0.06]">
         {canOpenH2H ? (
           <Link
-            to={`/compare/${kickbaseId}/${opponentEntry.id}`}
+            to={`/compare/${kickbaseId}/${opponentEntry.id}${status.matchId ? `?pokalMatch=${encodeURIComponent(status.matchId)}` : ''}`}
             className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-[#ff5c3e] hover:text-[#ff7056] transition-colors"
           >
             Head-to-Head

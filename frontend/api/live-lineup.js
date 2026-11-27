@@ -21,7 +21,7 @@ export default async function handler(req, res) {
 
   const { userId, leagueKey, dayNumber, onlyPlayerIds } = req.query;
   if (!isNumericId(userId) || !isValidLeagueKey(leagueKey)) {
-    return res.status(400).json({ error: 'Gueltige userId und leagueKey (L1/L2/L3) sind erforderlich' });
+    return res.status(400).json({ error: 'Gueltige userId und leagueKey (L1/L2/L3/POKAL) sind erforderlich' });
   }
   if (dayNumber != null && dayNumber !== '' && !isNumericId(String(dayNumber))) {
     return res.status(400).json({ error: 'Ungueltige dayNumber' });
@@ -42,6 +42,8 @@ export default async function handler(req, res) {
 
   let playerIds = [];
   let partial = false;
+  let officialPoints = null;
+  let emptySlots = 0;
 
   if (typeof onlyPlayerIds === 'string' && onlyPlayerIds.trim().length > 0) {
     const parsed = onlyPlayerIds
@@ -56,16 +58,25 @@ export default async function handler(req, res) {
   }
 
   if (!partial) {
-    // Startelf-Spieler-IDs des angefragten Managers fuer diesen Spieltag (25s gecacht pro Liga).
-    const teamcenter = await getTeamCenterCached(leagueId, userId, day, token);
+    // Startelf-Spieler-IDs des angefragten Managers fuer diesen Spieltag (25s gecacht).
+    // Im Pokalmodus (gpm=4) enthaelt teamcenter.us nur den angefragten Manager -> perUser: true.
+    const teamcenter = await getTeamCenterCached(leagueId, userId, day, token, {
+      perUser: leagueKey === 'POKAL',
+    });
     if (sendRateLimitIfActive(res)) return;
-    const myEntry = (teamcenter?.us || []).find((u) => String(u.i) === String(userId));
-    playerIds = (myEntry?.lp || []).filter(Boolean);
+    const myEntry = (teamcenter?.us || []).find((u) => String(u.i) === String(userId)) || (leagueKey === 'POKAL' ? teamcenter?.us?.[0] : null);
+    if (typeof myEntry?.mdp === 'number') officialPoints = myEntry.mdp;
+    const rawSlots = Array.isArray(myEntry?.lp) ? myEntry.lp : [];
+    emptySlots = rawSlots.length > 0 ? rawSlots.filter((x) => x == null).length : 0;
+    playerIds = rawSlots.filter(Boolean);
+    if (playerIds.length === 0 && Array.isArray(teamcenter?.lp)) {
+      playerIds = teamcenter.lp.map((p) => p?.i).filter(Boolean);
+    }
   }
 
   if (playerIds.length === 0) {
     setLiveCacheHeaders(res, { maxAge: 25, staleWhileRevalidate: 25 });
-    return res.status(200).json({ matchday: day, partial, players: [], note: 'Keine Startelf fuer diesen Spieltag gefunden' });
+    return res.status(200).json({ matchday: day, partial, officialPoints, emptySlots, players: [], note: 'Keine Startelf fuer diesen Spieltag gefunden' });
   }
 
   const eventTypeMap = await getEventTypeMap(token);
@@ -101,5 +112,5 @@ export default async function handler(req, res) {
   if (sendRateLimitIfActive(res)) return;
 
   setLiveCacheHeaders(res, { maxAge: 25, staleWhileRevalidate: 25 });
-  return res.status(200).json({ matchday: day, partial, players });
+  return res.status(200).json({ matchday: day, partial, officialPoints, emptySlots, players });
 }

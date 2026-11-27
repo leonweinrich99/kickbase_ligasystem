@@ -36,12 +36,12 @@ function getPokalStatus(data, playerName) {
 
   if (match.winner) {
     if (match.winner === slot) {
-      if (round.key === 'Finale') return { status: 'champion' };
-      return { status: 'advanced', round: round.key };
+      if (round.key === 'Finale') return { status: 'champion', matchId: match.id, opponent };
+      return { status: 'advanced', round: round.key, matchId: match.id, opponent };
     }
-    return { status: 'eliminated', round: round.key, opponent };
+    return { status: 'eliminated', round: round.key, opponent, matchId: match.id };
   }
-  return { status: 'upcoming', round: round.key, opponent };
+  return { status: 'upcoming', round: round.key, opponent, matchId: match.id };
 }
 
 // Ermittelt den aktuellen Pokal-Status + die zugehoerige Bundesliga-

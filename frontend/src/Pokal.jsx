@@ -45,7 +45,7 @@ const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}
   return (
     <div
       data-tour={tourTarget ? 'pokal-first-match' : undefined}
-      onClick={isClickable ? () => onOpenCompare(id1, id2) : undefined}
+      onClick={isClickable ? () => onOpenCompare(id1, id2, match.id) : undefined}
       role={isClickable ? 'button' : undefined}
       className={`flex items-center gap-1.5 sm:gap-2 card-surface oct-md rounded-xl shadow-lg w-full xl:w-64 flex-shrink-0 p-2 sm:p-2.5 transition-transform hover:scale-105 hover:border-[#8b5cf6]/50 ${isFinal ? 'oct-bd-purple ring-2 ring-[#8b5cf6] shadow-[0_0_20px_rgba(139,92,246,0.3)] xl:scale-110 z-10' : ''} ${isClickable ? 'cursor-pointer active:scale-95' : ''}`}
     >
@@ -384,8 +384,9 @@ const Pokal = () => {
       .catch((err) => console.error("Error loading pokal league members:", err));
   }, []);
 
-  const handleOpenCompare = (id1, id2) => {
-    navigate(`/compare/${id1}/${id2}`);
+  const handleOpenCompare = (id1, id2, matchId) => {
+    const query = matchId ? `?pokalMatch=${encodeURIComponent(matchId)}` : '';
+    navigate(`/compare/${id1}/${id2}${query}`);
   };
 
   // Der Desktop-Baum ist breiter als der Bildschirm - standardmäßig aufs Finale

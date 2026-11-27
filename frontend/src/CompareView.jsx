@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { 
   LineChart, Line, BarChart, Bar, XAxis, YAxis, 
   ResponsiveContainer, ReferenceArea, Legend, LabelList 
@@ -11,6 +11,7 @@ import {
 import { useBackNavigation } from './useBackNavigation';
 import { BackButton } from './ui/CloseButton';
 import ManagerAvatar from './ui/ManagerAvatar';
+import PokalMatchupSection from './ui/PokalMatchupSection';
 
 import { isOctagonUI } from './ui/shapeTheme';
 import { ChamferedBar, HexActiveDot } from './ui/ChartShapes';
@@ -31,7 +32,9 @@ const parsePoints = (val) => {
 
 const CompareView = ({ dataBase = '', routeBase = '' }) => {
   const { id1, id2 } = useParams();
-  const goBack = useBackNavigation(routeBase || '/');
+  const [searchParams] = useSearchParams();
+  const pokalMatchId = !dataBase ? searchParams.get('pokalMatch') : null;
+  const goBack = useBackNavigation(pokalMatchId ? '/pokal' : (routeBase || '/'));
 
   const [user1, setUser1] = useState(null);
   const [user2, setUser2] = useState(null);
@@ -247,6 +250,15 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
           </div>
         </div>
       </div>
+
+      {/* Pokal-Kader-Vergleich mit 1-Tap-Umschalter zwischen beiden Startelfen */}
+      {pokalMatchId && (
+        <PokalMatchupSection
+          pokalMatchId={pokalMatchId}
+          user1={user1}
+          user2={user2}
+        />
+      )}
 
       {/* Stats Duel View */}
       <div className="flex flex-col divide-y divide-[#2a2a2a] mb-10">

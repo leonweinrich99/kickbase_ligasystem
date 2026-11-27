@@ -21,6 +21,7 @@ const LEAGUE_NAME_BY_KEY = {
   L1: process.env.KICKBASE_LEAGUE_1_NAME || '1. Liga',
   L2: process.env.KICKBASE_LEAGUE_2_NAME || '2. Liga',
   L3: process.env.KICKBASE_LEAGUE_3_NAME || '3. Liga',
+  POKAL: process.env.KICKBASE_LEAGUE_POKAL_NAME || 'Pokal',
 };
 
 const TOKEN_TTL_MS = 20 * 60 * 1000;
@@ -93,7 +94,7 @@ function getConfiguredAccounts() {
 
 export const isNumericId = (val) => typeof val === 'string' && /^\d{1,12}$/.test(val.trim());
 
-export const isValidLeagueKey = (val) => val === 'L1' || val === 'L2' || val === 'L3';
+export const isValidLeagueKey = (val) => val === 'L1' || val === 'L2' || val === 'L3' || val === 'POKAL';
 
 const FETCH_TIMEOUT_MS = 8000;
 
@@ -262,9 +263,10 @@ export async function resolveMatchday(leagueId, token, dayNumber) {
 
 // Gecachter teamcenter-Abruf pro Liga & Spieltag (25s TTL + In-Flight-Dedup):
 // live-ranking.js und live-lineup.js aller Manager derselben Liga teilen sich
-// damit denselben teamcenter-Request.
-export async function getTeamCenterCached(leagueId, userId, day, token) {
-  const key = `${leagueId}:${day}`;
+// damit denselben teamcenter-Request. Im Pokalmodus (gpm=4, perUser=true)
+// liefert Kickbase in `us` nur den angefragten Manager, daher pro userId cachen.
+export async function getTeamCenterCached(leagueId, userId, day, token, { perUser = false } = {}) {
+  const key = perUser ? `${leagueId}:${day}:${userId}` : `${leagueId}:${day}`;
   const cached = teamcenterCache.get(key);
   if (cached && cached.expiresAt > Date.now()) {
     return cached.data;

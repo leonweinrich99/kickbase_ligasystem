@@ -75,9 +75,9 @@ export const LiveRow = ({
 // Minuten-Anzeige oben rechts + die 4 Positionsreihen + Gesamtpunkte-Box unten
 // rechts) plus Minuten-Scrubber darunter. Navigiert bei Spieler-Klick selbst
 // zur Detailseite (immer mit dem vollstaendigen Original-Spielerobjekt).
-const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId }) => {
+const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId, onPlayerClick }) => {
   const navigate = useNavigate();
-  const openPlayer = (player) => navigate('/live-player', { state: { player } });
+  const openPlayer = onPlayerClick || ((player) => navigate('/live-player', { state: { player } }));
 
   // Minuten-Metadaten + Highlight-Index (Tore, Vorlagen, gehaltene 11m) aus den Events ableiten.
   const timelineMeta = useMemo(() => {
