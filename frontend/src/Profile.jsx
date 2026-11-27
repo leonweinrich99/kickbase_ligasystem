@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Camera } from './ui/icons';
+import { Camera, CheckCircle2, AlertTriangle, ShieldCheck } from './ui/icons';
 import {
   updateProfile as updateAuthProfile,
   updatePassword,
@@ -12,7 +12,8 @@ import { db, auth, storage } from './firebase';
 import { useAuth } from './AuthContext';
 import { useBackNavigation } from './useBackNavigation';
 import KickbaseNameField from './KickbaseNameCard';
-import CloseButton from './ui/CloseButton';
+import { IconBackButton } from './ui/CloseButton';
+import HexFrame from './ui/HexFrame';
 
 const mapPasswordError = (error) => {
   const code = error?.code || '';
@@ -26,9 +27,23 @@ const mapPasswordError = (error) => {
   return map[code] || error.message;
 };
 
+const StatusBadge = ({ status }) => {
+  if (!status) return null;
+  const isError = status.startsWith('Fehler');
+  return (
+    <span
+      className={`oct-pill oct-bd-none inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full shrink-0 ${
+        isError ? 'bg-red-500/15 text-red-400' : 'bg-emerald-500/15 text-emerald-400'
+      }`}
+    >
+      {isError ? <AlertTriangle size={10} /> : <CheckCircle2 size={10} />}
+      <span>{status}</span>
+    </span>
+  );
+};
 
 export default function Profile() {
-  const { user, profile } = useAuth();
+  const { user, profile, isAdmin } = useAuth();
   const goBack = useBackNavigation('/account');
   const fileInputRef = useRef(null);
 
@@ -72,7 +87,7 @@ export default function Profile() {
       await updateAuthProfile(auth.currentUser, { photoURL: url });
       await updateDoc(doc(db, 'users', user.uid), { photoURL: url });
       setPhotoStatus('Gespeichert');
-      setTimeout(() => setPhotoStatus(null), 2000);
+      setTimeout(() => setPhotoStatus(null), 2200);
     } catch (error) {
       setPhotoStatus(`Fehler: ${error.message}`);
     } finally {
@@ -89,7 +104,7 @@ export default function Profile() {
       await updateAuthProfile(auth.currentUser, { displayName: trimmed });
       await updateDoc(doc(db, 'users', user.uid), { displayName: trimmed });
       setNameStatus('Gespeichert');
-      setTimeout(() => setNameStatus(null), 2000);
+      setTimeout(() => setNameStatus(null), 2200);
     } catch (error) {
       setNameStatus(`Fehler: ${error.message}`);
     } finally {
@@ -100,7 +115,7 @@ export default function Profile() {
   const handlePasswordChange = async () => {
     setPasswordStatus(null);
     if (newPassword.length < 6) {
-      setPasswordStatus('Fehler: Neues Passwort muss mindestens 6 Zeichen haben.');
+      setPasswordStatus('Fehler: Mind. 6 Zeichen nötig.');
       return;
     }
     setChangingPassword(true);
@@ -108,7 +123,7 @@ export default function Profile() {
       const credential = EmailAuthProvider.credential(user.email, currentPassword);
       await reauthenticateWithCredential(auth.currentUser, credential);
       await updatePassword(auth.currentUser, newPassword);
-      setPasswordStatus('Passwort geändert');
+      setPasswordStatus('Geändert');
       setCurrentPassword('');
       setNewPassword('');
       setTimeout(() => setPasswordStatus(null), 3000);
@@ -120,105 +135,161 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-[#000000] p-4 sm:p-10">
-      <div className="max-w-lg mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-xl sm:text-2xl font-black uppercase text-white">Profil</h1>
-          <CloseButton onClick={goBack} />
+    <div className="min-h-screen bg-[#000000] pb-12">
+      <div className="max-w-lg mx-auto px-4 sm:px-6 pt-4 pb-2 flex items-center justify-between gap-2">
+        <IconBackButton onClick={goBack} />
+        {isAdmin && (
+          <span className="oct-pill oct-bd-none inline-flex items-center gap-1 bg-purple-500/15 text-purple-300 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full">
+            <ShieldCheck size={11} />
+            Admin
+          </span>
+        )}
+      </div>
+
+      <div className="max-w-lg mx-auto px-4 sm:px-6 pt-2">
+        <div className="mb-5">
+          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#ff5c3e] mb-1">
+            Account · Einstellungen
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-white leading-none">
+            Mein Profil
+          </h1>
         </div>
 
-        {/* Profilbild */}
-        <div className="flex flex-col items-center mb-6">
+        {/* Hero Profilbild-Karte im scharfen Hexagon-Look */}
+        <div
+          className="card-surface oct-box rounded-2xl p-5 mb-4 flex items-center gap-4"
+          style={{
+            backgroundImage: 'linear-gradient(145deg, rgba(28,30,38,0.9) 0%, rgba(16,17,22,0.96) 100%)',
+          }}
+        >
           <button
+            type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className="relative w-24 h-24 rounded-full bg-[#1f1f1f] border border-[#2e2e2e] flex items-center justify-center overflow-hidden group disabled:opacity-60"
+            aria-label="Profilbild ändern"
+            className="relative shrink-0 group cursor-pointer disabled:opacity-60"
           >
-            {user.photoURL ? (
-              <img src={user.photoURL} alt={profile?.displayName || 'Avatar'} className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-3xl font-black text-[#ff5c3e]">{(profile?.displayName || user.email || '?').charAt(0).toUpperCase()}</span>
-            )}
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white">
-              {uploading ? <span className="text-[10px] font-bold uppercase">...</span> : <Camera size={16} strokeWidth={2.5} />}
-            </div>
-          </button>
-          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoSelect} />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="text-[10px] font-black uppercase tracking-widest text-[#ff5c3e] hover:text-[#ff7056] transition-colors mt-3"
-          >
-            {uploading ? 'Lädt hoch...' : 'Profilbild ändern'}
-          </button>
-          {photoStatus && (
-            <span className={`text-[10px] font-black uppercase tracking-widest mt-1 ${photoStatus.startsWith('Fehler') ? 'text-red-400' : 'text-green-400'}`}>{photoStatus}</span>
-          )}
-        </div>
-
-        {/* Alle Einstellungen in EINER Karte mit Trennlinien statt drei
-            separaten Kacheln - weniger visuelle Wiederholung. */}
-        <div className="card-surface rounded-2xl divide-y divide-[#2a2a2a] overflow-hidden mb-4">
-          <div className="p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-sm font-bold text-gray-100 flex-1">Name</span>
-              {nameStatus && (
-                <span className={`text-[10px] font-black uppercase tracking-widest shrink-0 ${nameStatus.startsWith('Fehler') ? 'text-red-400' : 'text-green-400'}`}>{nameStatus}</span>
+            <HexFrame
+              style={{ width: 84, height: 84 }}
+              innerClassName="bg-[#1b1c22]"
+              ringColor="#ff5c3e"
+              ringWidth={1.5}
+            >
+              {user.photoURL ? (
+                <img
+                  src={user.photoURL}
+                  alt={profile?.displayName || 'Avatar'}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-3xl font-black text-[#ff5c3e]">
+                  {(profile?.displayName || user.email || '?').charAt(0).toUpperCase()}
+                </span>
               )}
+              <div className="absolute inset-0 bg-black/55 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white">
+                <Camera size={18} strokeWidth={2.3} />
+              </div>
+            </HexFrame>
+            <span className="hex-beacon absolute -bottom-0.5 -right-0.5 w-7 h-7 bg-[#ff5c3e] text-white flex items-center justify-center border-2 border-black shadow-lg">
+              <Camera size={12} strokeWidth={2.5} />
+            </span>
+          </button>
+
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoSelect} />
+
+          <div className="min-w-0 flex-1">
+            <div className="text-base font-extrabold text-white truncate">
+              {profile?.displayName || 'Dein Account'}
             </div>
-            <div className="flex gap-2">
+            <div className="text-xs text-[#8b92a5] truncate mt-0.5">{user.email}</div>
+            <div className="flex items-center flex-wrap gap-2 mt-3">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="oct-pill oct-bd-accent inline-flex items-center gap-1.5 bg-[#ff5c3e]/12 hover:bg-[#ff5c3e]/20 border border-[#ff5c3e]/35 text-[#ff846d] text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full transition-colors cursor-pointer disabled:opacity-50"
+              >
+                <Camera size={11} />
+                {uploading ? 'Lädt hoch…' : 'Foto ändern'}
+              </button>
+              <StatusBadge status={photoStatus} />
+            </div>
+          </div>
+        </div>
+
+        {/* Anzeigename */}
+        <div className="card-surface oct-box rounded-2xl p-5 mb-4">
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <div>
+              <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#788092]">Anzeigename</div>
+              <div className="text-xs text-[#8b92a5] mt-0.5">Für Begrüßung, Kommentare & App-Anzeige</div>
+            </div>
+            <StatusBadge status={nameStatus} />
+          </div>
+          <div className="flex gap-2">
+            <input
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              placeholder="Dein Name"
+              className="oct-md flex-1 min-w-0 bg-[#0a0a0d] border border-[#2a2a30] rounded-xl px-3.5 py-2.5 text-sm text-white outline-none focus:border-[#ff5c3e] transition-colors"
+            />
+            <button
+              type="button"
+              onClick={handleNameSave}
+              disabled={!nameChanged || savingName}
+              className="oct-md oct-bd-accent shrink-0 text-[10px] font-black uppercase tracking-widest bg-[#ff5c3e] hover:bg-[#ff4b2b] text-white px-4 rounded-xl transition-all disabled:opacity-35 cursor-pointer"
+            >
+              {savingName ? '…' : 'Speichern'}
+            </button>
+          </div>
+        </div>
+
+        {/* Kickbase-Verknüpfung */}
+        <div className="card-surface oct-box rounded-2xl mb-4 overflow-hidden">
+          <KickbaseNameField />
+        </div>
+
+        {/* Passwort & Sicherheit */}
+        <div className="card-surface oct-box rounded-2xl p-5">
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <div>
+              <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#788092]">Passwort & Sicherheit</div>
+              <div className="text-xs text-[#8b92a5] mt-0.5">Zugang zu deinem Konto verwalten</div>
+            </div>
+            <StatusBadge status={passwordStatus} />
+          </div>
+
+          {isPasswordProvider ? (
+            <div className="space-y-2.5">
               <input
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                className="flex-1 bg-[#000] border border-[#2e2e2e] rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-[#ff5c3e]"
+                type="password"
+                placeholder="Aktuelles Passwort"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className="oct-md w-full bg-[#0a0a0d] border border-[#2a2a30] rounded-xl px-3.5 py-2.5 text-sm text-white outline-none focus:border-[#ff5c3e] transition-colors"
+              />
+              <input
+                type="password"
+                placeholder="Neues Passwort (mind. 6 Zeichen)"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="oct-md w-full bg-[#0a0a0d] border border-[#2a2a30] rounded-xl px-3.5 py-2.5 text-sm text-white outline-none focus:border-[#ff5c3e] transition-colors"
               />
               <button
-                onClick={handleNameSave}
-                disabled={!nameChanged || savingName}
-                className="text-[10px] font-black uppercase tracking-widest bg-[#ff5c3e]/10 text-[#ff5c3e] border border-[#ff5c3e]/30 px-4 rounded-xl hover:bg-[#ff5c3e]/20 transition-colors disabled:opacity-40"
+                type="button"
+                onClick={handlePasswordChange}
+                disabled={changingPassword || !currentPassword || !newPassword}
+                className="oct-md w-full text-[10px] font-black uppercase tracking-widest bg-[#1b1c22] border border-white/15 text-gray-100 px-4 py-3 rounded-xl hover:border-[#ff5c3e]/60 hover:text-white transition-all disabled:opacity-40 cursor-pointer"
               >
-                {savingName ? '...' : 'Speichern'}
+                {changingPassword ? 'Ändere…' : 'Passwort ändern'}
               </button>
             </div>
-          </div>
-
-          <KickbaseNameField />
-
-          <div className="p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-sm font-bold text-gray-100 flex-1">Passwort</span>
-              {passwordStatus && (
-                <span className={`text-[10px] font-black uppercase tracking-widest shrink-0 text-right ${passwordStatus.startsWith('Fehler') ? 'text-red-400' : 'text-green-400'}`}>{passwordStatus}</span>
-              )}
+          ) : (
+            <div className="oct-sm bg-[#0a0a0d] border border-white/[0.07] rounded-xl px-3.5 py-3 text-xs text-[#8b92a5] leading-relaxed">
+              Du bist über <span className="text-white font-semibold">Google</span> angemeldet – dein Passwort wird direkt in deinem Google-Konto verwaltet.
             </div>
-            {isPasswordProvider ? (
-              <div className="space-y-2.5">
-                <input
-                  type="password"
-                  placeholder="Aktuelles Passwort"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full bg-[#000] border border-[#2e2e2e] rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-[#ff5c3e]"
-                />
-                <input
-                  type="password"
-                  placeholder="Neues Passwort (mind. 6 Zeichen)"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full bg-[#000] border border-[#2e2e2e] rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-[#ff5c3e]"
-                />
-                <button
-                  onClick={handlePasswordChange}
-                  disabled={changingPassword || !currentPassword || !newPassword}
-                  className="w-full text-[10px] font-black uppercase tracking-widest bg-[#171717] border border-[#2e2e2e] text-gray-200 px-4 py-3 rounded-xl hover:border-[#404040] transition-colors disabled:opacity-40"
-                >
-                  {changingPassword ? 'Ändere...' : 'Passwort ändern'}
-                </button>
-              </div>
-            ) : (
-              <p className="text-xs text-[#8b92a5]">Du bist über Google angemeldet - dein Passwort wird dort verwaltet.</p>
-            )}
-          </div>
+          )}
         </div>
       </div>
     </div>
