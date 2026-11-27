@@ -7,6 +7,7 @@ import { loadPlayerCatalogBundle } from '../playerDetailData';
 import StartProbBadge from './StartProbBadge';
 import PlayerRowCard from './PlayerRowCard';
 import HexFrame from './HexFrame';
+import LigaInsiderButton from './LigaInsiderButton';
 
 // Nutzt die kompakte ~170-KB players-lite.json (statt 40 MB all_players.json)
 const loadSquadXpMap = () => loadPlayerCatalogBundle().then((b) => b.xpMap || new Map());
@@ -1114,20 +1115,32 @@ const CurrentSquadView = ({ players, liveStartingIds, loading }) => {
               </svg>
             )}
 
-            {/* Obere Aktionsleiste im Tausch-Modus: Spielerprofil oeffnen & Schliessen */}
+            {/* Obere Aktionsleiste im Tausch-Modus: Spielerprofil, LigaInsider & Schliessen */}
             <div className="absolute top-3.5 left-4 right-4 sm:top-5 sm:left-6 sm:right-6 z-40 flex items-center justify-between gap-2 pointer-events-none">
               {!swapState.target.isDummy ? (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openPlayerDetail(swapState.target.id);
-                  }}
-                  className="pointer-events-auto inline-flex items-center gap-1 px-2.5 py-1 rounded-full oct-pill bg-[#171717] border border-white/15 text-[11px] font-semibold text-gray-200 hover:border-white/30 hover:text-white transition-colors cursor-pointer"
-                >
-                  <span>Profil</span>
-                  <ArrowUpRight size={12} className="text-[#ff5c3e]" />
-                </button>
+                <div className="flex items-center gap-1.5 pointer-events-auto">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openPlayerDetail(swapState.target.id);
+                    }}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full oct-pill bg-[#171717] border border-white/15 text-[11px] font-semibold text-gray-200 hover:border-white/30 hover:text-white transition-colors cursor-pointer"
+                  >
+                    <span>Profil</span>
+                    <ArrowUpRight size={12} className="text-[#ff5c3e]" />
+                  </button>
+                  <LigaInsiderButton
+                    playerId={swapState.target.id}
+                    playerName={
+                      swapState.target.firstName
+                        ? `${swapState.target.firstName} ${swapState.target.lastName || swapState.target.name || ''}`.trim()
+                        : (swapState.target.lastName || swapState.target.name || '')
+                    }
+                    compact
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
               ) : (
                 <div />
               )}

@@ -5,6 +5,7 @@ import { useBackNavigation } from './useBackNavigation';
 import { IconBackButton } from './ui/CloseButton';
 import AnimatedPoints from './ui/AnimatedPoints';
 import HexFrame from './ui/HexFrame';
+import LigaInsiderButton from './ui/LigaInsiderButton';
 
 // Eigene Seite statt Overlay/Modal fuer die Live-Punkte-Event-Liste eines
 // Spielers (Owner-Wunsch 23.11.2026: "als extra Seite machen und nicht als
@@ -96,8 +97,18 @@ const PlayerLiveDetailPage = () => {
 
   return (
     <div className="w-full bg-[#000000] min-h-screen relative flex flex-col pb-10">
-      <div className="max-w-3xl w-full mx-auto px-4 sm:px-6 pt-4 pb-2">
+      <div className="max-w-3xl w-full mx-auto px-4 sm:px-6 pt-4 pb-2 flex items-center justify-between gap-2">
         <IconBackButton onClick={goBack} />
+        {player && (
+          <LigaInsiderButton
+            playerId={player.id}
+            playerName={
+              player.firstName
+                ? `${player.firstName} ${player.lastName || player.name || ''}`.trim()
+                : (player.lastName || player.name || '')
+            }
+          />
+        )}
       </div>
 
       {!player ? (

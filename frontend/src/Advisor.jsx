@@ -9,6 +9,7 @@ import advisorLogo from './assets/advisor_logo.png';
 import CloseButton, { IconBackButton } from './ui/CloseButton';
 import StatTile from './ui/StatTile';
 import PlayerCard from './ui/AdvisorPlayerCard';
+import LigaInsiderButton from './ui/LigaInsiderButton';
 import StartProbBadge, { StartProbLegend } from './ui/StartProbBadge';
 import { START_PROB_LEVELS, normalizeStartProbCode } from './startProbMeta';
 import { countPositions, missingPositions, estimateReserveForMissingPositions } from './squadRules';
@@ -704,8 +705,12 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, leagueKey = 
     <div className="w-full bg-[#000000] min-h-screen relative flex flex-col pb-10">
       <div className="max-w-3xl w-full mx-auto relative flex flex-col flex-1">
         {/* Moderner Detail-Header im normalen Fluss (kein sticky-Ruckeln beim Scrollen) */}
-        <div className="px-4 sm:px-6 pt-4 pb-2 flex items-center justify-between relative z-20">
+        <div className="px-4 sm:px-6 pt-4 pb-2 flex items-center justify-between gap-2 relative z-20">
           <IconBackButton onClick={onClose} />
+          <LigaInsiderButton
+            playerId={player.playerId ?? player.id}
+            playerName={player.firstName ? `${player.firstName} ${player.name}` : player.name}
+          />
         </div>
 
         <div className="min-h-0 pt-1 pb-8 relative">
