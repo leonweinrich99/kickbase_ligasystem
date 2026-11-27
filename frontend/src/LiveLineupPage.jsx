@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { RefreshCw, ChevronDown, Radio } from 'lucide-react';
+import { RefreshCw, ChevronDown, Radio } from './ui/icons';
 import { useAuth } from './AuthContext';
 import ManagerAvatar from './ui/ManagerAvatar';
 import TabPageHeader from './ui/TabPageHeader';

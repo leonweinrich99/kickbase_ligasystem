@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Users, Star, Trophy, Info, ChevronLeft, ChevronRight, TrendingUp, TrendingDown } from 'lucide-react';
+import { Users, Star, Trophy, Info, ChevronLeft, ChevronRight, TrendingUp, TrendingDown } from './ui/icons';
 import logo from './assets/logo.png';
 import archiveLogo from './assets/archive_logo.png';
 import TabPageHeader from './ui/TabPageHeader';

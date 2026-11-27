@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Clock, Flame, Trophy, TrendingUp, Newspaper, ArrowUpRight, Quote, Megaphone } from 'lucide-react';
+import { Clock, Flame, Trophy, TrendingUp, Newspaper, ArrowUpRight, Quote, Megaphone } from './ui/icons';
 import { getCategoryMeta, formatArticleDate, sortArticlesByDateDesc } from './feedMeta';
 import { IconBackButton } from './ui/CloseButton';
 import AdBanner from './ui/AdBanner';

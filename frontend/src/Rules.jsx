@@ -5,6 +5,20 @@ import { useAuth } from './AuthContext';
 import { useBackNavigation } from './useBackNavigation';
 import rulesLogo from './assets/rules_logo.png';
 import pokalLogo from './assets/pokal_logo.png';
+import {
+  RuleFairplayIcon,
+  MessageCircle,
+  Users,
+  RuleLoansIcon,
+  RuleBudgetIcon,
+  RuleDrawIcon,
+  RuleArenaIcon,
+  ArrowRight,
+  Trophy,
+  RuleEditIcon,
+  Info,
+  X,
+} from './ui/icons';
 
 const colors = {
   blue: ['border-blue-500/40 hover:border-blue-500 hover:bg-blue-500/10', 'text-blue-400'],
@@ -14,29 +28,26 @@ const colors = {
   purple: ['border-purple-500/40 hover:border-purple-500 hover:bg-purple-500/10', 'text-purple-400'],
 };
 
-const Icon = ({ id, className }) => {
-  const common = { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '2.5', strokeLinecap: 'round', strokeLinejoin: 'round', className };
-  const paths = {
-    fairplay: <><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l7.78-7.78a5.5 5.5 0 0 0 0-7.78z" /></>,
-    discussion: <><path d="M21 11.5a8.5 8.5 0 0 1-12.3 7.6L3 21l1.9-5.7A8.5 8.5 0 0 1 12.5 3H13a8.5 8.5 0 0 1 8 8v.5z" /></>,
-    'team-limits': <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></>,
-    loans: <><polyline points="17 1 21 5 17 9" /><path d="M3 11V9a4 4 0 0 1 4-4h14" /><polyline points="7 23 3 19 7 15" /><path d="M21 13v2a4 4 0 0 1-4 4H3" /></>,
-    underpay: <><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></>,
-    draw: <><polyline points="16 3 21 3 21 8" /><line x1="4" y1="20" x2="21" y2="3" /><polyline points="21 16 21 21 16 21" /><line x1="15" y1="15" x2="21" y2="21" /><line x1="4" y1="4" x2="9" y2="9" /></>,
-    'head-to-head': <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></>,
-    arena: <><path d="M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" /></>,
-    budget: <><circle cx="12" cy="12" r="10" /><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8M12 18V6" /></>,
-    knockout: <><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></>,
-    reward: <><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7c0 3.31 2.69 6 6 6s6-2.69 6-6V2z" /></>,
-  };
-  return <svg {...common}>{paths[id] || <circle cx="12" cy="12" r="9" />}</svg>;
+const RULE_ICONS = {
+  fairplay: RuleFairplayIcon,
+  discussion: MessageCircle,
+  'team-limits': Users,
+  loans: RuleLoansIcon,
+  underpay: RuleBudgetIcon,
+  draw: RuleDrawIcon,
+  'head-to-head': Users,
+  arena: RuleArenaIcon,
+  budget: RuleBudgetIcon,
+  knockout: ArrowRight,
+  reward: Trophy,
 };
 
-const PencilIcon = (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
-  </svg>
-);
+const Icon = ({ id, className }) => {
+  const Comp = RULE_ICONS[id] || Info;
+  return <Comp className={className} strokeWidth={2.5} />;
+};
+
+const PencilIcon = <RuleEditIcon size={14} strokeWidth={2.5} />;
 
 const RuleEditForm = ({ rule, onCancel, onSave, saving }) => {
   // Eigene Komponente, die NUR waehrend isEditing gerendert wird: der lokale
@@ -134,7 +145,7 @@ export default function Rules({ type = 'league', backTo = '/', label = 'Regelkat
   return (
     <div className="max-w-4xl mx-auto py-10 px-4 relative overflow-x-hidden">
       <button onClick={handleBack} className="absolute top-4 right-4 sm:top-10 sm:right-0 p-2 text-[#8b92a5] hover:text-white bg-[#171717] border border-[#2e2e2e] rounded-xl transition-all hover:border-[#404040] shadow-lg z-50" title="Zurück">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+        <X size={24} strokeWidth={2.5} />
       </button>
       <Motion.header initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="text-center mb-20 pt-10 sm:pt-0">
         <img

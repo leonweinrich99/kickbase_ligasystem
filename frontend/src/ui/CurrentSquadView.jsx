@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowUpRight, ExternalLink, RotateCcw, X } from 'lucide-react';
+import { ArrowUpRight, ExternalLink, RotateCcw, X } from './icons';
 import { buildLineupWithDummies } from '../liveLineupUtils';
 import { normalizeStartProbCode } from '../startProbMeta';
 import { loadPlayerCatalogBundle } from '../playerDetailData';

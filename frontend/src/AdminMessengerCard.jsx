@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle2, XCircle } from 'lucide-react';
+import { CheckCircle2, XCircle } from './ui/icons';
 import { useAuth } from './AuthContext';
 
 export default function AdminMessengerCard() {

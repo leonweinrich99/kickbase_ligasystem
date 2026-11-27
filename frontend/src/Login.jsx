@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { HelpCircle } from 'lucide-react';
+import { HelpCircle } from './ui/icons';
 import { useAuth } from './AuthContext';
 import logo from './assets/logo.png';
 import { useTour } from './Tour';

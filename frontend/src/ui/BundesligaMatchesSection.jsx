@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, ChevronDown, ArrowLeft, MapPin, Users, Radio } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, ArrowLeft, MapPin, Users, Radio } from './icons';
 import {
   matchOpenLigaTeamToKickbase,
   formatKickoffLabel,

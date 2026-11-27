@@ -13,7 +13,7 @@ import {
   ChevronDown,
   ChevronUp,
   ArrowUpRight,
-} from 'lucide-react';
+} from './ui/icons';
 import { useAuth } from './AuthContext';
 import { formatArticleDate } from './feedMeta';
 import { IconBackButton } from './ui/CloseButton';

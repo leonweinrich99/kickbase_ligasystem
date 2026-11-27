@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Share, PlusSquare, X } from 'lucide-react';
+import { Share, PlusSquare, X } from './ui/icons';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import { useAuth } from './AuthContext';

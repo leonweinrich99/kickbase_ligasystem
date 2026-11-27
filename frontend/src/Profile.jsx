@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Camera } from 'lucide-react';
+import { Camera } from './ui/icons';
 import {
   updateProfile as updateAuthProfile,
   updatePassword,

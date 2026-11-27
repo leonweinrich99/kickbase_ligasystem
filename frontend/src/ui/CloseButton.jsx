@@ -1,4 +1,4 @@
-import { X, ArrowLeft } from 'lucide-react';
+import { X, ArrowLeft, ChevronLeft } from './icons';
 
 // Einheitlicher Schließen-Button (App-weiter Mehrheitsstandard) - ersetzt die
 // vielen leicht unterschiedlichen Varianten (verschiedene Größen, teils reines
@@ -64,9 +64,7 @@ export function BackButton({ onClick, label = 'Zurück', className = '' }) {
       onClick={onClick}
       className={`group flex items-center gap-2 text-[#8b92a5] hover:text-white transition-colors ${className}`}
     >
-      <svg className="group-hover:-translate-x-1 transition-transform" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="15 18 9 12 15 6"></polyline>
-      </svg>
+      <ChevronLeft size={20} strokeWidth={2.5} className="group-hover:-translate-x-1 transition-transform" />
       <span className="font-bold text-sm">{label}</span>
     </button>
   );

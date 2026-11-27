@@ -7,7 +7,7 @@ import {
 import {
   TrendingUp, TrendingDown, Target,
   Users, Search, X, Zap
-} from 'lucide-react';
+} from './ui/icons';
 import { useBackNavigation } from './useBackNavigation';
 import { IconBackButton, SubpageActionButton } from './ui/CloseButton';
 import ManagerAvatar from './ui/ManagerAvatar';

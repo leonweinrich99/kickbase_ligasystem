@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, ChevronRight, TrendingUp, TrendingDown } from 'lucide-react';
+import { Calendar, ChevronRight, TrendingUp, TrendingDown } from './ui/icons';
 import { useLeagueEntry } from './useLeagueEntry';
 import { usePokalStatus } from './usePokalStatus';
 import { useNextMatchday } from './useNextMatchday';

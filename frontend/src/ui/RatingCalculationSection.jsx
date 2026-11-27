@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown } from './icons';
 import { TIER_ACCENT } from './FifaManagerCard';
 
 // "So wird deine Karte berechnet" - sechs Karten, die zu jedem FIFA-Karten-

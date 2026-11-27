@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion as Motion } from 'framer-motion';
-import { HelpCircle, Link2, ChevronRight } from 'lucide-react';
+import { HelpCircle, Link2, ChevronRight } from './ui/icons';
 import { useAuth } from './AuthContext';
 import { useTour } from './Tour';
 import accountLogo from './assets/account_logo.png';

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight } from './ui/icons';
 import { doc, updateDoc, deleteField } from 'firebase/firestore';
 import { db } from './firebase';
 import { useAuth } from './AuthContext';

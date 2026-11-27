@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Flame, Sparkles, ChevronRight } from 'lucide-react';
+import { Flame, Sparkles, ChevronRight } from './icons';
 import { useAuth } from '../AuthContext';
 import { enrichPlayerWithCatalog } from '../advisorSquadEval';
 import { loadAdvisorDataCached, loadPlayerCatalogBundle } from '../playerDetailData';

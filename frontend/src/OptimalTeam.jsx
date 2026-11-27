@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Trophy, Wallet, Star, SearchX } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Trophy, Wallet, Star, SearchX } from './ui/icons';
 import { useBackNavigation } from './useBackNavigation';
 import { IconBackButton } from './ui/CloseButton';
 import PositionRow from './ui/PositionRow';

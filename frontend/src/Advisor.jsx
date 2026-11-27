@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { Info, RefreshCw, CheckCircle2, XCircle, SlidersHorizontal, X, ChevronDown, AlertTriangle, ArrowRight } from 'lucide-react';
+import { Info, RefreshCw, CheckCircle2, XCircle, SlidersHorizontal, X, ChevronDown, AlertTriangle, ArrowRight } from './ui/icons';
 import { useAuth } from './AuthContext';
 import { useBackNavigation } from './useBackNavigation';
 import PageHeader from './ui/PageHeader';

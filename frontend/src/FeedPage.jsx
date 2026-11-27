@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Newspaper, Trophy, TrendingUp, Flame, Clock, BarChart3, ChevronRight, CalendarRange, Megaphone } from 'lucide-react';
+import { Newspaper, Trophy, TrendingUp, Flame, Clock, BarChart3, ChevronRight, CalendarRange, Megaphone } from './ui/icons';
 import TabPageHeader from './ui/TabPageHeader';
 import { FEED_CATEGORIES, getCategoryMeta, formatArticleDate, sortArticlesByDateDesc } from './feedMeta';
 import { useAuth } from './AuthContext';

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { XCircle, Clock, HelpCircle } from 'lucide-react';
+import { XCircle, Clock, HelpCircle } from './ui/icons';
 import { useAuth } from './AuthContext';
 import Login from './Login';
 import LoadingScreen from './LoadingScreen';

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight } from './ui/icons';
 import { useBackNavigation } from './useBackNavigation';
 import { IconBackButton } from './ui/CloseButton';
 import AnimatedPoints from './ui/AnimatedPoints';

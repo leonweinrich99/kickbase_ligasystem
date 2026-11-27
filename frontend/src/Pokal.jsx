@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Minus, Plus, RotateCcw, Trophy } from 'lucide-react';
+import { Check, Minus, Plus, RotateCcw, Trophy } from './ui/icons';
 import logo from './assets/pokal_logo.png';
 import LoadingScreen from './LoadingScreen';
 import useMinimumDelay from './useMinimumDelay';

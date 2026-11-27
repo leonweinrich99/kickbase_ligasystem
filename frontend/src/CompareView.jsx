@@ -7,7 +7,7 @@ import {
 import { 
   TrendingUp, TrendingDown, Target, 
   Award, Wallet, Activity, Zap
-} from 'lucide-react';
+} from './ui/icons';
 import { useBackNavigation } from './useBackNavigation';
 import { BackButton } from './ui/CloseButton';
 import ManagerAvatar from './ui/ManagerAvatar';

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { collection, onSnapshot, doc, updateDoc, deleteField, query, orderBy, writeBatch } from 'firebase/firestore';
-import { Check, X, AlertTriangle, MoreVertical, MessageCircle, RefreshCw, CheckCircle2, XCircle, Clock, Bell } from 'lucide-react';
+import { Check, X, AlertTriangle, MoreVertical, MessageCircle, RefreshCw, CheckCircle2, XCircle, Clock, Bell } from './ui/icons';
 import { db } from './firebase';
 import { useAuth } from './AuthContext';
 import PushNotificationCard from './PushNotificationCard';

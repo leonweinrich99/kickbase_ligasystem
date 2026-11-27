@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useLayoutEffect, useCallback } from 'react';
-import { Play, Pause, RotateCcw } from 'lucide-react';
+import { Play, Pause, RotateCcw } from './icons';
 import { HIGHLIGHT_ICON } from '../liveLineupUtils';
 
 const STEP_PX = 14;
