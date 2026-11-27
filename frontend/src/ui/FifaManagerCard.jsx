@@ -1,7 +1,6 @@
 import { useId, useState } from 'react';
 import { useManagerImages } from '../useManagerImages';
 import ligaLogo from '../assets/logo.png';
-import { isOctagonUI } from './shapeTheme';
 
 // Pixelgenaue FIFA/FC-Karten-Optik fuer das Manager Rating, umgesetzt als
 // einzelnes SVG mit viewBox="0 0 484 632" - alle Koordinaten entsprechen 1:1
@@ -21,8 +20,9 @@ import { isOctagonUI } from './shapeTheme';
 const CARD_W = 484;
 const CARD_H = 632;
 
-// Exakte Aussenkontur laut Vorgabe (klassisch abgerundete Schild-Form)
-const SHIELD_PATH_ROUNDED = `
+// Exakte Aussenkontur laut Vorgabe (Schild-/Wappen-Form mit Einbuchtungen
+// oben und Spitze unten).
+const SHIELD_PATH = `
   M 104 64
   C 151 42, 207 36, 244 37
   C 294 37, 342 43, 378 66
@@ -40,34 +40,6 @@ const SHIELD_PATH_ROUNDED = `
   C 104 88, 103 76, 104 64
   Z
 `;
-
-// Chamfered / facettierte Schild-Kontur im Kickbase-Oktagon-Look:
-// identische Proportionen & Bounding-Box (x: 57..427, y: 38..628),
-// alle oberen & unteren Ecken sauber gefast (keine 90°-Kanten).
-const SHIELD_PATH_CHAMFERED = `
-  M 122 64
-  L 166 38
-  L 318 38
-  L 362 64
-  L 372 88
-  L 388 106
-  L 409 116
-  L 427 134
-  L 427 530
-  L 402 566
-  L 286 594
-  L 242 628
-  L 198 594
-  L 82 566
-  L 57 530
-  L 57 134
-  L 75 116
-  L 96 106
-  L 112 88
-  Z
-`;
-
-const SHIELD_PATH = isOctagonUI ? SHIELD_PATH_CHAMFERED : SHIELD_PATH_ROUNDED;
 
 // Je Kartenstufe: Flaechen-Verlauf, Rahmenfarbe, Namensband-Verlauf +
 // -Rahmen, sowie Text-/Sekundaertextfarbe - an echten FIFA-Karten orientiert.
@@ -120,35 +92,15 @@ const TIER_ACCENT = {
 };
 
 // Winziger, eigener Ball statt Fussballschuh (kein passendes Lucide-Icon
-// vorhanden) - dezentes Pentagon-Muster in der Kartentextfarbe, im Oktagon-Look
-// als facettiertes Oktagon.
-const BallGlyph = ({ cx, cy, r = 9, color }) => {
-  const c = r * 0.42;
-  const octPts = [
-    `${cx - c},${cy - r}`,
-    `${cx + c},${cy - r}`,
-    `${cx + r},${cy - c}`,
-    `${cx + r},${cy + c}`,
-    `${cx + c},${cy + r}`,
-    `${cx - c},${cy + r}`,
-    `${cx - r},${cy + c}`,
-    `${cx - r},${cy - c}`,
-  ].join(' ');
-  return (
-    <g
-      stroke={color}
-      strokeWidth="1.35"
-      strokeLinejoin={isOctagonUI ? 'miter' : 'round'}
-      strokeLinecap={isOctagonUI ? 'square' : 'round'}
-      fill="none"
-    >
-      {isOctagonUI ? <polygon points={octPts} /> : <circle cx={cx} cy={cy} r={r} />}
-      <path
-        d={`M ${cx} ${cy - r * 0.55} l ${r * 0.55} ${r * 0.4} l -${r * 0.2} ${r * 0.65} h -${r * 0.7} l -${r * 0.2} -${r * 0.65} Z`}
-      />
-    </g>
-  );
-};
+// vorhanden) - dezentes Pentagon-Muster in der Kartentextfarbe.
+const BallGlyph = ({ cx, cy, r = 9, color }) => (
+  <g stroke={color} strokeWidth="1.3" strokeLinejoin="round" strokeLinecap="round" fill="none">
+    <circle cx={cx} cy={cy} r={r} />
+    <path
+      d={`M ${cx} ${cy - r * 0.55} l ${r * 0.55} ${r * 0.4} l -${r * 0.2} ${r * 0.65} h -${r * 0.7} l -${r * 0.2} -${r * 0.65} Z`}
+    />
+  </g>
+);
 
 export default function FifaManagerCard({ rating, photoURL }) {
   const theme = TIER_THEME[rating.cardTier] || TIER_THEME.bronze;
@@ -275,13 +227,7 @@ export default function FifaManagerCard({ rating, photoURL }) {
 
           {/* Aussenkontur zuletzt gezeichnet, damit der Rahmen sauber ueber
               allen Layern (Foto, Band etc.) liegt */}
-          <path
-            d={SHIELD_PATH}
-            fill="none"
-            stroke={theme.border}
-            strokeWidth="2.5"
-            strokeLinejoin={isOctagonUI ? 'miter' : 'round'}
-          />
+          <path d={SHIELD_PATH} fill="none" stroke={theme.border} strokeWidth="2" strokeLinejoin="round" />
         </svg>
       </div>
     </div>

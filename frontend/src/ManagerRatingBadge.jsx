@@ -1,7 +1,6 @@
 import { useId } from 'react';
 import { Link } from 'react-router-dom';
 import { SHIELD_PATH, TIER_THEME } from './ui/FifaManagerCard';
-import { isOctagonUI } from './ui/shapeTheme';
 import { useManagerRatings } from './useManagerRatings';
 
 // Kleiner Badge-Button auf der Account-Seite: verkleinerte FIFA-Karten-Optik
@@ -38,7 +37,7 @@ const ManagerRatingBadge = ({ kickbaseId }) => {
           </linearGradient>
         </defs>
         <path d={SHIELD_PATH} fill={`url(#grad-badge-${uid})`} />
-        <path d={SHIELD_PATH} fill="none" stroke={theme.border} strokeWidth="7" strokeLinejoin={isOctagonUI ? 'miter' : 'round'} />
+        <path d={SHIELD_PATH} fill="none" stroke={theme.border} strokeWidth="7" strokeLinejoin="round" />
         <text x="242" y="332" textAnchor="middle" dominantBaseline="central" fontSize="185" fontWeight="900" fill={theme.text}>
           {rating.score}
         </text>
