@@ -11,21 +11,39 @@ on:
       - 'frontend/public/feed-articles.json'
       - 'frontend/public/weekly-summary.json'
   workflow_dispatch:
+    inputs:
+      force_slug:
+        description: 'Optional: Artikel-Slug (oder key wie feed:slug) gezielt pushen'
+        required: false
+        default: ''
+        type: string
 
 jobs:
   notify-articles:
     runs-on: ubuntu-latest
     steps:
       - name: Warte auf Vercel-Deployment der neuen JSON-Daten
+        if: github.event_name == 'push'
         run: sleep 45
 
       - name: Artikel-Push auslösen
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          FORCE_SLUG: ${{ inputs.force_slug }}
         run: |
-          curl -sf -X POST "https://www.developtimize.de/api/notify-articles" \
-            -H "Authorization: Bearer ${CRON_SECRET}" \
-            -H "Cache-Control: no-cache" \
-            -o response.json
+          if [ -n "${FORCE_SLUG}" ]; then
+            BODY=$(jq -n --arg slug "${FORCE_SLUG}" '{forceSlug: $slug}')
+            curl -sf -X POST "https://www.developtimize.de/api/notify-articles" \
+              -H "Authorization: Bearer ${CRON_SECRET}" \
+              -H "Content-Type: application/json" \
+              -H "Cache-Control: no-cache" \
+              -d "${BODY}" \
+              -o response.json
+          else
+            curl -sf -X POST "https://www.developtimize.de/api/notify-articles" \
+              -H "Authorization: Bearer ${CRON_SECRET}" \
+              -H "Cache-Control: no-cache" \
+              -o response.json
+          fi
           echo "Antwort:"
           cat response.json

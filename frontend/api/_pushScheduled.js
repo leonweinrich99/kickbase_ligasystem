@@ -84,6 +84,7 @@ export async function handleNotifyArticles(req, res) {
       if (!a?.slug || !a?.title) continue;
       candidates.push({
         key: `feed:${a.slug}`,
+        slug: a.slug,
         title: a.title,
         subtitle: a.subtitle || '',
         category: a.category || 'allgemein',
@@ -100,6 +101,7 @@ export async function handleNotifyArticles(req, res) {
       if (!ed?.slug) continue;
       candidates.push({
         key: `weekly:${ed.slug}`,
+        slug: ed.slug,
         title: ed.headline || ed.title || `Weekly Summary – Spieltag ${ed.matchday ?? ''}`.trim(),
         subtitle: ed.teaser || ed.subtitle || 'Deine persönliche Wochen-Auswertung ist online.',
         category: 'weekly',
@@ -111,19 +113,37 @@ export async function handleNotifyArticles(req, res) {
       return res.status(200).json({ sent: 0, skipped: true, reason: 'Keine Artikel gefunden' });
     }
 
+    let parsedBody = req.body;
+    if (typeof parsedBody === 'string') {
+      try {
+        parsedBody = JSON.parse(parsedBody);
+      } catch {
+        parsedBody = {};
+      }
+    }
+    const forceSlug = String(parsedBody?.forceSlug || req.query?.forceSlug || '').trim();
+
     const db = getFirestore(app);
     const state = await getPushState(db, 'pushState');
     const allKeys = candidates.map((c) => c.key);
 
-    if (!Array.isArray(state.sentArticleKeys)) {
-      await savePushState(db, { sentArticleKeys: allKeys.slice(0, 250) }, 'pushState');
-      return res.status(200).json({ sent: 0, baselineInitialized: true, trackedArticles: allKeys.length });
-    }
+    let fresh;
+    if (forceSlug) {
+      fresh = candidates.filter((c) => c.key === forceSlug || c.slug === forceSlug);
+      if (fresh.length === 0) {
+        return res.status(404).json({ sent: 0, error: `Artikel "${forceSlug}" nicht gefunden` });
+      }
+    } else {
+      if (!Array.isArray(state.sentArticleKeys)) {
+        await savePushState(db, { sentArticleKeys: allKeys.slice(0, 250) }, 'pushState');
+        return res.status(200).json({ sent: 0, baselineInitialized: true, trackedArticles: allKeys.length });
+      }
 
-    const seen = new Set(state.sentArticleKeys);
-    const fresh = candidates.filter((c) => !seen.has(c.key));
-    if (fresh.length === 0) {
-      return res.status(200).json({ sent: 0, skipped: true, reason: 'Keine neuen Artikel' });
+      const seen = new Set(state.sentArticleKeys);
+      fresh = candidates.filter((c) => !seen.has(c.key));
+      if (fresh.length === 0) {
+        return res.status(200).json({ sent: 0, skipped: true, reason: 'Keine neuen Artikel' });
+      }
     }
 
     const toNotify = fresh.slice(0, 3);
@@ -155,7 +175,8 @@ export async function handleNotifyArticles(req, res) {
       totalFailed += r.failed;
     }
 
-    const updatedKeys = [...new Set([...fresh.map((f) => f.key), ...state.sentArticleKeys])].slice(0, 250);
+    const prevKeys = Array.isArray(state.sentArticleKeys) ? state.sentArticleKeys : allKeys;
+    const updatedKeys = [...new Set([...fresh.map((f) => f.key), ...prevKeys])].slice(0, 250);
     await savePushState(db, { sentArticleKeys: updatedKeys }, 'pushState');
 
     return res.status(200).json({
