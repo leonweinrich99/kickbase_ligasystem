@@ -143,7 +143,7 @@ export const UserRow = ({ item, color, isSaisonView, displayRank, prevRank, rout
         <div className="relative ml-2 shrink-0 flex items-center justify-center">
           <ManagerAvatar name={item.name} size={46} />
           {rating && (
-            <div className="absolute top-1/2 -right-2 -translate-y-1/2 z-10 pointer-events-none">
+            <div className="absolute top-1/2 -right-1.5 -translate-y-1/2 z-10 flex items-center justify-center leading-none pointer-events-none">
               <ManagerRatingHex rating={rating} size={28} backdrop />
             </div>
           )}
