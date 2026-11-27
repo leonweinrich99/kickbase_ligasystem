@@ -1,9 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion as Motion } from 'framer-motion';
-import { HelpCircle, Link2, ChevronRight } from './ui/icons';
+import { HelpCircle, Link2, ChevronRight, Pencil } from './ui/icons';
 import { useAuth } from './AuthContext';
 import { useTour } from './Tour';
+import { useNextMatchday } from './useNextMatchday';
 import accountLogo from './assets/account_logo.png';
 import rulesLogo from './assets/rules_logo.png';
 import pokalLogo from './assets/pokal_logo.png';
@@ -12,43 +13,29 @@ import remindersLogo from './assets/reminders_logo.png';
 import advisorLogo from './assets/advisor_logo.png';
 import adminLogo from './assets/admin_logo.png';
 import { SeasonSnapshot } from './AccountStats';
-import ManagerRatingBadge from './ManagerRatingBadge';
 import TabPageHeader from './ui/TabPageHeader';
-import ManagerAvatar from './ui/ManagerAvatar';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
-  show: (i = 0) => ({ opacity: 1, y: 0, transition: { duration: 0.35, delay: i * 0.05, ease: 'easeOut' } }),
+  show: (i = 0) => ({ opacity: 1, y: 0, transition: { duration: 0.32, delay: i * 0.045, ease: 'easeOut' } }),
 };
 
-const MenuRow = ({ to, onClick, icon: Icon, image, label, color = '#8b92a5' }) => {
-  const content = (
-    <div className="flex items-center gap-3.5 px-5 py-4 hover:bg-[#1e1e1e] active:bg-[#242424] transition-colors">
-      <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ color }}>
-        {image ? (
-          <img src={image} alt="" className="w-7 h-7 object-contain" />
-        ) : (
-          <Icon size={18} strokeWidth={2.5} />
-        )}
-      </div>
-      <span className="text-sm font-bold text-gray-100 flex-1">{label}</span>
-      <ChevronRight size={15} strokeWidth={2.5} className="text-[#4b5563]" />
+const BentoTile = ({ to, image, label, subtitle, accentBorder }) => (
+  <Link
+    to={to}
+    className="card-surface oct-md rounded-2xl p-3.5 flex items-center gap-3 hover:bg-[#1d1e24] active:scale-[0.98] transition-all group min-w-0"
+    style={accentBorder ? { borderColor: accentBorder, '--oct-bd': accentBorder } : undefined}
+  >
+    <div className="w-8 h-8 flex items-center justify-center shrink-0">
+      <img src={image} alt="" className="w-7 h-7 object-contain group-hover:scale-105 transition-transform" />
     </div>
-  );
-
-  if (onClick) {
-    return <button onClick={onClick} className="w-full text-left">{content}</button>;
-  }
-  return <Link to={to}>{content}</Link>;
-};
-
-const MenuGroup = ({ title, children, index }) => (
-  <Motion.div variants={fadeUp} initial="hidden" animate="show" custom={index} className="mb-5">
-    {title && <div className="text-[10px] font-black uppercase tracking-widest text-[#626978] mb-2 px-1">{title}</div>}
-    <div className="card-surface rounded-2xl divide-y divide-[#2a2a2a] overflow-hidden">
-      {children}
+    <div className="min-w-0 flex-1">
+      <div className="text-[13px] font-bold text-gray-100 leading-tight truncate">{label}</div>
+      {subtitle && (
+        <div className="text-[10px] font-medium text-[#7e8596] mt-0.5 truncate">{subtitle}</div>
+      )}
     </div>
-  </Motion.div>
+  </Link>
 );
 
 const getGreeting = () => {
@@ -62,87 +49,133 @@ const getGreeting = () => {
 const Account = () => {
   const { user, profile, isAdmin, isFirebaseConfigured, signOut } = useAuth();
   const tour = useTour();
+  const nextMatchday = useNextMatchday();
   const firstName = profile?.displayName?.split(' ')[0];
+
+  const eyebrow = nextMatchday
+    ? `SAISON 26/27 · ST ${nextMatchday.number}`
+    : 'SAISON 26/27';
 
   return (
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10">
       <div className="max-w-lg mx-auto">
-        <Motion.div variants={fadeUp} initial="hidden" animate="show" custom={0} className="mb-6">
+        {/* Top Header */}
+        <Motion.div variants={fadeUp} initial="hidden" animate="show" custom={0} className="mb-5">
           <TabPageHeader
             bordered={false}
             logo={<img src={accountLogo} alt="Account Logo" className="w-full h-full object-contain" />}
-            eyebrow="SAISON 26/27"
+            eyebrow={eyebrow}
             title={`${getGreeting()}${firstName ? `, ${firstName}` : ''}`}
-            right={(
-              <div className="flex items-center gap-2 sm:gap-3">
-                {profile?.kickbaseId && <ManagerRatingBadge kickbaseId={profile.kickbaseId} />}
-                {isFirebaseConfigured && user && (
-                  <Link to="/account/profile" className="relative shrink-0" aria-label="Profil öffnen">
-                    <ManagerAvatar
-                      name={profile?.kickbaseName}
-                      photoURL={user.photoURL}
-                      size={48}
-                      ringColor="#ff5c3e"
-                    />
-                    {isAdmin && (
-                      <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full hex-beacon bg-purple-500 border-2 border-black flex items-center justify-center text-[7px] font-black text-white">A</span>
-                    )}
-                  </Link>
-                )}
-              </div>
-            )}
+            right={
+              isFirebaseConfigured && user ? (
+                <Link
+                  to="/account/profile"
+                  aria-label="Profil bearbeiten"
+                  className="oct-pill inline-flex items-center gap-1.5 rounded-full bg-[#17181f] border border-white/15 hover:border-[#ff5c3e]/60 px-3 py-1.5 text-[11px] font-bold text-gray-200 hover:text-white transition-all active:scale-95 shrink-0 shadow-md"
+                >
+                  <span>Profil</span>
+                  <Pencil size={11} className="text-[#ff5c3e]" />
+                </Link>
+              ) : null
+            }
           />
         </Motion.div>
 
+        {/* 1. Manager-Hero-Card + Pokal-Duell-Kachel */}
         {profile?.kickbaseId ? (
           <Motion.div variants={fadeUp} initial="hidden" animate="show" custom={1}>
-            <SeasonSnapshot kickbaseId={profile.kickbaseId} kickbaseName={profile.kickbaseName} photoURL={user?.photoURL} />
+            <SeasonSnapshot
+              kickbaseId={profile.kickbaseId}
+              kickbaseName={profile.kickbaseName}
+              photoURL={user?.photoURL}
+            />
           </Motion.div>
         ) : (
           <Motion.div variants={fadeUp} initial="hidden" animate="show" custom={1}>
             <Link
               to="/account/profile"
-              className="oct-box oct-bd-accent flex items-center gap-4 border border-dashed border-[#ff5c3e]/40 rounded-2xl p-5 mb-4 hover:border-[#ff5c3e] transition-all active:scale-[0.98]"
+              className="oct-box oct-bd-accent flex items-center gap-4 border border-dashed border-[#ff5c3e]/40 rounded-2xl p-5 mb-5 bg-[#141418]/70 hover:border-[#ff5c3e] transition-all active:scale-[0.98]"
             >
               <div className="oct-sm oct-bd-none w-10 h-10 rounded-xl bg-[#ff5c3e]/10 text-[#ff5c3e] flex items-center justify-center shrink-0">
                 <Link2 size={20} strokeWidth={2.5} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-bold text-gray-100">Kickbase-Account verbinden</div>
-                <div className="text-xs text-[#8b92a5] mt-0.5">Zeigt dir deine Liga-Statistiken & Pokal-Status hier direkt an.</div>
+                <div className="text-xs text-[#8b92a5] mt-0.5">
+                  Zeigt dir deine Liga-Statistiken, dein Rating & deinen Pokal-Status direkt hier im Cockpit an.
+                </div>
               </div>
               <ChevronRight size={16} strokeWidth={2.5} className="text-[#ff5c3e] shrink-0" />
             </Link>
           </Motion.div>
         )}
 
-        <MenuGroup title="Liga & Pokal" index={3}>
-          <MenuRow to="/rules" image={rulesLogo} label="Regelkatalog" />
-          <MenuRow to="/pokal-rules" image={pokalLogo} label="Pokal-Regeln" />
-          <MenuRow to="/archiv" image={archiveLogo} label="Quali-Daten (Archiv)" />
-        </MenuGroup>
+        {/* 2. 2x2 Bento-Grid: Liga & Mehr */}
+        <Motion.div variants={fadeUp} initial="hidden" animate="show" custom={2} className="mb-5" data-tour="account-menu">
+          <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#626978] mb-2.5 px-1">
+            Liga & Mehr
+          </div>
+          <div className="grid grid-cols-2 gap-2.5">
+            <BentoTile to="/rules" image={rulesLogo} label="Regelkatalog" subtitle="Liga-Regeln" />
+            <BentoTile to="/pokal-rules" image={pokalLogo} label="Pokal-Regeln" subtitle="Modus & Ablauf" />
+            <BentoTile to="/archiv" image={archiveLogo} label="Quali-Archiv" subtitle="Saison 25/26" />
+            <BentoTile to="/account/reminders" image={remindersLogo} label="Push-Alarme" subtitle="Erinnerungen" />
+          </div>
+        </Motion.div>
 
-        <MenuGroup title="Persönlich" index={4}>
-          <MenuRow to="/account/reminders" image={remindersLogo} label="Benachrichtigungen" />
-          <MenuRow onClick={tour.start} icon={HelpCircle} label="App-Tutorial ansehen" />
-        </MenuGroup>
-
+        {/* 3. Admin-Bento (nur für Admins sichtbar) */}
         {isAdmin && (
-          <MenuGroup title="Verwaltung" index={5}>
-            <MenuRow to="/admin/advisor" image={advisorLogo} label="Trading Advisor" />
-            <MenuRow to="/admin" image={adminLogo} label="Admin Panel" />
-          </MenuGroup>
+          <Motion.div variants={fadeUp} initial="hidden" animate="show" custom={3} className="mb-5">
+            <div className="flex items-center justify-between mb-2.5 px-1">
+              <span className="text-[10px] font-black uppercase tracking-[0.16em] text-[#626978]">Verwaltung</span>
+              <span className="text-[9px] font-black uppercase tracking-[0.16em] text-purple-400">Admin</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2.5">
+              <BentoTile
+                to="/admin/advisor"
+                image={advisorLogo}
+                label="Trading Advisor"
+                subtitle="KI & Markt"
+                accentBorder="rgba(167, 139, 250, 0.28)"
+              />
+              <BentoTile
+                to="/admin"
+                image={adminLogo}
+                label="Admin Panel"
+                subtitle="Steuerung"
+                accentBorder="rgba(167, 139, 250, 0.28)"
+              />
+            </div>
+          </Motion.div>
         )}
 
-        {isFirebaseConfigured && user && (
-          <Motion.button
-            variants={fadeUp} initial="hidden" animate="show" custom={6}
-            onClick={signOut}
-            className="w-full text-center text-xs font-bold uppercase tracking-widest text-red-400/70 hover:text-red-400 py-3 transition-colors"
+        {/* 4. Kompakter Footer: App-Tutorial & Abmelden */}
+        <Motion.div
+          variants={fadeUp}
+          initial="hidden"
+          animate="show"
+          custom={4}
+          className="mt-6 pt-4 border-t border-white/[0.07] flex items-center justify-between gap-3 px-1"
+        >
+          <button
+            type="button"
+            onClick={tour.start}
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#8b92a5] hover:text-white transition-colors py-1.5 cursor-pointer"
           >
-            Abmelden
-          </Motion.button>
-        )}
+            <HelpCircle size={14} strokeWidth={2.2} />
+            <span>App-Tutorial</span>
+          </button>
+
+          {isFirebaseConfigured && user && (
+            <button
+              type="button"
+              onClick={signOut}
+              className="text-[11px] font-extrabold uppercase tracking-widest text-red-400/75 hover:text-red-400 py-1.5 transition-colors cursor-pointer"
+            >
+              Abmelden
+            </button>
+          )}
+        </Motion.div>
       </div>
     </div>
   );
