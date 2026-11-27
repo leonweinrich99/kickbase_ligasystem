@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Bell, Send, CheckCircle2 } from 'lucide-react';
+import { Send, CheckCircle2 } from 'lucide-react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import { useAuth } from './AuthContext';
 import { useBackNavigation } from './useBackNavigation';
 import Toggle from './Toggle';
 import CloseButton from './ui/CloseButton';
+import remindersLogo from './assets/reminders_logo.png';
 import {
   CURRENT_PUSH_PROMPT_VERSION,
   NOTIFICATION_CATEGORIES,
@@ -129,9 +130,7 @@ export default function Reminders() {
       <div className="max-w-lg mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-[#ff5c3e]/10 text-[#ff5c3e]">
-              <Bell size={18} strokeWidth={2.5} />
-            </div>
+            <img src={remindersLogo} alt="Benachrichtigungen Logo" className="w-11 h-11 object-contain shrink-0" />
             <div>
               <h1 className="text-xl sm:text-2xl font-black uppercase text-white leading-tight">
                 Benachrichtigungen

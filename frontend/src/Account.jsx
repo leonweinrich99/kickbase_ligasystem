@@ -1,10 +1,16 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion as Motion } from 'framer-motion';
-import { BookOpen, Trophy, Archive, Shield, TrendingUp, HelpCircle, Bell, Link2, ChevronRight } from 'lucide-react';
+import { HelpCircle, Link2, ChevronRight } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import { useTour } from './Tour';
 import accountLogo from './assets/account_logo.png';
+import rulesLogo from './assets/rules_logo.png';
+import pokalLogo from './assets/pokal_logo.png';
+import archiveLogo from './assets/archive_logo.png';
+import remindersLogo from './assets/reminders_logo.png';
+import advisorLogo from './assets/advisor_logo.png';
+import adminLogo from './assets/admin_logo.png';
 import { SeasonSnapshot } from './AccountStats';
 import ManagerRatingBadge from './ManagerRatingBadge';
 import TabPageHeader from './ui/TabPageHeader';
@@ -15,11 +21,15 @@ const fadeUp = {
   show: (i = 0) => ({ opacity: 1, y: 0, transition: { duration: 0.35, delay: i * 0.05, ease: 'easeOut' } }),
 };
 
-const MenuRow = ({ to, onClick, icon: Icon, label, color = '#8b92a5' }) => {
+const MenuRow = ({ to, onClick, icon: Icon, image, label, color = '#8b92a5' }) => {
   const content = (
     <div className="flex items-center gap-3.5 px-5 py-4 hover:bg-[#1e1e1e] active:bg-[#242424] transition-colors">
-      <div className="w-6 h-6 flex items-center justify-center shrink-0" style={{ color }}>
-        <Icon size={18} strokeWidth={2.5} />
+      <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ color }}>
+        {image ? (
+          <img src={image} alt="" className="w-7 h-7 object-contain" />
+        ) : (
+          <Icon size={18} strokeWidth={2.5} />
+        )}
       </div>
       <span className="text-sm font-bold text-gray-100 flex-1">{label}</span>
       <ChevronRight size={15} strokeWidth={2.5} className="text-[#4b5563]" />
@@ -107,20 +117,20 @@ const Account = () => {
         )}
 
         <MenuGroup title="Liga & Pokal" index={3}>
-          <MenuRow to="/rules" icon={BookOpen} label="Regelkatalog" />
-          <MenuRow to="/pokal-rules" icon={Trophy} label="Pokal-Regeln" />
-          <MenuRow to="/archiv" icon={Archive} label="Quali-Daten (Archiv)" />
+          <MenuRow to="/rules" image={rulesLogo} label="Regelkatalog" />
+          <MenuRow to="/pokal-rules" image={pokalLogo} label="Pokal-Regeln" />
+          <MenuRow to="/archiv" image={archiveLogo} label="Quali-Daten (Archiv)" />
         </MenuGroup>
 
         <MenuGroup title="Persönlich" index={4}>
-          <MenuRow to="/account/reminders" icon={Bell} label="Benachrichtigungen" />
+          <MenuRow to="/account/reminders" image={remindersLogo} label="Benachrichtigungen" />
           <MenuRow onClick={tour.start} icon={HelpCircle} label="App-Tutorial ansehen" />
         </MenuGroup>
 
         {isAdmin && (
           <MenuGroup title="Verwaltung" index={5}>
-            <MenuRow to="/admin/advisor" icon={TrendingUp} label="Trading Advisor" color="#22d3ee" />
-            <MenuRow to="/admin" icon={Shield} label="Admin Panel" color="#a855f7" />
+            <MenuRow to="/admin/advisor" image={advisorLogo} label="Trading Advisor" />
+            <MenuRow to="/admin" image={adminLogo} label="Admin Panel" />
           </MenuGroup>
         )}
 

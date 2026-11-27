@@ -3,7 +3,7 @@ import { useLocation, Link } from 'react-router-dom';
 import ligaLogo from './assets/logo.png';
 import pokalLogo from './assets/pokal_logo.png';
 import accountLogo from './assets/account_logo.png';
-import newsLogo from './assets/news_logo.svg';
+import newsLogo from './assets/news_logo.png';
 
 // Live-Punkte-Tab (Owner-Wunsch 24.11.2026: "nur den pulsierenden Punkt und
 // nicht das andere Icon") - der Punkt IST das Icon, kein zusaetzliches

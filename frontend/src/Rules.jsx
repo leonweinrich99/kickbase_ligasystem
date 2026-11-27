@@ -3,6 +3,8 @@ import { motion as Motion } from 'framer-motion';
 import { subscribeToRules, saveRules } from './rulesConfig';
 import { useAuth } from './AuthContext';
 import { useBackNavigation } from './useBackNavigation';
+import rulesLogo from './assets/rules_logo.png';
+import pokalLogo from './assets/pokal_logo.png';
 
 const colors = {
   blue: ['border-blue-500/40 hover:border-blue-500 hover:bg-blue-500/10', 'text-blue-400'],
@@ -135,6 +137,11 @@ export default function Rules({ type = 'league', backTo = '/', label = 'Regelkat
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
       </button>
       <Motion.header initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="text-center mb-20 pt-10 sm:pt-0">
+        <img
+          src={isCup ? pokalLogo : rulesLogo}
+          alt={label}
+          className="w-16 h-16 sm:w-20 sm:h-20 object-contain mx-auto mb-4"
+        />
         <div className={`inline-block px-3 py-1 mb-4 text-[0.85rem] font-extrabold uppercase tracking-[2.5px] border rounded-full ${accent === 'purple' ? 'text-purple-400 bg-purple-500/10 border-purple-500/20' : 'text-orange-400 bg-orange-500/10 border-orange-500/20'}`}>{rules?.season || 'Saison 26/27'}</div>
         <h1 className="text-4xl sm:text-[3.5rem] font-black tracking-tighter uppercase leading-[1.1] mb-4 bg-gradient-to-br from-white to-[#9ca3af] bg-clip-text text-transparent">KICKBASE {isCup ? 'POKAL' : 'LIGASYSTEM'}<br />{label}</h1>
       </Motion.header>

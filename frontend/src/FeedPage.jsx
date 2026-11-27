@@ -4,7 +4,7 @@ import { Newspaper, Trophy, TrendingUp, Flame, Clock, BarChart3, ChevronRight, C
 import TabPageHeader from './ui/TabPageHeader';
 import { FEED_CATEGORIES, getCategoryMeta, formatArticleDate, sortArticlesByDateDesc } from './feedMeta';
 import { useAuth } from './AuthContext';
-import newsLogo from './assets/news_logo.svg';
+import newsLogo from './assets/news_logo.png';
 import AdBanner from './ui/AdBanner';
 import HotShotsSection from './ui/HotShotsSection';
 

@@ -5,6 +5,7 @@ import { Info, RefreshCw, CheckCircle2, XCircle, SlidersHorizontal, X, ChevronDo
 import { useAuth } from './AuthContext';
 import { useBackNavigation } from './useBackNavigation';
 import PageHeader from './ui/PageHeader';
+import advisorLogo from './assets/advisor_logo.png';
 import CloseButton, { IconBackButton } from './ui/CloseButton';
 import StatTile from './ui/StatTile';
 import PlayerCard from './ui/AdvisorPlayerCard';
@@ -1743,8 +1744,11 @@ const Advisor = () => {
   return (
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10">
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-4">
-          <PageHeader eyebrow="ADMIN" accentColor="#22d3ee" title="Trading Advisor" />
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+            <img src={advisorLogo} alt="Trading Advisor Logo" className="w-12 h-12 sm:w-14 sm:h-14 object-contain shrink-0" />
+            <PageHeader eyebrow="ADMIN" accentColor="#22d3ee" title="Trading Advisor" />
+          </div>
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => setShowInfo((v) => !v)}

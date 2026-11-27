@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Users, Star, Trophy, Info, ChevronLeft, ChevronRight, TrendingUp, TrendingDown } from 'lucide-react';
 import logo from './assets/logo.png';
+import archiveLogo from './assets/archive_logo.png';
 import TabPageHeader from './ui/TabPageHeader';
 import CloseButton from './ui/CloseButton';
 import ManagerAvatar from './ui/ManagerAvatar';
@@ -31,7 +32,7 @@ export const Header = ({
   return (
     <TabPageHeader
       className="mb-4 sm:mb-8"
-      logo={<img src={logo} alt="Kickbase Liga Logo" className="w-full h-full object-contain p-0.5 sm:p-1" />}
+      logo={<img src={mode === 'archive' ? archiveLogo : logo} alt={mode === 'archive' ? 'Quali-Archiv Logo' : 'Kickbase Liga Logo'} className="w-full h-full object-contain p-0.5 sm:p-1" />}
       eyebrow="SAISON 26/27"
       eyebrowBadge={mode === 'archive' ? (
         <div className="text-[8px] sm:text-[9px] font-semibold tracking-widest text-[#8b92a5] bg-[#1f1f1f] border border-[#2e2e2e] rounded-full px-2 py-0.5 uppercase">

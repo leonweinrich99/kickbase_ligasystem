@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Bell, Share, PlusSquare, X } from 'lucide-react';
+import { Share, PlusSquare, X } from 'lucide-react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import { useAuth } from './AuthContext';
 import { useTour } from './Tour';
 import Toggle from './Toggle';
+import remindersLogo from './assets/reminders_logo.png';
 import {
   CURRENT_PUSH_PROMPT_VERSION,
   NOTIFICATION_CATEGORIES,
@@ -128,9 +129,7 @@ export default function PushPromptModal() {
         {/* Header */}
         <div className="px-5 pt-5 pb-3.5 border-b border-[#242424] flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#ff5c3e]/15 text-[#ff5c3e] flex items-center justify-center shrink-0">
-              <Bell size={19} strokeWidth={2.5} />
-            </div>
+            <img src={remindersLogo} alt="" className="w-11 h-11 object-contain shrink-0" />
             <div>
               <h2 className="text-base font-black uppercase tracking-tight text-white leading-tight">
                 {alreadyEnabled

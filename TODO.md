@@ -108,12 +108,10 @@ Bitte Haken setzen (`[x]`), sobald ein Punkt erledigt UND getestet ist.
 
 ## 🎨 Icon-Familie (neu)
 
-- [ ] **Eigene Icons im Logo-Stil erstellen lassen** (Sechseck + isometrisches
-      3-Stufen-Podest in Blau/Orange/Grün + wechselndes "Topper"-Symbol,
-      siehe fertiger Prompt im Chat vom 13.08.2026). Geplante Icons:
-      Trading Advisor, Regelkatalog, Admin Panel, Erinnerungen, Quali-Archiv,
-      Kader, Spielplan. **Wird später von Leon erledigt** (Asset-Erstellung
-      über externe Bild-KI), danach Einbau in die App durch mich.
+- [x] **Eigene Icons im Logo-Stil erstellt & eingebaut** (Sechseck + isometrisches
+      3-Stufen-Podest in Blau/Orange/Grün + individuelle Motive):
+      News/Feed, Trading Advisor, Regelkatalog, Admin Panel, Erinnerungen,
+      Quali-Archiv, Kader, Spielplan sind in `frontend/src/assets/` integriert.
 
 ## 🎨 Account-Seite
 

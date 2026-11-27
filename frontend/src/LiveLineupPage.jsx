@@ -3,6 +3,8 @@ import { RefreshCw, ChevronDown, Radio } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import ManagerAvatar from './ui/ManagerAvatar';
 import TabPageHeader from './ui/TabPageHeader';
+import kaderLogo from './assets/kader_logo.png';
+import spielplanLogo from './assets/spielplan_logo.png';
 import AnimatedPoints from './ui/AnimatedPoints';
 import LiveLineupPitch from './ui/LiveLineupGrid';
 import CurrentSquadView from './ui/CurrentSquadView';
@@ -1268,14 +1270,20 @@ const LiveLineupPage = () => {
       <div className="max-w-[700px] mx-auto">
         <TabPageHeader
           className="mb-5"
-          logo={(
-            <div className="w-full h-full rounded-2xl bg-[#ef4444]/10 flex items-center justify-center">
-              <span className="relative flex h-3.5 w-3.5 sm:h-4 sm:w-4">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ef4444] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3.5 w-3.5 sm:h-4 sm:w-4 bg-[#ef4444]"></span>
-              </span>
-            </div>
-          )}
+          logo={
+            mode === 'own' ? (
+              <img src={kaderLogo} alt="Mein Kader Logo" className="w-full h-full object-contain p-0.5" />
+            ) : mode === 'teams' ? (
+              <img src={spielplanLogo} alt="Spieltag Logo" className="w-full h-full object-contain p-0.5" />
+            ) : (
+              <div className="w-full h-full rounded-2xl bg-[#ef4444]/10 flex items-center justify-center">
+                <span className="relative flex h-3.5 w-3.5 sm:h-4 sm:w-4">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ef4444] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3.5 w-3.5 sm:h-4 sm:w-4 bg-[#ef4444]"></span>
+                </span>
+              </div>
+            )
+          }
           eyebrow={displayedMatchday ? `SPIELTAG ${displayedMatchday} · LIVE` : 'LIVE'}
           accentColor="#ef4444"
           title="Live Punkte"

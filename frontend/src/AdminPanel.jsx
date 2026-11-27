@@ -11,6 +11,7 @@ import { useBackNavigation } from './useBackNavigation';
 import PageHeader from './ui/PageHeader';
 import CloseButton from './ui/CloseButton';
 import StatusPill from './ui/StatusPill';
+import adminLogo from './assets/admin_logo.png';
 
 const STATUS_VARIANTS = { approved: 'green', pending: 'yellow', rejected: 'red' };
 const STATUS_ICONS = { approved: CheckCircle2, pending: Clock, rejected: XCircle };
@@ -270,8 +271,11 @@ const AdminPanel = () => {
   return (
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10">
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <PageHeader eyebrow="ADMIN" title="Nutzerverwaltung" />
+        <div className="flex items-center justify-between gap-3 mb-8">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+            <img src={adminLogo} alt="Admin Logo" className="w-12 h-12 sm:w-14 sm:h-14 object-contain shrink-0" />
+            <PageHeader eyebrow="ADMIN" title="Nutzerverwaltung" />
+          </div>
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => setShowMessenger(true)}
