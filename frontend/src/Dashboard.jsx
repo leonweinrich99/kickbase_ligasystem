@@ -6,7 +6,9 @@ import archiveLogo from './assets/archive_logo.png';
 import TabPageHeader from './ui/TabPageHeader';
 import CloseButton from './ui/CloseButton';
 import ManagerAvatar from './ui/ManagerAvatar';
+import ManagerRatingHex from './ui/ManagerRatingHex';
 import AdBanner from './ui/AdBanner';
+import { useManagerRatings } from './useManagerRatings';
 
 export const TrophyIcon = ({ type }) => {
   const colors = { gold: '#eab308', silver: '#94a3b8', bronze: '#ca8a04' };
@@ -106,7 +108,7 @@ export const parsePoints = (str) => {
   return parseInt(str.replace(/\./g, '')) || 0;
 };
 
-export const UserRow = ({ item, color, isSaisonView, displayRank, prevRank, routeBase = '', isTourTarget = false, leagueBadge = null }) => {
+export const UserRow = ({ item, color, isSaisonView, displayRank, prevRank, routeBase = '', isTourTarget = false, leagueBadge = null, rating = null }) => {
   const rankChange = prevRank ? prevRank - displayRank : 0;
   const statusColors = {
     green: '#22c55e',
@@ -159,6 +161,11 @@ export const UserRow = ({ item, color, isSaisonView, displayRank, prevRank, rout
             </span>
           )}
         </div>
+        {rating && (
+          <div className="mr-2.5 sm:mr-3 shrink-0 flex items-center justify-center">
+            <ManagerRatingHex rating={rating} size={28} />
+          </div>
+        )}
         <div className="text-right mr-2">
           <div className="text-[17px] font-bold" style={{ color: color }}>
             {pointsToShow}
@@ -170,7 +177,7 @@ export const UserRow = ({ item, color, isSaisonView, displayRank, prevRank, rout
   );
 };
 
-export const LeagueColumn = ({ league, isSaisonView, rankOffset, prevRanks, routeBase = '', isFirstColumn = false }) => {
+export const LeagueColumn = ({ league, isSaisonView, rankOffset, prevRanks, routeBase = '', isFirstColumn = false, managerRatings = null }) => {
   return (
     <div className="flex-1 w-full lg:w-1/3 min-w-0 px-0 sm:px-2.5">
       <div className="flex items-center mb-4 mt-4 lg:mt-0">
@@ -188,6 +195,7 @@ export const LeagueColumn = ({ league, isSaisonView, rankOffset, prevRanks, rout
             prevRank={prevRanks?.[u.id]}
             routeBase={routeBase}
             isTourTarget={isFirstColumn && index === 0}
+            rating={managerRatings?.[u.id] || null}
           />
         ))}
       </div>
@@ -230,6 +238,8 @@ const Dashboard = ({ data, currentView, onNext, onPrev, prevRanks, mode = 'live'
   // Punkte-/Sortierzwecke verhält sie sich wie die Saisonansicht.
   const isSaisonView = currentView === 'saison' || isTrueTable;
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const allRatings = useManagerRatings();
+  const managerRatings = mode !== 'archive' ? allRatings : null;
 
   const sortByView = (a, b) => {
     const valA = isSaisonView ? parsePoints(a.points) : parsePoints(a.pointsMatchday);
@@ -294,6 +304,7 @@ const Dashboard = ({ data, currentView, onNext, onPrev, prevRanks, mode = 'live'
                 prevRank={prevRanks?.[u.id]}
                 routeBase={routeBase}
                 leagueBadge={{ name: u.leagueName, color: u.leagueColor }}
+                rating={managerRatings?.[u.id] || null}
               />
             ))}
           </div>
@@ -309,6 +320,7 @@ const Dashboard = ({ data, currentView, onNext, onPrev, prevRanks, mode = 'live'
                 prevRanks={prevRanks}
                 routeBase={routeBase}
                 isFirstColumn={idx === 0}
+                managerRatings={managerRatings}
               />
               {/* Werbe-Easter-Egg zwischen den Ligen auf Mobile (gestapelte Spalten) */}
               {idx < processedLeagues.length - 1 && (

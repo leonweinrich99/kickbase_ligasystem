@@ -1,6 +1,7 @@
-import { useId, useState, useEffect } from 'react';
+import { useId } from 'react';
 import { Link } from 'react-router-dom';
 import { SHIELD_PATH, TIER_THEME } from './ui/FifaManagerCard';
+import { useManagerRatings } from './useManagerRatings';
 
 // Kleiner Badge-Button auf der Account-Seite: verkleinerte FIFA-Karten-Optik
 // (Schild-/Wappen-Kontur in Bronze/Silber/Gold je Kartenstufe) mit der grossen
@@ -13,17 +14,9 @@ import { SHIELD_PATH, TIER_THEME } from './ui/FifaManagerCard';
 const BADGE_VIEWBOX = '57 36 370 592';
 
 const ManagerRatingBadge = ({ kickbaseId }) => {
-  const [rating, setRating] = useState(null);
+  const allRatings = useManagerRatings();
+  const rating = kickbaseId && allRatings ? allRatings[kickbaseId] : null;
   const uid = useId().replace(/[:]/g, '');
-
-  useEffect(() => {
-    fetch('/history/manager-ratings.json')
-      .then(res => res.json())
-      .then(data => {
-        if (data[kickbaseId]) setRating(data[kickbaseId]);
-      })
-      .catch(err => console.error("Could not load ratings", err));
-  }, [kickbaseId]);
 
   if (!rating) return null;
 

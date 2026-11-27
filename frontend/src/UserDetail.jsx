@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis,
   ResponsiveContainer, ReferenceArea, Legend, LabelList
@@ -11,6 +11,8 @@ import {
 import { useBackNavigation } from './useBackNavigation';
 import { IconBackButton, SubpageActionButton } from './ui/CloseButton';
 import ManagerAvatar from './ui/ManagerAvatar';
+import ManagerRatingHex from './ui/ManagerRatingHex';
+import { useManagerRatings } from './useManagerRatings';
 import PlayerPhotoCard from './ui/PlayerPhotoCard';
 import PositionRow from './ui/PositionRow';
 import LiveLineupPitch from './ui/LiveLineupGrid';
@@ -100,6 +102,8 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
   const [showAverage, setShowAverage] = useState(false);
   const [showOptimal, setShowOptimal] = useState(false);
   const [currentMatchday, setCurrentMatchday] = useState(null);
+  const managerRatings = useManagerRatings();
+  const managerRating = mode !== 'archive' ? managerRatings?.[userData?.id] : null;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -601,7 +605,19 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
             </div>
           </div>
 
-          <ManagerAvatar name={userData.name} ringColor={userData.leagueColor || '#ff5c3e'} ringWidth={1.35} size={140} />
+          <div className="relative shrink-0">
+            <ManagerAvatar name={userData.name} ringColor={userData.leagueColor || '#ff5c3e'} ringWidth={1.35} size={140} />
+            {managerRating && (
+              <Link
+                to={`/manager-rating/${userData.id}`}
+                aria-label={`Manager Rating ${managerRating.score} von ${userData.name} anzeigen`}
+                title={`Manager Rating ${managerRating.score} (${managerRating.level}) – Details anzeigen`}
+                className="absolute bottom-0.5 right-0.5 z-20 transition-transform hover:scale-110 active:scale-95"
+              >
+                <ManagerRatingHex rating={managerRating} size={46} backdrop />
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* Gesamtpunkte (Scalable Style, wie Marktwert im Advisor) */}

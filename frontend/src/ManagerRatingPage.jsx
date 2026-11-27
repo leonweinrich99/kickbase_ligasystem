@@ -1,39 +1,26 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
+import { useParams } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { useBackNavigation } from './useBackNavigation';
+import { useManagerRatings } from './useManagerRatings';
 import { IconBackButton } from './ui/CloseButton';
 import FifaManagerCard from './ui/FifaManagerCard';
 import RatingCalculationSection from './ui/RatingCalculationSection';
 
-// Vollbild-Seite (eigene Route /account/manager-rating) statt Bottom-Sheet-
-// Modal - gleiche Design-Strategie wie UserDetail/OptimalTeam: sticky Header
-// mit Zurueck-Button, Inhalt direkt darunter, kein Card-Rahmen mehr.
+// Vollbild-Seite (eigene Route /account/manager-rating bzw.
+// /manager-rating/:kickbaseId) statt Bottom-Sheet-Modal - gleiche
+// Design-Strategie wie UserDetail/OptimalTeam: Header mit Zurueck-Button,
+// Inhalt direkt darunter, kein Card-Rahmen mehr.
 
 const ManagerRatingPage = () => {
+  const { kickbaseId: paramId } = useParams();
   const { profile } = useAuth();
-  const kickbaseId = profile?.kickbaseId;
-  const goBack = useBackNavigation('/account');
-  const [rating, setRating] = useState(null);
-  const [allRatings, setAllRatings] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!kickbaseId) {
-      setLoading(false);
-      return;
-    }
-    fetch('/history/manager-ratings.json')
-      .then(res => res.json())
-      .then(data => {
-        setRating(data[kickbaseId] || null);
-        setAllRatings(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error("Could not load ratings", err);
-        setLoading(false);
-      });
-  }, [kickbaseId]);
+  const kickbaseId = paramId || profile?.kickbaseId;
+  const isOwnRating = !paramId || paramId === profile?.kickbaseId;
+  const goBack = useBackNavigation(paramId ? `/user/${paramId}` : '/account');
+  const allRatings = useManagerRatings();
+  const loading = Boolean(kickbaseId) && allRatings === null;
+  const rating = kickbaseId && allRatings ? (allRatings[kickbaseId] || null) : null;
 
   // Liga-Vergleichslisten fuer alle 6 gewichteten Karten-Attribute
   const leaguePeers = useMemo(() => {
@@ -85,9 +72,9 @@ const ManagerRatingPage = () => {
         <div className="text-gray-400 text-lg font-bold">Noch kein Manager Rating verfügbar</div>
         <button
           onClick={goBack}
-          className="bg-[#171717] border border-[#2e2e2e] px-6 py-3 rounded-xl text-gray-300 hover:text-white hover:border-[#ff5c3e] transition-all"
+          className="oct-md bg-[#171717] border border-[#2e2e2e] px-6 py-3 rounded-xl text-gray-300 hover:text-white hover:border-[#ff5c3e] transition-all"
         >
-          Zurück zum Account
+          {isOwnRating ? 'Zurück zum Account' : 'Zurück zum Manager'}
         </button>
       </div>
     );
@@ -103,17 +90,20 @@ const ManagerRatingPage = () => {
       <div className="max-w-[600px] w-full mx-auto pt-3 pb-8 px-4 sm:px-6 flex flex-col gap-6">
         <div>
           <h2 className="text-[17px] sm:text-3xl font-black tracking-tight uppercase leading-[1.1] break-words">Manager Rating</h2>
-          <p className="text-sm text-[#8b92a5] mt-1">Wie gut managst du deinen Kader?</p>
+          <p className="text-sm text-[#8b92a5] mt-1">
+            {isOwnRating ? 'Wie gut managst du deinen Kader?' : `${rating.name} · ${rating.level || 'Manager-Bewertung'}`}
+          </p>
         </div>
 
         {/* FIFA-Karte: Score, Foto, Name, 6 Attribute (ersetzt Score-Kreis
             + die frueheren 3 Teilscore-Kacheln) */}
-        <FifaManagerCard rating={rating} photoURL={profile?.photoURL} />
+        <FifaManagerCard rating={rating} photoURL={isOwnRating ? profile?.photoURL : null} />
 
         {/* Transparenz: woraus setzen sich die 6 Kartenwerte zusammen? Nutzt
             die vom Backend mitgelieferten Rohdaten/Formeln 1:1. */}
         <RatingCalculationSection
           calculation={rating.calculation}
+          isOwnRating={isOwnRating}
           kadLeaguePeers={leaguePeers.kad}
           pktLeaguePeers={leaguePeers.pkt}
           proLeaguePeers={leaguePeers.pro}

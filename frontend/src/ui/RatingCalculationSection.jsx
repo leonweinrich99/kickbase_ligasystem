@@ -33,7 +33,7 @@ const scoreToTier = (score) => (score >= 75 ? 'gold' : score >= 60 ? 'silver' : 
 // die vorherigen reinen Textzeilen untereinander. `highlight` spannt die
 // Kachel ueber beide Spalten und hebt sie als "die eine wichtige Zahl" hervor.
 const FactorChip = ({ value, label, highlight }) => (
-  <div className={`rounded-lg px-3 py-2.5 bg-[#0a0a0a] border border-[#242424] ${highlight ? 'col-span-2' : ''}`}>
+  <div className={`oct-sm rounded-lg px-3 py-2.5 bg-[#0a0a0a] border border-[#242424] ${highlight ? 'col-span-2' : ''}`}>
     <div className={`font-black text-white leading-tight tabular-nums ${highlight ? 'text-lg' : 'text-[15px]'}`}>{value}</div>
     <div className="text-[9px] font-bold uppercase tracking-wider text-gray-500 mt-1">{label}</div>
   </div>
@@ -45,19 +45,21 @@ const FactorGrid = ({ children }) => (
 
 // Liga-Vergleich als kleiner Fortschrittsbalken statt Zahlenfriedhof: "besser
 // als X% der Liga" + Platzierung, direkt visuell statt nur als Text.
-const LeagueCompareBar = ({ percentile, rank, total, accent }) => {
+const LeagueCompareBar = ({ percentile, rank, total, accent, isOwnRating = true }) => {
   if (percentile == null) return null;
   return (
-    <div className="col-span-2 rounded-lg p-3 bg-[#0a0a0a] border border-[#242424]">
+    <div className="oct-sm col-span-2 rounded-lg p-3 bg-[#0a0a0a] border border-[#242424]">
       <div className="flex items-center justify-between mb-2 gap-2">
-        <span className="text-[12px] font-bold text-white">Besser als {Math.round(percentile)}% deiner Liga</span>
+        <span className="text-[12px] font-bold text-white">
+          Besser als {Math.round(percentile)}% {isOwnRating ? 'deiner Liga' : 'der Liga'}
+        </span>
         {rank != null && total != null && (
           <span className="text-[10px] font-bold text-gray-500 shrink-0">Platz {rank}/{total}</span>
         )}
       </div>
-      <div className="w-full h-2 bg-[#242424] rounded-full overflow-hidden">
+      <div className="w-full h-2 bg-[#242424] rounded-full oct-pill overflow-hidden">
         <div
-          className="h-full rounded-full"
+          className="h-full rounded-full oct-pill"
           style={{ width: `${Math.max(4, Math.round(percentile))}%`, backgroundColor: accent }}
         />
       </div>
@@ -67,7 +69,7 @@ const LeagueCompareBar = ({ percentile, rank, total, accent }) => {
 
 // Aufklappbare Liste ALLER Liga-Kollegen fuer eine Metrik - beantwortet "was
 // haben die anderen denn für Werte?" konkret statt nur ueber einen Prozentrang.
-const LeaguePeerList = ({ peers, formatValue }) => {
+const LeaguePeerList = ({ peers, formatValue, isOwnRating = true }) => {
   const [open, setOpen] = useState(false);
   if (!peers || peers.length < 2) return null;
   return (
@@ -79,7 +81,7 @@ const LeaguePeerList = ({ peers, formatValue }) => {
         {open ? 'Werte ausblenden ▲' : 'Alle Werte der Liga anzeigen ▼'}
       </button>
       {open && (
-        <div className="mt-1 rounded-lg border border-[#242424] overflow-hidden">
+        <div className="oct-sm mt-1 rounded-lg border border-[#242424] overflow-hidden">
           {peers.map((p, i) => (
             <div
               key={`${p.name}-${i}`}
@@ -88,7 +90,7 @@ const LeaguePeerList = ({ peers, formatValue }) => {
               <span className={`flex items-center gap-2 min-w-0 ${p.isYou ? 'font-bold text-white' : 'text-gray-400'}`}>
                 <span className="text-gray-600 w-4 shrink-0">{i + 1}.</span>
                 <span className="truncate">{p.name}</span>
-                {p.isYou && <span className="text-[9px] font-black uppercase text-gray-500 shrink-0">Du</span>}
+                {p.isYou && isOwnRating && <span className="text-[9px] font-black uppercase text-gray-500 shrink-0">Du</span>}
               </span>
               <span className={`font-bold shrink-0 ${p.isYou ? 'text-white' : 'text-gray-300'}`}>{formatValue(p.value)}</span>
             </div>
@@ -100,7 +102,7 @@ const LeaguePeerList = ({ peers, formatValue }) => {
 };
 
 const EmptyState = ({ children }) => (
-  <div className="text-[12px] text-gray-500 leading-snug bg-[#0a0a0a] border border-dashed border-[#2a2a2a] rounded-lg p-3">
+  <div className="oct-sm text-[12px] text-gray-500 leading-snug bg-[#0a0a0a] border border-dashed border-[#2a2a2a] rounded-lg p-3">
     {children}
   </div>
 );
@@ -109,15 +111,21 @@ function StatCalcCard({ label, title, weightPct, score, isOpen, onToggle, factor
   const accent = TIER_ACCENT[scoreToTier(score)];
   return (
     <div
-      className="bg-[#141414] border border-[#2a2a2a] rounded-xl overflow-hidden"
-      style={{ borderLeft: `3px solid ${accent}` }}
+      className="oct-md bg-[#141414] border border-[#2a2a2a] rounded-xl overflow-hidden relative"
     >
+      <div
+        className="absolute left-0 top-0 bottom-0 w-[3.5px] pointer-events-none"
+        style={{
+          backgroundColor: accent,
+          clipPath: 'polygon(0 7px, 100% 3.5px, 100% calc(100% - 3.5px), 0 calc(100% - 7px))',
+        }}
+      />
       <button
         onClick={onToggle}
         className="w-full flex items-center gap-3 p-3.5 text-left"
       >
         <div
-          className="w-11 h-11 rounded-lg flex items-center justify-center shrink-0 font-black text-[13px]"
+          className="oct-sm oct-bd-none w-11 h-11 rounded-lg flex items-center justify-center shrink-0 font-black text-[13px]"
           style={{ backgroundColor: `${accent}22`, color: accent }}
         >
           {label}
@@ -126,7 +134,7 @@ function StatCalcCard({ label, title, weightPct, score, isOpen, onToggle, factor
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold text-white truncate">{title}</span>
             {weightPct != null && (
-              <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-[#222222] text-gray-400 shrink-0 tabular-nums">
+              <span className="oct-sm oct-bd-none text-[10px] font-black px-1.5 py-0.5 rounded bg-[#222222] text-gray-400 shrink-0 tabular-nums">
                 {weightPct} %
               </span>
             )}
@@ -143,6 +151,7 @@ function StatCalcCard({ label, title, weightPct, score, isOpen, onToggle, factor
 
 export default function RatingCalculationSection({
   calculation,
+  isOwnRating = true,
   kadLeaguePeers,
   pktLeaguePeers,
   proLeaguePeers,
@@ -166,9 +175,11 @@ export default function RatingCalculationSection({
 
   return (
     <div>
-      <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8b92a5] mb-1">So wird deine Karte berechnet</div>
+      <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8b92a5] mb-1">
+        {isOwnRating ? 'So wird deine Karte berechnet' : 'So wird die Karte berechnet'}
+      </div>
       <p className="text-[11px] text-gray-500 mb-3">
-        Dein Gesamtscore ist der gewichtete Durchschnitt der 6 wichtigsten Erfolgsfaktoren im Liga-Vergleich (Auf dem Platz 45 %, Transfermarkt 30 %, Kaderführung 25 %).
+        {isOwnRating ? 'Dein Gesamtscore' : 'Der Gesamtscore'} ist der gewichtete Durchschnitt der 6 wichtigsten Erfolgsfaktoren im Liga-Vergleich (Auf dem Platz 45 %, Transfermarkt 30 %, Kaderführung 25 %).
       </p>
 
       <div className="space-y-2">
@@ -201,8 +212,8 @@ export default function RatingCalculationSection({
                   highlight
                 />
               )}
-              <LeagueCompareBar percentile={kad.leaguePercentile} rank={kad.leagueRank} total={kad.leagueSize} accent={kadAccent} />
-              <LeaguePeerList peers={kadLeaguePeers} formatValue={fmtPts} />
+              <LeagueCompareBar percentile={kad.leaguePercentile} rank={kad.leagueRank} total={kad.leagueSize} accent={kadAccent} isOwnRating={isOwnRating} />
+              <LeaguePeerList peers={kadLeaguePeers} formatValue={fmtPts} isOwnRating={isOwnRating} />
             </FactorGrid>
           )}
         />
@@ -232,8 +243,8 @@ export default function RatingCalculationSection({
                   highlight
                 />
               )}
-              <LeagueCompareBar percentile={pkt.leaguePercentile} rank={pkt.leagueRank} total={pkt.leagueSize} accent={pktAccent} />
-              <LeaguePeerList peers={pktLeaguePeers} formatValue={fmtPts} />
+              <LeagueCompareBar percentile={pkt.leaguePercentile} rank={pkt.leagueRank} total={pkt.leagueSize} accent={pktAccent} isOwnRating={isOwnRating} />
+              <LeaguePeerList peers={pktLeaguePeers} formatValue={fmtPts} isOwnRating={isOwnRating} />
             </FactorGrid>
           )}
         />
@@ -249,8 +260,8 @@ export default function RatingCalculationSection({
             <FactorGrid>
               <FactorChip value={fmtSignedEUR(pro.weightedTotalProfit)} label="Gewichteter Profit" highlight />
               <FactorChip value={pro.completedTrades} label="Abgeschlossene Trades" highlight />
-              <LeagueCompareBar percentile={pro.leaguePercentile} rank={pro.leagueRank} total={pro.leagueSize} accent={proAccent} />
-              <LeaguePeerList peers={proLeaguePeers} formatValue={fmtSignedEUR} />
+              <LeagueCompareBar percentile={pro.leaguePercentile} rank={pro.leagueRank} total={pro.leagueSize} accent={proAccent} isOwnRating={isOwnRating} />
+              <LeaguePeerList peers={proLeaguePeers} formatValue={fmtSignedEUR} isOwnRating={isOwnRating} />
             </FactorGrid>
           )}
         />
@@ -280,8 +291,8 @@ export default function RatingCalculationSection({
                 value={dis.totalMissingSlots ?? 0}
                 label="Leere Startelf-Plätze"
               />
-              <LeagueCompareBar percentile={dis.leaguePercentile} rank={dis.leagueRank} total={dis.leagueSize} accent={disAccent} />
-              <LeaguePeerList peers={disLeaguePeers} formatValue={(v) => `${Math.round(v)} Pkt`} />
+              <LeagueCompareBar percentile={dis.leaguePercentile} rank={dis.leagueRank} total={dis.leagueSize} accent={disAccent} isOwnRating={isOwnRating} />
+              <LeaguePeerList peers={disLeaguePeers} formatValue={(v) => `${Math.round(v)} Pkt`} isOwnRating={isOwnRating} />
             </FactorGrid>
           )}
         />
@@ -308,8 +319,8 @@ export default function RatingCalculationSection({
                 value={`${kon.minPoints ?? '–'} / ${kon.maxPoints ?? '–'}`}
                 label="Min / Max Spieltag"
               />
-              <LeagueCompareBar percentile={kon.leaguePercentile} rank={kon.leagueRank} total={kon.leagueSize} accent={konAccent} />
-              <LeaguePeerList peers={konLeaguePeers} formatValue={fmtPts} />
+              <LeagueCompareBar percentile={kon.leaguePercentile} rank={kon.leagueRank} total={kon.leagueSize} accent={konAccent} isOwnRating={isOwnRating} />
+              <LeaguePeerList peers={konLeaguePeers} formatValue={fmtPts} isOwnRating={isOwnRating} />
             </FactorGrid>
           )}
         />
@@ -332,8 +343,8 @@ export default function RatingCalculationSection({
                 value={`${eff.profitableTrades ?? 0} / ${eff.completedTrades ?? 0}`}
                 label="Profitable Deals"
               />
-              <LeagueCompareBar percentile={eff.leaguePercentile} rank={eff.leagueRank} total={eff.leagueSize} accent={effAccent} />
-              <LeaguePeerList peers={effLeaguePeers} formatValue={fmtSignedEUR} />
+              <LeagueCompareBar percentile={eff.leaguePercentile} rank={eff.leagueRank} total={eff.leagueSize} accent={effAccent} isOwnRating={isOwnRating} />
+              <LeaguePeerList peers={effLeaguePeers} formatValue={fmtSignedEUR} isOwnRating={isOwnRating} />
             </FactorGrid>
           )}
         />
