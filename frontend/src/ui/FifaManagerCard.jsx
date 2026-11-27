@@ -43,15 +43,16 @@ const SHIELD_PATH_ROUNDED = `
 
 // Chamfered / facettierte Schild-Kontur im Kickbase-Oktagon-Look:
 // identische Proportionen & Bounding-Box (x: 57..427, y: 38..628),
-// alle weichen Boegen durch saubere 45°-Fasen & gerade Kanten ersetzt.
+// alle oberen & unteren Ecken sauber gefast (keine 90°-Kanten).
 const SHIELD_PATH_CHAMFERED = `
-  M 104 62
-  L 164 38
-  L 320 38
-  L 380 62
-  L 380 86
-  L 404 110
-  L 427 114
+  M 122 64
+  L 166 38
+  L 318 38
+  L 362 64
+  L 372 88
+  L 388 106
+  L 409 116
+  L 427 134
   L 427 530
   L 402 566
   L 286 594
@@ -59,9 +60,10 @@ const SHIELD_PATH_CHAMFERED = `
   L 198 594
   L 82 566
   L 57 530
-  L 57 114
-  L 80 110
-  L 104 86
+  L 57 134
+  L 75 116
+  L 96 106
+  L 112 88
   Z
 `;
 
