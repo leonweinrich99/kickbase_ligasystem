@@ -1,6 +1,7 @@
 import { useId, useState } from 'react';
 import { useManagerImages } from '../useManagerImages';
 import ligaLogo from '../assets/logo.png';
+import { isOctagonUI } from './shapeTheme';
 
 // Pixelgenaue FIFA/FC-Karten-Optik fuer das Manager Rating, umgesetzt als
 // einzelnes SVG mit viewBox="0 0 484 632" - alle Koordinaten entsprechen 1:1
@@ -19,6 +20,14 @@ import ligaLogo from '../assets/logo.png';
 
 const CARD_W = 484;
 const CARD_H = 632;
+
+// Metallic Prism v2 (Oktagon-Sammelkarten-Optik fuer das Oktagon-UI-Theme)
+const PRISM_W = 340;
+const PRISM_H = 490;
+const PRISM_CARD_PATH = 'M 54,24 L 286,24 L 316,54 L 316,416 L 266,466 L 74,466 L 24,416 L 24,54 Z';
+const PRISM_INNER_PATH = 'M 60,33 L 280,33 L 307,60 L 307,410 L 260,457 L 80,457 L 33,410 L 33,60 Z';
+const PRISM_PORTRAIT_PATH = 'M 152,62 L 284,62 L 292,70 L 292,248 L 144,248 L 144,70 Z';
+const PRISM_STAT_ROW_Y = [324, 356, 388];
 
 // Exakte Aussenkontur laut Vorgabe (Schild-/Wappen-Form mit Einbuchtungen
 // oben und Spitze unten).
@@ -102,6 +111,25 @@ const BallGlyph = ({ cx, cy, r = 9, color }) => (
   </g>
 );
 
+// Facettiertes Hexagon-Ball-Emblem fuer die Metallic-Prism-Karte
+const PrismHexBallGlyph = ({ cx, cy, color }) => (
+  <g transform={`translate(${cx}, ${cy})`}>
+    <polygon
+      points="0,-11 9.5,-5.5 9.5,5.5 0,11 -9.5,5.5 -9.5,-5.5"
+      fill="none"
+      stroke={color}
+      strokeWidth="1.55"
+      strokeLinejoin="miter"
+    />
+    <polygon points="0,-5.4 5.1,-1.7 3.2,4.4 -3.2,4.4 -5.1,-1.7" fill={color} />
+    <line x1="0" y1="-5.4" x2="0" y2="-11" stroke={color} strokeWidth="1.1" />
+    <line x1="5.1" y1="-1.7" x2="9.5" y2="-3.2" stroke={color} strokeWidth="1.1" />
+    <line x1="3.2" y1="4.4" x2="6.4" y2="7.6" stroke={color} strokeWidth="1.1" />
+    <line x1="-3.2" y1="4.4" x2="-6.4" y2="7.6" stroke={color} strokeWidth="1.1" />
+    <line x1="-5.1" y1="-1.7" x2="-9.5" y2="-3.2" stroke={color} strokeWidth="1.1" />
+  </g>
+);
+
 export default function FifaManagerCard({ rating, photoURL }) {
   const theme = TIER_THEME[rating.cardTier] || TIER_THEME.bronze;
   const uid = useId().replace(/[:]/g, '');
@@ -122,6 +150,162 @@ export default function FifaManagerCard({ rating, photoURL }) {
   // Name (SVG-Text bricht nicht automatisch um).
   const nameLength = rating.name?.length || 0;
   const nameFontSize = nameLength > 18 ? 22 : nameLength > 14 ? 29 : 34;
+  const prismNameFontSize = nameLength > 18 ? 16 : nameLength > 14 ? 20 : 24;
+
+  if (isOctagonUI) {
+    return (
+      <div className="w-full flex justify-center py-2">
+        <div
+          className="relative"
+          style={{
+            width: 'min(340px, calc(100vw - 2rem))',
+            aspectRatio: `${PRISM_W} / ${PRISM_H}`,
+            filter: isElite ? 'drop-shadow(0 0 16px rgba(244, 197, 66, 0.65))' : undefined,
+          }}
+        >
+          <svg
+            viewBox={`0 0 ${PRISM_W} ${PRISM_H}`}
+            className="w-full h-full block"
+            style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}
+          >
+            <defs>
+              <linearGradient id={`grad-card-${uid}`} x1="0%" y1="0%" x2="65%" y2="100%">
+                {theme.cardStops.map(([offset, color]) => (
+                  <stop key={offset} offset={`${offset}%`} stopColor={color} />
+                ))}
+              </linearGradient>
+              <linearGradient id={`grad-band-${uid}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                {theme.bandStops.map(([offset, color]) => (
+                  <stop key={offset} offset={`${offset}%`} stopColor={color} />
+                ))}
+              </linearGradient>
+              <linearGradient id={`grad-glint-${uid}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="34%" stopColor="#fff" stopOpacity="0" />
+                <stop offset="48%" stopColor="#fff" stopOpacity="0.42" />
+                <stop offset="62%" stopColor="#fff" stopOpacity="0" />
+              </linearGradient>
+              <pattern id={`pattern-dots-${uid}`} width="10" height="10" patternUnits="userSpaceOnUse">
+                <circle cx="2" cy="2" r="0.55" fill="#fff" opacity="0.55" />
+              </pattern>
+              <clipPath id={`clip-prism-${uid}`}>
+                <path d={PRISM_CARD_PATH} />
+              </clipPath>
+              <clipPath id={`clip-portrait-${uid}`}>
+                <path d={PRISM_PORTRAIT_PATH} />
+              </clipPath>
+            </defs>
+
+            <g clipPath={`url(#clip-prism-${uid})`}>
+              {/* Metallische Grundflaeche */}
+              <path d={PRISM_CARD_PATH} fill={`url(#grad-card-${uid})`} />
+
+              {/* Low-Poly Prism-Facetten */}
+              <polygon points="24,24 192,24 118,248 24,180" fill="#ffffff" opacity="0.14" />
+              <polygon points="192,24 316,24 316,220 118,248" fill="#000000" opacity="0.08" />
+              <polygon points="24,335 316,270 316,466 24,466" fill="#000000" opacity="0.07" />
+
+              {/* Feines Muster + diagonaler Lichtglanz */}
+              <rect x="0" y="0" width={PRISM_W} height={PRISM_H} fill={`url(#pattern-dots-${uid})`} opacity="0.14" />
+              <rect x="0" y="0" width={PRISM_W} height={PRISM_H} fill={`url(#grad-glint-${uid})`} />
+
+              {/* Links oben: Gesamtscore + Ligasystem-Logo */}
+              <text
+                x="86"
+                y="96"
+                textAnchor="middle"
+                dominantBaseline="central"
+                fontSize="52"
+                fontWeight="800"
+                letterSpacing="-1.8"
+                fill={theme.text}
+              >
+                {rating.score}
+              </text>
+              <line x1="62" y1="130" x2="110" y2="130" stroke={theme.text} strokeOpacity="0.28" strokeWidth="1.4" />
+              <image href={ligaLogo} x="58" y="144" width="56" height="56" preserveAspectRatio="xMidYMid meet" />
+
+              {/* Rechts oben: Manager-Portrait im dezenten Chamfer-Ausschnitt */}
+              {photoUrl ? (
+                <g clipPath={`url(#clip-portrait-${uid})`}>
+                  <image
+                    href={photoUrl}
+                    x="144"
+                    y="62"
+                    width="148"
+                    height="186"
+                    preserveAspectRatio="xMidYMin slice"
+                    onError={() => setPhotoFailed(true)}
+                  />
+                </g>
+              ) : (
+                <>
+                  <path d={PRISM_PORTRAIT_PATH} fill="#000000" opacity="0.1" />
+                  <text
+                    x="218"
+                    y="156"
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fontSize="66"
+                    fontWeight="700"
+                    fill={theme.subtext}
+                    opacity="0.52"
+                  >
+                    {rating.name?.charAt(0)?.toUpperCase() || '?'}
+                  </text>
+                </>
+              )}
+
+              {/* Namensleiste Ton-in-Ton metallisch wie in der bisherigen Karte */}
+              <rect x="24" y="248" width="292" height="48" fill={`url(#grad-band-${uid})`} />
+              <line x1="24" y1="248.5" x2="316" y2="248.5" stroke={theme.bandBorder} strokeWidth="1" />
+              <line x1="24" y1="295.5" x2="316" y2="295.5" stroke={theme.bandBorder} strokeWidth="1" />
+              <text
+                x="170"
+                y="273"
+                textAnchor="middle"
+                dominantBaseline="central"
+                fontSize={prismNameFontSize}
+                fontWeight="800"
+                letterSpacing="1.4"
+                fill={theme.subtext}
+              >
+                {rating.name?.toUpperCase()}
+              </text>
+
+              {/* Trennlinie ueber den Statistiken */}
+              <line x1="62" y1="296" x2="278" y2="296" stroke={theme.text} strokeWidth="1.8" />
+
+              {/* Vertikale Trennlinie zwischen den Stat-Spalten */}
+              <line x1="170" y1="308" x2="170" y2="404" stroke={theme.divider} strokeOpacity="0.65" strokeWidth="1.1" />
+
+              {/* Statistiken links (Spieltag): KAD / PKT / KON */}
+              {[['KAD', rating.kad], ['PKT', rating.pkt], ['KON', rating.kon]].map(([label, value], i) => (
+                <text key={label} x="72" y={PRISM_STAT_ROW_Y[i]} textAnchor="start" dominantBaseline="central" fill={theme.text}>
+                  <tspan fontSize="23" fontWeight="800" letterSpacing="-0.4">{value}</tspan>
+                  <tspan dx="8" fontSize="13.5" fontWeight="700" letterSpacing="1.2" fill={theme.subtext}>{label}</tspan>
+                </text>
+              ))}
+
+              {/* Statistiken rechts (Management): PRO / EFF / DIS */}
+              {[['PRO', rating.pro], ['EFF', rating.eff], ['DIS', rating.dis]].map(([label, value], i) => (
+                <text key={label} x="198" y={PRISM_STAT_ROW_Y[i]} textAnchor="start" dominantBaseline="central" fill={theme.text}>
+                  <tspan fontSize="23" fontWeight="800" letterSpacing="-0.4">{value}</tspan>
+                  <tspan dx="8" fontSize="13.5" fontWeight="700" letterSpacing="1.2" fill={theme.subtext}>{label}</tspan>
+                </text>
+              ))}
+
+              {/* Facettiertes Hexagon-Ball-Emblem unten */}
+              <PrismHexBallGlyph cx={170} cy={434} color={theme.subtext} />
+            </g>
+
+            {/* Feiner innerer Lichtrahmen + scharfer Aussenrahmen */}
+            <path d={PRISM_INNER_PATH} fill="none" stroke="#ffffff" strokeOpacity="0.34" strokeWidth="1" strokeLinejoin="miter" />
+            <path d={PRISM_CARD_PATH} fill="none" stroke={theme.border} strokeWidth="2.6" strokeLinejoin="miter" />
+          </svg>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full flex justify-center py-2">
@@ -234,4 +418,4 @@ export default function FifaManagerCard({ rating, photoURL }) {
   );
 }
 
-export { SHIELD_PATH, TIER_ACCENT, TIER_THEME };
+export { PRISM_CARD_PATH, SHIELD_PATH, TIER_ACCENT, TIER_THEME };
