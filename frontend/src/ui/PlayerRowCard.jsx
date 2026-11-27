@@ -114,10 +114,10 @@ const PlayerRowCard = ({
         </div>
       )}
 
-      {/* Startelf-Wahrscheinlichkeit als kleiner Badge links mittig auf dem Spielerbild */}
+      {/* Startelf-Wahrscheinlichkeit als kleines Hexagon-Badge links mittig auf dem Spielerbild */}
       {startProb != null && (
-        <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10 rounded-full hex-beacon bg-black/85 p-[1.5px] shadow-md pointer-events-none">
-          <StartProbBadge prob={startProb} variant="icon" size={16} />
+        <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
+          <StartProbBadge prob={startProb} variant="icon" size={18} backdrop />
         </div>
       )}
 

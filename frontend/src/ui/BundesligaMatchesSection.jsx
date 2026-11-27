@@ -82,9 +82,9 @@ const MatchEventTimeline = ({ match, newEventIds }) => {
         return (
           <div
             key={ev.id}
-            className={`grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-2 py-1.5 rounded-xl transition-colors ${
+            className={`oct-sm grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-2 py-1.5 rounded-xl transition-colors ${
               isFresh
-                ? 'bg-emerald-500/15 border border-emerald-400/40'
+                ? 'oct-bd-green bg-emerald-500/15 border border-emerald-400/40'
                 : 'bg-black/30 border border-white/[0.04]'
             }`}
           >
@@ -166,10 +166,10 @@ const MatchEventTimeline = ({ match, newEventIds }) => {
 const MatchStatusBadge = ({ match }) => {
   if (match.isLive) {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#ef4444]/15 border border-[#ef4444]/40 text-[10px] font-black uppercase tracking-wider text-[#ef4444] tabular-nums">
+      <span className="oct-pill oct-bd-red inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#ef4444]/15 border border-[#ef4444]/40 text-[10px] font-black uppercase tracking-wider text-[#ef4444] tabular-nums">
         <span className="relative flex h-1.5 w-1.5">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ef4444] opacity-75" />
-          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#ef4444]" />
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full hex-beacon bg-[#ef4444] opacity-75" />
+          <span className="relative inline-flex rounded-full hex-beacon h-1.5 w-1.5 bg-[#ef4444]" />
         </span>
         LIVE {match.liveClock || ''}
       </span>
@@ -212,9 +212,9 @@ const MatchCard = ({
     <div
       className={`card-surface rounded-2xl overflow-hidden transition-all ${
         isUpdated
-          ? 'border-emerald-400/60 shadow-[0_0_20px_rgba(16,185,129,0.12)]'
+          ? 'oct-bd-green border-emerald-400/60 shadow-[0_0_20px_rgba(16,185,129,0.12)]'
           : match.isLive
-            ? 'border-[#ef4444]/40'
+            ? 'oct-bd-red border-[#ef4444]/40'
             : ''
       }`}
     >
@@ -227,7 +227,7 @@ const MatchCard = ({
           <MatchStatusBadge match={match} />
           <div className="flex items-center gap-2 shrink-0">
             {isUpdated && (
-              <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-[9px] font-black uppercase tracking-wider text-emerald-300 animate-pulse">
+              <span className="oct-pill oct-bd-green px-1.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-[9px] font-black uppercase tracking-wider text-emerald-300 animate-pulse">
                 Update
               </span>
             )}
@@ -259,11 +259,11 @@ const MatchCard = ({
 
           {/* Ergebnis */}
           <div
-            className={`px-3 py-1 rounded-xl text-center min-w-[64px] border tabular-nums ${
+            className={`oct-sm px-3 py-1 rounded-xl text-center min-w-[64px] border tabular-nums ${
               isUpdated
-                ? 'bg-emerald-500/20 border-emerald-400/40 text-emerald-200'
+                ? 'oct-bd-green bg-emerald-500/20 border-emerald-400/40 text-emerald-200'
                 : match.isLive
-                  ? 'bg-[#ef4444]/15 border-[#ef4444]/40 text-white'
+                  ? 'oct-bd-red bg-[#ef4444]/15 border-[#ef4444]/40 text-white'
                   : 'bg-black/50 border-white/10 text-white'
             }`}
           >
@@ -319,7 +319,7 @@ const MatchCard = ({
                 type="button"
                 disabled={!kbHome}
                 onClick={() => kbHome && onSelectKickbaseTeam(kbHome.id)}
-                className="flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl bg-[#171717] border border-white/10 hover:border-[#ff5c3e]/60 hover:bg-[#1e1e1e] text-[11px] font-semibold text-gray-200 transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer min-w-0"
+                className="oct-md flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl bg-[#171717] border border-white/10 hover:border-[#ff5c3e]/60 hover:bg-[#1e1e1e] text-[11px] font-semibold text-gray-200 transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer min-w-0"
               >
                 <TeamCrest
                   logo={homeLogo}
@@ -333,7 +333,7 @@ const MatchCard = ({
                 type="button"
                 disabled={!kbAway}
                 onClick={() => kbAway && onSelectKickbaseTeam(kbAway.id)}
-                className="flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl bg-[#171717] border border-white/10 hover:border-[#ff5c3e]/60 hover:bg-[#1e1e1e] text-[11px] font-semibold text-gray-200 transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer min-w-0"
+                className="oct-md flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl bg-[#171717] border border-white/10 hover:border-[#ff5c3e]/60 hover:bg-[#1e1e1e] text-[11px] font-semibold text-gray-200 transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer min-w-0"
               >
                 <TeamCrest
                   logo={awayLogo}
@@ -376,68 +376,68 @@ export const SelectedTeamMatchBanner = ({
   const goalCount = match.events?.length || 0;
 
   return (
-    <div
-      className={`card-surface rounded-2xl p-3.5 mb-3 transition-all ${
-        isUpdated
-          ? 'border-emerald-400/60'
-          : match.isLive
-            ? 'border-[#ef4444]/40'
-            : ''
-      }`}
-    >
-      <div className="flex items-center justify-between gap-2 mb-2.5">
-        <button
-          type="button"
-          onClick={onShowAllMatches}
-          className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#8b92a5] hover:text-white transition-colors cursor-pointer"
-        >
-          <ArrowLeft size={13} />
-          <span>Alle Partien</span>
-        </button>
-        <MatchStatusBadge match={match} />
-      </div>
-
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-        <button
-          type="button"
-          disabled={!kbHome || selectedSide === 'home'}
-          onClick={() => kbHome && onSelectTeam(kbHome.id)}
-          className={`flex items-center justify-end gap-2 min-w-0 rounded-xl px-2 py-1 transition-colors ${
-            selectedSide === 'home'
-              ? 'bg-[#ff5c3e]/12 border border-[#ff5c3e]/40'
-              : kbHome
-                ? 'hover:bg-white/5 cursor-pointer'
-                : ''
-          }`}
-        >
-          <span className={`text-xs sm:text-sm truncate text-right ${selectedSide === 'home' ? 'text-white font-bold' : 'text-gray-300 font-medium'}`}>
-            {match.home.shortName}
-          </span>
-          <TeamCrest logo={homeLogo} fallbackLogo={match.home.logo} name={match.home.shortName} sizeClass="w-7 h-7" />
-        </button>
-
-        <div className="px-2.5 py-1 rounded-xl bg-black/50 border border-white/10 text-center min-w-[58px] tabular-nums">
-          {match.score ? (
-            <span className="text-base font-extrabold text-white">
-              {match.score.home} : {match.score.away}
-            </span>
-          ) : (
-            <span className="text-xs font-bold text-[#626978]">vs</span>
-          )}
+      <div
+        className={`card-surface rounded-2xl p-3.5 mb-3 transition-all ${
+          isUpdated
+            ? 'oct-bd-green border-emerald-400/60'
+            : match.isLive
+              ? 'oct-bd-red border-[#ef4444]/40'
+              : ''
+        }`}
+      >
+        <div className="flex items-center justify-between gap-2 mb-2.5">
+          <button
+            type="button"
+            onClick={onShowAllMatches}
+            className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#8b92a5] hover:text-white transition-colors cursor-pointer"
+          >
+            <ArrowLeft size={13} />
+            <span>Alle Partien</span>
+          </button>
+          <MatchStatusBadge match={match} />
         </div>
 
-        <button
-          type="button"
-          disabled={!kbAway || selectedSide === 'away'}
-          onClick={() => kbAway && onSelectTeam(kbAway.id)}
-          className={`flex items-center justify-start gap-2 min-w-0 rounded-xl px-2 py-1 transition-colors ${
-            selectedSide === 'away'
-              ? 'bg-[#ff5c3e]/12 border border-[#ff5c3e]/40'
-              : kbAway
-                ? 'hover:bg-white/5 cursor-pointer'
-                : ''
-          }`}
-        >
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+          <button
+            type="button"
+            disabled={!kbHome || selectedSide === 'home'}
+            onClick={() => kbHome && onSelectTeam(kbHome.id)}
+            className={`oct-md flex items-center justify-end gap-2 min-w-0 rounded-xl px-2 py-1 transition-colors ${
+              selectedSide === 'home'
+                ? 'oct-bd-accent bg-[#ff5c3e]/12 border border-[#ff5c3e]/40'
+                : kbHome
+                  ? 'oct-bd-none hover:bg-white/5 cursor-pointer'
+                  : 'oct-bd-none'
+            }`}
+          >
+            <span className={`text-xs sm:text-sm truncate text-right ${selectedSide === 'home' ? 'text-white font-bold' : 'text-gray-300 font-medium'}`}>
+              {match.home.shortName}
+            </span>
+            <TeamCrest logo={homeLogo} fallbackLogo={match.home.logo} name={match.home.shortName} sizeClass="w-7 h-7" />
+          </button>
+
+          <div className="oct-sm px-2.5 py-1 rounded-xl bg-black/50 border border-white/10 text-center min-w-[58px] tabular-nums">
+            {match.score ? (
+              <span className="text-base font-extrabold text-white">
+                {match.score.home} : {match.score.away}
+              </span>
+            ) : (
+              <span className="text-xs font-bold text-[#626978]">vs</span>
+            )}
+          </div>
+
+          <button
+            type="button"
+            disabled={!kbAway || selectedSide === 'away'}
+            onClick={() => kbAway && onSelectTeam(kbAway.id)}
+            className={`oct-md flex items-center justify-start gap-2 min-w-0 rounded-xl px-2 py-1 transition-colors ${
+              selectedSide === 'away'
+                ? 'oct-bd-accent bg-[#ff5c3e]/12 border border-[#ff5c3e]/40'
+                : kbAway
+                  ? 'oct-bd-none hover:bg-white/5 cursor-pointer'
+                  : 'oct-bd-none'
+            }`}
+          >
           <TeamCrest logo={awayLogo} fallbackLogo={match.away.logo} name={match.away.shortName} sizeClass="w-7 h-7" />
           <span className={`text-xs sm:text-sm truncate text-left ${selectedSide === 'away' ? 'text-white font-bold' : 'text-gray-300 font-medium'}`}>
             {match.away.shortName}
@@ -595,11 +595,11 @@ const BundesligaTableView = ({ season, teamsList, onSelectKickbaseTeam }) => {
 
       {/* Kompakte Zonen-Legende */}
       <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[10px] text-[#626978] px-1">
-        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#3b82f6]" />CL</span>
-        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#f97316]" />EL</span>
-        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#22c55e]" />ECL</span>
-        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#eab308]" />Rel.</span>
-        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#ef4444]" />Abstieg</span>
+        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full hex-beacon bg-[#3b82f6]" />CL</span>
+        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full hex-beacon bg-[#f97316]" />EL</span>
+        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full hex-beacon bg-[#22c55e]" />ECL</span>
+        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full hex-beacon bg-[#eab308]" />Rel.</span>
+        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full hex-beacon bg-[#ef4444]" />Abstieg</span>
       </div>
     </div>
   );
@@ -651,9 +651,9 @@ const BundesligaMatchesSection = ({
           <button
             type="button"
             onClick={() => setSubTab('matches')}
-            className={`px-3.5 py-1.5 rounded-full whitespace-nowrap text-xs border transition-colors cursor-pointer ${
+            className={`oct-pill px-3.5 py-1.5 rounded-full whitespace-nowrap text-xs border transition-colors cursor-pointer ${
               subTab === 'matches'
-                ? 'bg-[#ef4444]/15 border-[#ef4444] text-white font-semibold'
+                ? 'oct-bd-red bg-[#ef4444]/15 border-[#ef4444] text-white font-semibold'
                 : 'border-[#2e2e2e] text-[#8b92a5] font-medium hover:text-white'
             }`}
           >
@@ -662,9 +662,9 @@ const BundesligaMatchesSection = ({
           <button
             type="button"
             onClick={() => setSubTab('table')}
-            className={`px-3.5 py-1.5 rounded-full whitespace-nowrap text-xs border transition-colors cursor-pointer ${
+            className={`oct-pill px-3.5 py-1.5 rounded-full whitespace-nowrap text-xs border transition-colors cursor-pointer ${
               subTab === 'table'
-                ? 'bg-[#ef4444]/15 border-[#ef4444] text-white font-semibold'
+                ? 'oct-bd-red bg-[#ef4444]/15 border-[#ef4444] text-white font-semibold'
                 : 'border-[#2e2e2e] text-[#8b92a5] font-medium hover:text-white'
             }`}
           >
@@ -695,7 +695,7 @@ const BundesligaMatchesSection = ({
               disabled={!canPrev || loading}
               onClick={() => canPrev && onChangeMatchday(displayedDay - 1)}
               aria-label="Vorheriger Spieltag"
-              className="w-8 h-8 rounded-lg bg-[#171717] border border-white/10 flex items-center justify-center text-gray-300 hover:text-white hover:border-white/25 disabled:opacity-30 transition-colors cursor-pointer shrink-0"
+              className="oct-sm w-8 h-8 rounded-lg bg-[#171717] border border-white/10 flex items-center justify-center text-gray-300 hover:text-white hover:border-white/25 disabled:opacity-30 transition-colors cursor-pointer shrink-0"
             >
               <ChevronLeft size={16} />
             </button>
@@ -708,7 +708,7 @@ const BundesligaMatchesSection = ({
                 <button
                   type="button"
                   onClick={() => onChangeMatchday(currentMatchday)}
-                  className="px-2 py-0.5 rounded-md bg-[#ff5c3e]/15 border border-[#ff5c3e]/40 text-[10px] font-bold text-[#ff5c3e] hover:bg-[#ff5c3e]/25 transition-colors cursor-pointer shrink-0"
+                  className="oct-sm oct-bd-accent px-2 py-0.5 rounded-md bg-[#ff5c3e]/15 border border-[#ff5c3e]/40 text-[10px] font-bold text-[#ff5c3e] hover:bg-[#ff5c3e]/25 transition-colors cursor-pointer shrink-0"
                 >
                   Aktuell
                 </button>
@@ -720,7 +720,7 @@ const BundesligaMatchesSection = ({
               disabled={!canNext || loading}
               onClick={() => canNext && onChangeMatchday(displayedDay + 1)}
               aria-label="Nächster Spieltag"
-              className="w-8 h-8 rounded-lg bg-[#171717] border border-white/10 flex items-center justify-center text-gray-300 hover:text-white hover:border-white/25 disabled:opacity-30 transition-colors cursor-pointer shrink-0"
+              className="oct-sm w-8 h-8 rounded-lg bg-[#171717] border border-white/10 flex items-center justify-center text-gray-300 hover:text-white hover:border-white/25 disabled:opacity-30 transition-colors cursor-pointer shrink-0"
             >
               <ChevronRight size={16} />
             </button>

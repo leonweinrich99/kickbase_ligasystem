@@ -9,6 +9,7 @@ import { shouldShowSplash, markSplashShown } from './appLoadState';
 import ManagerAvatar from './ui/ManagerAvatar';
 import TabPageHeader from './ui/TabPageHeader';
 import { isMatchdayWindowBerlin } from './matchdaySchedule';
+import { isOctagonUI } from './ui/shapeTheme';
 
 // "Sieger SF13" & Co. sind Platzhalter für noch nicht ausgespielte Partien,
 // "Freilos" für einen direkten Aufstieg ohne Gegner - beides ist (noch) kein
@@ -46,11 +47,11 @@ const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}
       data-tour={tourTarget ? 'pokal-first-match' : undefined}
       onClick={isClickable ? () => onOpenCompare(id1, id2) : undefined}
       role={isClickable ? 'button' : undefined}
-      className={`flex items-center gap-1.5 sm:gap-2 card-surface rounded-xl shadow-lg w-full xl:w-64 flex-shrink-0 p-2 sm:p-2.5 transition-transform hover:scale-105 hover:border-[#8b5cf6]/50 ${isFinal ? 'ring-2 ring-[#8b5cf6] shadow-[0_0_20px_rgba(139,92,246,0.3)] xl:scale-110 z-10' : ''} ${isClickable ? 'cursor-pointer active:scale-95' : ''}`}
+      className={`flex items-center gap-1.5 sm:gap-2 card-surface oct-md rounded-xl shadow-lg w-full xl:w-64 flex-shrink-0 p-2 sm:p-2.5 transition-transform hover:scale-105 hover:border-[#8b5cf6]/50 ${isFinal ? 'oct-bd-purple ring-2 ring-[#8b5cf6] shadow-[0_0_20px_rgba(139,92,246,0.3)] xl:scale-110 z-10' : ''} ${isClickable ? 'cursor-pointer active:scale-95' : ''}`}
     >
       {/* Spieler 1 (links): Avatar, Name direkt rechts daneben */}
       <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
-        <ManagerAvatar name={isPlaceholderName(match.p1) ? null : match.p1} size={40} ringColor={color1} ringWidth={1.5} />
+        <ManagerAvatar name={isPlaceholderName(match.p1) ? null : match.p1} size={40} ringColor={color1} ringWidth={1.3} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1">
             <span className={`text-[10px] sm:text-xs font-bold truncate ${isWinner1 ? 'text-white' : 'text-gray-300'}`}>{match.p1 || '-'}</span>
@@ -75,7 +76,7 @@ const MatchBox = ({ match, isFinal, tourTarget, leagueColors = {}, nameToId = {}
       {/* Spieler 2 (rechts): Name links daneben, Avatar aussen an der
           rechten Kartenkante */}
       <div className="flex flex-row-reverse items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
-        <ManagerAvatar name={isPlaceholderName(match.p2) ? null : match.p2} size={40} ringColor={color2} ringWidth={1.5} />
+        <ManagerAvatar name={isPlaceholderName(match.p2) ? null : match.p2} size={40} ringColor={color2} ringWidth={1.3} />
         <div className="min-w-0 flex-1 text-right">
           <div className="flex items-center justify-end gap-1">
             {isMember2 && <Check size={10} strokeWidth={3.5} className="text-green-500 shrink-0" />}
@@ -115,11 +116,29 @@ const MobileRoundView = ({ matches, isFirstRound, isFinal, leagueColors, nameToI
             </div>
           )}
           
-          {/* Bracket Connecting Line */}
+          {/* Bracket Connecting Line (mit 45°-Chamfer im Oktagon-Modus) */}
           {pair[1] && (
             <>
-              <div className="absolute left-[100%] w-4 top-[25%] bottom-[25%] border-r-2 border-t-2 border-b-2 border-[#404040] rounded-r-xl pointer-events-none"></div>
-              <div className="absolute left-[calc(100%+16px)] w-[100vw] top-1/2 border-t-2 border-[#404040] pointer-events-none"></div>
+              {isOctagonUI ? (
+                <svg
+                  viewBox="0 0 18 100"
+                  preserveAspectRatio="none"
+                  aria-hidden="true"
+                  className="absolute left-[100%] w-[18px] top-[25%] bottom-[25%] h-[50%] pointer-events-none overflow-visible"
+                >
+                  <polyline
+                    points="0,1 10,1 17,12 17,88 10,99 0,99"
+                    fill="none"
+                    stroke="#404040"
+                    strokeWidth="2"
+                    vectorEffect="non-scaling-stroke"
+                    strokeLinejoin="miter"
+                  />
+                </svg>
+              ) : (
+                <div className="absolute left-[100%] w-4 top-[25%] bottom-[25%] border-r-2 border-t-2 border-b-2 border-[#404040] rounded-r-xl pointer-events-none"></div>
+              )}
+              <div className="absolute left-[calc(100%+17px)] w-[100vw] top-1/2 border-t-2 border-[#404040] pointer-events-none"></div>
             </>
           )}
         </div>
@@ -131,10 +150,10 @@ const MobileRoundView = ({ matches, isFirstRound, isFinal, leagueColors, nameToI
 
 const RoundColumn = ({ matches, title, schedule, isCurrent = false, markFirst = false, leagueColors, nameToId, onOpenCompare, pokalMembers }) => {
   return (
-    <div className={`flex flex-col justify-around gap-2 sm:gap-4 flex-1 ${isCurrent ? 'rounded-2xl bg-[#8b5cf6]/[0.05] ring-1 ring-[#8b5cf6]/35 px-2.5 py-3' : 'py-3'}`}>
+    <div className={`flex flex-col justify-around gap-2 sm:gap-4 flex-1 ${isCurrent ? 'oct-box oct-bd-purple rounded-2xl bg-[#8b5cf6]/[0.05] ring-1 ring-[#8b5cf6]/35 px-2.5 py-3' : 'py-3'}`}>
       <div className={`text-[10px] sm:text-xs font-black uppercase text-center tracking-widest mb-2 ${isCurrent ? 'text-white opacity-100' : 'text-[#8b92a5] opacity-70'}`}>
         <div className="flex items-center justify-center gap-1.5">
-          {isCurrent && <span className="w-1.5 h-1.5 rounded-full bg-[#8b5cf6] shadow-[0_0_8px_#8b5cf6]" />}
+          {isCurrent && <span className="w-1.5 h-1.5 rounded-full hex-beacon bg-[#8b5cf6] shadow-[0_0_8px_#8b5cf6]" />}
           <span>{title}</span>
         </div>
         {schedule && <div className="normal-case tracking-normal text-[9px] text-[#8b5cf6] mt-1 opacity-100">BL-Spieltag {schedule.matchday} · {schedule.date}</div>}
@@ -401,9 +420,9 @@ const Pokal = () => {
         right={(
           <Link
             to="/pokal-rules"
-            className="sm:hidden shrink-0 flex items-center gap-1.5 bg-[#171717] border border-[#8b5cf6]/40 hover:border-[#8b5cf6] transition-colors rounded-full pl-2.5 pr-3 py-1.5 shadow-lg active:scale-95 group"
+            className="sm:hidden oct-pill oct-bd-purple shrink-0 flex items-center gap-1.5 bg-[#171717] border border-[#8b5cf6]/40 hover:border-[#8b5cf6] transition-colors rounded-full pl-2.5 pr-3 py-1.5 shadow-lg active:scale-95 group"
           >
-            <span className="text-[7px] font-black uppercase text-white bg-[#8b5cf6] rounded-full px-1.5 py-0.5 tracking-widest leading-none">Neu</span>
+            <span className="oct-sm oct-bd-none text-[7px] font-black uppercase text-white bg-[#8b5cf6] rounded-full px-1.5 py-0.5 tracking-widest leading-none">Neu</span>
             <span className="text-[10px] font-bold text-gray-300 group-hover:text-white transition-colors whitespace-nowrap">Pokalmodus</span>
           </Link>
         )}
@@ -413,7 +432,7 @@ const Pokal = () => {
           <div
             ref={tabsRef}
             data-layout-guard="tab-strip"
-            className="flex overflow-x-auto gap-2 no-scrollbar min-h-[52px] py-1.5 items-center flex-1 bg-[#171717] border border-[#2e2e2e] rounded-xl px-2 shadow-lg"
+            className="oct-md flex overflow-x-auto gap-2 no-scrollbar min-h-[52px] py-1.5 items-center flex-1 bg-[#171717] border border-[#2e2e2e] rounded-xl px-2 shadow-lg"
           >
             {rounds.map(round => {
               const isCurrent = round === currentRound;
@@ -423,17 +442,17 @@ const Pokal = () => {
                   key={round}
                   data-round={round}
                   onClick={() => handleRoundChange(round)}
-                  className={`px-3.5 py-1.5 rounded-lg whitespace-nowrap text-xs transition-all flex-shrink-0 border ${
+                  className={`oct-sm px-3.5 py-1.5 rounded-lg whitespace-nowrap text-xs transition-all flex-shrink-0 border ${
                     isActive
-                      ? 'bg-white text-black font-semibold border-white'
+                      ? 'oct-bd-none bg-white text-black font-semibold border-white'
                       : isCurrent
-                        ? 'text-white font-semibold bg-[#8b5cf6]/15 border-[#8b5cf6]/40'
-                        : 'text-[#8b92a5] font-medium border-transparent hover:text-white'
+                        ? 'oct-bd-purple text-white font-semibold bg-[#8b5cf6]/15 border-[#8b5cf6]/40'
+                        : 'oct-bd-none text-[#8b92a5] font-medium border-transparent hover:text-white'
                   }`}
                 >
                   <span className="inline-flex items-center gap-1.5">
                     {isCurrent && (
-                      <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-[#8b5cf6]' : 'bg-purple-400'}`} />
+                      <span className={`w-1.5 h-1.5 rounded-full hex-beacon ${isActive ? 'bg-[#8b5cf6]' : 'bg-purple-400'}`} />
                     )}
                     <span>{round}</span>
                   </span>
@@ -486,16 +505,16 @@ const Pokal = () => {
         
         {/* Zoom Controls im normalen Fluss oberhalb des Baums (ueberlagert niemals Runden-Titel) */}
         <div className="flex justify-end mb-3">
-          <div className="flex items-center gap-1.5 bg-[#171717] border border-[#2e2e2e] p-1.5 rounded-xl shadow-lg">
-            <button onClick={() => setZoomLevel(prev => Math.max(0.4, prev - 0.15))} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#2e2e2e] text-[#8b92a5] hover:text-white transition-colors">
+          <div className="oct-md flex items-center gap-1.5 bg-[#171717] border border-[#2e2e2e] p-1.5 rounded-xl shadow-lg">
+            <button onClick={() => setZoomLevel(prev => Math.max(0.4, prev - 0.15))} className="oct-sm oct-bd-none w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#2e2e2e] text-[#8b92a5] hover:text-white transition-colors">
               <Minus size={18} strokeWidth={2.5} />
             </button>
             <span className="text-[11px] font-black w-12 text-center text-gray-300 tracking-wider">{Math.round(zoomLevel * 100)}%</span>
-            <button onClick={() => setZoomLevel(prev => Math.min(1.5, prev + 0.15))} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#2e2e2e] text-[#8b92a5] hover:text-white transition-colors">
+            <button onClick={() => setZoomLevel(prev => Math.min(1.5, prev + 0.15))} className="oct-sm oct-bd-none w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#2e2e2e] text-[#8b92a5] hover:text-white transition-colors">
               <Plus size={18} strokeWidth={2.5} />
             </button>
             <div className="w-[1px] h-5 bg-[#2e2e2e] mx-1"></div>
-            <button onClick={() => setZoomLevel(1)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#2e2e2e] text-[#8b92a5] hover:text-white transition-colors" title="Reset Zoom">
+            <button onClick={() => setZoomLevel(1)} className="oct-sm oct-bd-none w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#2e2e2e] text-[#8b92a5] hover:text-white transition-colors" title="Reset Zoom">
               <RotateCcw size={15} strokeWidth={2.5} />
             </button>
           </div>

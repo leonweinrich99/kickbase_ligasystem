@@ -25,6 +25,7 @@ import { buildLineupWithDummies } from './liveLineupUtils';
 import { loadPlayerCatalogBundle } from './playerDetailData';
 import { isLikelyStarterProb } from './startProbMeta';
 import { PlayerDetailView } from './Advisor';
+import { isOctagonUI } from './ui/shapeTheme';
 
 // Gleiche Positions-Labels/Reihenfolge wie AccountStats.jsx/Advisor.jsx.
 const POSITION_LABELS = { TW: 'Torwart', ABW: 'Abwehr', MF: 'Mittelfeld', ST: 'Sturm' };
@@ -517,7 +518,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                </button>
              </div>
              <div className="p-4 border-b border-[#2e2e2e]">
-               <div className="bg-[#000000] rounded-xl flex items-center px-3 py-2 border border-[#2e2e2e]">
+               <div className="oct-md bg-[#000000] rounded-xl flex items-center px-3 py-2 border border-[#2e2e2e]">
                  <Search size={16} className="text-gray-500 mr-2" />
                  <input
                    type="text"
@@ -579,7 +580,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
           <div className="min-w-0">
             {mode !== 'archive' && userData.leagueName && (
               <span
-                className="inline-flex text-[10px] font-semibold uppercase tracking-wider rounded px-1.5 py-0.5 mb-1.5 w-fit"
+                className="oct-sm oct-bd-none inline-flex text-[10px] font-semibold uppercase tracking-wider rounded px-1.5 py-0.5 mb-1.5 w-fit"
                 style={{ backgroundColor: `${userData.leagueColor}26`, color: userData.leagueColor }}
               >
                 {userData.leagueName}
@@ -599,7 +600,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
             </div>
           </div>
 
-          <ManagerAvatar name={userData.name} ringColor={userData.leagueColor || '#ff5c3e'} size={140} />
+          <ManagerAvatar name={userData.name} ringColor={userData.leagueColor || '#ff5c3e'} ringWidth={1.35} size={140} />
         </div>
 
         {/* Gesamtpunkte (Scalable Style, wie Marktwert im Advisor) */}
@@ -638,7 +639,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
               <h3 className="text-lg font-semibold text-white">Startelf</h3>
             </div>
             <div
-              className="rounded-2xl overflow-hidden relative min-h-[500px] sm:min-h-[600px] flex items-center justify-center mt-4 shadow-2xl"
+              className="oct-box rounded-2xl overflow-hidden relative min-h-[500px] sm:min-h-[600px] flex items-center justify-center mt-4 shadow-2xl"
               style={{ backgroundImage: 'radial-gradient(circle at center, #1a1a1a 0%, #050505 100%)' }}
             >
               <div className="text-[#626978] text-sm">Lade Live-Daten…</div>
@@ -650,13 +651,13 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
               <h3 className="text-lg font-semibold text-white">Startelf</h3>
             </div>
             <div
-              className="rounded-2xl overflow-hidden relative min-h-[500px] sm:min-h-[600px] flex flex-col justify-center py-6 sm:py-8 mt-4 shadow-2xl"
+              className="oct-box rounded-2xl overflow-hidden relative min-h-[500px] sm:min-h-[600px] flex flex-col justify-center py-6 sm:py-8 mt-4 shadow-2xl"
               style={{ backgroundImage: 'radial-gradient(circle at center, #1a1a1a 0%, #050505 100%)' }}
             >
               {/* Pitch Background - dekorative Feldlinien */}
               <div className="absolute inset-0 pointer-events-none opacity-5 border border-white rounded-lg m-4 sm:m-6">
                 <div className="absolute top-1/2 left-0 w-full h-[1px] bg-white"></div>
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 sm:w-32 sm:h-32 border border-white rounded-full"></div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 sm:w-32 sm:h-32 border border-white rounded-full hex-pitch-center"></div>
               </div>
 
               <div className="relative z-10 w-full px-2 sm:px-4 h-full flex flex-col justify-between">
@@ -711,14 +712,14 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
           <div className="mb-8">
             <h3 className="text-lg font-semibold text-white mb-4">Kader</h3>
             <div
-              className="rounded-2xl overflow-hidden relative min-h-[400px] py-8"
+              className="oct-box rounded-2xl overflow-hidden relative min-h-[400px] py-8"
               style={{ backgroundImage: 'radial-gradient(circle at center, #171717 0%, #0a0a0a 100%)' }}
             >
               <div className="w-full max-w-md mx-auto relative">
                 {/* Pitch lines background - rein dekorativ, keine neuen Daten */}
                 <div className="absolute inset-0 pointer-events-none opacity-5 border-2 border-white rounded-lg m-4">
                   <div className="absolute top-1/2 left-0 w-full h-[1px] bg-white"></div>
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 border border-white rounded-full"></div>
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 border border-white rounded-full hex-pitch-center"></div>
                 </div>
 
                 <div className="space-y-5 relative z-10 px-4">
@@ -898,7 +899,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                     tickFormatter={formatShortMD}
                   />
                   <YAxis stroke="#4b5563" fontSize={10} tickLine={false} axisLine={false} />
-                  <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
+                  <Legend iconType={isOctagonUI ? 'diamond' : 'circle'} wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
 
                   {/* Durchschnitts-Balken */}
                   {showAverage && (
@@ -906,7 +907,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                       dataKey="averagePoints"
                       name="Ligaschnitt"
                       fill="#4b5563"
-                      radius={[4, 4, 0, 0]}
+                      radius={isOctagonUI ? [0, 0, 0, 0] : [4, 4, 0, 0]}
                       animationDuration={1500}
                     >
                         <LabelList dataKey="averagePoints" position="top" fill="#8b92a5" fontSize={8} fontWeight="bold" formatter={(val) => `Ø ${val}`} />
@@ -918,7 +919,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                     dataKey="pointsMatchday"
                     name={userData.name}
                     fill="#ff5c3e"
-                    radius={[4, 4, 0, 0]}
+                    radius={isOctagonUI ? [0, 0, 0, 0] : [4, 4, 0, 0]}
                     animationDuration={1500}
                   >
                       <LabelList dataKey="pointsMatchday" position="top" fill="#ff5c3e" fontSize={8} fontWeight="bold" />
@@ -930,7 +931,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                       dataKey="optimalPoints"
                       name="Beste Elf"
                       fill="#22c55e"
-                      radius={[4, 4, 0, 0]}
+                      radius={isOctagonUI ? [0, 0, 0, 0] : [4, 4, 0, 0]}
                       animationDuration={1500}
                     >
                         <LabelList dataKey="optimalPoints" position="top" fill="#22c55e" fontSize={8} fontWeight="bold" formatter={(val) => `★ ${val}`} />
@@ -1056,7 +1057,17 @@ const CustomizedDot = (props) => {
 
   return (
     <g>
-      <circle cx={cx} cy={cy} r={7} fill={stroke} stroke="#171717" strokeWidth={2} />
+      {isOctagonUI ? (
+        <polygon
+          points={`${cx},${cy - 8.5} ${cx + 6.8},${cy - 4.2} ${cx + 6.8},${cy + 4.2} ${cx},${cy + 8.5} ${cx - 6.8},${cy + 4.2} ${cx - 6.8},${cy - 4.2}`}
+          fill={stroke}
+          stroke="#171717"
+          strokeWidth={1.6}
+          strokeLinejoin="miter"
+        />
+      ) : (
+        <circle cx={cx} cy={cy} r={7} fill={stroke} stroke="#171717" strokeWidth={2} />
+      )}
       <text x={cx} y={cy} textAnchor="middle" dy=".35em" fill="#171717" fontSize={8} fontWeight="black">
         {value}
       </text>

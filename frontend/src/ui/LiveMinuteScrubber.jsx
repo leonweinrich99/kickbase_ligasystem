@@ -231,7 +231,7 @@ const LiveMinuteScrubber = ({
             type="button"
             onClick={onTogglePlay}
             aria-label={isPlaying ? 'Wiedergabe pausieren' : 'Spielverlauf abspielen'}
-            className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors active:scale-95"
+            className="w-7 h-7 rounded-full hex-beacon bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors active:scale-95"
           >
             {isPlaying ? <Pause size={12} fill="currentColor" /> : <Play size={12} fill="currentColor" className="ml-0.5" />}
           </button>
@@ -248,7 +248,7 @@ const LiveMinuteScrubber = ({
             <button
               type="button"
               onClick={handleJumpLive}
-              className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#ff5c3e]/15 border border-[#ff5c3e]/40 text-[#ff5c3e] hover:bg-[#ff5c3e]/25 transition-colors"
+              className="oct-pill oct-bd-accent flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#ff5c3e]/15 border border-[#ff5c3e]/40 text-[#ff5c3e] hover:bg-[#ff5c3e]/25 transition-colors"
             >
               <RotateCcw size={10} />
               Aktuell
@@ -324,20 +324,20 @@ const LiveMinuteScrubber = ({
                   <span className="h-6 flex items-end justify-center mb-1 overflow-visible">
                     {primaryHl ? (
                       <span
-                        className={`relative w-[22px] h-[22px] rounded-full border flex items-center justify-center text-[11px] leading-none transition-transform group-hover:scale-110 ${hlStyle.badge} ${
+                        className={`relative w-[22px] h-[24px] rounded-full hex-beacon border flex items-center justify-center text-[11px] leading-none transition-transform group-hover:scale-110 ${hlStyle.badge} ${
                           isActive ? 'scale-115' : ''
                         }`}
                       >
                         {HIGHLIGHT_ICON[primaryHl.type]}
                         {hlList.length > 1 && (
-                          <span className="absolute -top-1 -right-1 min-w-[12px] h-[12px] px-0.5 rounded-full bg-white text-black text-[8px] font-black leading-none flex items-center justify-center shadow">
+                          <span className="absolute -top-1 -right-1 min-w-[12px] h-[12px] px-0.5 rounded-full hex-beacon bg-white text-black text-[8px] font-black leading-none flex items-center justify-center shadow">
                             {hlList.length}
                           </span>
                         )}
                       </span>
                     ) : netDelta !== 0 ? (
                       <span
-                        className={`mb-0.5 rounded-full ${
+                        className={`mb-0.5 rounded-full hex-beacon ${
                           Math.abs(netDelta) >= 15 ? 'w-1.5 h-1.5' : 'w-1 h-1'
                         } ${netDelta > 0 ? 'bg-emerald-400' : 'bg-[#ff5c3e]'}`}
                       />

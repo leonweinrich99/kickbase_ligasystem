@@ -22,7 +22,7 @@ const LigaTab = ({ kickbaseId }) => {
   return (
     <div>
       <span
-        className="inline-flex items-center text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full mb-5"
+        className="oct-pill oct-bd-none inline-flex items-center text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full mb-5"
         style={{ backgroundColor: `${entry.leagueColor}26`, color: entry.leagueColor }}
       >
         {entry.leagueName}

@@ -119,16 +119,23 @@ export const UserRow = ({ item, color, isSaisonView, displayRank, prevRank, rout
   return (
     <Link to={`${routeBase}/user/${item.id}`} className="block transition-transform active:scale-95" data-tour={isTourTarget ? 'user-row' : undefined}>
       <div
-        className={`flex items-center p-3 mb-2.5 card-surface rounded-[14px] shadow-sm relative overflow-hidden group hover:border-[#ff5c3e]/50 hover:bg-[#202020] transition-all cursor-pointer`}
-        style={isSaisonView && item.status ? { borderColor: '#404040' } : undefined}
+        className={`flex items-center p-3 mb-2.5 card-surface oct-md rounded-[14px] shadow-sm relative overflow-hidden group hover:border-[#ff5c3e]/50 hover:bg-[#202020] transition-all cursor-pointer`}
+        style={
+          isSaisonView && item.status
+            ? { borderColor: `${statusColors[item.status]}66`, '--oct-bd': `${statusColors[item.status]}66` }
+            : undefined
+        }
       >
         {isSaisonView && item.status && (
-          <div className="absolute left-0 top-0 bottom-0 w-[4px]" style={{ backgroundColor: statusColors[item.status] }}></div>
+          <div
+            className="absolute left-0 top-[7px] bottom-[7px] w-[3px]"
+            style={{ backgroundColor: statusColors[item.status] }}
+          />
         )}
         <div className="w-8 flex justify-center items-center text-xs font-semibold text-[#8b92a5]">
           {item.isTrophy && isSaisonView ? <TrophyIcon type={item.trophyColor} /> : displayRank}
         </div>
-        <div className="w-10 h-10 rounded-full ml-2 overflow-hidden border border-white/10">
+        <div className="ml-2 shrink-0">
           <ManagerAvatar name={item.name} size={40} />
         </div>
         <div className="ml-3 flex-1 flex flex-col justify-center min-w-0">
@@ -142,7 +149,7 @@ export const UserRow = ({ item, color, isSaisonView, displayRank, prevRank, rout
           </div>
           {leagueBadge && (
             <span
-              className="mt-1 inline-flex items-center self-start text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded"
+              className="oct-sm oct-bd-none mt-1 inline-flex items-center self-start text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded"
               style={{ backgroundColor: `${leagueBadge.color}26`, color: leagueBadge.color }}
             >
               {leagueBadge.name}
@@ -193,7 +200,7 @@ const TrueTableInfoModal = ({ onClose }) => (
     >
       <CloseButton onClick={onClose} size="compact" className="absolute top-4 right-4" />
 
-      <div className="w-11 h-11 rounded-xl bg-[#ff5c3e]/10 text-[#ff5c3e] flex items-center justify-center mb-4">
+      <div className="oct-sm oct-bd-none w-11 h-11 rounded-xl bg-[#ff5c3e]/10 text-[#ff5c3e] flex items-center justify-center mb-4">
         <Info size={20} strokeWidth={2.5} />
       </div>
 

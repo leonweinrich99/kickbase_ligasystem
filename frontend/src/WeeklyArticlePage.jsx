@@ -50,9 +50,9 @@ const formatShortDate = (iso) => {
 };
 
 const tierPillClass = (tier) => {
-  if (tier === 'easy') return 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
-  if (tier === 'hard') return 'bg-red-500/15 text-red-300 border-red-500/30';
-  return 'bg-amber-500/15 text-amber-300 border-amber-500/30';
+  if (tier === 'easy') return 'oct-sm oct-bd-green bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
+  if (tier === 'hard') return 'oct-sm oct-bd-red bg-red-500/15 text-red-300 border-red-500/30';
+  return 'oct-sm oct-bd-yellow bg-amber-500/15 text-amber-300 border-amber-500/30';
 };
 
 const FormDots = ({ form = [] }) => {
@@ -62,7 +62,7 @@ const FormDots = ({ form = [] }) => {
       {form.map((res, idx) => (
         <span
           key={idx}
-          className={`inline-flex items-center justify-center w-4 h-4 rounded text-[9px] font-black ${
+          className={`oct-sm oct-bd-none inline-flex items-center justify-center w-4 h-4 rounded text-[9px] font-black ${
             res === 'S'
               ? 'bg-emerald-500/20 text-emerald-300'
               : res === 'U'
@@ -80,10 +80,10 @@ const FormDots = ({ form = [] }) => {
 const CompactPlayerRow = ({ player, teamLogo, badge, badgeTone = 'emerald', onClick }) => {
   const rising = (player.predictedChange || 0) >= 0;
   const badgeClasses = {
-    emerald: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/35',
-    red: 'bg-red-500/15 text-red-300 border-red-500/35',
-    amber: 'bg-amber-500/15 text-amber-300 border-amber-500/35',
-    purple: 'bg-purple-500/15 text-purple-300 border-purple-500/35',
+    emerald: 'oct-sm oct-bd-green bg-emerald-500/15 text-emerald-300 border-emerald-500/35',
+    red: 'oct-sm oct-bd-red bg-red-500/15 text-red-300 border-red-500/35',
+    amber: 'oct-sm oct-bd-yellow bg-amber-500/15 text-amber-300 border-amber-500/35',
+    purple: 'oct-sm oct-bd-purple bg-purple-500/15 text-purple-300 border-purple-500/35',
   };
 
   return (

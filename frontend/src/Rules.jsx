@@ -95,7 +95,7 @@ const RuleCard = ({ rule, number, isAdmin, isEditing, onEdit, onCancel, onSave, 
           className="w-12 h-12 sm:w-16 sm:h-16 transition-transform duration-300 group-hover:scale-105"
           innerClassName="bg-[#000000]"
           ringColor={hexColor}
-          ringWidth={3.8}
+          ringWidth={1.8}
         >
           <Icon id={rule.id} className={`w-6 h-6 sm:w-8 sm:h-8 ${text}`} />
         </HexFrame>

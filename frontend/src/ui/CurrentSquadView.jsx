@@ -432,9 +432,9 @@ const SquadPitchCircle = ({
                 ? '#34d399'
                 : 'rgba(255, 255, 255, 0.24)'
           }
-          ringWidth={justSwapped ? 4.2 : 2.6}
+          ringWidth={justSwapped ? 1.8 : 1.2}
           dashed={Boolean(player.isDummy)}
-          glowColor={justSwapped ? 'rgba(52, 211, 153, 0.75)' : null}
+          glowColor={justSwapped ? 'rgba(52, 211, 153, 0.7)' : null}
         >
           {showPhoto ? (
             <img
@@ -452,8 +452,8 @@ const SquadPitchCircle = ({
 
         {/* Kickbase 5-stufiges Startelf-Prognose-Icon unten rechts am Avatar */}
         {!player.isDummy && player.prob != null && (
-          <div className="absolute -bottom-0.5 -right-0.5 rounded-full hex-beacon bg-black p-[1.5px] shadow">
-            <StartProbBadge prob={player.prob} variant="icon" size={16} />
+          <div className="absolute -bottom-0.5 right-0 pointer-events-none">
+            <StartProbBadge prob={player.prob} variant="icon" size={18} backdrop />
           </div>
         )}
       </div>
@@ -556,8 +556,8 @@ const OrbitalOptionCircle = ({
           className="w-full h-full"
           innerClassName="bg-[#171717]"
           ringColor={samePosition ? 'rgba(52, 211, 153, 0.92)' : 'rgba(251, 191, 36, 0.92)'}
-          ringWidth={4.2}
-          glowColor={samePosition ? 'rgba(52, 211, 153, 0.45)' : 'rgba(251, 191, 36, 0.45)'}
+          ringWidth={1.6}
+          glowColor={samePosition ? 'rgba(52, 211, 153, 0.4)' : 'rgba(251, 191, 36, 0.4)'}
         >
           {showPhoto ? (
             <img
@@ -585,8 +585,8 @@ const OrbitalOptionCircle = ({
 
         {/* Startelf-Prognose-Icon unten rechts */}
         {player.prob != null && (
-          <div className="absolute -bottom-0.5 -right-0.5 rounded-full hex-beacon bg-black p-[1.5px] shadow">
-            <StartProbBadge prob={player.prob} variant="icon" size={14} />
+          <div className="absolute -bottom-0.5 right-0 pointer-events-none">
+            <StartProbBadge prob={player.prob} variant="icon" size={16} backdrop />
           </div>
         )}
       </div>
@@ -638,8 +638,8 @@ const SelectedSwapAnchor = ({ player, x, y, sizePx, xp, onClose }) => {
           className="w-full h-full"
           innerClassName="bg-[#171717]"
           ringColor="#ff5c3e"
-          ringWidth={4.5}
-          glowColor="rgba(255, 92, 62, 0.72)"
+          ringWidth={1.8}
+          glowColor="rgba(255, 92, 62, 0.65)"
         >
           {showPhoto ? (
             <img
@@ -655,8 +655,8 @@ const SelectedSwapAnchor = ({ player, x, y, sizePx, xp, onClose }) => {
           )}
         </HexFrame>
         {!player.isDummy && player.prob != null && (
-          <div className="absolute -bottom-0.5 -right-0.5 rounded-full hex-beacon bg-black p-[1.5px] shadow">
-            <StartProbBadge prob={player.prob} variant="icon" size={16} />
+          <div className="absolute -bottom-0.5 right-0 pointer-events-none">
+            <StartProbBadge prob={player.prob} variant="icon" size={18} backdrop />
           </div>
         )}
       </div>
@@ -1188,15 +1188,34 @@ const CurrentSquadView = ({ players, liveStartingIds, loading }) => {
         )}
       </div>
 
-      {/* Direktlink in die installierte Kickbase-App (Universal Link / App Link) */}
+      {/* Direktlink in die installierte Kickbase-App im Kickbase-Brand- & Oktagon-Design */}
       <a
         href={KICKBASE_APP_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-[#ff5c3e]/15 border border-[#ff5c3e]/45 text-xs sm:text-sm font-bold text-white hover:bg-[#ff5c3e]/25 hover:border-[#ff5c3e] transition-all active:scale-[0.99]"
+        className="oct-md mt-3 w-full flex items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-gradient-to-r from-[#ff4b2b] via-[#ff5c3e] to-[#e0381e] text-white shadow-[0_8px_24px_-10px_rgba(255,75,43,0.65)] hover:brightness-110 transition-all active:scale-[0.99] group"
+        style={{ '--oct-bd': 'rgba(255, 255, 255, 0.28)' }}
       >
-        <span>In der Kickbase App öffnen</span>
-        <ExternalLink size={14} className="text-[#ff5c3e] shrink-0" />
+        <div className="flex items-center gap-3 min-w-0">
+          {/* Kickbase K-Emblem im scharfen Hexagon */}
+          <span className="hex-beacon w-8 h-8 bg-black/85 flex items-center justify-center shrink-0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <polygon points="5,3 9.5,3 9.5,21 5,21" fill="#ffffff" />
+              <polygon points="9.5,11.8 16.5,3 20.5,3 13.5,12 20.5,21 16.2,21 9.5,12.5" fill="#ff5c3e" />
+            </svg>
+          </span>
+          <div className="min-w-0 text-left">
+            <div className="text-[9px] font-black uppercase tracking-[0.16em] text-white/80 leading-none">
+              KICKBASE
+            </div>
+            <div className="text-xs sm:text-sm font-extrabold tracking-tight text-white leading-tight mt-0.5 truncate">
+              Weiter in der Kickbase App
+            </div>
+          </div>
+        </div>
+        <span className="oct-sm oct-bd-none w-7 h-7 bg-black/25 flex items-center justify-center shrink-0 group-hover:translate-x-0.5 transition-transform">
+          <ExternalLink size={14} className="text-white" />
+        </span>
       </a>
 
       {/* Liste unterhalb des Fussballfelds: nach Positionen gruppiert im einheitlichen Karten-Design */}

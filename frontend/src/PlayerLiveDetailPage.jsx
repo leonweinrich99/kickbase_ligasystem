@@ -4,6 +4,7 @@ import { ChevronRight } from './ui/icons';
 import { useBackNavigation } from './useBackNavigation';
 import { IconBackButton } from './ui/CloseButton';
 import AnimatedPoints from './ui/AnimatedPoints';
+import HexFrame from './ui/HexFrame';
 
 // Eigene Seite statt Overlay/Modal fuer die Live-Punkte-Event-Liste eines
 // Spielers (Owner-Wunsch 23.11.2026: "als extra Seite machen und nicht als
@@ -24,7 +25,7 @@ import AnimatedPoints from './ui/AnimatedPoints';
 // Daten. Direkter Aufruf/Reload ohne state zeigt einen Hinweis statt eines
 // Fehlers (gleiches Prinzip wie UserDetail.jsx "Spieler nicht gefunden").
 const EventCard = ({ label, points, minute }) => (
-  <div className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl border border-[#2a2a2a] bg-[#111111]/60">
+  <div className="oct-md w-full flex items-center justify-between px-4 py-3.5 rounded-2xl border border-[#2a2a2a] bg-[#111111]/75">
     <div className="flex items-center gap-3 min-w-0">
       <span className={`text-base font-black shrink-0 ${points >= 0 ? 'text-emerald-400' : 'text-[#ff5c3e]'}`}>
         {points >= 0 ? '+' : ''}{points}
@@ -104,7 +105,7 @@ const PlayerLiveDetailPage = () => {
           <div className="text-gray-400 text-lg font-bold">Keine Spielerdaten vorhanden</div>
           <button
             onClick={goBack}
-            className="bg-[#171717] border border-[#2e2e2e] px-6 py-3 rounded-xl text-gray-300 hover:text-white hover:border-[#ff5c3e] transition-all"
+            className="oct-md bg-[#171717] border border-[#2e2e2e] px-6 py-3 rounded-xl text-gray-300 hover:text-white hover:border-[#ff5c3e] transition-all"
           >
             Zurück
           </button>
@@ -148,11 +149,16 @@ const PlayerLiveDetailPage = () => {
                 onClick={canOpenTrading ? openInTrading : undefined}
                 className={`absolute inset-0 flex items-center justify-center ${canOpenTrading ? 'cursor-pointer' : ''}`}
               >
-                <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden shadow-2xl ring-2 ring-[#2a2a2a] bg-[#171717] flex items-center justify-center">
+                <HexFrame
+                  className="w-28 h-28 sm:w-32 sm:h-32 shadow-2xl"
+                  innerClassName="bg-[#171717]"
+                  ringColor="#3a3a42"
+                  ringWidth={1.6}
+                >
                   <span className="text-gray-500 font-bold text-2xl uppercase">
                     {(player.lastName || player.name || '?').substring(0, 2)}
                   </span>
-                </div>
+                </HexFrame>
               </div>
             )}
 

@@ -12,6 +12,8 @@ import { useBackNavigation } from './useBackNavigation';
 import { BackButton } from './ui/CloseButton';
 import ManagerAvatar from './ui/ManagerAvatar';
 
+import { isOctagonUI } from './ui/shapeTheme';
+
 const calculatePerformanceScore = (points, avg, opt, max) => {
   if (points <= 0) return 1.0;
   const reference = (opt && opt > 0) ? opt : (max || 1);
@@ -458,7 +460,17 @@ const CustomizedDot = (props) => {
 
   return (
     <g>
-      <circle cx={cx} cy={cy} r={7} fill={stroke} stroke="#171717" strokeWidth={2} />
+      {isOctagonUI ? (
+        <polygon
+          points={`${cx},${cy - 8.5} ${cx + 6.8},${cy - 4.2} ${cx + 6.8},${cy + 4.2} ${cx},${cy + 8.5} ${cx - 6.8},${cy + 4.2} ${cx - 6.8},${cy - 4.2}`}
+          fill={stroke}
+          stroke="#171717"
+          strokeWidth={1.6}
+          strokeLinejoin="miter"
+        />
+      ) : (
+        <circle cx={cx} cy={cy} r={7} fill={stroke} stroke="#171717" strokeWidth={2} />
+      )}
       <text x={cx} y={cy} textAnchor="middle" dy=".35em" fill="#171717" fontSize={8} fontWeight="black">
         {value}
       </text>

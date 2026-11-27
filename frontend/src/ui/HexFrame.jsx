@@ -1,16 +1,16 @@
 import React from 'react';
 import { isOctagonUI } from './shapeTheme';
 
-// Spitzes, stehendes Hexagon (exakte Proportion passend zu unseren Logo-Hexagonen).
-const SHARP_HEX_CLIP = 'polygon(50% 2%, 94% 26%, 94% 74%, 50% 98%, 6% 74%, 6% 26%)';
-const SHARP_HEX_POINTS = '50,2.5 93.5,26.2 93.5,73.8 50,97.5 6.5,73.8 6.5,26.2';
+// Spitzes, stehendes Hexagon — etwas höher als breit (ca. 0,80:1 wie logo.png).
+const SHARP_HEX_CLIP = 'polygon(50% 1%, 90% 25.5%, 90% 74.5%, 50% 99%, 10% 74.5%, 10% 25.5%)';
+const SHARP_HEX_POINTS = '50,1.5 89.5,25.5 89.5,74.5 50,98.5 10.5,74.5 10.5,25.5';
 
 /**
  * Zentrale Hexagon-Hülle für ehemals runde Elemente (Kader-Spieler, Live-Spielfeld,
  * Manager-Avatare, Regel-Knoten).
  *
- * Schaltet über `shapeTheme.js` (`UI_SHAPE = 'octagon' | 'rounded'`) nahtlos
- * zwischen scharfem Hexagon (mit 6-Kanten-Rahmen & Glow) und klassischem Kreis um.
+ * Nutzt `vectorEffect="non-scaling-stroke"`, sodass Rahmenstärken (`ringWidth` in px)
+ * bei 36px-Avataren wie bei 140px-Profilbildern immer gleich fein und präzise bleiben.
  */
 const HexFrame = React.forwardRef(function HexFrame(
   {
@@ -19,7 +19,7 @@ const HexFrame = React.forwardRef(function HexFrame(
     innerClassName = '',
     style,
     ringColor = 'rgba(255, 255, 255, 0.22)',
-    ringWidth = 2.6,
+    ringWidth = 1.5,
     dashed = false,
     glowColor = null,
     roundClassName = '',
@@ -38,7 +38,7 @@ const HexFrame = React.forwardRef(function HexFrame(
         className={`relative rounded-full overflow-hidden flex items-center justify-center ${roundClassName} ${className}`}
         style={{
           ...roundStyle,
-          border: ringColor ? `${dashed ? 1 : Math.max(1, Math.round(ringWidth / 1.8))}px ${dashed ? 'dashed' : 'solid'} ${ringColor}` : undefined,
+          border: ringColor ? `${dashed ? 1 : Math.max(1, ringWidth)}px ${dashed ? 'dashed' : 'solid'} ${ringColor}` : undefined,
         }}
         {...rest}
       >
@@ -49,7 +49,7 @@ const HexFrame = React.forwardRef(function HexFrame(
 
   const outerStyle = {
     ...style,
-    ...(glowColor ? { filter: `drop-shadow(0 0 10px ${glowColor})` } : {}),
+    ...(glowColor ? { filter: `drop-shadow(0 0 8px ${glowColor})` } : {}),
   };
 
   return (
@@ -77,8 +77,9 @@ const HexFrame = React.forwardRef(function HexFrame(
             points={SHARP_HEX_POINTS}
             fill="none"
             stroke={glowColor || ringColor}
-            strokeWidth={glowColor ? Math.max(ringWidth, 4) : ringWidth}
-            strokeDasharray={dashed ? '8 6' : undefined}
+            strokeWidth={ringWidth}
+            vectorEffect="non-scaling-stroke"
+            strokeDasharray={dashed ? '4 3' : undefined}
             strokeLinejoin="miter"
           />
         </svg>

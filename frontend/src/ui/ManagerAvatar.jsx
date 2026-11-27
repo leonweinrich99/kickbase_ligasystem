@@ -23,7 +23,7 @@ export default function ManagerAvatar({ name, photoURL, size = 40, className = '
       innerClassName="bg-[#1f1f1f]"
       style={{ width: size, height: size }}
       ringColor={ringColor || 'rgba(255, 255, 255, 0.16)'}
-      ringWidth={ringColor ? Math.max(3.6, ringWidth * 2) : 2.2}
+      ringWidth={ringColor ? Math.min(ringWidth, 1.75) : 1.15}
     >
       {src ? (
         <img

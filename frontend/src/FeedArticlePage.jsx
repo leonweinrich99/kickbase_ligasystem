@@ -111,7 +111,7 @@ const FeedArticlePage = () => {
         <IconBackButton onClick={handleBack} />
 
         <div className="flex items-center gap-2">
-          <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${meta.badgeClass}`}>
+          <span className={`oct-pill inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${meta.badgeClass}`}>
             <CategoryIcon id={article.category} size={10} />
             {meta.shortLabel}
           </span>
@@ -178,9 +178,9 @@ const FeedArticlePage = () => {
           )}
         </header>
 
-        {/* Artikel-Titelbild */}
+        {/* Artikel-Titelbild im Oktagon-Rahmen */}
         {article.image && (
-          <div className="relative aspect-[16/9] w-full rounded-2xl overflow-hidden border border-white/10 mb-6 bg-[#0e0e10]">
+          <div className="oct-box relative aspect-[16/9] w-full rounded-2xl overflow-hidden border border-white/10 mb-6 bg-[#0e0e10]">
             <img
               src={article.image}
               alt={article.title}
@@ -257,14 +257,16 @@ const FeedArticlePage = () => {
                     {sec.gallery.items.map((item, gIdx) => (
                       <figure
                         key={gIdx}
-                        className="flex flex-col items-center text-center bg-black/30 border border-white/[0.06] rounded-xl p-2.5 sm:p-3"
+                        className="oct-md flex flex-col items-center text-center bg-black/30 border border-white/[0.06] rounded-xl p-2.5 sm:p-3"
                       >
-                        <img
-                          src={item.src}
-                          alt={item.alt || item.label || ''}
-                          loading="lazy"
-                          className="w-full max-w-[190px] h-auto object-contain select-none"
-                        />
+                        <div className="oct-sm oct-bd-none w-full max-w-[190px] overflow-hidden">
+                          <img
+                            src={item.src}
+                            alt={item.alt || item.label || ''}
+                            loading="lazy"
+                            className="w-full h-auto object-contain select-none"
+                          />
+                        </div>
                         {item.label && (
                           <figcaption className="mt-2">
                             <div className="text-xs font-bold text-white leading-tight">{item.label}</div>
@@ -282,8 +284,8 @@ const FeedArticlePage = () => {
               {/* Zitat / Pull-Quote */}
               {sec.quote && (
                 <blockquote
-                  className="my-4 rounded-r-2xl bg-white/[0.03] border-l-2 px-4 py-3.5"
-                  style={{ borderLeftColor: meta.accent }}
+                  className="oct-md my-4 rounded-r-2xl bg-white/[0.03] border-l-2 px-4 py-3.5"
+                  style={{ borderLeftColor: meta.accent, '--oct-bd': `${meta.accent}44` }}
                 >
                   <div className="flex items-start gap-2.5">
                     <Quote size={16} className="shrink-0 mt-1 opacity-60" style={{ color: meta.accent }} />
@@ -367,7 +369,7 @@ const FeedArticlePage = () => {
 
               {/* Fakten-Box / Callout */}
               {sec.callout && (
-                <div className={`rounded-2xl border p-4 sm:p-5 ${meta.calloutClass}`}>
+                <div className={`oct-box rounded-2xl border p-4 sm:p-5 ${meta.calloutClass}`} style={{ '--oct-bd': `${meta.accent}44` }}>
                   <div
                     className="text-xs font-bold uppercase tracking-wider mb-2.5"
                     style={{ color: meta.accent }}
@@ -378,7 +380,7 @@ const FeedArticlePage = () => {
                     {(sec.callout.items || []).map((item, iIdx) => (
                       <li key={iIdx} className="flex items-start gap-2 text-sm text-gray-200 leading-relaxed">
                         <span
-                          className="mt-2 w-1.5 h-1.5 rounded-full shrink-0"
+                          className="mt-2 w-1.5 h-1.5 rounded-full hex-beacon shrink-0"
                           style={{ backgroundColor: meta.accent }}
                         />
                         <span>{item}</span>
@@ -404,7 +406,7 @@ const FeedArticlePage = () => {
             {article.tags.map((tag) => (
               <span
                 key={tag}
-                className="text-[11px] font-medium text-[#8b92a5] bg-white/[0.04] border border-white/10 rounded-full px-2.5 py-0.5"
+                className="oct-pill text-[11px] font-medium text-[#8b92a5] bg-white/[0.04] border border-white/10 rounded-full px-2.5 py-0.5"
               >
                 #{tag}
               </span>

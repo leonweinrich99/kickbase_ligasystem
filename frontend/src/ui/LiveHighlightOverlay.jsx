@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { motion as Motion } from 'framer-motion';
 import { HIGHLIGHT_ICON } from '../liveLineupUtils';
+import HexFrame from './HexFrame';
+import { isOctagonUI } from './shapeTheme';
 
 const HIGHLIGHT_META = {
   goal: {
@@ -124,49 +126,74 @@ const LiveHighlightOverlay = ({ highlight, onLand, onComplete }) => {
           className="relative w-full h-full"
           style={{ transformStyle: 'preserve-3d' }}
         >
-          {/* Vorderseite: Vollstaendig opake Muenze mit demselben Icon wie in den Buttons */}
+          {/* Vorderseite: Vollstaendig opake Hexagon-Muenze mit demselben Icon wie in den Buttons */}
           <div
-            className="absolute inset-0 rounded-full flex items-center justify-center shadow-2xl"
+            className="absolute inset-0 flex items-center justify-center"
             style={{
               backfaceVisibility: 'hidden',
               WebkitBackfaceVisibility: 'hidden',
-              backgroundColor: meta.coinFallback,
-              backgroundImage: meta.coinBg,
-              boxShadow: `inset 0 2px 10px rgba(255,255,255,0.12), 0 0 0 2.5px ${meta.ring}, 0 0 34px ${meta.glow}`,
             }}
           >
-            <span
-              className="text-[58px] leading-none select-none drop-shadow-[0_4px_10px_rgba(0,0,0,0.55)]"
-              role="img"
-              aria-label={meta.title}
+            <HexFrame
+              className="w-full h-full"
+              ringColor={meta.ring}
+              ringWidth={2}
+              glowColor={meta.glow}
+              style={!isOctagonUI ? { boxShadow: `inset 0 2px 10px rgba(255,255,255,0.12), 0 0 0 2.5px ${meta.ring}, 0 0 34px ${meta.glow}` } : undefined}
             >
-              {meta.icon}
-            </span>
+              <div
+                className="w-full h-full flex items-center justify-center"
+                style={{
+                  backgroundColor: meta.coinFallback,
+                  backgroundImage: meta.coinBg,
+                }}
+              >
+                <span
+                  className="text-[54px] leading-none select-none drop-shadow-[0_4px_10px_rgba(0,0,0,0.55)]"
+                  role="img"
+                  aria-label={meta.title}
+                >
+                  {meta.icon}
+                </span>
+              </div>
+            </HexFrame>
           </div>
 
-          {/* Rueckseite: Spielerfoto auf vollstaendig opakem Hintergrund */}
+          {/* Rueckseite: Spielerfoto im scharfen Hexagon auf vollstaendig opakem Hintergrund */}
           <div
-            className="absolute inset-0 rounded-full overflow-hidden flex items-center justify-center shadow-2xl"
+            className="absolute inset-0 flex items-center justify-center"
             style={{
               transform: 'rotateY(180deg)',
               backfaceVisibility: 'hidden',
               WebkitBackfaceVisibility: 'hidden',
-              backgroundColor: '#141416',
-              backgroundImage: 'radial-gradient(circle at 50% 22%, #2b2b30 0%, #17171a 62%, #0c0c0e 100%)',
-              boxShadow: `0 0 0 2.5px ${meta.ring}, 0 0 32px ${meta.glow}`,
             }}
           >
-            {player?.imagePath ? (
-              <img
-                src={`https://kickbase.b-cdn.net/${player.imagePath}`}
-                alt={player.lastName || player.name}
-                className="w-full h-full object-cover object-top"
-              />
-            ) : (
-              <span className="text-2xl font-bold text-gray-300 uppercase">
-                {(player?.lastName || player?.name || '?').substring(0, 2)}
-              </span>
-            )}
+            <HexFrame
+              className="w-full h-full"
+              ringColor={meta.ring}
+              ringWidth={2}
+              glowColor={meta.glow}
+            >
+              <div
+                className="w-full h-full flex items-center justify-center"
+                style={{
+                  backgroundColor: '#141416',
+                  backgroundImage: 'radial-gradient(circle at 50% 22%, #2b2b30 0%, #17171a 62%, #0c0c0e 100%)',
+                }}
+              >
+                {player?.imagePath ? (
+                  <img
+                    src={`https://kickbase.b-cdn.net/${player.imagePath}`}
+                    alt={player.lastName || player.name}
+                    className="w-full h-full object-cover object-top"
+                  />
+                ) : (
+                  <span className="text-2xl font-bold text-gray-300 uppercase">
+                    {(player?.lastName || player?.name || '?').substring(0, 2)}
+                  </span>
+                )}
+              </div>
+            </HexFrame>
           </div>
         </Motion.div>
 
@@ -178,10 +205,11 @@ const LiveHighlightOverlay = ({ highlight, onLand, onComplete }) => {
           className="absolute top-full left-1/2 -translate-x-1/2 mt-3 flex flex-col items-center gap-1 whitespace-nowrap"
         >
           <div
-            className="px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border shadow-lg"
+            className="oct-pill px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border shadow-lg"
             style={{
               color: meta.accent,
               borderColor: meta.ring,
+              '--oct-bd': meta.ring,
               backgroundColor: '#0a0a0c',
             }}
           >

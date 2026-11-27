@@ -35,7 +35,7 @@ const AdBanner = ({ className = '' }) => {
   }, []);
 
   if (!banner) {
-    return <div className={`rounded-2xl border border-white/10 bg-white/[0.03] animate-pulse h-[88px] ${className}`} />;
+    return <div className={`oct-box rounded-2xl border border-white/10 bg-white/[0.03] animate-pulse h-[88px] ${className}`} />;
   }
 
   const Wrapper = banner.url ? 'a' : 'div';
@@ -46,15 +46,15 @@ const AdBanner = ({ className = '' }) => {
   return (
     <Wrapper
       {...wrapperProps}
-      className={`relative block rounded-2xl overflow-hidden border border-white/10 hover:border-white/20 transition-colors active:scale-[0.99] ${className}`}
+      className={`oct-box relative block rounded-2xl overflow-hidden border border-white/10 hover:border-white/20 transition-colors active:scale-[0.99] ${className}`}
       style={{ background: banner.cardBg }}
     >
-      <span className="absolute top-2.5 right-3 text-[8px] font-bold uppercase tracking-widest text-[#626978]">
+      <span className="oct-sm absolute top-2.5 right-3 px-1.5 py-0.5 bg-black/40 text-[8px] font-bold uppercase tracking-widest text-[#8b92a5]">
         Anzeige
       </span>
       <div className="flex items-center gap-3.5 p-4">
         <div
-          className="w-14 h-14 rounded-xl overflow-hidden flex items-center justify-center shrink-0"
+          className="oct-md oct-bd-none w-14 h-14 rounded-xl overflow-hidden flex items-center justify-center shrink-0"
           style={{ background: banner.logoBg }}
         >
           {banner.logo ? (

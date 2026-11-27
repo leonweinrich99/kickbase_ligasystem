@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Newspaper, Trophy, TrendingUp, Flame, Clock, BarChart3, ChevronRight, CalendarRange, Megaphone, Eye, MessageCircle } from './ui/icons';
 import TabPageHeader from './ui/TabPageHeader';
-import { FEED_CATEGORIES, getCategoryMeta, formatArticleDate, sortArticlesByDateDesc } from './feedMeta';
+import { getCategoryMeta, formatArticleDate, sortArticlesByDateDesc } from './feedMeta';
 import { useAuth } from './AuthContext';
 import { loadAllArticleStats } from './articleEngagement';
 import newsLogo from './assets/news_logo.png';
@@ -277,7 +277,7 @@ const HeroCarousel = ({ articles, activeCat, articleStats = {} }) => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-transparent" />
                   <span
-                    className={`absolute top-3 left-3 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border backdrop-blur-md bg-black/65 ${meta.badgeClass}`}
+                    className={`oct-pill absolute top-3 left-3 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border backdrop-blur-md bg-black/65 ${meta.badgeClass}`}
                   >
                     <CategoryIcon id={article.category} size={11} />
                     {meta.shortLabel}
@@ -337,7 +337,7 @@ const HeroCarousel = ({ articles, activeCat, articleStats = {} }) => {
               type="button"
               aria-label={`Zu Artikel ${i + 1}`}
               onClick={() => goTo(i)}
-              className={`h-1.5 rounded-full transition-all ${i === activeIndex ? 'w-5 bg-white' : 'w-1.5 bg-white/25'}`}
+              className={`oct-sm oct-bd-none h-1.5 rounded-full transition-all ${i === activeIndex ? 'w-5 bg-white' : 'w-1.5 bg-white/25'}`}
             />
           ))}
         </div>
@@ -433,11 +433,6 @@ const FeedPage = () => {
   const rawCat = searchParams.get('cat') || 'all';
   const activeCat = rawCat === 'weekly' && !isAdmin ? 'all' : rawCat;
 
-  const visibleCategories = useMemo(
-    () => FEED_CATEGORIES.filter((cat) => !cat.adminOnly || isAdmin),
-    [isAdmin],
-  );
-
   const [feedData, setFeedData] = useState(null);
   const [weeklyEditions, setWeeklyEditions] = useState([]);
   const [articleStats, setArticleStats] = useState({});
@@ -515,14 +510,6 @@ const FeedPage = () => {
     [baseArticles, weeklyArticles],
   );
   const ticker = useMemo(() => feedData?.ticker || [], [feedData]);
-
-  const counts = useMemo(() => {
-    const map = { all: baseArticles.length + weeklyArticles.length, spieltag: 0, pokal: 0, trading: 0, allgemein: 0, weekly: weeklyArticles.length };
-    baseArticles.forEach((a) => {
-      if (map[a.category] != null) map[a.category] += 1;
-    });
-    return map;
-  }, [baseArticles, weeklyArticles]);
 
   const filtered = useMemo(() => {
     if (activeCat === 'all') return articles;
@@ -624,42 +611,22 @@ const FeedPage = () => {
         ) : null}
       />
 
-      {/* Kategorie-Filter-Leiste */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 mb-4">
-        {visibleCategories.map((cat) => {
-          const isActive = activeCat === cat.id;
-          const activeClass =
-            cat.id === 'all'
-              ? 'bg-white text-black border-white'
-              : cat.pillActiveClass;
-          return (
-            <button
-              key={cat.id}
-              type="button"
-              onClick={() => setCategory(cat.id)}
-              className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer active:scale-95 ${
-                isActive
-                  ? activeClass
-                  : 'bg-white/[0.04] border-white/10 text-gray-300 hover:bg-white/[0.09] hover:text-white'
-              }`}
-            >
-              <CategoryIcon id={cat.id} size={13} />
-              <span>{cat.label}</span>
-              <span
-                className={`text-[10px] tabular-nums px-1.5 py-0.5 rounded-full leading-none ${
-                  isActive ? 'bg-black/20' : 'bg-white/10 text-[#8b92a5]'
-                }`}
-              >
-                {counts[cat.id] ?? 0}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+      {/* Wenn ueber "Alle ansehen" in eine Einzelkategorie gesprungen wurde, kompakte Rueckkehr */}
+      {activeCat !== 'all' && (
+        <div className="mb-4">
+          <button
+            type="button"
+            onClick={() => setCategory('all')}
+            className="oct-pill inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border bg-white/[0.05] border-white/15 text-gray-200 hover:text-white hover:bg-white/[0.1] transition-colors cursor-pointer"
+          >
+            ← Alle News
+          </button>
+        </div>
+      )}
 
       {/* Dauerhaft durchlaufender News-Sender-Marktticker (inkl. kompletter 26er-Trader-Rangliste) */}
       {ticker.length > 0 && (
-        <div className="mb-5 rounded-2xl border border-emerald-500/20 bg-[#07110d] overflow-hidden">
+        <div className="oct-md oct-bd-green mb-5 rounded-2xl border border-emerald-500/20 bg-[#07110d] overflow-hidden">
           {isTradingView && (
             <div className="px-4 pt-3 pb-2 border-b border-emerald-500/15 text-center">
               <div className="text-[9px] font-semibold uppercase tracking-[0.28em] text-emerald-400/80 mb-0.5">
@@ -674,8 +641,8 @@ const FeedPage = () => {
             {/* Festes Live-Ticker-Label links */}
             <div className="relative z-20 shrink-0 h-full flex items-center gap-1.5 pl-3 pr-3.5 bg-[#07110d] border-r border-emerald-500/20 text-[10px] font-bold uppercase tracking-wider text-emerald-400">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full hex-beacon bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full hex-beacon h-2 w-2 bg-emerald-400" />
               </span>
               <BarChart3 size={11} />
               <span className="hidden sm:inline">Markt-Ticker</span>

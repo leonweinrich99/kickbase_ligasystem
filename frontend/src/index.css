@@ -250,10 +250,10 @@ html[data-ui-shape="octagon"] {
   html[data-ui-shape="octagon"] .oct-bd-yellow { --oct-bd: rgba(234, 179, 8, 0.4); }
   html[data-ui-shape="octagon"] .oct-bd-purple { --oct-bd: rgba(168, 85, 247, 0.4); }
 
-  /* Scharfes Hexagon für kleine Indikatoren (Live-Punkt, Anstoß-Hexagon) */
+  /* Scharfes Hexagon für kleine Indikatoren — etwas höher als breit */
   html[data-ui-shape="octagon"] .hex-beacon {
     border-radius: 0 !important;
-    clip-path: polygon(50% 0%, 95% 25%, 95% 75%, 50% 100%, 5% 75%, 5% 25%);
+    clip-path: polygon(50% 0%, 90% 25%, 90% 75%, 50% 100%, 10% 75%, 10% 25%);
   }
 
   html[data-ui-shape="octagon"] .hex-pitch-center {
@@ -262,8 +262,8 @@ html[data-ui-shape="octagon"] {
     background: rgba(255, 255, 255, 0.9);
     clip-path: polygon(
       evenodd,
-      50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%, 50% 0%,
-      50% 2%, 9% 26%, 9% 74%, 50% 98%, 91% 74%, 91% 26%, 50% 2%
+      50% 0%, 90% 25%, 90% 75%, 50% 100%, 10% 75%, 10% 25%, 50% 0%,
+      50% 2%, 12% 26%, 12% 74%, 50% 98%, 88% 74%, 88% 26%, 50% 2%
     );
   }
 }

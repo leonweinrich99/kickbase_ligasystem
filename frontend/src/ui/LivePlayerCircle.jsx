@@ -45,8 +45,8 @@ const LivePlayerCircle = ({
         ref={avatarRef}
         className={`${size} transition-all duration-300`}
         innerClassName={`${imagePath ? '' : 'bg-[#202020]'} shadow-md`}
-        ringColor={highlightedColor || 'rgba(255, 255, 255, 0.22)'}
-        ringWidth={highlightedColor ? 4.2 : 2.6}
+        ringColor={highlightedColor || 'rgba(255, 255, 255, 0.2)'}
+        ringWidth={highlightedColor ? 1.8 : 1.2}
         glowColor={highlightedColor || null}
       >
         {imagePath ? (
