@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { collection, onSnapshot, doc, updateDoc, deleteField, query, orderBy, writeBatch } from 'firebase/firestore';
-import { Check, X, AlertTriangle, MoreVertical, MessageCircle, RefreshCw, CheckCircle2, XCircle, Clock, Bell, BarChart3, Users } from './ui/icons';
+import { Check, X, AlertTriangle, MoreVertical, RefreshCw, CheckCircle2, XCircle, Clock, Bell, BarChart3, Users } from './ui/icons';
 import { db } from './firebase';
 import { useAuth } from './AuthContext';
 import PushNotificationCard from './PushNotificationCard';
@@ -160,7 +160,6 @@ const AdminPanel = () => {
   const [updateStatus, setUpdateStatus] = useState(null);
   const [updateStatusOk, setUpdateStatusOk] = useState(true);
   const [openMenuId, setOpenMenuId] = useState(null);
-  const [showMessenger, setShowMessenger] = useState(false);
   const [resettingPrompt, setResettingPrompt] = useState(false);
   const menuRef = useRef(null);
 
@@ -287,88 +286,84 @@ const AdminPanel = () => {
   return (
     <div className="min-h-screen bg-[#000000] p-4 sm:p-10">
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between gap-3 mb-8">
+        <div className="flex items-center justify-between gap-3 mb-6">
           <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
             <img src={adminLogo} alt="Admin Logo" className="w-12 h-12 sm:w-14 sm:h-14 object-contain shrink-0" />
-            <PageHeader eyebrow="ADMIN" title="Nutzerverwaltung" />
+            <PageHeader eyebrow="ADMIN" title="Panel" />
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={() => setShowMessenger(true)}
-              aria-label="Messenger öffnen"
-              className="oct-md w-10 h-10 flex items-center justify-center bg-[#171717] border border-[#2e2e2e] rounded-xl text-[#8b92a5] hover:text-white hover:border-[#404040] transition-all"
-            >
-              <MessageCircle size={18} strokeWidth={2.5} />
-            </button>
             <CloseButton onClick={goBack} />
           </div>
         </div>
 
-        <PushNotificationCard />
-
-        {/* Push-Reichweite ueber alle freigegebenen Manager + Re-Prompt-Ausloeser */}
-        {!loading && approvedUsers.length > 0 && (
-          <div className="card-surface rounded-xl px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-gray-100">
-                <Bell size={13} className="text-[#ff5c3e]" />
-                <span>Push-Abdeckung: {pushUsers.length} / {approvedUsers.length} Manager erreichbar</span>
-              </div>
-              <div className="text-[11px] text-[#8b92a5] mt-0.5 tabular-nums">
-                Live-Events: {pushLiveCount} · Kader-Alarm: {pushSquadCount} · Artikel: {pushArticlesCount}
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={resetPushPromptForAll}
-              disabled={resettingPrompt}
-              className="px-3 py-1.5 rounded-lg bg-[#171717] border border-[#2e2e2e] text-[10px] font-black uppercase tracking-widest text-gray-300 hover:text-white hover:border-[#404040] transition-colors shrink-0 disabled:opacity-50 cursor-pointer"
-            >
-              {resettingPrompt ? 'Setze zurück...' : 'Abfrage neu starten'}
-            </button>
-          </div>
-        )}
-
-        {showMessenger && (
-          <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setShowMessenger(false)}>
-            <div className="w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-              <div className="flex justify-end mb-2">
-                <CloseButton onClick={() => setShowMessenger(false)} size="compact" />
-              </div>
-              <AdminMessengerCard />
-            </div>
-          </div>
-        )}
-
-        {/* Haupt-Tabs: Nutzerverwaltung vs. Nutzung & Artikel-Insights */}
-        <div className="grid grid-cols-2 gap-2 mb-6">
+        {/* Haupt-Tabs: Nutzer, Nutzung & Artikel, Admin-Push */}
+        <div className="grid grid-cols-3 gap-2 mb-6">
           <button
             type="button"
             onClick={() => setActiveTab('users')}
-            className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-[11px] font-black uppercase tracking-widest border transition-all cursor-pointer ${
+            className={`flex items-center justify-center gap-1.5 py-2.5 px-2.5 rounded-xl text-[10px] sm:text-[11px] font-black uppercase tracking-widest border transition-all cursor-pointer ${
               activeTab === 'users'
                 ? 'bg-[#ff5c3e] text-white border-[#ff5c3e]'
                 : 'bg-[#171717] border-[#2e2e2e] text-[#8b92a5] hover:text-white'
             }`}
           >
-            <Users size={14} />
-            <span>Nutzer ({users.length})</span>
+            <Users size={14} className="shrink-0" />
+            <span className="truncate">Nutzer ({users.length})</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('analytics')}
-            className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-[11px] font-black uppercase tracking-widest border transition-all cursor-pointer ${
+            className={`flex items-center justify-center gap-1.5 py-2.5 px-2.5 rounded-xl text-[10px] sm:text-[11px] font-black uppercase tracking-widest border transition-all cursor-pointer ${
               activeTab === 'analytics'
                 ? 'bg-[#ff5c3e] text-white border-[#ff5c3e]'
                 : 'bg-[#171717] border-[#2e2e2e] text-[#8b92a5] hover:text-white'
             }`}
           >
-            <BarChart3 size={14} />
-            <span>Nutzung & Artikel</span>
+            <BarChart3 size={14} className="shrink-0" />
+            <span className="truncate">Nutzung</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('push')}
+            className={`flex items-center justify-center gap-1.5 py-2.5 px-2.5 rounded-xl text-[10px] sm:text-[11px] font-black uppercase tracking-widest border transition-all cursor-pointer ${
+              activeTab === 'push'
+                ? 'bg-[#ff5c3e] text-white border-[#ff5c3e]'
+                : 'bg-[#171717] border-[#2e2e2e] text-[#8b92a5] hover:text-white'
+            }`}
+          >
+            <Bell size={14} className="shrink-0" />
+            <span className="truncate">Push</span>
           </button>
         </div>
 
-        {activeTab === 'analytics' ? (
+        {activeTab === 'push' ? (
+          <div className="space-y-4">
+            <AdminMessengerCard />
+            <PushNotificationCard />
+
+            {!loading && approvedUsers.length > 0 && (
+              <div className="card-surface rounded-xl px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-gray-100">
+                    <Bell size={13} className="text-[#ff5c3e]" />
+                    <span>Push-Abdeckung: {pushUsers.length} / {approvedUsers.length} Manager erreichbar</span>
+                  </div>
+                  <div className="text-[11px] text-[#8b92a5] mt-0.5 tabular-nums">
+                    Live-Events: {pushLiveCount} · Kader-Alarm: {pushSquadCount} · Artikel: {pushArticlesCount}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={resetPushPromptForAll}
+                  disabled={resettingPrompt}
+                  className="px-3 py-1.5 rounded-lg bg-[#171717] border border-[#2e2e2e] text-[10px] font-black uppercase tracking-widest text-gray-300 hover:text-white hover:border-[#404040] transition-colors shrink-0 disabled:opacity-50 cursor-pointer"
+                >
+                  {resettingPrompt ? 'Setze zurück...' : 'Abfrage neu starten'}
+                </button>
+              </div>
+            )}
+          </div>
+        ) : activeTab === 'analytics' ? (
           <AdminAnalyticsCard users={users} />
         ) : (
           <>

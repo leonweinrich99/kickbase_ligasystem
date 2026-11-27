@@ -1,10 +1,12 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Clock, Eye, Flame, Trophy, TrendingUp, Newspaper, ArrowUpRight, Quote, Megaphone } from './ui/icons';
+import { Clock, Flame, Trophy, TrendingUp, Newspaper, ArrowUpRight, Quote, Megaphone } from './ui/icons';
 import { getCategoryMeta, formatArticleDate, sortArticlesByDateDesc } from './feedMeta';
 import { IconBackButton } from './ui/CloseButton';
 import AdBanner from './ui/AdBanner';
+import ArticleTopEngagementBar from './ui/ArticleTopEngagementBar';
 import ArticleEngagementSection from './ui/ArticleEngagementSection';
+import { useArticleEngagement } from './useArticleEngagement';
 
 const CategoryIcon = ({ id, size = 12 }) => {
   if (id === 'spieltag') return <Flame size={size} />;
@@ -22,7 +24,18 @@ const FeedArticlePage = () => {
 
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [engagementStats, setEngagementStats] = useState(null);
+  const commentTextareaRef = useRef(null);
+  const engagement = useArticleEngagement(slug);
+
+  const handleJumpToComments = () => {
+    const el = document.getElementById('kommentare');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(() => {
+        commentTextareaRef.current?.focus({ preventScroll: true });
+      }, 450);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -151,16 +164,18 @@ const FeedArticlePage = () => {
             <span className="tabular-nums">{formatArticleDate(article.date)}</span>
             <span>·</span>
             <span>{article.edition}</span>
-            {engagementStats?.viewsCount > 0 && (
-              <>
-                <span>·</span>
-                <span className="inline-flex items-center gap-1 tabular-nums text-gray-300">
-                  <Eye size={12} />
-                  {engagementStats.viewsCount} gelesen
-                </span>
-              </>
-            )}
           </div>
+
+          {engagement.isEnabled && (
+            <ArticleTopEngagementBar
+              stats={engagement.stats}
+              myReaction={engagement.myReaction}
+              reacting={engagement.reacting}
+              onToggleReaction={engagement.toggleReaction}
+              onJumpToComments={handleJumpToComments}
+              accent={meta.accent}
+            />
+          )}
         </header>
 
         {/* Artikel-Titelbild */}
@@ -402,7 +417,12 @@ const FeedArticlePage = () => {
           slug={article.slug}
           articleTitle={article.title}
           accent={meta.accent}
-          onStatsChange={setEngagementStats}
+          stats={engagement.stats}
+          myReaction={engagement.myReaction}
+          reacting={engagement.reacting}
+          unavailable={engagement.unavailable}
+          onToggleReaction={engagement.toggleReaction}
+          textareaRef={commentTextareaRef}
         />
 
         {/* Weitere Artikel */}

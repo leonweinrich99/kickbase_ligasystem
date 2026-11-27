@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   collection,
-  doc,
   getDocs,
   onSnapshot,
   orderBy,
@@ -16,10 +15,7 @@ import {
   deleteArticleComment,
   extractMentions,
   formatRelativeTime,
-  recordArticleReadThrough,
-  recordArticleView,
   splitTextWithMentions,
-  toggleArticleReaction,
   updateArticleComment,
 } from '../articleEngagement';
 import {
@@ -50,23 +46,23 @@ function getActiveMentionToken(text, caretPos) {
   return { start: atIndex, query: queryText };
 }
 
-const ArticleEngagementSection = ({ slug, articleTitle, accent = '#ff5c3e', onStatsChange }) => {
+const ArticleEngagementSection = ({
+  slug,
+  articleTitle,
+  accent = '#ff5c3e',
+  stats,
+  myReaction,
+  reacting,
+  unavailable,
+  onToggleReaction,
+  textareaRef: externalTextareaRef,
+}) => {
   const { user, profile, isAdmin } = useAuth();
   const managers = useKickbaseManagers();
 
-  const [stats, setStats] = useState({
-    viewsCount: 0,
-    readThroughCount: 0,
-    commentsCount: 0,
-    reactionsCount: 0,
-    reactionCounts: {},
-  });
-  const [myReaction, setMyReaction] = useState(null);
-  const [reacting, setReacting] = useState(false);
-
   const [comments, setComments] = useState([]);
   const [commentsLoading, setCommentsLoading] = useState(true);
-  const [firestoreUnavailable, setFirestoreUnavailable] = useState(false);
+  const [commentsUnavailable, setCommentsUnavailable] = useState(false);
 
   // Composer State
   const [text, setText] = useState('');
@@ -74,7 +70,8 @@ const ArticleEngagementSection = ({ slug, articleTitle, accent = '#ff5c3e', onSt
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [mentionIdx, setMentionIdx] = useState(0);
-  const textareaRef = useRef(null);
+  const internalTextareaRef = useRef(null);
+  const textareaRef = externalTextareaRef || internalTextareaRef;
 
   // Edit State
   const [editingId, setEditingId] = useState(null);
@@ -88,70 +85,12 @@ const ArticleEngagementSection = ({ slug, articleTitle, accent = '#ff5c3e', onSt
 
   const isApproved = profile?.status === 'approved';
 
-  // 1. Eindeutigen Artikel-Aufruf & Scroll-Lesetiefe erfassen
-  useEffect(() => {
-    if (!slug || !user?.uid || !isApproved) return undefined;
-
-    recordArticleView({ slug, user, profile });
-
-    let ticked = false;
-    let sentReadThrough = false;
-
-    const handleScroll = () => {
-      if (sentReadThrough || ticked) return;
-      ticked = true;
-      window.requestAnimationFrame(() => {
-        ticked = false;
-        const docEl = document.documentElement;
-        const scrollable = docEl.scrollHeight - window.innerHeight;
-        const pct = scrollable <= 0 ? 100 : ((window.scrollY + window.innerHeight) / docEl.scrollHeight) * 100;
-        if (pct >= 75) {
-          sentReadThrough = true;
-          recordArticleReadThrough({ slug, user, profile, scrollPct: pct });
-        }
-      });
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [slug, user, profile, isApproved]);
-
-  // 2. Live-Abo auf Aggregat-Zaehler, eigene Reaktion und Kommentare
+  // Live-Abo auf Kommentare
   useEffect(() => {
     if (!isFirebaseConfigured || !db || !slug || !user?.uid || !isApproved) {
       setCommentsLoading(false);
       return undefined;
     }
-
-    const articleRef = doc(db, 'articles', slug);
-    const unsubStats = onSnapshot(
-      articleRef,
-      (snap) => {
-        const d = snap.exists() ? snap.data() || {} : {};
-        const next = {
-          viewsCount: Math.max(0, Number(d.viewsCount || 0)),
-          readThroughCount: Math.max(0, Number(d.readThroughCount || 0)),
-          commentsCount: Math.max(0, Number(d.commentsCount || 0)),
-          reactionsCount: Math.max(0, Number(d.reactionsCount || 0)),
-          reactionCounts: d.reactionCounts || {},
-        };
-        setStats(next);
-        onStatsChange?.(next);
-        setFirestoreUnavailable(false);
-      },
-      () => {
-        setFirestoreUnavailable(true);
-      }
-    );
-
-    const reactionRef = doc(db, 'articles', slug, 'reactions', user.uid);
-    const unsubReaction = onSnapshot(
-      reactionRef,
-      (snap) => {
-        setMyReaction(snap.exists() ? snap.data()?.reaction || null : null);
-      },
-      () => {}
-    );
 
     const commentsQ = query(
       collection(db, 'articles', slug, 'comments'),
@@ -162,21 +101,18 @@ const ArticleEngagementSection = ({ slug, articleTitle, accent = '#ff5c3e', onSt
       (snap) => {
         setComments(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
         setCommentsLoading(false);
+        setCommentsUnavailable(false);
       },
       () => {
         setCommentsLoading(false);
-        setFirestoreUnavailable(true);
+        setCommentsUnavailable(true);
       }
     );
 
-    return () => {
-      unsubStats();
-      unsubReaction();
-      unsubComments();
-    };
-  }, [slug, user?.uid, isApproved, onStatsChange]);
+    return () => unsubComments();
+  }, [slug, user?.uid, isApproved]);
 
-  // 3. Direkt zu #kommentare scrollen (z.B. aus Mention-Push-Benachrichtigung)
+  // Direkt zu #kommentare scrollen (z.B. aus Mention-Push-Benachrichtigung)
   useEffect(() => {
     if (window.location.hash === '#kommentare' && !commentsLoading) {
       const el = document.getElementById('kommentare');
@@ -186,7 +122,7 @@ const ArticleEngagementSection = ({ slug, articleTitle, accent = '#ff5c3e', onSt
     }
   }, [commentsLoading]);
 
-  // 4. Admin-Leserliste erst bei Klick nachladen
+  // Admin-Leserliste erst bei Klick nachladen
   const toggleAdminReaders = async () => {
     if (!isAdmin) return;
     if (showReaders) {
@@ -206,7 +142,7 @@ const ArticleEngagementSection = ({ slug, articleTitle, accent = '#ff5c3e', onSt
     }
   };
 
-  // 5. @-Mention Autocomplete berechnen
+  // @-Mention Autocomplete berechnen
   const activeMention = useMemo(() => getActiveMentionToken(text, caretPos), [text, caretPos]);
 
   const mentionSuggestions = useMemo(() => {
@@ -292,19 +228,10 @@ const ArticleEngagementSection = ({ slug, articleTitle, accent = '#ff5c3e', onSt
 
   const handleReaction = async (reactionId) => {
     if (reacting || !isApproved) return;
-    setReacting(true);
     try {
-      await toggleArticleReaction({
-        slug,
-        user,
-        profile,
-        reactionId,
-        currentReactionId: myReaction,
-      });
+      await onToggleReaction?.(reactionId);
     } catch {
       setError('Reaktion konnte nicht gespeichert werden.');
-    } finally {
-      setReacting(false);
     }
   };
 
@@ -357,11 +284,12 @@ const ArticleEngagementSection = ({ slug, articleTitle, accent = '#ff5c3e', onSt
 
   if (!isFirebaseConfigured || !isApproved) return null;
 
-  const displayedViews = Math.max(stats.viewsCount, 0);
-  const displayedComments = Math.max(comments.length, stats.commentsCount);
+  const displayedViews = Math.max(stats?.viewsCount || 0, 0);
+  const displayedComments = Math.max(comments.length, stats?.commentsCount || 0);
+  const firestoreUnavailable = Boolean(unavailable || commentsUnavailable);
 
   return (
-    <section id="kommentare" className="mt-8 pt-6 border-t border-white/10 space-y-5">
+    <section id="kommentare" className="mt-8 pt-6 border-t border-white/10 space-y-5 scroll-mt-4">
       {/* 1. Kompakte Interaktions-Leiste (fuer normale Manager NUR Zahlen) */}
       <div className="flex flex-wrap items-center justify-between gap-2.5">
         <div className="flex items-center gap-2 flex-wrap">
@@ -392,7 +320,7 @@ const ArticleEngagementSection = ({ slug, articleTitle, accent = '#ff5c3e', onSt
         {/* Emoji-Reaktionen */}
         <div className="flex items-center gap-1.5 flex-wrap">
           {ARTICLE_REACTIONS.map((r) => {
-            const count = Math.max(0, Number(stats.reactionCounts?.[r.id] || 0));
+            const count = Math.max(0, Number(stats?.reactionCounts?.[r.id] || 0));
             const isActive = myReaction === r.id;
             return (
               <button
@@ -423,7 +351,7 @@ const ArticleEngagementSection = ({ slug, articleTitle, accent = '#ff5c3e', onSt
           <div className="flex items-center justify-between gap-2 mb-2.5">
             <div className="text-[10px] font-black uppercase tracking-widest text-purple-300">
               Admin-Ansicht · Leser ({readers.length})
-              {stats.readThroughCount > 0 ? ` · ${stats.readThroughCount} durchgelesen` : ''}
+              {stats?.readThroughCount > 0 ? ` · ${stats.readThroughCount} durchgelesen` : ''}
             </div>
             <button
               type="button"
@@ -472,15 +400,10 @@ const ArticleEngagementSection = ({ slug, articleTitle, accent = '#ff5c3e', onSt
 
       {/* 2. Kommentar-Eingabe mit @-Mention Autocomplete */}
       <form onSubmit={handleSubmitComment} className="card-surface rounded-2xl p-3.5 sm:p-4 space-y-2.5 relative">
-        <div className="flex items-center justify-between gap-2">
-          <h3 className="text-xs font-black uppercase tracking-widest text-gray-200 flex items-center gap-1.5">
-            <MessageCircle size={13} style={{ color: accent }} />
-            <span>Kommentare & Feedback</span>
-          </h3>
-          <span className="text-[10px] text-[#8b92a5]">
-            Tipp: <span className="text-gray-300 font-semibold">@Name</span> sendet eine Push
-          </span>
-        </div>
+        <h3 className="text-xs font-black uppercase tracking-widest text-gray-200 flex items-center gap-1.5">
+          <MessageCircle size={13} style={{ color: accent }} />
+          <span>Kommentare</span>
+        </h3>
 
         <div className="relative">
           {/* Autocomplete-Popup fuer @Mentions */}
