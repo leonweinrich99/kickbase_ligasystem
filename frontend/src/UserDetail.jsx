@@ -26,6 +26,7 @@ import { loadPlayerCatalogBundle } from './playerDetailData';
 import { isLikelyStarterProb } from './startProbMeta';
 import { PlayerDetailView } from './Advisor';
 import { isOctagonUI } from './ui/shapeTheme';
+import { ChamferedBar, HexActiveDot } from './ui/ChartShapes';
 
 // Gleiche Positions-Labels/Reihenfolge wie AccountStats.jsx/Advisor.jsx.
 const POSITION_LABELS = { TW: 'Torwart', ABW: 'Abwehr', MF: 'Mittelfeld', ST: 'Sturm' };
@@ -849,13 +850,13 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                   )}
 
                   <Line
-                    type="monotone"
+                    type={isOctagonUI ? 'linear' : 'monotone'}
                     dataKey="rank"
                     name={userData.name}
                     stroke="#eab308"
                     strokeWidth={2.5}
                     dot={<CustomizedDot />}
-                    activeDot={{ r: 8, strokeWidth: 0 }}
+                    activeDot={<HexActiveDot r={8} />}
                     animationDuration={1500}
                   />
                 </LineChart>
@@ -907,7 +908,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                       dataKey="averagePoints"
                       name="Ligaschnitt"
                       fill="#4b5563"
-                      radius={isOctagonUI ? [0, 0, 0, 0] : [4, 4, 0, 0]}
+                      shape={<ChamferedBar />}
                       animationDuration={1500}
                     >
                         <LabelList dataKey="averagePoints" position="top" fill="#8b92a5" fontSize={8} fontWeight="bold" formatter={(val) => `Ø ${val}`} />
@@ -919,7 +920,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                     dataKey="pointsMatchday"
                     name={userData.name}
                     fill="#ff5c3e"
-                    radius={isOctagonUI ? [0, 0, 0, 0] : [4, 4, 0, 0]}
+                    shape={<ChamferedBar />}
                     animationDuration={1500}
                   >
                       <LabelList dataKey="pointsMatchday" position="top" fill="#ff5c3e" fontSize={8} fontWeight="bold" />
@@ -931,7 +932,7 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                       dataKey="optimalPoints"
                       name="Beste Elf"
                       fill="#22c55e"
-                      radius={isOctagonUI ? [0, 0, 0, 0] : [4, 4, 0, 0]}
+                      shape={<ChamferedBar />}
                       animationDuration={1500}
                     >
                         <LabelList dataKey="optimalPoints" position="top" fill="#22c55e" fontSize={8} fontWeight="bold" formatter={(val) => `★ ${val}`} />
@@ -980,13 +981,13 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                 <ReferenceArea y1={5} y2={10} fill="#22c55e" fillOpacity={0.03} stroke="none" />
 
                 <Line
-                  type="monotone"
+                  type={isOctagonUI ? 'linear' : 'monotone'}
                   dataKey="performanceScore"
                   name="Performance Index"
                   stroke="#22c55e"
                   strokeWidth={2.5}
                   dot={<CustomizedDot />}
-                  activeDot={{ r: 8, strokeWidth: 0 }}
+                  activeDot={<HexActiveDot r={8} />}
                   animationDuration={1500}
                 />
 

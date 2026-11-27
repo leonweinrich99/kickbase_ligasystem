@@ -30,6 +30,8 @@ import {
   loadManagerLeagueMap,
 } from './playerDetailData';
 import { pointColor } from './ui/LivePlayerCircle';
+import { isOctagonUI } from './ui/shapeTheme';
+import { HexActiveDot, HexSmallDot } from './ui/ChartShapes';
 
 // Zeigt die Auswertungen des "Kickbase Trading Advisor" an (siehe
 // backend/advisor/, generiert per GitHub Action aus
@@ -807,8 +809,8 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, leagueKey = 
                      cursor={{ stroke: '#2e2e2e', strokeWidth: 1, strokeDasharray: '4 4' }}
                   />
                   {/* connectNulls stellt sicher, dass die Linien perfekt aneinander andocken */}
-                  <Line type="monotone" dataKey="mv" stroke="#ffffff" strokeWidth={2.5} dot={false} activeDot={{ r: 6, fill: "#ffffff", strokeWidth: 0 }} connectNulls={true} animationDuration={800} />
-                  <Line type="monotone" dataKey="mv_predicted" stroke="#eab308" strokeDasharray="2 3" strokeWidth={1.5} dot={{ r: 3, fill: "#eab308", strokeWidth: 0 }} activeDot={{ r: 5, fill: "#eab308", strokeWidth: 0 }} connectNulls={true} animationDuration={800} />
+                  <Line type={isOctagonUI ? 'linear' : 'monotone'} dataKey="mv" stroke="#ffffff" strokeWidth={2.5} dot={false} activeDot={<HexActiveDot r={6} fill="#ffffff" />} connectNulls={true} animationDuration={800} />
+                  <Line type={isOctagonUI ? 'linear' : 'monotone'} dataKey="mv_predicted" stroke="#eab308" strokeDasharray="2 3" strokeWidth={1.5} dot={<HexSmallDot r={3.5} fill="#eab308" />} activeDot={<HexActiveDot r={5.5} fill="#eab308" />} connectNulls={true} animationDuration={800} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -1095,8 +1097,15 @@ export const PlayerDetailView = ({ player, teamLogos = {}, onClose, leagueKey = 
                             />
 
                             <div
-                              className={`relative z-10 ${hasBarValue ? 'w-[20px] rounded-t-[5px] rounded-b-[2px]' : 'w-[14px] rounded-full mb-[1px]'}`}
-                              style={barStyle}
+                              className={`relative z-10 ${hasBarValue ? (isOctagonUI ? 'w-[20px]' : 'w-[20px] rounded-t-[5px] rounded-b-[2px]') : 'w-[14px] rounded-full oct-pill mb-[1px]'}`}
+                              style={
+                                hasBarValue && isOctagonUI
+                                  ? {
+                                      ...barStyle,
+                                      clipPath: 'polygon(0 4px, 4px 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 0 100%)',
+                                    }
+                                  : barStyle
+                              }
                             />
 
                             {/* Feste 0-Grundlinie */}

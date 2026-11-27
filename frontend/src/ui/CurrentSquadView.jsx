@@ -432,9 +432,9 @@ const SquadPitchCircle = ({
                 ? '#34d399'
                 : 'rgba(255, 255, 255, 0.24)'
           }
-          ringWidth={justSwapped ? 1.8 : 1.2}
+          ringWidth={justSwapped ? 1.15 : 0.9}
           dashed={Boolean(player.isDummy)}
-          glowColor={justSwapped ? 'rgba(52, 211, 153, 0.7)' : null}
+          glowColor={justSwapped ? 'rgba(52, 211, 153, 0.5)' : null}
         >
           {showPhoto ? (
             <img
@@ -556,8 +556,8 @@ const OrbitalOptionCircle = ({
           className="w-full h-full"
           innerClassName="bg-[#171717]"
           ringColor={samePosition ? 'rgba(52, 211, 153, 0.92)' : 'rgba(251, 191, 36, 0.92)'}
-          ringWidth={1.6}
-          glowColor={samePosition ? 'rgba(52, 211, 153, 0.4)' : 'rgba(251, 191, 36, 0.4)'}
+          ringWidth={1.05}
+          glowColor={samePosition ? 'rgba(52, 211, 153, 0.28)' : 'rgba(251, 191, 36, 0.28)'}
         >
           {showPhoto ? (
             <img
@@ -638,8 +638,8 @@ const SelectedSwapAnchor = ({ player, x, y, sizePx, xp, onClose }) => {
           className="w-full h-full"
           innerClassName="bg-[#171717]"
           ringColor="#ff5c3e"
-          ringWidth={1.8}
-          glowColor="rgba(255, 92, 62, 0.65)"
+          ringWidth={1.2}
+          glowColor="rgba(255, 92, 62, 0.45)"
         >
           {showPhoto ? (
             <img

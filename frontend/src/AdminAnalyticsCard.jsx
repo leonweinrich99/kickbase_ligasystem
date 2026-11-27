@@ -17,6 +17,7 @@ import {
   MessageCircle,
   Users,
 } from './ui/icons';
+import { ChamferedBar } from './ui/ChartShapes';
 
 function formatShortDay(dateKey) {
   if (!dateKey || dateKey.length < 10) return dateKey;
@@ -390,7 +391,7 @@ const AdminAnalyticsCard = ({ users = [] }) => {
                 tickLine={false}
               />
               <Tooltip content={<CustomChartTooltip />} cursor={{ fill: 'rgba(255,255,255,0.04)' }} />
-              <Bar dataKey="dau" fill="#ff5c3e" radius={[6, 6, 0, 0]} maxBarSize={28} />
+              <Bar dataKey="dau" fill="#ff5c3e" shape={<ChamferedBar />} maxBarSize={28} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -414,9 +415,9 @@ const AdminAnalyticsCard = ({ users = [] }) => {
                       <strong className="text-white">{s.views}</strong> ({s.pct} %)
                     </span>
                   </div>
-                  <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                  <div className="h-1.5 rounded-full oct-pill bg-white/[0.06] overflow-hidden">
                     <div
-                      className="h-full rounded-full transition-all"
+                      className="h-full rounded-full oct-pill transition-all"
                       style={{ width: `${Math.max(4, s.pct)}%`, backgroundColor: s.color }}
                     />
                   </div>
@@ -436,9 +437,9 @@ const AdminAnalyticsCard = ({ users = [] }) => {
                 {platformBreakdown.map(([plat, cnt]) => (
                   <span
                     key={plat}
-                    className={`text-[11px] font-bold px-2.5 py-1 rounded-full border tabular-nums ${
+                    className={`oct-pill text-[11px] font-bold px-2.5 py-1 rounded-full border tabular-nums ${
                       plat.includes('PWA')
-                        ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                        ? 'oct-bd-green bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
                         : 'bg-white/[0.05] text-gray-300 border-white/10'
                     }`}
                   >
@@ -462,7 +463,7 @@ const AdminAnalyticsCard = ({ users = [] }) => {
                   <div key={u.id} className="py-1.5 flex items-center justify-between gap-2 text-xs">
                     <div className="flex items-center gap-2 min-w-0">
                       <span
-                        className={`w-2 h-2 rounded-full shrink-0 ${
+                        className={`w-2 h-2 rounded-full hex-beacon shrink-0 ${
                           isToday ? 'bg-emerald-400' : u.lastActiveAt ? 'bg-amber-400/70' : 'bg-zinc-600'
                         }`}
                       />

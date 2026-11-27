@@ -13,6 +13,7 @@ import { BackButton } from './ui/CloseButton';
 import ManagerAvatar from './ui/ManagerAvatar';
 
 import { isOctagonUI } from './ui/shapeTheme';
+import { ChamferedBar, HexActiveDot } from './ui/ChartShapes';
 
 const calculatePerformanceScore = (points, avg, opt, max) => {
   if (points <= 0) return 1.0;
@@ -321,10 +322,10 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
                     <ReferenceArea y1={maxRank - 1} y2={maxRank} fill="#ef4444" fillOpacity={0.1} stroke="none" />
                   </>
                 )}
-                <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
+                <Legend iconType={isOctagonUI ? 'diamond' : 'circle'} wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
                 
-                <Line type="monotone" dataKey="p1Rank" name={user1.name} stroke="#ff5c3e" strokeWidth={2.5} dot={<CustomizedDot />} activeDot={{ r: 8, strokeWidth: 0 }} animationDuration={1500} />
-                <Line type="monotone" dataKey="p2Rank" name={user2.name} stroke="#3b82f6" strokeWidth={2.5} dot={<CustomizedDot />} activeDot={{ r: 8, strokeWidth: 0 }} animationDuration={1500} />
+                <Line type={isOctagonUI ? 'linear' : 'monotone'} dataKey="p1Rank" name={user1.name} stroke="#ff5c3e" strokeWidth={2.5} dot={<CustomizedDot />} activeDot={<HexActiveDot r={8} />} animationDuration={1500} />
+                <Line type={isOctagonUI ? 'linear' : 'monotone'} dataKey="p2Rank" name={user2.name} stroke="#3b82f6" strokeWidth={2.5} dot={<CustomizedDot />} activeDot={<HexActiveDot r={8} />} animationDuration={1500} />
               </LineChart>
             </ResponsiveContainer>
               );
@@ -343,10 +344,10 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
                 <XAxis dataKey="matchday" stroke="#4b5563" fontSize={10} tickLine={false} axisLine={false} tickFormatter={val => `ST ${val}`} />
                 <YAxis stroke="#4b5563" fontSize={10} tickLine={false} axisLine={false} domain={[1, 10]} ticks={[1, 3, 5, 7, 10]} />
                 <ReferenceArea y1={8} y2={10} fill="#22c55e" fillOpacity={0.08} stroke="none" />
-                <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
+                <Legend iconType={isOctagonUI ? 'diamond' : 'circle'} wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
                 
-                <Line type="monotone" dataKey="p1Score" name={user1.name} stroke="#ff5c3e" strokeWidth={2.5} dot={<CustomizedDot />} activeDot={{ r: 8, strokeWidth: 0 }} animationDuration={1500} />
-                <Line type="monotone" dataKey="p2Score" name={user2.name} stroke="#3b82f6" strokeWidth={2.5} dot={<CustomizedDot />} activeDot={{ r: 8, strokeWidth: 0 }} animationDuration={1500} />
+                <Line type={isOctagonUI ? 'linear' : 'monotone'} dataKey="p1Score" name={user1.name} stroke="#ff5c3e" strokeWidth={2.5} dot={<CustomizedDot />} activeDot={<HexActiveDot r={8} />} animationDuration={1500} />
+                <Line type={isOctagonUI ? 'linear' : 'monotone'} dataKey="p2Score" name={user2.name} stroke="#3b82f6" strokeWidth={2.5} dot={<CustomizedDot />} activeDot={<HexActiveDot r={8} />} animationDuration={1500} />
               </LineChart>
             </ResponsiveContainer>
             )}
@@ -378,24 +379,24 @@ const CompareView = ({ dataBase = '', routeBase = '' }) => {
                   tickFormatter={val => `ST ${val}`} 
                 />
                 <YAxis stroke="#4b5563" fontSize={10} tickLine={false} axisLine={false} />
-                <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
+                <Legend iconType={isOctagonUI ? 'diamond' : 'circle'} wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
                 
                 {showAverage && (
                   <Bar 
                     dataKey="averagePoints" 
                     name="Ligaschnitt" 
                     fill="#4b5563" 
-                    radius={[4, 4, 0, 0]}
+                    shape={<ChamferedBar />}
                     animationDuration={1500} 
                   >
                       <LabelList dataKey="averagePoints" position="top" fill="#8b92a5" fontSize={7} fontWeight="bold" formatter={(val) => `Ø ${val}`} />
                   </Bar>
                 )}
                 
-                <Bar dataKey="p1PointsMatchday" name={user1.name} fill="#ff5c3e" radius={[4, 4, 0, 0]} animationDuration={1500}>
+                <Bar dataKey="p1PointsMatchday" name={user1.name} fill="#ff5c3e" shape={<ChamferedBar />} animationDuration={1500}>
                     <LabelList dataKey="p1PointsMatchday" position="top" fill="#ff5c3e" fontSize={8} fontWeight="bold" />
                 </Bar>
-                <Bar dataKey="p2PointsMatchday" name={user2.name} fill="#3b82f6" radius={[4, 4, 0, 0]} animationDuration={1500}>
+                <Bar dataKey="p2PointsMatchday" name={user2.name} fill="#3b82f6" shape={<ChamferedBar />} animationDuration={1500}>
                     <LabelList dataKey="p2PointsMatchday" position="top" fill="#3b82f6" fontSize={8} fontWeight="bold" />
                 </Bar>
               </BarChart>

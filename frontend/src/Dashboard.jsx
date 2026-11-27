@@ -128,15 +128,18 @@ export const UserRow = ({ item, color, isSaisonView, displayRank, prevRank, rout
       >
         {isSaisonView && item.status && (
           <div
-            className="absolute left-0 top-[7px] bottom-[7px] w-[3px]"
-            style={{ backgroundColor: statusColors[item.status] }}
+            className="absolute left-0 top-0 bottom-0 w-[3.5px] pointer-events-none"
+            style={{
+              backgroundColor: statusColors[item.status],
+              clipPath: 'polygon(0 7px, 100% 3.5px, 100% calc(100% - 3.5px), 0 calc(100% - 7px))',
+            }}
           />
         )}
-        <div className="w-8 flex justify-center items-center text-xs font-semibold text-[#8b92a5]">
+        <div className="w-8 flex justify-center items-center text-xs font-semibold text-[#8b92a5] shrink-0">
           {item.isTrophy && isSaisonView ? <TrophyIcon type={item.trophyColor} /> : displayRank}
         </div>
-        <div className="ml-2 shrink-0">
-          <ManagerAvatar name={item.name} size={40} />
+        <div className="ml-2 shrink-0 flex items-center justify-center">
+          <ManagerAvatar name={item.name} size={46} />
         </div>
         <div className="ml-3 flex-1 flex flex-col justify-center min-w-0">
           <div className="flex items-center gap-2">

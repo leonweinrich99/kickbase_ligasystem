@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { motion as Motion } from 'framer-motion';
-import { HIGHLIGHT_ICON } from '../liveLineupUtils';
 import HexFrame from './HexFrame';
 import { isOctagonUI } from './shapeTheme';
+import { HighlightEventIcon } from './icons';
 
 const HIGHLIGHT_META = {
   goal: {
     title: 'Tor',
-    icon: HIGHLIGHT_ICON.goal,
     accent: '#22c55e',
     ring: '#22c55e',
     glow: 'rgba(34,197,94,0.38)',
@@ -17,7 +16,6 @@ const HIGHLIGHT_META = {
   },
   assist: {
     title: 'Vorlage',
-    icon: HIGHLIGHT_ICON.assist,
     accent: '#38bdf8',
     ring: '#38bdf8',
     glow: 'rgba(56,189,248,0.38)',
@@ -26,7 +24,6 @@ const HIGHLIGHT_META = {
   },
   penalty_save: {
     title: 'Elfmeter gehalten',
-    icon: HIGHLIGHT_ICON.penalty_save,
     accent: '#f59e0b',
     ring: '#f59e0b',
     glow: 'rgba(245,158,11,0.38)',
@@ -149,11 +146,12 @@ const LiveHighlightOverlay = ({ highlight, onLand, onComplete }) => {
                 }}
               >
                 <span
-                  className="text-[54px] leading-none select-none drop-shadow-[0_4px_10px_rgba(0,0,0,0.55)]"
+                  className="flex items-center justify-center select-none drop-shadow-[0_4px_12px_rgba(0,0,0,0.65)]"
                   role="img"
                   aria-label={meta.title}
+                  style={{ color: meta.accent }}
                 >
-                  {meta.icon}
+                  <HighlightEventIcon type={highlight.type} size={56} />
                 </span>
               </div>
             </HexFrame>

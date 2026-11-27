@@ -95,7 +95,7 @@ const TabBar = () => {
     >
       <nav
         data-tabbar="true"
-        className="oct-tabbar flex items-stretch gap-1 px-2 py-1.5 rounded-full bg-[#121216]/82 border border-white/25 backdrop-blur-2xl backdrop-saturate-[1.8] shadow-[inset_0_1px_0_rgba(255,255,255,0.28)]"
+        className="oct-tabbar flex items-stretch gap-1 px-2 py-1.5 rounded-full bg-[#15151a]/92 border border-white/22 backdrop-blur-2xl backdrop-saturate-[1.35] shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]"
       >
         {TABS.map((tab) => {
           const active = tab.match(pathname);

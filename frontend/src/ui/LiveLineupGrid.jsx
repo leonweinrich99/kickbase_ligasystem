@@ -4,10 +4,10 @@ import LivePlayerCircle from './LivePlayerCircle';
 import AnimatedPoints from './AnimatedPoints';
 import LiveMinuteScrubber from './LiveMinuteScrubber';
 import LiveHighlightOverlay from './LiveHighlightOverlay';
+import { HighlightEventIcon } from './icons';
 import {
   classifyHighlightEvent,
   HIGHLIGHT_ACCENT_COLOR,
-  HIGHLIGHT_ICON,
   HIGHLIGHT_PRIORITY,
 } from '../liveLineupUtils';
 
@@ -520,7 +520,7 @@ const LiveLineupPitch = ({ lineup, totalPoints, prevPointsMap, animId }) => {
                       btn.count > 0 ? btn.activeStyle : btn.idleStyle
                     }`}
                   >
-                    <span className="leading-none">{HIGHLIGHT_ICON[btn.type]}</span>
+                    <HighlightEventIcon type={btn.type} size={14} className="shrink-0" />
                     {btn.count > 0 && (
                       <span className="text-[11px] font-bold tabular-nums leading-none">
                         {btn.count}

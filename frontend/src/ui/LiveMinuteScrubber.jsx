@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useLayoutEffect, useCallback } from 'react';
-import { Play, Pause, RotateCcw } from './icons';
+import { Play, Pause, RotateCcw, HighlightEventIcon } from './icons';
 import { HIGHLIGHT_ICON } from '../liveLineupUtils';
 
 const STEP_PX = 14;
@@ -328,7 +328,7 @@ const LiveMinuteScrubber = ({
                           isActive ? 'scale-115' : ''
                         }`}
                       >
-                        {HIGHLIGHT_ICON[primaryHl.type]}
+                        <HighlightEventIcon type={primaryHl.type} size={12} className={hlStyle.label} />
                         {hlList.length > 1 && (
                           <span className="absolute -top-1 -right-1 min-w-[12px] h-[12px] px-0.5 rounded-full hex-beacon bg-white text-black text-[8px] font-black leading-none flex items-center justify-center shadow">
                             {hlList.length}

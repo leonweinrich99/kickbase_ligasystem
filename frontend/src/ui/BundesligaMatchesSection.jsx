@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, ChevronDown, ArrowLeft, MapPin, Users, Radio } from './icons';
+import { ChevronLeft, ChevronRight, ChevronDown, ArrowLeft, MapPin, Users, Radio, HighlightEventIcon } from './icons';
 import {
   matchOpenLigaTeamToKickbase,
   formatKickoffLabel,
@@ -115,7 +115,7 @@ const MatchEventTimeline = ({ match, newEventIds }) => {
                       <div className="text-[10px] text-[#626978] truncate">{ev.comment}</div>
                     )}
                   </div>
-                  <span className="text-xs shrink-0" aria-hidden="true">⚽</span>
+                  <HighlightEventIcon type="goal" size={13} className="text-gray-200 shrink-0" aria-hidden="true" />
                 </>
               )}
             </div>
@@ -129,7 +129,7 @@ const MatchEventTimeline = ({ match, newEventIds }) => {
             <div className="flex items-center justify-start gap-1.5 min-w-0 text-left">
               {!isHome && (
                 <>
-                  <span className="text-xs shrink-0" aria-hidden="true">⚽</span>
+                  <HighlightEventIcon type="goal" size={13} className="text-gray-200 shrink-0" aria-hidden="true" />
                   <div className="min-w-0">
                     <div className="text-xs font-semibold text-gray-100 truncate">
                       {ev.scorer}
@@ -232,8 +232,9 @@ const MatchCard = ({
               </span>
             )}
             {goalCount > 0 && (
-              <span className="text-[10px] font-semibold text-[#8b92a5] tabular-nums">
-                ⚽ {goalCount}
+              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#8b92a5] tabular-nums">
+                <HighlightEventIcon type="goal" size={11} className="text-gray-300 shrink-0" aria-hidden="true" />
+                {goalCount}
               </span>
             )}
             <ChevronDown

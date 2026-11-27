@@ -727,3 +727,92 @@ export const AtSign = createKickbaseIcon('AtSign', () => (
     <polygon points="10,8.5 14,8.5 15.8,10.3 15.8,14 14,15.8 10,15.8 8.2,14 8.2,10.3" fill="currentColor" />
   </>
 ), LucideAtSign);
+
+// ── Live-Event Highlight Icons (Tor / Vorlage / Elfmeter gehalten) ──────────
+
+export const HighlightGoalIcon = createKickbaseIcon('HighlightGoalIcon', () => (
+  <>
+    {/* Facettierter Oktagon-Fußball-Körper */}
+    <polygon points="8.3,2.5 15.7,2.5 21.5,8.3 21.5,15.7 15.7,21.5 8.3,21.5 2.5,15.7 2.5,8.3" fill="currentColor" opacity="0.22" />
+    <polygon points="12,2.5 15.7,2.5 21.5,8.3 21.5,15.7 15.7,21.5 12,21.5" fill="currentColor" opacity="0.14" />
+    <polygon points="8.3,2.5 15.7,2.5 21.5,8.3 21.5,15.7 15.7,21.5 8.3,21.5 2.5,15.7 2.5,8.3" fill="none" stroke="currentColor" strokeWidth="1.65" strokeLinejoin="miter" />
+    {/* Zentrales Fünfeck-Panel */}
+    <polygon points="12,7.3 16.2,10.3 14.6,15.3 9.4,15.3 7.8,10.3" fill="currentColor" />
+    {/* Facetten-Nähte zu den Randfeldern */}
+    <line x1="12" y1="7.3" x2="12" y2="2.8" stroke="currentColor" strokeWidth="1.3" opacity="0.85" />
+    <line x1="16.2" y1="10.3" x2="21.1" y2="8.8" stroke="currentColor" strokeWidth="1.3" opacity="0.85" />
+    <line x1="14.6" y1="15.3" x2="17.8" y2="19.3" stroke="currentColor" strokeWidth="1.3" opacity="0.85" />
+    <line x1="9.4" y1="15.3" x2="6.2" y2="19.3" stroke="currentColor" strokeWidth="1.3" opacity="0.85" />
+    <line x1="7.8" y1="10.3" x2="2.9" y2="8.8" stroke="currentColor" strokeWidth="1.3" opacity="0.85" />
+    {/* Rand-Panels (abgeschrägte Segmente) */}
+    <polygon points="9.6,2.5 14.4,2.5 12,4.4" fill="currentColor" opacity="0.85" />
+    <polygon points="21.5,10.2 21.5,14.5 19.3,12.2" fill="currentColor" opacity="0.85" />
+    <polygon points="2.5,10.2 2.5,14.5 4.7,12.2" fill="currentColor" opacity="0.85" />
+  </>
+), null);
+
+export const HighlightAssistIcon = createKickbaseIcon('HighlightAssistIcon', () => (
+  <>
+    {/* Facettierter Fußballschuh (Obermaterial + Ferse + dynamische Spitze) */}
+    <polygon points="3.5,5.5 9.2,5.5 11.4,9.8 16.5,11.6 21.5,14.4 21.5,17.2 3.5,17.2 2.5,14.8" fill="currentColor" opacity="0.32" />
+    {/* Fersen- & Spann-Facette (Kontrastton) */}
+    <polygon points="3.5,5.5 9.2,5.5 11.4,9.8 8.2,17.2 3.5,17.2 2.5,14.8" fill="currentColor" opacity="0.88" />
+    {/* Dynamischer Speed-Streifen auf dem Rist */}
+    <polygon points="10.4,11.2 14.2,12.5 12.6,15.5 8.8,14.2" fill="currentColor" />
+    {/* Spitze */}
+    <polygon points="16.5,11.6 21.5,14.4 21.5,17.2 15.8,17.2" fill="currentColor" opacity="0.72" />
+    {/* Durchgehende abgeschrägte Sohlenplatte */}
+    <polygon points="3,17.2 21.5,17.2 20.5,19 4,19" fill="currentColor" />
+    {/* 3 scharfe Stollen */}
+    <polygon points="4.8,19 7.2,19 6.6,21.6 5.4,21.6" fill="currentColor" />
+    <polygon points="10.8,19 13.2,19 12.6,21.6 11.4,21.6" fill="currentColor" />
+    <polygon points="16.8,19 19.2,19 18.6,21.6 17.4,21.6" fill="currentColor" />
+  </>
+), null);
+
+export const HighlightPenaltySaveIcon = createKickbaseIcon('HighlightPenaltySaveIcon', () => (
+  <>
+    {/* Abgeschrägtes Handgelenk-Klettband */}
+    <polygon points="7.5,18.2 17.5,18.2 16.6,21.8 8.4,21.8" fill="currentColor" opacity="0.65" />
+    <rect x="9.5" y="19.3" width="6" height="1.4" fill="currentColor" />
+    {/* Breite Torwarthandschuh-Handfläche */}
+    <polygon points="6.5,11.2 18.5,11.2 18.5,16.4 17,18 8,18 6.5,16.4" fill="currentColor" opacity="0.34" />
+    {/* Abgespreizter Daumen links */}
+    <polygon points="6.5,15.4 3.2,12.2 3.2,9.8 5.2,9.4 7.4,12.2" fill="currentColor" opacity="0.92" />
+    {/* 4 facettierte Finger */}
+    <polygon points="7,11.2 7,5 8.2,4 9.5,5 9.5,11.2" fill="currentColor" opacity="0.92" />
+    <polygon points="10,11.2 10,3.3 11.2,2.4 12.5,3.3 12.5,11.2" fill="currentColor" />
+    <polygon points="13,11.2 13,3.8 14.2,2.9 15.5,3.8 15.5,11.2" fill="currentColor" opacity="0.88" />
+    <polygon points="16,11.2 16,5.8 17.2,5 18.5,5.8 18.5,11.2" fill="currentColor" opacity="0.76" />
+    {/* Grip-Hexagon in der Handfläche */}
+    <polygon points="12.5,12 15.2,13.5 15.2,15.8 12.5,17.2 9.8,15.8 9.8,13.5" fill="currentColor" opacity="0.9" />
+  </>
+), null);
+
+const HIGHLIGHT_EMOJI_FALLBACK = {
+  goal: '⚽',
+  assist: '👟',
+  penalty_save: '🧤',
+};
+
+export function HighlightEventIcon({ type, size = 16, className = '', style, ...rest }) {
+  const useFallback = ICON_THEME === 'lucide' || LUCIDE_OVERRIDES.has('HighlightEventIcon');
+  if (useFallback) {
+    return (
+      <span
+        className={`inline-flex items-center justify-center leading-none select-none ${className}`}
+        style={{ fontSize: `${Math.round(size * 0.92)}px`, lineHeight: 1, ...style }}
+        {...rest}
+      >
+        {HIGHLIGHT_EMOJI_FALLBACK[type] || '⚽'}
+      </span>
+    );
+  }
+  if (type === 'assist') {
+    return <HighlightAssistIcon size={size} className={className} style={style} {...rest} />;
+  }
+  if (type === 'penalty_save') {
+    return <HighlightPenaltySaveIcon size={size} className={className} style={style} {...rest} />;
+  }
+  return <HighlightGoalIcon size={size} className={className} style={style} {...rest} />;
+}
