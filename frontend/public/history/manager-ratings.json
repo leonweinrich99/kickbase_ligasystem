@@ -252,7 +252,7 @@
       "pro": {
         "score": 90,
         "weight": 0.2,
-        "weightedTotalProfit": 48598153.24520924,
+        "weightedTotalProfit": 48597413.32642768,
         "completedTrades": 101,
         "profitableTrades": 58,
         "openPositions": 17,
@@ -261,9 +261,9 @@
         "leaguePercentile": 81.25,
         "leagueRank": 2,
         "leagueSize": 8,
-        "leagueMean": 25360651.02341849,
-        "leagueStd": 32269086.463934164,
-        "zScore": 0.720116519188182
+        "leagueMean": 25442587.767926034,
+        "leagueStd": 32267358.09345547,
+        "zScore": 0.7175928531687866
       },
       "dis": {
         "score": 68,
@@ -301,15 +301,15 @@
       "eff": {
         "score": 85,
         "weight": 0.1,
-        "profitPerTrade": 481169.83411098254,
+        "profitPerTrade": 481162.5081824523,
         "winRate": 0.5742574257425742,
         "profitableTrades": 58,
         "completedTrades": 101,
-        "weightedTotalProfit": 48598153.24520924,
+        "weightedTotalProfit": 48597413.32642768,
         "leaguePercentile": 68.75,
         "leagueRank": 3,
         "leagueSize": 8,
-        "zScore": 0.4700695690483181
+        "zScore": 0.4701480065745921
       },
       "ovp": {
         "score": 78,
@@ -327,9 +327,9 @@
         "leaguePercentile": 81.25,
         "leagueRank": 2,
         "leagueSize": 8,
-        "leagueMean": 5.048091717263289,
-        "leagueStd": 0.48163190622314966,
-        "zScore": 0.8543740386879946
+        "leagueMean": 5.049387065642732,
+        "leagueStd": 0.4822890399717853,
+        "zScore": 0.8505240934469998
       },
       "tim": {
         "score": 69,
@@ -357,7 +357,7 @@
     "forcedRealizedProfit": -5291855,
     "openPositions": 17,
     "unrealizedProfit": 4026444,
-    "openPositionsAvgAgeDays": 20.27601111860022,
+    "openPositionsAvgAgeDays": 20.302831708877996,
     "orphanSales": 15,
     "orphanSaleProfit": 883330,
     "forcedOrphanSales": 0,
@@ -638,7 +638,7 @@
       "pro": {
         "score": 51,
         "weight": 0.2,
-        "weightedTotalProfit": -31782187.611832377,
+        "weightedTotalProfit": -31788088.611684557,
         "completedTrades": 31,
         "profitableTrades": 16,
         "openPositions": 15,
@@ -647,9 +647,9 @@
         "leaguePercentile": 6.25,
         "leagueRank": 8,
         "leagueSize": 8,
-        "leagueMean": 25360651.02341849,
-        "leagueStd": 32269086.463934164,
-        "zScore": -1.7708229422334927
+        "leagueMean": 25442587.767926034,
+        "leagueStd": 32267358.09345547,
+        "zScore": -1.7736399804983796
       },
       "dis": {
         "score": 51,
@@ -687,15 +687,15 @@
       "eff": {
         "score": 55,
         "weight": 0.1,
-        "profitPerTrade": -1025231.8584462057,
+        "profitPerTrade": -1025422.213280147,
         "winRate": 0.5161290322580645,
         "profitableTrades": 16,
         "completedTrades": 31,
-        "weightedTotalProfit": -31782187.611832377,
+        "weightedTotalProfit": -31788088.611684557,
         "leaguePercentile": 18.75,
         "leagueRank": 7,
         "leagueSize": 8,
-        "zScore": -1.1231723210012574
+        "zScore": -1.1231411362123676
       },
       "ovp": {
         "score": 84,
@@ -713,9 +713,9 @@
         "leaguePercentile": 18.75,
         "leagueRank": 7,
         "leagueSize": 8,
-        "leagueMean": 5.048091717263289,
-        "leagueStd": 0.48163190622314966,
-        "zScore": -1.07030331140727
+        "leagueMean": 5.049387065642732,
+        "leagueStd": 0.4822890399717853,
+        "zScore": -1.0715308241707278
       },
       "tim": {
         "score": 51,
@@ -743,7 +743,7 @@
     "forcedRealizedProfit": 1061221,
     "openPositions": 15,
     "unrealizedProfit": -43591625,
-    "openPositionsAvgAgeDays": 44.08506473765432,
+    "openPositionsAvgAgeDays": 44.11188533950617,
     "orphanSales": 15,
     "orphanSaleProfit": 1126062,
     "forcedOrphanSales": 0,
@@ -791,7 +791,7 @@
     "dis": 72,
     "kon": 81,
     "eff": 89,
-    "ovp": 75,
+    "ovp": 70,
     "akt": 87,
     "tim": 89,
     "calculation": {
@@ -945,7 +945,7 @@
         "points": 7935,
         "avgPoints": 794,
         "matchdaysCount": 10,
-        "totalSpent": 519529245,
+        "totalSpent": 528207022,
         "managerSquadValue": 200906941,
         "ppmBasis": "perMatchdayAverage",
         "ppm": 5.166755400843552,
@@ -1024,18 +1024,18 @@
       "pro": {
         "score": 83,
         "weight": 0.2,
-        "weightedTotalProfit": 23463734.37135929,
+        "weightedTotalProfit": 23056671.275527027,
         "completedTrades": 51,
         "profitableTrades": 28,
-        "openPositions": 12,
+        "openPositions": 13,
         "orphanSales": 14,
         "saleTimingSampleSize": 64,
         "leaguePercentile": 61.111111111111114,
         "leagueRank": 4,
         "leagueSize": 9,
-        "leagueMean": 7439413.8779869415,
-        "leagueStd": 46023484.662213065,
-        "zScore": 0.34817703637571124
+        "leagueMean": 7392276.857875414,
+        "leagueStd": 46003167.212349966,
+        "zScore": 0.34050686869764835
       },
       "dis": {
         "score": 72,
@@ -1073,35 +1073,35 @@
       "eff": {
         "score": 89,
         "weight": 0.1,
-        "profitPerTrade": 460073.2229678292,
+        "profitPerTrade": 452091.5936377848,
         "winRate": 0.5490196078431373,
         "profitableTrades": 28,
         "completedTrades": 51,
-        "weightedTotalProfit": 23463734.37135929,
+        "weightedTotalProfit": 23056671.275527027,
         "leaguePercentile": 61.111111111111114,
         "leagueRank": 4,
         "leagueSize": 9,
-        "zScore": 0.7050889061229004
+        "zScore": 0.7028783938530327
       },
       "ovp": {
-        "score": 75,
-        "purchaseCount": 63,
-        "averageOverpayRatio": 0.09382131221323363,
-        "leaguePercentile": 50,
-        "leagueRank": 5,
+        "score": 70,
+        "purchaseCount": 64,
+        "averageOverpayRatio": 0.10014549484725732,
+        "leaguePercentile": 38.88888888888889,
+        "leagueRank": 6,
         "leagueSize": 9
       },
       "akt": {
         "score": 87,
-        "buys": 63,
+        "buys": 64,
         "sells": 65,
-        "totalTransactions": 128,
-        "leaguePercentile": 61.111111111111114,
-        "leagueRank": 4,
+        "totalTransactions": 129,
+        "leaguePercentile": 66.66666666666666,
+        "leagueRank": 3,
         "leagueSize": 9,
-        "leagueMean": 4.4012011399158695,
-        "leagueStd": 0.7911577525707716,
-        "zScore": 0.5796710743914226
+        "leagueMean": 4.4020591450374145,
+        "leagueStd": 0.7917212699799979,
+        "zScore": 0.5879282558998667
       },
       "tim": {
         "score": 89,
@@ -1121,21 +1121,21 @@
         "zScore": 0.6630553187385413
       }
     },
-    "totalProfit": 21104205,
+    "totalProfit": 17033824,
     "tradesCount": 51,
     "completedTrades": 51,
     "forcedCompletedTrades": 1,
     "realizedProfit": 16459203,
     "forcedRealizedProfit": -5642377,
-    "openPositions": 12,
-    "unrealizedProfit": 371983,
-    "openPositionsAvgAgeDays": 24.74212226080248,
+    "openPositions": 13,
+    "unrealizedProfit": -3698398,
+    "openPositionsAvgAgeDays": 22.865195447827627,
     "orphanSales": 14,
     "orphanSaleProfit": 4273019,
     "forcedOrphanSales": 0,
-    "totalTransactions": 128,
-    "totalOverpay": 47548696,
-    "avgOverpayRatio": 0.09382131221323363,
+    "totalTransactions": 129,
+    "totalOverpay": 50435764,
+    "avgOverpayRatio": 0.10014549484725732,
     "ppm": 5.166755400843552,
     "bestTrade": {
       "name": "Lukeba Castello Jr.",
@@ -1410,7 +1410,7 @@
       "pro": {
         "score": 64,
         "weight": 0.2,
-        "weightedTotalProfit": 17661122.821514323,
+        "weightedTotalProfit": 17661088.46909792,
         "completedTrades": 63,
         "profitableTrades": 30,
         "openPositions": 14,
@@ -1419,9 +1419,9 @@
         "leaguePercentile": 27.77777777777778,
         "leagueRank": 7,
         "leagueSize": 9,
-        "leagueMean": 30062069.95726949,
-        "leagueStd": 28069828.846907265,
-        "zScore": -0.4417891966278057
+        "leagueMean": 30027880.026533663,
+        "leagueStd": 28029487.555804025,
+        "zScore": -0.44120648059707285
       },
       "dis": {
         "score": 67,
@@ -1459,15 +1459,15 @@
       "eff": {
         "score": 66,
         "weight": 0.1,
-        "profitPerTrade": 280335.2828811797,
+        "profitPerTrade": 280334.7376047289,
         "winRate": 0.47619047619047616,
         "profitableTrades": 30,
         "completedTrades": 63,
-        "weightedTotalProfit": 17661122.821514323,
+        "weightedTotalProfit": 17661088.46909792,
         "leaguePercentile": 27.77777777777778,
         "leagueRank": 7,
         "leagueSize": 9,
-        "zScore": -0.3783139294236483
+        "zScore": -0.37771918570428453
       },
       "ovp": {
         "score": 64,
@@ -1485,9 +1485,9 @@
         "leaguePercentile": 27.77777777777778,
         "leagueRank": 7,
         "leagueSize": 9,
-        "leagueMean": 5.230583428878296,
-        "leagueStd": 0.24649129586740542,
-        "zScore": -0.7332000141943227
+        "leagueMean": 5.231037871684021,
+        "leagueStd": 0.24704736301804625,
+        "zScore": -0.733389185867362
       },
       "tim": {
         "score": 92,
@@ -1515,7 +1515,7 @@
     "forcedRealizedProfit": -3264613,
     "openPositions": 14,
     "unrealizedProfit": 10205321,
-    "openPositionsAvgAgeDays": 32.202194122023805,
+    "openPositionsAvgAgeDays": 32.22901473544974,
     "orphanSales": 15,
     "orphanSaleProfit": 836430,
     "forcedOrphanSales": 0,
@@ -1796,18 +1796,18 @@
       "pro": {
         "score": 74,
         "weight": 0.2,
-        "weightedTotalProfit": 24397734.334599547,
-        "completedTrades": 80,
-        "profitableTrades": 42,
-        "openPositions": 16,
+        "weightedTotalProfit": 25067509.50320857,
+        "completedTrades": 82,
+        "profitableTrades": 43,
+        "openPositions": 14,
         "orphanSales": 15,
         "saleTimingSampleSize": 93,
         "leaguePercentile": 31.25,
         "leagueRank": 6,
         "leagueSize": 8,
-        "leagueMean": 25360651.02341849,
-        "leagueStd": 32269086.463934164,
-        "zScore": -0.02984022153509537
+        "leagueMean": 25442587.767926034,
+        "leagueStd": 32267358.09345547,
+        "zScore": -0.011624077299143295
       },
       "dis": {
         "score": 74,
@@ -1845,15 +1845,15 @@
       "eff": {
         "score": 79,
         "weight": 0.1,
-        "profitPerTrade": 304971.67918249435,
-        "winRate": 0.525,
-        "profitableTrades": 42,
-        "completedTrades": 80,
-        "weightedTotalProfit": 24397734.334599547,
+        "profitPerTrade": 305701.33540498256,
+        "winRate": 0.524390243902439,
+        "profitableTrades": 43,
+        "completedTrades": 82,
+        "weightedTotalProfit": 25067509.50320857,
         "leaguePercentile": 31.25,
         "leagueRank": 6,
         "leagueSize": 8,
-        "zScore": 0.19240722276490535
+        "zScore": 0.1919034802124542
       },
       "ovp": {
         "score": 60,
@@ -1866,14 +1866,14 @@
       "akt": {
         "score": 85,
         "buys": 96,
-        "sells": 95,
-        "totalTransactions": 191,
+        "sells": 97,
+        "totalTransactions": 193,
         "leaguePercentile": 56.25,
         "leagueRank": 4,
         "leagueSize": 8,
-        "leagueMean": 5.048091717263289,
-        "leagueStd": 0.48163190622314966,
-        "zScore": 0.4347794489085852
+        "leagueMean": 5.049387065642732,
+        "leagueStd": 0.4822890399717853,
+        "zScore": 0.4529878875816392
       },
       "tim": {
         "score": 88,
@@ -1893,19 +1893,19 @@
         "zScore": 0.6422109260861177
       }
     },
-    "totalProfit": 19746608,
-    "tradesCount": 80,
-    "completedTrades": 80,
+    "totalProfit": 20471289,
+    "tradesCount": 82,
+    "completedTrades": 82,
     "forcedCompletedTrades": 2,
-    "realizedProfit": 16463637,
+    "realizedProfit": 17085280,
     "forcedRealizedProfit": -5646186,
-    "openPositions": 16,
-    "unrealizedProfit": 822913,
-    "openPositionsAvgAgeDays": 22.838269699074072,
+    "openPositions": 14,
+    "unrealizedProfit": 925951,
+    "openPositionsAvgAgeDays": 22.196368831845238,
     "orphanSales": 15,
     "orphanSaleProfit": 2460058,
     "forcedOrphanSales": 0,
-    "totalTransactions": 191,
+    "totalTransactions": 193,
     "totalOverpay": 64085865,
     "avgOverpayRatio": 0.11786766270705014,
     "ppm": 4.970589953413795,
@@ -2182,7 +2182,7 @@
       "pro": {
         "score": 83,
         "weight": 0.2,
-        "weightedTotalProfit": 40064851.52471535,
+        "weightedTotalProfit": 40065721.61298644,
         "completedTrades": 82,
         "profitableTrades": 54,
         "openPositions": 14,
@@ -2191,9 +2191,9 @@
         "leaguePercentile": 50,
         "leagueRank": 5,
         "leagueSize": 9,
-        "leagueMean": 30062069.95726949,
-        "leagueStd": 28069828.846907265,
-        "zScore": 0.3563534933540561
+        "leagueMean": 30027880.026533663,
+        "leagueStd": 28029487.555804025,
+        "zScore": 0.35811719948387905
       },
       "dis": {
         "score": 87,
@@ -2231,15 +2231,15 @@
       "eff": {
         "score": 90,
         "weight": 0.1,
-        "profitPerTrade": 488595.7503014067,
+        "profitPerTrade": 488606.361133981,
         "winRate": 0.6585365853658537,
         "profitableTrades": 54,
         "completedTrades": 82,
-        "weightedTotalProfit": 40064851.52471535,
+        "weightedTotalProfit": 40065721.61298644,
         "leaguePercentile": 83.33333333333334,
         "leagueRank": 2,
         "leagueSize": 9,
-        "zScore": 0.7308094663609167
+        "zScore": 0.7318338045686128
       },
       "ovp": {
         "score": 75,
@@ -2257,9 +2257,9 @@
         "leaguePercentile": 50,
         "leagueRank": 5,
         "leagueSize": 9,
-        "leagueMean": 5.230583428878296,
-        "leagueStd": 0.24649129586740542,
-        "zScore": 0.13025514719944098
+        "leagueMean": 5.231037871684021,
+        "leagueStd": 0.24704736301804625,
+        "zScore": 0.12812246540171648
       },
       "tim": {
         "score": 94,
@@ -2287,7 +2287,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 14,
     "unrealizedProfit": 15818715,
-    "openPositionsAvgAgeDays": 29.553552306547623,
+    "openPositionsAvgAgeDays": 29.58037294312169,
     "orphanSales": 14,
     "orphanSaleProfit": 1628104,
     "forcedOrphanSales": 0,
@@ -2568,7 +2568,7 @@
       "pro": {
         "score": 85,
         "weight": 0.2,
-        "weightedTotalProfit": 40440207.43729282,
+        "weightedTotalProfit": 40439480.554589696,
         "completedTrades": 103,
         "profitableTrades": 61,
         "openPositions": 17,
@@ -2577,9 +2577,9 @@
         "leaguePercentile": 68.75,
         "leagueRank": 3,
         "leagueSize": 8,
-        "leagueMean": 25360651.02341849,
-        "leagueStd": 32269086.463934164,
-        "zScore": 0.4673065793395835
+        "leagueMean": 25442587.767926034,
+        "leagueStd": 32267358.09345547,
+        "zScore": 0.4647697757972123
       },
       "dis": {
         "score": 91,
@@ -2617,15 +2617,15 @@
       "eff": {
         "score": 84,
         "weight": 0.1,
-        "profitPerTrade": 392623.3731776002,
+        "profitPerTrade": 392616.31606397766,
         "winRate": 0.5922330097087378,
         "profitableTrades": 61,
         "completedTrades": 103,
-        "weightedTotalProfit": 40440207.43729282,
+        "weightedTotalProfit": 40439480.554589696,
         "leaguePercentile": 43.75,
         "leagueRank": 5,
         "leagueSize": 8,
-        "zScore": 0.4224229916766428
+        "zScore": 0.42251162304905915
       },
       "ovp": {
         "score": 54,
@@ -2643,9 +2643,9 @@
         "leaguePercentile": 93.75,
         "leagueRank": 1,
         "leagueSize": 8,
-        "leagueMean": 5.048091717263289,
-        "leagueStd": 0.48163190622314966,
-        "zScore": 0.8807119107504796
+        "leagueMean": 5.049387065642732,
+        "leagueStd": 0.4822890399717853,
+        "zScore": 0.8768260793433788
       },
       "tim": {
         "score": 73,
@@ -2673,7 +2673,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 17,
     "unrealizedProfit": 2575726,
-    "openPositionsAvgAgeDays": 32.168713901143796,
+    "openPositionsAvgAgeDays": 32.195534479847495,
     "orphanSales": 14,
     "orphanSaleProfit": 1838806,
     "forcedOrphanSales": 0,
@@ -2721,7 +2721,7 @@
     "dis": 95,
     "kon": 88,
     "eff": 68,
-    "ovp": 70,
+    "ovp": 75,
     "akt": 67,
     "tim": 59,
     "calculation": {
@@ -2963,9 +2963,9 @@
         "leaguePercentile": 50,
         "leagueRank": 5,
         "leagueSize": 9,
-        "leagueMean": 7439413.8779869415,
-        "leagueStd": 46023484.662213065,
-        "zScore": -0.5114951345115069
+        "leagueMean": 7392276.857875414,
+        "leagueStd": 46003167.212349966,
+        "zScore": -0.5106963907382519
       },
       "dis": {
         "score": 95,
@@ -3011,14 +3011,14 @@
         "leaguePercentile": 50,
         "leagueRank": 5,
         "leagueSize": 9,
-        "zScore": -0.2902178941229529
+        "zScore": -0.2898934501209928
       },
       "ovp": {
-        "score": 70,
+        "score": 75,
         "purchaseCount": 30,
         "averageOverpayRatio": 0.09657141338637001,
-        "leaguePercentile": 38.88888888888889,
-        "leagueRank": 6,
+        "leaguePercentile": 50,
+        "leagueRank": 5,
         "leagueSize": 9
       },
       "akt": {
@@ -3029,9 +3029,9 @@
         "leaguePercentile": 38.88888888888889,
         "leagueRank": 6,
         "leagueSize": 9,
-        "leagueMean": 4.4012011399158695,
-        "leagueStd": 0.7911577525707716,
-        "zScore": -0.32618831413303007
+        "leagueMean": 4.4020591450374145,
+        "leagueStd": 0.7917212699799979,
+        "zScore": -0.3270398667607141
       },
       "tim": {
         "score": 59,
@@ -3059,7 +3059,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 12,
     "unrealizedProfit": 24272731,
-    "openPositionsAvgAgeDays": 54.372665196759264,
+    "openPositionsAvgAgeDays": 54.39948578703704,
     "orphanSales": 14,
     "orphanSaleProfit": 4224647,
     "forcedOrphanSales": 0,
@@ -3340,7 +3340,7 @@
       "pro": {
         "score": 86,
         "weight": 0.2,
-        "weightedTotalProfit": 44540968.49805804,
+        "weightedTotalProfit": 44535027.392080426,
         "completedTrades": 108,
         "profitableTrades": 69,
         "openPositions": 15,
@@ -3349,9 +3349,9 @@
         "leaguePercentile": 61.111111111111114,
         "leagueRank": 4,
         "leagueSize": 9,
-        "leagueMean": 30062069.95726949,
-        "leagueStd": 28069828.846907265,
-        "zScore": 0.515817129479357
+        "leagueMean": 30027880.026533663,
+        "leagueStd": 28029487.555804025,
+        "zScore": 0.5175673417740664
       },
       "dis": {
         "score": 92,
@@ -3389,15 +3389,15 @@
       "eff": {
         "score": 86,
         "weight": 0.1,
-        "profitPerTrade": 412416.3749820189,
+        "profitPerTrade": 412361.36474148545,
         "winRate": 0.6388888888888888,
         "profitableTrades": 69,
         "completedTrades": 108,
-        "weightedTotalProfit": 44540968.49805804,
+        "weightedTotalProfit": 44535027.392080426,
         "leaguePercentile": 61.111111111111114,
         "leagueRank": 4,
         "leagueSize": 9,
-        "zScore": 0.4984660009176129
+        "zScore": 0.49920386279487994
       },
       "ovp": {
         "score": 54,
@@ -3415,9 +3415,9 @@
         "leaguePercentile": 94.44444444444444,
         "leagueRank": 1,
         "leagueSize": 9,
-        "leagueMean": 5.230583428878296,
-        "leagueStd": 0.24649129586740542,
-        "zScore": 1.1310943324329743
+        "leagueMean": 5.231037871684021,
+        "leagueStd": 0.24704736301804625,
+        "zScore": 1.1267089093504061
       },
       "tim": {
         "score": 59,
@@ -3445,7 +3445,7 @@
     "forcedRealizedProfit": -6427504,
     "openPositions": 15,
     "unrealizedProfit": 1330157,
-    "openPositionsAvgAgeDays": 25.55082608796296,
+    "openPositionsAvgAgeDays": 25.577646770833336,
     "orphanSales": 15,
     "orphanSaleProfit": 3604524,
     "forcedOrphanSales": 0,
@@ -3494,7 +3494,7 @@
     "kon": 51,
     "eff": 52,
     "ovp": 86,
-    "akt": 66,
+    "akt": 65,
     "tim": 53,
     "calculation": {
       "kad": {
@@ -3726,7 +3726,7 @@
       "pro": {
         "score": 53,
         "weight": 0.2,
-        "weightedTotalProfit": -8769022.077746542,
+        "weightedTotalProfit": -8767435.400635224,
         "completedTrades": 70,
         "profitableTrades": 28,
         "openPositions": 14,
@@ -3735,9 +3735,9 @@
         "leaguePercentile": 16.666666666666664,
         "leagueRank": 8,
         "leagueSize": 9,
-        "leagueMean": 30062069.95726949,
-        "leagueStd": 28069828.846907265,
-        "zScore": -1.3833747347303273
+        "leagueMean": 30027880.026533663,
+        "leagueStd": 28029487.555804025,
+        "zScore": -1.3840893576784496
       },
       "dis": {
         "score": 51,
@@ -3775,15 +3775,15 @@
       "eff": {
         "score": 52,
         "weight": 0.1,
-        "profitPerTrade": -125271.74396780775,
+        "profitPerTrade": -125249.07715193176,
         "winRate": 0.4,
         "profitableTrades": 28,
         "completedTrades": 70,
-        "weightedTotalProfit": -8769022.077746542,
+        "weightedTotalProfit": -8767435.400635224,
         "leaguePercentile": 16.666666666666664,
         "leagueRank": 8,
         "leagueSize": 9,
-        "zScore": -1.5106805297335124
+        "zScore": -1.5108280151265947
       },
       "ovp": {
         "score": 86,
@@ -3794,16 +3794,16 @@
         "leagueSize": 9
       },
       "akt": {
-        "score": 66,
+        "score": 65,
         "buys": 84,
         "sells": 85,
         "totalTransactions": 169,
         "leaguePercentile": 38.88888888888889,
         "leagueRank": 6,
         "leagueSize": 9,
-        "leagueMean": 5.230583428878296,
-        "leagueStd": 0.24649129586740542,
-        "zScore": -0.38453687175640144
+        "leagueMean": 5.231037871684021,
+        "leagueStd": 0.24704736301804625,
+        "zScore": -0.38551083270134556
       },
       "tim": {
         "score": 53,
@@ -3831,7 +3831,7 @@
     "forcedRealizedProfit": -155844,
     "openPositions": 14,
     "unrealizedProfit": 9571823,
-    "openPositionsAvgAgeDays": 28.175105105820105,
+    "openPositionsAvgAgeDays": 28.201925707671958,
     "orphanSales": 15,
     "orphanSaleProfit": 2723821,
     "forcedOrphanSales": 0,
@@ -4112,7 +4112,7 @@
       "pro": {
         "score": 57,
         "weight": 0.2,
-        "weightedTotalProfit": -34438244.00351052,
+        "weightedTotalProfit": -34439319.776922315,
         "completedTrades": 15,
         "profitableTrades": 4,
         "openPositions": 9,
@@ -4121,9 +4121,9 @@
         "leaguePercentile": 16.666666666666664,
         "leagueRank": 8,
         "leagueSize": 9,
-        "leagueMean": 7439413.8779869415,
-        "leagueStd": 46023484.662213065,
-        "zScore": -0.9099193202960688
+        "leagueMean": 7392276.857875414,
+        "leagueStd": 46003167.212349966,
+        "zScore": -0.9093199266412174
       },
       "dis": {
         "score": 94,
@@ -4161,15 +4161,15 @@
       "eff": {
         "score": 60,
         "weight": 0.1,
-        "profitPerTrade": -2295882.933567368,
+        "profitPerTrade": -2295954.651794821,
         "winRate": 0.26666666666666666,
         "profitableTrades": 4,
         "completedTrades": 15,
-        "weightedTotalProfit": -34438244.00351052,
+        "weightedTotalProfit": -34439319.776922315,
         "leaguePercentile": 27.77777777777778,
         "leagueRank": 7,
         "leagueSize": 9,
-        "zScore": -0.6963609726977595
+        "zScore": -0.696259698986233
       },
       "ovp": {
         "score": 54,
@@ -4187,9 +4187,9 @@
         "leaguePercentile": 27.77777777777778,
         "leagueRank": 7,
         "leagueSize": 9,
-        "leagueMean": 4.4012011399158695,
-        "leagueStd": 0.7911577525707716,
-        "zScore": -0.5687328726443742
+        "leagueMean": 4.4020591450374145,
+        "leagueStd": 0.7917212699799979,
+        "zScore": -0.5694117911817329
       },
       "tim": {
         "score": 66,
@@ -4217,7 +4217,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 9,
     "unrealizedProfit": -5076344,
-    "openPositionsAvgAgeDays": 52.020149880401235,
+    "openPositionsAvgAgeDays": 52.04697045910494,
     "orphanSales": 12,
     "orphanSaleProfit": -211541,
     "forcedOrphanSales": 0,
@@ -4498,7 +4498,7 @@
       "pro": {
         "score": 89,
         "weight": 0.2,
-        "weightedTotalProfit": 49801224.52668465,
+        "weightedTotalProfit": 49795254.74784423,
         "completedTrades": 89,
         "profitableTrades": 49,
         "openPositions": 20,
@@ -4507,9 +4507,9 @@
         "leaguePercentile": 72.22222222222221,
         "leagueRank": 3,
         "leagueSize": 9,
-        "leagueMean": 30062069.95726949,
-        "leagueStd": 28069828.846907265,
-        "zScore": 0.7032160643754698
+        "leagueMean": 30027880.026533663,
+        "leagueStd": 28029487.555804025,
+        "zScore": 0.7052349666384593
       },
       "dis": {
         "score": 90,
@@ -4547,15 +4547,15 @@
       "eff": {
         "score": 85,
         "weight": 0.1,
-        "profitPerTrade": 559564.3205245467,
+        "profitPerTrade": 559497.2443578003,
         "winRate": 0.550561797752809,
         "profitableTrades": 49,
         "completedTrades": 89,
-        "weightedTotalProfit": 49801224.52668465,
+        "weightedTotalProfit": 49795254.74784423,
         "leaguePercentile": 50,
         "leagueRank": 5,
         "leagueSize": 9,
-        "zScore": 0.481995795144746
+        "zScore": 0.48299526590325526
       },
       "ovp": {
         "score": 70,
@@ -4573,9 +4573,9 @@
         "leaguePercentile": 61.111111111111114,
         "leagueRank": 4,
         "leagueSize": 9,
-        "leagueMean": 5.230583428878296,
-        "leagueStd": 0.24649129586740542,
-        "zScore": 0.5492793798949676
+        "leagueMean": 5.231037871684021,
+        "leagueStd": 0.24704736301804625,
+        "zScore": 0.5462035363962722
       },
       "tim": {
         "score": 56,
@@ -4603,7 +4603,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 20,
     "unrealizedProfit": 21474971,
-    "openPositionsAvgAgeDays": 32.41241430555556,
+    "openPositionsAvgAgeDays": 32.43923496527778,
     "orphanSales": 15,
     "orphanSaleProfit": 2048986,
     "forcedOrphanSales": 0,
@@ -4884,7 +4884,7 @@
       "pro": {
         "score": 94,
         "weight": 0.2,
-        "weightedTotalProfit": 61842499.10020195,
+        "weightedTotalProfit": 61842264.016465954,
         "completedTrades": 102,
         "profitableTrades": 63,
         "openPositions": 15,
@@ -4893,9 +4893,9 @@
         "leaguePercentile": 94.44444444444444,
         "leagueRank": 1,
         "leagueSize": 9,
-        "leagueMean": 30062069.95726949,
-        "leagueStd": 28069828.846907265,
-        "zScore": 1.1321917677611357
+        "leagueMean": 30027880.026533663,
+        "leagueStd": 28029487.555804025,
+        "zScore": 1.1350326661018293
       },
       "dis": {
         "score": 73,
@@ -4933,15 +4933,15 @@
       "eff": {
         "score": 91,
         "weight": 0.1,
-        "profitPerTrade": 606299.0107862937,
+        "profitPerTrade": 606296.7060437839,
         "winRate": 0.6176470588235294,
         "profitableTrades": 63,
         "completedTrades": 102,
-        "weightedTotalProfit": 61842499.10020195,
+        "weightedTotalProfit": 61842264.016465954,
         "leaguePercentile": 94.44444444444444,
         "leagueRank": 1,
         "leagueSize": 9,
-        "zScore": 0.8272949856740967
+        "zScore": 0.8285217242504479
       },
       "ovp": {
         "score": 96,
@@ -4959,9 +4959,9 @@
         "leaguePercentile": 72.22222222222221,
         "leagueRank": 3,
         "leagueSize": 9,
-        "leagueMean": 5.230583428878296,
-        "leagueStd": 0.24649129586740542,
-        "zScore": 0.9290473501711388
+        "leagueMean": 5.231037871684021,
+        "leagueStd": 0.24704736301804625,
+        "zScore": 0.925116705024062
       },
       "tim": {
         "score": 78,
@@ -4989,7 +4989,7 @@
     "forcedRealizedProfit": -3237594,
     "openPositions": 15,
     "unrealizedProfit": -18199844,
-    "openPositionsAvgAgeDays": 24.04572465277778,
+    "openPositionsAvgAgeDays": 24.07254527777778,
     "orphanSales": 15,
     "orphanSaleProfit": 2317602,
     "forcedOrphanSales": 0,
@@ -5270,7 +5270,7 @@
       "pro": {
         "score": 66,
         "weight": 0.2,
-        "weightedTotalProfit": 19430081.061327383,
+        "weightedTotalProfit": 19429488.091280513,
         "completedTrades": 49,
         "profitableTrades": 29,
         "openPositions": 16,
@@ -5279,9 +5279,9 @@
         "leaguePercentile": 38.88888888888889,
         "leagueRank": 6,
         "leagueSize": 9,
-        "leagueMean": 30062069.95726949,
-        "leagueStd": 28069828.846907265,
-        "zScore": -0.37876928120684067
+        "leagueMean": 30027880.026533663,
+        "leagueStd": 28029487.555804025,
+        "zScore": -0.37811579373874626
       },
       "dis": {
         "score": 93,
@@ -5319,15 +5319,15 @@
       "eff": {
         "score": 81,
         "weight": 0.1,
-        "profitPerTrade": 396532.2665577017,
+        "profitPerTrade": 396520.1651281737,
         "winRate": 0.5918367346938775,
         "profitableTrades": 29,
         "completedTrades": 49,
-        "weightedTotalProfit": 19430081.061327383,
+        "weightedTotalProfit": 19429488.091280513,
         "leaguePercentile": 38.88888888888889,
         "leagueRank": 6,
         "leagueSize": 9,
-        "zScore": 0.2917539764513464
+        "zScore": 0.29255104001986365
       },
       "ovp": {
         "score": 91,
@@ -5345,9 +5345,9 @@
         "leaguePercentile": 5.555555555555555,
         "leagueRank": 9,
         "leagueSize": 9,
-        "leagueMean": 5.230583428878296,
-        "leagueStd": 0.24649129586740542,
-        "zScore": -1.4728673365326772
+        "leagueMean": 5.231037871684021,
+        "leagueStd": 0.24704736301804625,
+        "zScore": -1.4713916262359998
       },
       "tim": {
         "score": 93,
@@ -5375,7 +5375,7 @@
     "forcedRealizedProfit": -1310509,
     "openPositions": 16,
     "unrealizedProfit": 34644605,
-    "openPositionsAvgAgeDays": 50.37264120370371,
+    "openPositionsAvgAgeDays": 50.399461851851854,
     "orphanSales": 15,
     "orphanSaleProfit": 3513803,
     "forcedOrphanSales": 0,
@@ -5577,7 +5577,7 @@
         "points": 10307,
         "avgPoints": 1031,
         "matchdaysCount": 10,
-        "totalSpent": 1513398802,
+        "totalSpent": 1528598802,
         "managerSquadValue": 229350602,
         "ppmBasis": "perMatchdayAverage",
         "ppm": 6.997046031419731,
@@ -5656,18 +5656,18 @@
       "pro": {
         "score": 94,
         "weight": 0.2,
-        "weightedTotalProfit": 59867502.48528315,
+        "weightedTotalProfit": 59570517.49231436,
         "completedTrades": 105,
         "profitableTrades": 64,
-        "openPositions": 19,
+        "openPositions": 20,
         "orphanSales": 14,
         "saleTimingSampleSize": 114,
         "leaguePercentile": 83.33333333333334,
         "leagueRank": 2,
         "leagueSize": 9,
-        "leagueMean": 30062069.95726949,
-        "leagueStd": 28069828.846907265,
-        "zScore": 1.0618316445950693
+        "leagueMean": 30027880.026533663,
+        "leagueStd": 28029487.555804025,
+        "zScore": 1.0539842159784096
       },
       "dis": {
         "score": 58,
@@ -5705,35 +5705,35 @@
       "eff": {
         "score": 90,
         "weight": 0.1,
-        "profitPerTrade": 570166.69033603,
+        "profitPerTrade": 567338.2618315653,
         "winRate": 0.6095238095238096,
         "profitableTrades": 64,
         "completedTrades": 105,
-        "weightedTotalProfit": 59867502.48528315,
+        "weightedTotalProfit": 59570517.49231436,
         "leaguePercentile": 72.22222222222221,
         "leagueRank": 3,
         "leagueSize": 9,
-        "zScore": 0.7214988503600442
+        "zScore": 0.7167156346748454
       },
       "ovp": {
         "score": 80,
-        "purchaseCount": 124,
-        "averageOverpayRatio": 0.11628249008223585,
+        "purchaseCount": 125,
+        "averageOverpayRatio": 0.11703288479037183,
         "leaguePercentile": 61.111111111111114,
         "leagueRank": 4,
         "leagueSize": 9
       },
       "akt": {
         "score": 94,
-        "buys": 124,
+        "buys": 125,
         "sells": 119,
-        "totalTransactions": 243,
+        "totalTransactions": 244,
         "leaguePercentile": 83.33333333333334,
         "leagueRank": 2,
         "leagueSize": 9,
-        "leagueMean": 5.230583428878296,
-        "leagueStd": 0.24649129586740542,
-        "zScore": 1.0815180936786906
+        "leagueMean": 5.231037871684021,
+        "leagueStd": 0.24704736301804625,
+        "zScore": 1.0937997295723725
       },
       "tim": {
         "score": 92,
@@ -5753,21 +5753,21 @@
         "zScore": 0.89146420394163
       }
     },
-    "totalProfit": 58930927,
+    "totalProfit": 56033736,
     "tradesCount": 105,
     "completedTrades": 105,
     "forcedCompletedTrades": 3,
     "realizedProfit": 50158890,
     "forcedRealizedProfit": -2238621,
-    "openPositions": 19,
-    "unrealizedProfit": 5535344,
-    "openPositionsAvgAgeDays": 24.62148489887914,
+    "openPositions": 20,
+    "unrealizedProfit": 2638153,
+    "openPositionsAvgAgeDays": 23.41707690972222,
     "orphanSales": 14,
     "orphanSaleProfit": 3236693,
     "forcedOrphanSales": 0,
-    "totalTransactions": 243,
-    "totalOverpay": 103840368,
-    "avgOverpayRatio": 0.11628249008223585,
+    "totalTransactions": 244,
+    "totalOverpay": 106479234,
+    "avgOverpayRatio": 0.11703288479037183,
     "ppm": 6.997046031419731,
     "bestTrade": {
       "name": "Anthony Caci",
@@ -6042,7 +6042,7 @@
       "pro": {
         "score": 93,
         "weight": 0.2,
-        "weightedTotalProfit": 50929988.176487714,
+        "weightedTotalProfit": 50927168.80126741,
         "completedTrades": 46,
         "profitableTrades": 29,
         "openPositions": 23,
@@ -6051,9 +6051,9 @@
         "leaguePercentile": 72.22222222222221,
         "leagueRank": 3,
         "leagueSize": 9,
-        "leagueMean": 7439413.8779869415,
-        "leagueStd": 46023484.662213065,
-        "zScore": 0.9449648286673108
+        "leagueMean": 7392276.857875414,
+        "leagueStd": 46003167.212349966,
+        "zScore": 0.9463455362200509
       },
       "dis": {
         "score": 94,
@@ -6091,15 +6091,15 @@
       "eff": {
         "score": 94,
         "weight": 0.1,
-        "profitPerTrade": 1107173.6560106024,
+        "profitPerTrade": 1107112.3652449436,
         "winRate": 0.6304347826086957,
         "profitableTrades": 29,
         "completedTrades": 46,
-        "weightedTotalProfit": 50929988.176487714,
+        "weightedTotalProfit": 50927168.80126741,
         "leaguePercentile": 83.33333333333334,
         "leagueRank": 2,
         "leagueSize": 9,
-        "zScore": 1.05879395751921
+        "zScore": 1.059381235543432
       },
       "ovp": {
         "score": 64,
@@ -6114,12 +6114,12 @@
         "buys": 69,
         "sells": 60,
         "totalTransactions": 129,
-        "leaguePercentile": 72.22222222222221,
+        "leaguePercentile": 66.66666666666666,
         "leagueRank": 3,
         "leagueSize": 9,
-        "leagueMean": 4.4012011399158695,
-        "leagueStd": 0.7911577525707716,
-        "zScore": 0.5894315122672046
+        "leagueMean": 4.4020591450374145,
+        "leagueStd": 0.7917212699799979,
+        "zScore": 0.5879282558998667
       },
       "tim": {
         "score": 77,
@@ -6147,7 +6147,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 23,
     "unrealizedProfit": 35758612,
-    "openPositionsAvgAgeDays": 36.18338218196457,
+    "openPositionsAvgAgeDays": 36.210202795390494,
     "orphanSales": 14,
     "orphanSaleProfit": 1692304,
     "forcedOrphanSales": 0,
@@ -6428,7 +6428,7 @@
       "pro": {
         "score": 85,
         "weight": 0.2,
-        "weightedTotalProfit": 39649929.205295734,
+        "weightedTotalProfit": 39650141.32081487,
         "completedTrades": 66,
         "profitableTrades": 33,
         "openPositions": 14,
@@ -6437,9 +6437,9 @@
         "leaguePercentile": 56.25,
         "leagueRank": 4,
         "leagueSize": 8,
-        "leagueMean": 25360651.02341849,
-        "leagueStd": 32269086.463934164,
-        "zScore": 0.44281632198815996
+        "leagueMean": 25442587.767926034,
+        "leagueStd": 32267358.09345547,
+        "zScore": 0.4403073072093386
       },
       "dis": {
         "score": 82,
@@ -6477,15 +6477,15 @@
       "eff": {
         "score": 84,
         "weight": 0.1,
-        "profitPerTrade": 600756.5031105414,
+        "profitPerTrade": 600759.7169820435,
         "winRate": 0.5,
         "profitableTrades": 33,
         "completedTrades": 66,
-        "weightedTotalProfit": 39649929.205295734,
+        "weightedTotalProfit": 39650141.32081487,
         "leaguePercentile": 56.25,
         "leagueRank": 4,
         "leagueSize": 8,
-        "zScore": 0.42693570467727016
+        "zScore": 0.4270058033139254
       },
       "ovp": {
         "score": 96,
@@ -6503,9 +6503,9 @@
         "leaguePercentile": 31.25,
         "leagueRank": 6,
         "leagueSize": 8,
-        "leagueMean": 5.048091717263289,
-        "leagueStd": 0.48163190622314966,
-        "zScore": 0.06916619785928307
+        "leagueMean": 5.049387065642732,
+        "leagueStd": 0.4822890399717853,
+        "zScore": 0.06638612261146089
       },
       "tim": {
         "score": 81,
@@ -6533,7 +6533,7 @@
     "forcedRealizedProfit": -4614898,
     "openPositions": 14,
     "unrealizedProfit": 39037586,
-    "openPositionsAvgAgeDays": 34.574692012235445,
+    "openPositionsAvgAgeDays": 34.6015126140873,
     "orphanSales": 14,
     "orphanSaleProfit": 2749446,
     "forcedOrphanSales": 0,
@@ -6823,9 +6823,9 @@
         "leaguePercentile": 27.77777777777778,
         "leagueRank": 7,
         "leagueSize": 9,
-        "leagueMean": 7439413.8779869415,
-        "leagueStd": 46023484.662213065,
-        "zScore": -0.8508328751155453
+        "leagueMean": 7392276.857875414,
+        "leagueStd": 46003167.212349966,
+        "zScore": -0.8501840009697348
       },
       "dis": {
         "score": 51,
@@ -6871,7 +6871,7 @@
         "leaguePercentile": 16.666666666666664,
         "leagueRank": 8,
         "leagueSize": 9,
-        "zScore": -1.0490074116620332
+        "zScore": -1.049118240935693
       },
       "ovp": {
         "score": 59,
@@ -6889,9 +6889,9 @@
         "leaguePercentile": 11.11111111111111,
         "leagueRank": 8,
         "leagueSize": 9,
-        "leagueMean": 4.4012011399158695,
-        "leagueStd": 0.7911577525707716,
-        "zScore": -1.3068257330094344
+        "leagueMean": 4.4020591450374145,
+        "leagueStd": 0.7917212699799979,
+        "zScore": -1.3069793048216105
       },
       "tim": {
         "score": 98,
@@ -6919,7 +6919,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 6,
     "unrealizedProfit": -28180553,
-    "openPositionsAvgAgeDays": 88.7246329861111,
+    "openPositionsAvgAgeDays": 88.75145355324075,
     "orphanSales": 12,
     "orphanSaleProfit": 800738,
     "forcedOrphanSales": 0,
@@ -7209,9 +7209,9 @@
         "leaguePercentile": 18.75,
         "leagueRank": 7,
         "leagueSize": 8,
-        "leagueMean": 25360651.02341849,
-        "leagueStd": 32269086.463934164,
-        "zScore": -1.1818492837112966
+        "leagueMean": 25442587.767926034,
+        "leagueStd": 32267358.09345547,
+        "zScore": -1.184451895851917
       },
       "dis": {
         "score": 57,
@@ -7257,7 +7257,7 @@
         "leaguePercentile": 6.25,
         "leagueRank": 8,
         "leagueSize": 8,
-        "zScore": -1.7433419533472896
+        "zScore": -1.7431865672835287
       },
       "ovp": {
         "score": 66,
@@ -7275,9 +7275,9 @@
         "leaguePercentile": 6.25,
         "leagueRank": 8,
         "leagueSize": 8,
-        "leagueMean": 5.048091717263289,
-        "leagueStd": 0.48163190622314966,
-        "zScore": -1.945921441208976
+        "leagueMean": 5.049387065642732,
+        "leagueStd": 0.4822890399717853,
+        "zScore": -1.9459558971614317
       },
       "tim": {
         "score": 73,
@@ -7305,7 +7305,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 13,
     "unrealizedProfit": 9155129,
-    "openPositionsAvgAgeDays": 58.934661082621076,
+    "openPositionsAvgAgeDays": 58.96148168447293,
     "orphanSales": 15,
     "orphanSaleProfit": 7040624,
     "forcedOrphanSales": 0,
@@ -7586,7 +7586,7 @@
       "pro": {
         "score": 95,
         "weight": 0.2,
-        "weightedTotalProfit": 65133700.383737884,
+        "weightedTotalProfit": 65127365.243453115,
         "completedTrades": 86,
         "profitableTrades": 54,
         "openPositions": 18,
@@ -7595,9 +7595,9 @@
         "leaguePercentile": 93.75,
         "leagueRank": 1,
         "leagueSize": 8,
-        "leagueMean": 25360651.02341849,
-        "leagueStd": 32269086.463934164,
-        "zScore": 1.232543394272165
+        "leagueMean": 25442587.767926034,
+        "leagueStd": 32267358.09345547,
+        "zScore": 1.2298737740037051
       },
       "dis": {
         "score": 92,
@@ -7635,15 +7635,15 @@
       "eff": {
         "score": 91,
         "weight": 0.1,
-        "profitPerTrade": 757368.6091132312,
+        "profitPerTrade": 757294.9446913153,
         "winRate": 0.627906976744186,
         "profitableTrades": 54,
         "completedTrades": 86,
-        "weightedTotalProfit": 65133700.383737884,
+        "weightedTotalProfit": 65127365.243453115,
         "leaguePercentile": 93.75,
         "leagueRank": 1,
         "leagueSize": 8,
-        "zScore": 0.8546442713809674
+        "zScore": 0.8546384863296658
       },
       "ovp": {
         "score": 72,
@@ -7661,9 +7661,9 @@
         "leaguePercentile": 68.75,
         "leagueRank": 3,
         "leagueSize": 8,
-        "leagueMean": 5.048091717263289,
-        "leagueStd": 0.48163190622314966,
-        "zScore": 0.5708057508709654
+        "leagueMean": 5.049387065642732,
+        "leagueStd": 0.4822890399717853,
+        "zScore": 0.5673421762013987
       },
       "tim": {
         "score": 92,
@@ -7691,7 +7691,7 @@
     "forcedRealizedProfit": 2041957,
     "openPositions": 18,
     "unrealizedProfit": 11702420,
-    "openPositionsAvgAgeDays": 24.822826081532924,
+    "openPositionsAvgAgeDays": 24.8496466718107,
     "orphanSales": 14,
     "orphanSaleProfit": 2288310,
     "forcedOrphanSales": 0,
@@ -7972,7 +7972,7 @@
       "pro": {
         "score": 97,
         "weight": 0.2,
-        "weightedTotalProfit": 83006960.2610264,
+        "weightedTotalProfit": 82996070.97981337,
         "completedTrades": 140,
         "profitableTrades": 87,
         "openPositions": 15,
@@ -7981,9 +7981,9 @@
         "leaguePercentile": 94.44444444444444,
         "leagueRank": 1,
         "leagueSize": 9,
-        "leagueMean": 7439413.8779869415,
-        "leagueStd": 46023484.662213065,
-        "zScore": 1.641934480573635
+        "leagueMean": 7392276.857875414,
+        "leagueStd": 46003167.212349966,
+        "zScore": 1.6434475864009954
       },
       "dis": {
         "score": 67,
@@ -8021,15 +8021,15 @@
       "eff": {
         "score": 92,
         "weight": 0.1,
-        "profitPerTrade": 592906.8590073314,
+        "profitPerTrade": 592829.0784272384,
         "winRate": 0.6214285714285714,
         "profitableTrades": 87,
         "completedTrades": 140,
-        "weightedTotalProfit": 83006960.2610264,
+        "weightedTotalProfit": 82996070.97981337,
         "leaguePercentile": 72.22222222222221,
         "leagueRank": 3,
         "leagueSize": 9,
-        "zScore": 0.8684827238591908
+        "zScore": 0.8689914618495658
       },
       "ovp": {
         "score": 80,
@@ -8047,9 +8047,9 @@
         "leaguePercentile": 94.44444444444444,
         "leagueRank": 1,
         "leagueSize": 9,
-        "leagueMean": 4.4012011399158695,
-        "leagueStd": 0.7911577525707716,
-        "zScore": 1.6919404100051756
+        "leagueMean": 4.4020591450374145,
+        "leagueStd": 0.7917212699799979,
+        "zScore": 1.6896524292894342
       },
       "tim": {
         "score": 79,
@@ -8077,7 +8077,7 @@
     "forcedRealizedProfit": -1201812,
     "openPositions": 15,
     "unrealizedProfit": -13245639,
-    "openPositionsAvgAgeDays": 9.845026273148148,
+    "openPositionsAvgAgeDays": 9.871846875,
     "orphanSales": 15,
     "orphanSaleProfit": 2302047,
     "forcedOrphanSales": 0,
@@ -8358,7 +8358,7 @@
       "pro": {
         "score": 52,
         "weight": 0.2,
-        "weightedTotalProfit": -13880598.324612863,
+        "weightedTotalProfit": -13881006.18263159,
         "completedTrades": 56,
         "profitableTrades": 24,
         "openPositions": 11,
@@ -8367,9 +8367,9 @@
         "leaguePercentile": 5.555555555555555,
         "leagueRank": 9,
         "leagueSize": 9,
-        "leagueMean": 30062069.95726949,
-        "leagueStd": 28069828.846907265,
-        "zScore": -1.5654768870001128
+        "leagueMean": 30027880.026533663,
+        "leagueStd": 28029487.555804025,
+        "zScore": -1.5665247579623731
       },
       "dis": {
         "score": 76,
@@ -8407,15 +8407,15 @@
       "eff": {
         "score": 52,
         "weight": 0.1,
-        "profitPerTrade": -247867.8272252297,
+        "profitPerTrade": -247875.1104041355,
         "winRate": 0.42857142857142855,
         "profitableTrades": 24,
         "completedTrades": 56,
-        "weightedTotalProfit": -13880598.324612863,
+        "weightedTotalProfit": -13881006.18263159,
         "leaguePercentile": 5.555555555555555,
         "leagueRank": 9,
         "leagueSize": 9,
-        "zScore": -1.6628246157516051
+        "zScore": -1.6632741313810289
       },
       "ovp": {
         "score": 59,
@@ -8433,9 +8433,9 @@
         "leaguePercentile": 16.666666666666664,
         "leagueRank": 8,
         "leagueSize": 9,
-        "leagueMean": 5.230583428878296,
-        "leagueStd": 0.24649129586740542,
-        "zScore": -1.2305900808938106
+        "leagueMean": 5.231037871684021,
+        "leagueStd": 0.24704736301804625,
+        "zScore": -1.2296597009401182
       },
       "tim": {
         "score": 57,
@@ -8463,7 +8463,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 11,
     "unrealizedProfit": 22831029,
-    "openPositionsAvgAgeDays": 30.031778640572398,
+    "openPositionsAvgAgeDays": 30.058599242424247,
     "orphanSales": 14,
     "orphanSaleProfit": 2436922,
     "forcedOrphanSales": 0,
@@ -8744,7 +8744,7 @@
       "pro": {
         "score": 93,
         "weight": 0.2,
-        "weightedTotalProfit": 54369937.512614794,
+        "weightedTotalProfit": 54367296.33008236,
         "completedTrades": 59,
         "profitableTrades": 43,
         "openPositions": 16,
@@ -8753,9 +8753,9 @@
         "leaguePercentile": 83.33333333333334,
         "leagueRank": 2,
         "leagueSize": 9,
-        "leagueMean": 7439413.8779869415,
-        "leagueStd": 46023484.662213065,
-        "zScore": 1.0197081767943463
+        "leagueMean": 7392276.857875414,
+        "leagueStd": 46003167.212349966,
+        "zScore": 1.0211257684796118
       },
       "dis": {
         "score": 63,
@@ -8793,15 +8793,15 @@
       "eff": {
         "score": 95,
         "weight": 0.1,
-        "profitPerTrade": 921524.3646205898,
+        "profitPerTrade": 921479.5988149552,
         "winRate": 0.7288135593220338,
         "profitableTrades": 43,
         "completedTrades": 59,
-        "weightedTotalProfit": 54369937.512614794,
+        "weightedTotalProfit": 54367296.33008236,
         "leaguePercentile": 94.44444444444444,
         "leagueRank": 1,
         "leagueSize": 9,
-        "zScore": 1.1557520669469437
+        "zScore": 1.1563186718943614
       },
       "ovp": {
         "score": 96,
@@ -8819,9 +8819,9 @@
         "leaguePercentile": 83.33333333333334,
         "leagueRank": 2,
         "leagueSize": 9,
-        "leagueMean": 4.4012011399158695,
-        "leagueStd": 0.7911577525707716,
-        "zScore": 0.7703067462842945
+        "leagueMean": 4.4020591450374145,
+        "leagueStd": 0.7917212699799979,
+        "zScore": 0.7686747497313242
       },
       "tim": {
         "score": 88,
@@ -8849,7 +8849,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 16,
     "unrealizedProfit": 14328344,
-    "openPositionsAvgAgeDays": 27.844798489583333,
+    "openPositionsAvgAgeDays": 27.871619079861112,
     "orphanSales": 15,
     "orphanSaleProfit": 2327028,
     "forcedOrphanSales": 0,
@@ -9130,7 +9130,7 @@
       "pro": {
         "score": 59,
         "weight": 0.2,
-        "weightedTotalProfit": -26551715.3068719,
+        "weightedTotalProfit": -26551027.998229247,
         "completedTrades": 5,
         "profitableTrades": 1,
         "openPositions": 9,
@@ -9139,9 +9139,9 @@
         "leaguePercentile": 38.88888888888889,
         "leagueRank": 6,
         "leagueSize": 9,
-        "leagueMean": 7439413.8779869415,
-        "leagueStd": 46023484.662213065,
-        "zScore": -0.7385605291371338
+        "leagueMean": 7392276.857875414,
+        "leagueStd": 46003167.212349966,
+        "zScore": -0.7378471290775012
       },
       "dis": {
         "score": 75,
@@ -9179,15 +9179,15 @@
       "eff": {
         "score": 54,
         "weight": 0.1,
-        "profitPerTrade": -3318964.4133589873,
+        "profitPerTrade": -3318878.499778656,
         "winRate": 0.2,
         "profitableTrades": 1,
         "completedTrades": 5,
-        "weightedTotalProfit": -26551715.3068719,
+        "weightedTotalProfit": -26551027.998229247,
         "leaguePercentile": 5.555555555555555,
         "leagueRank": 9,
         "leagueSize": 9,
-        "zScore": -1.1544293934912018
+        "zScore": -1.1544193028579712
       },
       "ovp": {
         "score": 86,
@@ -9205,9 +9205,9 @@
         "leaguePercentile": 11.11111111111111,
         "leagueRank": 8,
         "leagueSize": 9,
-        "leagueMean": 4.4012011399158695,
-        "leagueStd": 0.7911577525707716,
-        "zScore": -1.3068257330094344
+        "leagueMean": 4.4020591450374145,
+        "leagueStd": 0.7917212699799979,
+        "zScore": -1.3069793048216105
       },
       "tim": {
         "score": 53,
@@ -9235,7 +9235,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 9,
     "unrealizedProfit": -29264703,
-    "openPositionsAvgAgeDays": 66.0828737037037,
+    "openPositionsAvgAgeDays": 66.10969427083334,
     "orphanSales": 9,
     "orphanSaleProfit": 603160,
     "forcedOrphanSales": 0,
@@ -9516,7 +9516,7 @@
       "pro": {
         "score": 77,
         "weight": 0.2,
-        "weightedTotalProfit": 29224216.893045045,
+        "weightedTotalProfit": 29223426.506598856,
         "completedTrades": 71,
         "profitableTrades": 44,
         "openPositions": 15,
@@ -9525,9 +9525,9 @@
         "leaguePercentile": 43.75,
         "leagueRank": 5,
         "leagueSize": 8,
-        "leagueMean": 25360651.02341849,
-        "leagueStd": 32269086.463934164,
-        "zScore": 0.11972963269179326
+        "leagueMean": 25442587.767926034,
+        "leagueStd": 32267358.09345547,
+        "zScore": 0.11717224347039616
       },
       "dis": {
         "score": 93,
@@ -9565,15 +9565,15 @@
       "eff": {
         "score": 86,
         "weight": 0.1,
-        "profitPerTrade": 411608.6886344373,
+        "profitPerTrade": 411597.5564309698,
         "winRate": 0.6197183098591549,
         "profitableTrades": 44,
         "completedTrades": 71,
-        "weightedTotalProfit": 29224216.893045045,
+        "weightedTotalProfit": 29223426.506598856,
         "leaguePercentile": 81.25,
         "leagueRank": 2,
         "leagueSize": 8,
-        "zScore": 0.5000345148004424
+        "zScore": 0.5001203040161979
       },
       "ovp": {
         "score": 90,
@@ -9591,9 +9591,9 @@
         "leaguePercentile": 43.75,
         "leagueRank": 5,
         "leagueSize": 8,
-        "leagueMean": 5.048091717263289,
-        "leagueStd": 0.48163190622314966,
-        "zScore": 0.20638740553892698
+        "leagueMean": 5.049387065642732,
+        "leagueStd": 0.4822890399717853,
+        "zScore": 0.20342036214727116
       },
       "tim": {
         "score": 90,
@@ -9621,7 +9621,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 15,
     "unrealizedProfit": 27113676,
-    "openPositionsAvgAgeDays": 42.96934381558642,
+    "openPositionsAvgAgeDays": 42.996164371913586,
     "orphanSales": 14,
     "orphanSaleProfit": 2572329,
     "forcedOrphanSales": 0,
@@ -9670,7 +9670,7 @@
     "kon": 73,
     "eff": 61,
     "ovp": 91,
-    "akt": 72,
+    "akt": 71,
     "tim": 56,
     "calculation": {
       "kad": {
@@ -9902,7 +9902,7 @@
       "pro": {
         "score": 56,
         "weight": 0.2,
-        "weightedTotalProfit": -36005681.60922327,
+        "weightedTotalProfit": -36006113.390659854,
         "completedTrades": 23,
         "profitableTrades": 4,
         "openPositions": 14,
@@ -9911,9 +9911,9 @@
         "leaguePercentile": 5.555555555555555,
         "leagueRank": 9,
         "leagueSize": 9,
-        "leagueMean": 7439413.8779869415,
-        "leagueStd": 46023484.662213065,
-        "zScore": -0.9439766633507479
+        "leagueMean": 7392276.857875414,
+        "leagueStd": 46003167.212349966,
+        "zScore": -0.9433783123716007
       },
       "dis": {
         "score": 66,
@@ -9951,15 +9951,15 @@
       "eff": {
         "score": 61,
         "weight": 0.1,
-        "profitPerTrade": -1565464.417792316,
+        "profitPerTrade": -1565483.1908982545,
         "winRate": 0.17391304347826086,
         "profitableTrades": 4,
         "completedTrades": 23,
-        "weightedTotalProfit": -36005681.60922327,
+        "weightedTotalProfit": -36006113.390659854,
         "leaguePercentile": 38.88888888888889,
         "leagueRank": 6,
         "leagueSize": 9,
-        "zScore": -0.598101982474297
+        "zScore": -0.5978790702395007
       },
       "ovp": {
         "score": 91,
@@ -9970,16 +9970,16 @@
         "leagueSize": 9
       },
       "akt": {
-        "score": 72,
+        "score": 71,
         "buys": 37,
         "sells": 36,
         "totalTransactions": 73,
         "leaguePercentile": 50,
         "leagueRank": 5,
         "leagueSize": 9,
-        "leagueMean": 4.4012011399158695,
-        "leagueStd": 0.7911577525707716,
-        "zScore": -0.12277709015182917
+        "leagueMean": 4.4020591450374145,
+        "leagueStd": 0.7917212699799979,
+        "zScore": -0.12377342323482214
       },
       "tim": {
         "score": 56,
@@ -10007,7 +10007,7 @@
     "forcedRealizedProfit": 0,
     "openPositions": 14,
     "unrealizedProfit": 5372381,
-    "openPositionsAvgAgeDays": 54.794273316798936,
+    "openPositionsAvgAgeDays": 54.82109388392856,
     "orphanSales": 13,
     "orphanSaleProfit": 3156091,
     "forcedOrphanSales": 0,
