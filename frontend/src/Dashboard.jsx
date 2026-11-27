@@ -140,10 +140,15 @@ export const UserRow = ({ item, color, isSaisonView, displayRank, prevRank, rout
         <div className="w-8 flex justify-center items-center text-xs font-semibold text-[#8b92a5] shrink-0">
           {item.isTrophy && isSaisonView ? <TrophyIcon type={item.trophyColor} /> : displayRank}
         </div>
-        <div className="ml-2 shrink-0 flex items-center justify-center">
+        <div className="relative ml-2 shrink-0 flex items-center justify-center">
           <ManagerAvatar name={item.name} size={46} />
+          {rating && (
+            <div className="absolute top-1/2 -right-2 -translate-y-1/2 z-10 pointer-events-none">
+              <ManagerRatingHex rating={rating} size={23} backdrop />
+            </div>
+          )}
         </div>
-        <div className="ml-3 flex-1 flex flex-col justify-center min-w-0">
+        <div className={`${rating ? 'ml-4' : 'ml-3'} flex-1 flex flex-col justify-center min-w-0`}>
           <div className="flex items-center gap-2">
             <div className="text-[15px] font-semibold tracking-wide text-gray-100 truncate">{item.name}</div>
             {rankChange !== 0 && isSaisonView && (
@@ -161,11 +166,6 @@ export const UserRow = ({ item, color, isSaisonView, displayRank, prevRank, rout
             </span>
           )}
         </div>
-        {rating && (
-          <div className="mr-2.5 sm:mr-3 shrink-0 flex items-center justify-center">
-            <ManagerRatingHex rating={rating} size={28} />
-          </div>
-        )}
         <div className="text-right mr-2">
           <div className="text-[17px] font-bold" style={{ color: color }}>
             {pointsToShow}
