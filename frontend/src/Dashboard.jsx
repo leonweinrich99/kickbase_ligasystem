@@ -144,7 +144,7 @@ export const UserRow = ({ item, color, isSaisonView, displayRank, prevRank, rout
           <ManagerAvatar name={item.name} size={46} />
           {rating && (
             <div className="absolute top-1/2 -right-2 -translate-y-1/2 z-10 pointer-events-none">
-              <ManagerRatingHex rating={rating} size={23} backdrop />
+              <ManagerRatingHex rating={rating} size={28} backdrop />
             </div>
           )}
         </div>

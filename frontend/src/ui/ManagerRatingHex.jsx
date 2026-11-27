@@ -1,19 +1,16 @@
 import React, { useId } from 'react';
-import { TIER_THEME } from './FifaManagerCard';
+import { PRISM_CARD_PATH, SHIELD_PATH, TIER_THEME } from './FifaManagerCard';
 import { isOctagonUI } from './shapeTheme';
 
-// Gleiche hohe, scharfe Hexagon-Proportionen wie HexFrame & StartProbBadge
-const HEX_POINTS = '12,0.8 20.6,6.3 20.6,17.7 12,23.2 3.4,17.7 3.4,6.3';
-const HEX_RIGHT_SHADE = '12,0.8 20.6,6.3 20.6,17.7 12,23.2';
-
 /**
- * Kompaktes Manager-Rating-Hexagon im offiziellen Bronze/Silber/Gold-Tier-Look
- * der FIFA-Manager-Karte (und Elite-Glow).
+ * Kompaktes Manager-Rating-Mini-Badge im offiziellen Metallic-Prism-Look
+ * (Oktagon-Sammelkarten-Silhouette in Bronze/Silber/Gold + Elite-Glow,
+ * schaltet ueber `shapeTheme.js` auf die klassische FIFA-Schildform zurueck).
  *
- * - In der Liga-Tabelle als eigenstaendiges kleines Hexagon (z.B. size={28})
- * - Auf der Manager-Profilseite als Eyebrow am Profilbild-Hexagon mit
- *   schwarzem Backdrop-Ausschnitt (`backdrop={true}`, z.B. size={44})
- * - Schaltet ueber `shapeTheme.js` automatisch auf Kreisform zurueck.
+ * Einheitlich genutzt auf:
+ * - Account-Seite (`ManagerRatingBadge`, size={42})
+ * - Liga-Tabelle (`Dashboard`, mittig ueberlagernd am Avatar, size={28}, backdrop)
+ * - Manager-Detailseite (`UserDetail`, klickbares Eyebrow am Avatar, size={50}, backdrop)
  */
 export default function ManagerRatingHex({
   rating,
@@ -28,82 +25,112 @@ export default function ManagerRatingHex({
 
   const theme = TIER_THEME[rating.cardTier] || TIER_THEME.bronze;
   const isElite = rating.level === 'Elite';
-  const viewBox = backdrop ? '-2.2 -2.2 28.4 28.4' : '0 0 24 24';
   const label = title || `Manager Rating ${rating.score} (${rating.level || rating.cardTier})`;
+
+  const width = Math.round(size * (isOctagonUI ? 0.68 : 0.63));
+  const prismViewBox = backdrop ? '0 0 340 490' : '16 16 308 458';
+  const shieldViewBox = backdrop ? '32 10 420 644' : '57 36 370 592';
 
   return (
     <span
       className={`inline-flex items-center justify-center shrink-0 select-none ${className}`}
       style={{
-        width: size,
+        width,
         height: size,
-        filter: isElite ? 'drop-shadow(0 0 6px rgba(244, 197, 66, 0.55))' : undefined,
+        filter: isElite ? 'drop-shadow(0 0 7px rgba(244, 197, 66, 0.6))' : undefined,
       }}
       title={label}
       aria-label={label}
     >
       <svg
-        width={size}
+        width={width}
         height={size}
-        viewBox={viewBox}
+        viewBox={isOctagonUI ? prismViewBox : shieldViewBox}
         className="w-full h-full block overflow-visible"
         style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}
       >
         <defs>
-          <linearGradient id={`mgr-hex-${uid}`} x1="0%" y1="0%" x2="70%" y2="100%">
+          <linearGradient id={`mgr-badge-${uid}`} x1="0%" y1="0%" x2="65%" y2="100%">
             {theme.cardStops.map(([offset, color]) => (
               <stop key={offset} offset={`${offset}%`} stopColor={color} />
             ))}
           </linearGradient>
+          {isOctagonUI && (
+            <clipPath id={`mgr-badge-clip-${uid}`}>
+              <path d={PRISM_CARD_PATH} />
+            </clipPath>
+          )}
         </defs>
 
         {isOctagonUI ? (
           <>
             {backdrop && (
-              <polygon
-                points={HEX_POINTS}
+              <path
+                d={PRISM_CARD_PATH}
                 fill="#000000"
                 stroke="#000000"
-                strokeWidth="4.4"
+                strokeWidth="36"
                 strokeLinejoin="miter"
               />
             )}
-            <polygon
-              points={HEX_POINTS}
-              fill={`url(#mgr-hex-${uid})`}
+            <g clipPath={`url(#mgr-badge-clip-${uid})`}>
+              <path d={PRISM_CARD_PATH} fill={`url(#mgr-badge-${uid})`} />
+              {/* Dezente Prism-Facetten passend zur grossen Karte */}
+              <polygon points="24,24 196,24 118,255 24,185" fill="#ffffff" opacity="0.16" />
+              <polygon points="196,24 316,24 316,225 118,255" fill="#000000" opacity="0.09" />
+            </g>
+            <path
+              d={PRISM_CARD_PATH}
+              fill="none"
               stroke={theme.border}
-              strokeWidth="1.25"
+              strokeWidth="11"
               strokeLinejoin="miter"
             />
-            {/* Dezenter 2-Ton-Facetten-Split passend zur App-Icon-Familie */}
-            <polygon points={HEX_RIGHT_SHADE} fill="#000000" opacity="0.1" />
+            <text
+              x="170"
+              y="252"
+              textAnchor="middle"
+              dominantBaseline="central"
+              fontSize="168"
+              fontWeight="900"
+              letterSpacing="-5"
+              fill={theme.text}
+            >
+              {rating.score}
+            </text>
           </>
         ) : (
           <>
-            {backdrop && <circle cx="12" cy="12" r="12.6" fill="#000000" />}
-            <circle
-              cx="12"
-              cy="12"
-              r="10.8"
-              fill={`url(#mgr-hex-${uid})`}
+            {backdrop && (
+              <path
+                d={SHIELD_PATH}
+                fill="#000000"
+                stroke="#000000"
+                strokeWidth="40"
+                strokeLinejoin="round"
+              />
+            )}
+            <path d={SHIELD_PATH} fill={`url(#mgr-badge-${uid})`} />
+            <path
+              d={SHIELD_PATH}
+              fill="none"
               stroke={theme.border}
-              strokeWidth="1.4"
+              strokeWidth="8"
+              strokeLinejoin="round"
             />
+            <text
+              x="242"
+              y="332"
+              textAnchor="middle"
+              dominantBaseline="central"
+              fontSize="185"
+              fontWeight="900"
+              fill={theme.text}
+            >
+              {rating.score}
+            </text>
           </>
         )}
-
-        <text
-          x="12"
-          y="12.5"
-          textAnchor="middle"
-          dominantBaseline="central"
-          fontSize="9.8"
-          fontWeight="900"
-          letterSpacing="-0.35"
-          fill={theme.text}
-        >
-          {rating.score}
-        </text>
       </svg>
     </span>
   );

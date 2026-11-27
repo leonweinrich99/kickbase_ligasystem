@@ -612,9 +612,9 @@ const UserDetail = ({ dataBase = '', routeBase = '', mode = 'live' }) => {
                 to={`/manager-rating/${userData.id}`}
                 aria-label={`Manager Rating ${managerRating.score} von ${userData.name} anzeigen`}
                 title={`Manager Rating ${managerRating.score} (${managerRating.level}) – Details anzeigen`}
-                className="absolute bottom-0.5 right-0.5 z-20 transition-transform hover:scale-110 active:scale-95"
+                className="absolute bottom-0 right-1 z-20 transition-transform hover:scale-110 active:scale-95"
               >
-                <ManagerRatingHex rating={managerRating} size={46} backdrop />
+                <ManagerRatingHex rating={managerRating} size={50} backdrop />
               </Link>
             )}
           </div>
