@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="1200" height="675">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#09131d" />
+      <stop offset="52%" stop-color="#0b0d12" />
+      <stop offset="100%" stop-color="#14090a" />
+    </linearGradient>
+    <radialGradient id="glowSky" cx="46%" cy="28%" r="48%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.30" />
+      <stop offset="55%" stop-color="#0284c7" stop-opacity="0.08" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="glowCoral" cx="88%" cy="56%" r="42%">
+      <stop offset="0%" stop-color="#ff5c3e" stop-opacity="0.32" />
+      <stop offset="55%" stop-color="#dc2626" stop-opacity="0.08" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="lineSky" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="62%" stop-color="#22d3ee" />
+      <stop offset="100%" stop-color="#34d399" />
+    </linearGradient>
+    <linearGradient id="lineCrash" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f59e0b" />
+      <stop offset="40%" stop-color="#ff5c3e" />
+      <stop offset="100%" stop-color="#ef4444" />
+    </linearGradient>
+    <linearGradient id="areaSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.28" />
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0" />
+    </linearGradient>
+    <linearGradient id="areaCrash" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ff5c3e" stop-opacity="0.30" />
+      <stop offset="100%" stop-color="#ff5c3e" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+
+  <!-- Hintergrund & Atmosphaere -->
+  <rect width="1200" height="675" fill="url(#bg)" />
+  <rect width="1200" height="675" fill="url(#glowSky)" />
+  <rect width="1200" height="675" fill="url(#glowCoral)" />
+
+  <!-- Analytisches Raster -->
+  <g stroke="#ffffff" stroke-opacity="0.045" stroke-width="1">
+    <line x1="72" y1="244.8" x2="1128" y2="244.8" />
+    <line x1="72" y1="301.6" x2="1128" y2="301.6" />
+    <line x1="72" y1="358.4" x2="1128" y2="358.4" />
+    <line x1="72" y1="415.2" x2="1128" y2="415.2" />
+    <line x1="72" y1="472" x2="1128" y2="472" stroke-opacity="0.10" />
+    <line x1="280" y1="0" x2="280" y2="675" />
+    <line x1="490" y1="0" x2="490" y2="675" />
+    <line x1="700" y1="0" x2="700" y2="675" />
+    <line x1="910" y1="0" x2="910" y2="675" />
+  </g>
+
+  <!-- Subtile Spielfeld-/Mittelkreis-Geometrie -->
+  <g stroke="#ffffff" stroke-opacity="0.045" fill="none" stroke-width="2">
+    <circle cx="585" cy="340" r="190" />
+    <circle cx="585" cy="340" r="88" />
+    <line x1="585" y1="0" x2="585" y2="675" stroke-dasharray="6 8" />
+  </g>
+
+  <!-- Subtiles Editorial-Wasserzeichen oben links -->
+  <text x="64" y="146" fill="#ffffff" fill-opacity="0.055" font-family="system-ui, -apple-system, sans-serif" font-size="94" font-weight="900" letter-spacing="5">#13 · SEIWALD</text>
+
+  <!-- Y-Achsen-Labels (Marktwert in Mio EUR) -->
+  <g fill="#64748b" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700">
+    <text x="26" y="248.8">20M</text>
+    <text x="26" y="305.6">15M</text>
+    <text x="26" y="362.4">10M</text>
+    <text x="32" y="419.2">5M</text>
+  </g>
+
+  <!-- Vertikale Trennlinie Systemwechsel Sep 2026 -->
+  <line x1="946.6" y1="168" x2="946.6" y2="472" stroke="#ff5c3e" stroke-opacity="0.45" stroke-width="1.5" stroke-dasharray="5 5" />
+  <rect x="872.6" y="142" width="148" height="22" rx="6" fill="#1a0c0c" fill-opacity="0.88" stroke="#ff5c3e" stroke-opacity="0.45" />
+  <text x="946.6" y="157" text-anchor="middle" fill="#ff7b61" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="800" letter-spacing="0.9">SEP 26 · SYSTEMWECHSEL</text>
+
+  <!-- Flaechenfuellungen unter der echten Marktwert-Kurve -->
+  <polygon points="72,472 72,348.3 79,355.1 86,367.9 92.9,374.2 97.6,376.8 99.9,376.7 106.9,375.5 113.9,369.4 120.8,359.6 127.8,351.7 134.8,344.1 141.8,340.3 148.8,335.3 155.7,333.2 162.7,330.5 169.7,329.4 176.7,335.6 183.6,340.2 190.6,338 197.6,331.7 204.6,327.2 211.6,320.6 218.5,314.4 225.5,308.2 232.5,301.3 239.5,297.3 246.4,294.3 253.4,293.5 260.4,293.3 267.4,293.3 274.4,292.3 281.3,289.4 288.3,286.9 295.3,282.8 302.3,278.4 309.3,272.4 316.2,265.8 323.2,260.9 330.2,255.7 337.2,253.3 344.1,250.9 351.1,244.8 358.1,240.3 365.1,237.8 372.1,237.1 379,236.6 386,235.6 393,233.9 400,231.3 406.9,227.2 413.9,224 420.9,220.9 427.9,216.1 434.9,213.7 441.8,211.1 448.8,210 455.8,208.1 462.8,206.8 469.7,206.8 476.7,213.9 483.7,226.7 490.7,230.5 497.7,229.2 504.6,226.7 511.6,224.9 518.6,222.1 525.6,218.5 532.5,217.2 539.5,216.4 546.5,226 553.5,228.6 560.5,226.8 567.4,225.4 574.4,223.2 581.4,221.2 588.4,217.4 595.3,214.1 602.3,211.5 609.3,209 616.3,206.1 623.3,202 630.2,199.9 637.2,212.8 644.2,219.1 651.2,220.9 658.1,219.1 665.1,217.7 672.1,216.8 679.1,216.4 686.1,215.9 693,215.5 700,216.7 707,226 714,239.1 721,250.9 727.9,262.3 734.9,275.7 741.9,289.6 748.9,299.9 755.8,309.7 762.8,318.7 769.8,325.4 776.8,329.4 783.8,335.9 790.7,345.1 797.7,349.1 804.7,346.4 811.7,340.9 818.6,337 825.6,333.2 832.6,330 839.6,327.1 846.6,323.8 853.5,318.8 860.5,313.2 867.5,306.4 874.5,300.8 881.4,294.5 888.4,288.8 895.4,282.8 902.4,276.9 909.4,272.3 916.3,267.9 923.3,266 930.3,260.8 937.3,257.9 944.2,256.4 946.6,256.3 946.6,472" fill="url(#areaSky)" />
+  <polygon points="946.6,472 946.6,256.3 951.2,261.1 958.2,278 965.2,297 972.2,313.4 979.1,337 986.1,359.9 993.1,371.3 1000.1,380.1 1007,388.1 1014,393.8 1021,394.3 1028,391.4 1035,393.8 1041.9,397 1048.9,400.7 1055.9,407.6 1062.9,417.1 1069.9,420 1076.8,423.6 1083.8,427.1 1090.8,430.3 1097.8,434 1104.7,438.1 1111.7,441.8 1118.7,444.2 1125.7,447 1128,448.1 1128,472" fill="url(#areaCrash)" />
+
+  <!-- Echte Marktwert-Kurve (Aug 2025 -> Sep 2026 -> Nov 2026) -->
+  <polyline points="72,348.3 79,355.1 86,367.9 92.9,374.2 97.6,376.8 99.9,376.7 106.9,375.5 113.9,369.4 120.8,359.6 127.8,351.7 134.8,344.1 141.8,340.3 148.8,335.3 155.7,333.2 162.7,330.5 169.7,329.4 176.7,335.6 183.6,340.2 190.6,338 197.6,331.7 204.6,327.2 211.6,320.6 218.5,314.4 225.5,308.2 232.5,301.3 239.5,297.3 246.4,294.3 253.4,293.5 260.4,293.3 267.4,293.3 274.4,292.3 281.3,289.4 288.3,286.9 295.3,282.8 302.3,278.4 309.3,272.4 316.2,265.8 323.2,260.9 330.2,255.7 337.2,253.3 344.1,250.9 351.1,244.8 358.1,240.3 365.1,237.8 372.1,237.1 379,236.6 386,235.6 393,233.9 400,231.3 406.9,227.2 413.9,224 420.9,220.9 427.9,216.1 434.9,213.7 441.8,211.1 448.8,210 455.8,208.1 462.8,206.8 469.7,206.8 476.7,213.9 483.7,226.7 490.7,230.5 497.7,229.2 504.6,226.7 511.6,224.9 518.6,222.1 525.6,218.5 532.5,217.2 539.5,216.4 546.5,226 553.5,228.6 560.5,226.8 567.4,225.4 574.4,223.2 581.4,221.2 588.4,217.4 595.3,214.1 602.3,211.5 609.3,209 616.3,206.1 623.3,202 630.2,199.9 637.2,212.8 644.2,219.1 651.2,220.9 658.1,219.1 665.1,217.7 672.1,216.8 679.1,216.4 686.1,215.9 693,215.5 700,216.7 707,226 714,239.1 721,250.9 727.9,262.3 734.9,275.7 741.9,289.6 748.9,299.9 755.8,309.7 762.8,318.7 769.8,325.4 776.8,329.4 783.8,335.9 790.7,345.1 797.7,349.1 804.7,346.4 811.7,340.9 818.6,337 825.6,333.2 832.6,330 839.6,327.1 846.6,323.8 853.5,318.8 860.5,313.2 867.5,306.4 874.5,300.8 881.4,294.5 888.4,288.8 895.4,282.8 902.4,276.9 909.4,272.3 916.3,267.9 923.3,266 930.3,260.8 937.3,257.9 944.2,256.4 946.6,256.3" fill="none" stroke="url(#lineSky)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+  <polyline points="946.6,256.3 951.2,261.1 958.2,278 965.2,297 972.2,313.4 979.1,337 986.1,359.9 993.1,371.3 1000.1,380.1 1007,388.1 1014,393.8 1021,394.3 1028,391.4 1035,393.8 1041.9,397 1048.9,400.7 1055.9,407.6 1062.9,417.1 1069.9,420 1076.8,423.6 1083.8,427.1 1090.8,430.3 1097.8,434 1104.7,438.1 1111.7,441.8 1118.7,444.2 1125.7,447 1128,448.1" fill="none" stroke="url(#lineCrash)" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- Schluesselpunkte auf der Kurve -->
+  <circle cx="72" cy="348.3" r="5.5" fill="#38bdf8" stroke="#e0f2fe" stroke-width="1.8" />
+
+  <!-- Allzeit-Peak Apr 26 (23,96M) -->
+  <circle cx="630.2" cy="199.9" r="18" fill="#38bdf8" fill-opacity="0.20" />
+  <circle cx="630.2" cy="199.9" r="7.5" fill="#38bdf8" stroke="#f0f9ff" stroke-width="2.2" />
+  <g transform="translate(552.2, 152)">
+    <rect x="0" y="0" width="156" height="36" rx="8" fill="#0b1320" fill-opacity="0.90" stroke="#38bdf8" stroke-opacity="0.55" />
+    <text x="78" y="14.5" text-anchor="middle" fill="#7dd3fc" font-family="system-ui, -apple-system, sans-serif" font-size="9.5" font-weight="800" letter-spacing="0.8">ALLZEIT-PEAK · APR 26</text>
+    <text x="78" y="29.5" text-anchor="middle" fill="#ffffff" font-family="system-ui, -apple-system, sans-serif" font-size="13.5" font-weight="900">23,96 Mio €</text>
+  </g>
+
+  <!-- Sep 26 vor Absturz (18,99M) -->
+  <circle cx="946.6" cy="256.3" r="12" fill="#f59e0b" fill-opacity="0.22" />
+  <circle cx="946.6" cy="256.3" r="6" fill="#fbbf24" stroke="#fffbeb" stroke-width="1.8" />
+
+  <!-- Aktuell Nov 26 (2,10M) mit sauberer Fuehrungslinie oberhalb der Kurve -->
+  <line x1="1128" y1="364" x2="1128" y2="438" stroke="#ff5c3e" stroke-opacity="0.65" stroke-width="1.5" stroke-dasharray="3 3" />
+  <circle cx="1128" cy="448.1" r="18" fill="#ff5c3e" fill-opacity="0.24" />
+  <circle cx="1128" cy="448.1" r="7.5" fill="#ff5c3e" stroke="#fff1f2" stroke-width="2.2" />
+  <g transform="translate(998, 326)">
+    <rect x="0" y="0" width="148" height="38" rx="8" fill="#1b0b0c" fill-opacity="0.92" stroke="#ff5c3e" stroke-opacity="0.60" />
+    <text x="74" y="15" text-anchor="middle" fill="#ff846b" font-family="system-ui, -apple-system, sans-serif" font-size="9.5" font-weight="800" letter-spacing="0.8">NOV 26 · -89 % SEIT SEP</text>
+    <text x="74" y="31" text-anchor="middle" fill="#ffffff" font-family="system-ui, -apple-system, sans-serif" font-size="13.5" font-weight="900">2,10 Mio €</text>
+  </g>
+
+  <!-- Zeitachse unterhalb der Kurve (ueber dem Titel-Overlay-Bereich) -->
+  <g fill="#64748b" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" letter-spacing="0.8">
+    <text x="72" y="496">AUG 2025</text>
+    <text x="348" y="496" text-anchor="middle">DEZ 2025</text>
+    <text x="630.2" y="496" text-anchor="middle" fill="#7dd3fc">APR 2026</text>
+    <text x="946.6" y="496" text-anchor="middle" fill="#fbbf24">SEP 2026</text>
+    <text x="1128" y="496" text-anchor="end" fill="#ff846b">NOV 2026</text>
+  </g>
+
+  <!-- Kompakte Saison-Vergleichs-Badges oben rechts -->
+  <g transform="translate(762, 46)">
+    <rect x="0" y="0" width="186" height="62" rx="12" fill="#0d1420" fill-opacity="0.82" stroke="#38bdf8" stroke-opacity="0.50" />
+    <text x="16" y="23" fill="#38bdf8" font-family="system-ui, -apple-system, sans-serif" font-size="10.5" font-weight="800" letter-spacing="1.2">2025/26 · PEAK</text>
+    <text x="16" y="49" fill="#ffffff" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="900">2.839</text>
+    <text x="86" y="48" fill="#94a3b8" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="700">Pkt · Ø 86</text>
+
+    <rect x="198" y="0" width="186" height="62" rx="12" fill="#180d0e" fill-opacity="0.82" stroke="#ff5c3e" stroke-opacity="0.52" />
+    <text x="214" y="23" fill="#ff5c3e" font-family="system-ui, -apple-system, sans-serif" font-size="10.5" font-weight="800" letter-spacing="1.2">2026/27 · ST 1–10</text>
+    <text x="214" y="49" fill="#ffffff" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="900">312</text>
+    <text x="264" y="48" fill="#94a3b8" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="700">Pkt · Ø 39</text>
+  </g>
+</svg>
